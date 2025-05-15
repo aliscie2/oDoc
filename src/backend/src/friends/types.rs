@@ -70,11 +70,10 @@ impl Storable for Friend {
                     sender: User::default(),
                     receiver: User::default(),
                     confirmed: false,
-                }
+                },
             }
         })
     }
-
 
     const BOUND: Bound = Bound::Bounded {
         max_size: 999999,

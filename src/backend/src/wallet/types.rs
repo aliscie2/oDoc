@@ -167,8 +167,6 @@ impl Wallet {
         Ok(self.clone())
     }
 
-
-
     pub fn withdraw(&mut self, amount: f64, to: String, _type: ExchangeType) -> Result<(), String> {
         if self.balance >= amount {
             let new_exchange = Exchange {

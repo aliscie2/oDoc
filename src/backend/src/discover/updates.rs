@@ -28,8 +28,8 @@ fn save_post(mut post: Post) -> Result<(), String> {
 
     if post.is_comment {
         // Handle comment
-        let parent_post = Post::get(post.parent.clone())
-            .map_err(|_| "Parent post not found".to_string())?;
+        let parent_post =
+            Post::get(post.parent.clone()).map_err(|_| "Parent post not found".to_string())?;
 
         let mut updated_parent = parent_post.clone();
         updated_parent.children.push(post.id.clone());
@@ -141,7 +141,6 @@ fn vote_down(id: String) -> Result<Post, String> {
     //  2. with the `2vxsx-fae` principal
     Ok(post)
 }
-
 
 #[update]
 fn unvote(id: String) -> Result<Post, String> {

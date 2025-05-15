@@ -1,8 +1,10 @@
 use candid::{CandidType, Decode, Deserialize, Encode, Principal};
 use ic_stable_structures::Storable;
-use serde::{Serialize};
+use serde::Serialize;
+use std::borrow::Cow;
+use std::collections::Bound;
 
-#[derive( PartialOrd, PartialEq, Clone, Debug, Default, Serialize, CandidType, Deserialize)]
+#[derive(PartialOrd, PartialEq, Clone, Debug, Default, Serialize, CandidType, Deserialize)]
 pub struct Match {
     pub score: f32,
     pub user_id: String,
@@ -16,9 +18,9 @@ pub enum Category {
     Talent,
 }
 
-#[derive( PartialOrd, PartialEq, Clone, Debug, Default, Serialize, CandidType, Deserialize)]
+#[derive(PartialOrd, PartialEq, Clone, Debug, Default, Serialize, CandidType, Deserialize)]
 pub struct Job {
-    pub notification_id: String, // Telegram id or Discord id
+    pub notification_id: String,       // Telegram id or Discord id
     pub notification_username: String, // Telegram username or Discord username
     pub id: String,
     pub user_id: String,
@@ -36,7 +38,6 @@ pub struct Job {
     pub required_match_score: f32,
     pub category: Category,
 }
-
 
 impl Storable for Job {
     fn to_bytes(&self) -> Cow<[u8]> {

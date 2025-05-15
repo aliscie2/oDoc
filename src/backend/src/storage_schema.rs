@@ -29,7 +29,6 @@ impl Storable for User {
         Cow::Owned(Encode!(self).unwrap())
     }
 
-
     fn from_bytes(bytes: Cow<[u8]>) -> Self {
         Decode!(bytes.as_ref(), Self).unwrap_or_else(|_| {
             // Try to decode with old format
@@ -53,7 +52,7 @@ impl Storable for User {
                     let mut new_user = User::default();
                     new_user.name = "NoneName".to_string();
                     new_user.id = "NoneID".to_string();
-                    return new_user
+                    return new_user;
                 } // Use default if both formats fail
             }
         })

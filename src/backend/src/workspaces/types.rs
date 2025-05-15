@@ -49,14 +49,11 @@ impl Storable for WorkSpaceVec {
         Cow::Owned(Encode!(self).unwrap())
     }
 
-
     fn from_bytes(bytes: Cow<[u8]>) -> Self {
         if let Ok(x) = Decode!(bytes.as_ref(), Self) {
             return x;
         }
-        return WorkSpaceVec {
-            workspaces: vec![],
-        };
+        return WorkSpaceVec { workspaces: vec![] };
     }
 
     const BOUND: Bound = Bound::Unbounded;
@@ -110,7 +107,6 @@ impl WorkSpace {
             }
         })
     }
-
 
     pub fn save(&self) -> Result<Self, String> {
         // Get the existing workspace by ID
@@ -181,7 +177,7 @@ impl From<&EcdsaKeyName> for EcdsaKeyId {
                 EcdsaKeyName::TestKey1 => "test_key_1",
                 EcdsaKeyName::ProductionKey1 => "key_1",
             }
-                .to_string(),
+            .to_string(),
         }
     }
 }

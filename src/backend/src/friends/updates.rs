@@ -11,7 +11,6 @@ use crate::websocket::{FriendRequestNotification, NoteContent, Notification};
 use crate::COUNTER;
 use crate::{websocket, FRIENDS_STORE};
 
-
 #[update]
 pub fn send_friend_request(user_principal: String) -> Result<User, String> {
     // First check if the principals are the same

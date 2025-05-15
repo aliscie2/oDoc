@@ -1,9 +1,9 @@
-use std::borrow::Cow;
-use serde::{Serialize};
-use candid::{CandidType, Decode, Encode, Deserialize};
-use ic_cdk::{caller};
-use ic_stable_structures::{storable::Bound, StableBTreeMap, Storable};
 use crate::CALENDAR_STORE;
+use candid::{CandidType, Decode, Deserialize, Encode};
+use ic_cdk::caller;
+use ic_stable_structures::{storable::Bound, StableBTreeMap, Storable};
+use serde::Serialize;
+use std::borrow::Cow;
 
 #[derive(Clone, Debug, Serialize, CandidType, Deserialize)]
 pub struct Calendar {
@@ -38,7 +38,7 @@ impl Storable for Calendar {
                     availabilities: old_calendar.availabilities,
                     events: old_calendar.events,
                 },
-                Err(_) => Calendar::default() // Use default if both formats fail
+                Err(_) => Calendar::default(), // Use default if both formats fail
             }
         })
     }
@@ -162,7 +162,8 @@ impl Calendar {
         }
 
         let mut filtered_calendar = self.clone();
-        filtered_calendar.events = filtered_calendar.events
+        filtered_calendar.events = filtered_calendar
+            .events
             .into_iter()
             .map(|mut event| {
                 if event.created_by != viewer || !event.attendees.contains(&viewer) {
@@ -177,7 +178,6 @@ impl Calendar {
         filtered_calendar
     }
 
-
     pub fn filter_past_events(&self, viewer: String) -> Calendar {
         if self.owner == viewer {
             return self.clone();
@@ -187,7 +187,8 @@ impl Calendar {
         let start_of_today = Self::start_of_day(current_time);
 
         let mut filtered_calendar = self.clone();
-        filtered_calendar.events = filtered_calendar.events
+        filtered_calendar.events = filtered_calendar
+            .events
             .into_iter()
             .filter(|event| event.start_time >= start_of_today)
             .collect();
@@ -199,7 +200,8 @@ impl Calendar {
         let viewer = caller().to_text();
         let calendar = CALENDAR_STORE.with(|store| {
             let store = store.borrow();
-            store.iter()
+            store
+                .iter()
                 .filter(|(_, calendar)| calendar.id == calendar_id)
                 .map(|(_, calendar)| {
                     calendar
@@ -239,7 +241,8 @@ impl Calendar {
         });
 
         // Sort events chronologically
-        self.events.sort_by(|a, b| a.start_time.partial_cmp(&b.start_time).unwrap());
+        self.events
+            .sort_by(|a, b| a.start_time.partial_cmp(&b.start_time).unwrap());
         self.clone()
     }
 
@@ -261,9 +264,7 @@ impl Calendar {
 
         self.events
             .iter()
-            .filter(|event| {
-                event.start_time >= week_start && event.start_time < week_end
-            })
+            .filter(|event| event.start_time >= week_start && event.start_time < week_end)
             .cloned()
             .collect()
     }
@@ -272,10 +273,9 @@ impl Calendar {
         self.get_events_by_week(0)
     }
 
-
     pub fn has_event_conflict(&self, start_time: f64, end_time: f64) -> bool {
-        self.events.iter().any(|event| {
-            start_time < event.end_time && end_time > event.start_time
-        })
+        self.events
+            .iter()
+            .any(|event| start_time < event.end_time && end_time > event.start_time)
     }
 }

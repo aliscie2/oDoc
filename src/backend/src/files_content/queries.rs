@@ -9,7 +9,7 @@ use crate::storage_schema::{ContentTree, FileId};
 
 #[query]
 fn get_file_content(file_id: FileId) -> Option<ContentTree> {
-    let content = ContentNode::get_file_content(caller().to_string(),file_id);
+    let content = ContentNode::get_file_content(caller().to_string(), file_id);
     // if content.unwrap().is_private && caller() != FileNode::get(file_id).auther {
     //     return None;
     // }

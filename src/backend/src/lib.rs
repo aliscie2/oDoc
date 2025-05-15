@@ -1,11 +1,11 @@
-use std::cell::RefCell;
-use std::collections::HashMap;
-use std::sync::atomic::AtomicU64;
 use candid::{decode_one, encode_one, Principal};
 use evm_rpc_canister_types::{
     BlockTag, EthMainnetService, EthSepoliaService, EvmRpcCanister, GetTransactionCountArgs,
     GetTransactionCountResult, MultiGetTransactionCountResult, RequestResult, RpcService,
 };
+use std::cell::RefCell;
+use std::collections::HashMap;
+use std::sync::atomic::AtomicU64;
 // use ic_ledger_types::BlockIndex;
 use candid::Nat;
 use chat::*;
@@ -56,6 +56,8 @@ mod tables;
 mod updates;
 mod wallet;
 // mod timer;
+mod affiliate;
+mod calendar;
 mod chat;
 mod discover;
 mod init;
@@ -63,19 +65,17 @@ mod timer;
 mod user_history;
 mod websocket;
 mod workspaces;
-mod affiliate;
-mod calendar;
 
 use calendar::*;
 
-use affiliate::*;
 use crate::ckusdc_index_types::*;
+use crate::LogLevel::Debug;
+use affiliate::*;
 use ic_cdk::api::management_canister::bitcoin::{
     BitcoinNetwork, GetUtxosResponse, MillisatoshiPerByte,
 };
 use icrc_ledger_types::icrc1::account::Account;
 use workspaces::*;
-use crate::LogLevel::Debug;
 
 type Memory = VirtualMemory<DefaultMemoryImpl>;
 // pub type ConfigCell = StableCell<Option<Candid<Config>>, VMem>;
@@ -228,7 +228,7 @@ thread_local! {
             MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(16))),
         )
     );
-    
+
     // String is JobId
     static JOBS_MATCH_STORE: RefCell<StableBTreeMap<String, Job, Memory>> = RefCell::new(
         StableBTreeMap::init(
@@ -239,13 +239,11 @@ thread_local! {
 
 pub static COUNTER: AtomicU64 = AtomicU64::new(0);
 
-
 #[cfg(test)]
 mod tests {
     use crate::friends::Friend;
     use crate::user::User;
     use ic_cdk::caller;
-
 
     #[test]
     fn test_one() {

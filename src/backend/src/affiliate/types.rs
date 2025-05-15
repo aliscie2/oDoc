@@ -1,10 +1,10 @@
-use std::borrow::Cow;
-use std::collections::HashSet;
 use candid::{CandidType, Decode, Deserialize, Encode, Principal};
 use ic_cdk::caller;
 use ic_cdk_macros::*;
-use ic_stable_structures::{DefaultMemoryImpl, StableBTreeMap, Storable, storable::Bound};
+use ic_stable_structures::{storable::Bound, DefaultMemoryImpl, StableBTreeMap, Storable};
 use serde::Serialize;
+use std::borrow::Cow;
+use std::collections::HashSet;
 
 // Import user history related types and traits
 use crate::discover::time_diff;
@@ -27,7 +27,7 @@ pub struct ReferredUser {
     pub verified: bool,
     pub payment_processed: bool,
     // Track if affiliate payment has been processed
-    pub trust_score: f64,        // Store the user's trust score
+    pub trust_score: f64, // Store the user's trust score
 }
 
 #[derive(PartialOrd, PartialEq, Clone, Debug, Default, Serialize, CandidType, Deserialize)]
@@ -45,7 +45,6 @@ pub struct Affiliate {
     pub stats: AffiliateStats,
 }
 
-
 impl Storable for Affiliate {
     fn to_bytes(&self) -> Cow<[u8]> {
         if let Ok(bytes) = Encode!(self) {
@@ -60,7 +59,6 @@ impl Storable for Affiliate {
 
     const BOUND: Bound = Bound::Unbounded;
 }
-
 
 impl Affiliate {
     // Define the reward amount for each trusted user
@@ -78,7 +76,6 @@ impl Affiliate {
             store.insert(self.id.clone(), self.clone());
         });
     }
-
 
     // Register a new affiliate
     pub fn register_affiliate(id: String) -> Self {
@@ -99,7 +96,6 @@ impl Affiliate {
         affiliate.save();
         affiliate
     }
-
 
     // Calculate and update the number of trusted users, process payments for newly trusted users
     pub fn update_trusted_users(&mut self) -> Result<(), String> {
@@ -130,7 +126,6 @@ impl Affiliate {
         Ok(())
     }
 
-
     // Internal version without storage updates
     fn add_payment_internal(&mut self, amount: f64) {
         let payment = ReferralPayments {
@@ -160,7 +155,8 @@ impl Affiliate {
         self.stats.total_referrals += 1;
 
         // Update state first
-        self.update_trusted_users().unwrap_or_else(|e| ic_cdk::trap(&e));
+        self.update_trusted_users()
+            .unwrap_or_else(|e| ic_cdk::trap(&e));
 
         // Save only once at the end
         self.save();

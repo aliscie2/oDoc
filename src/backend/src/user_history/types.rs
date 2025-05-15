@@ -117,7 +117,7 @@ impl UserHistory {
                 if let ActionType::Payment(payment) = &r.action_type {
                     payment.status != PaymentStatus::Released
                         || payment.status != PaymentStatus::None
-                        && payment.status != PaymentStatus::ConfirmedCancellation
+                            && payment.status != PaymentStatus::ConfirmedCancellation
                 } else {
                     false
                 }
@@ -256,7 +256,8 @@ impl UserHistory {
         let total_rate_sum: f64 = self.rates_by_others.iter_mut().map(|r| r.rating).sum();
         let len_rate: f64 = self.rates_by_others.len() as f64;
         let mut rate = total_rate_sum / len_rate; // get the mean (μ = (x₁ + x₂ + ... + xₙ)/n) ( out of 5 stars)
-        if len_rate < 5.0 { // if less than 5 ratings, the have less whight 
+        if len_rate < 5.0 {
+            // if less than 5 ratings, the have less whight
             rate *= 0.3;
         } else if len_rate < 10.0 {
             rate *= 0.7;

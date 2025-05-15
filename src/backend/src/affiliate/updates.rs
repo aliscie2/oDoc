@@ -5,11 +5,11 @@ use candid::{CandidType, Decode, Deserialize, Encode, Principal};
 use ic_cdk::caller;
 use ic_cdk_macros::*;
 use ic_cdk_macros::*;
-use ic_stable_structures::{DefaultMemoryImpl, StableBTreeMap, Storable, storable::Bound};
+use ic_stable_structures::{storable::Bound, DefaultMemoryImpl, StableBTreeMap, Storable};
 use serde::Serialize;
 
-use crate::AFFILIATE;
 use crate::affiliate::{Affiliate, ReferredUser};
+use crate::AFFILIATE;
 // Import user history related types and traits
 use crate::discover::time_diff;
 use crate::user_history::UserHistory;

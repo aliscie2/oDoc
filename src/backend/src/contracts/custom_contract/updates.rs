@@ -2,11 +2,11 @@ use candid::Error::Custom;
 use ic_cdk::caller;
 use ic_cdk_macros::update;
 
+use crate::contracts::custom_contract::utils::notify_about_promise;
 use crate::user_history::UserHistory;
 use crate::websocket::{NoteContent, Notification, PaymentAction};
 use crate::CustomContract;
 use crate::{CPayment, PaymentStatus, Wallet};
-use crate::contracts::custom_contract::utils::notify_about_promise;
 
 // #[update]
 // fn release_c_payment(c_payment: CPayment) -> Result<(), String> {
@@ -68,7 +68,7 @@ fn confirmed_cancellation(c_payment: CPayment) -> Result<(), String> {
                 if payment.id == c_payment.id
                     && payment.receiver == caller()
                     && (payment.status != PaymentStatus::Released
-                    || payment.status != PaymentStatus::ConfirmedCancellation)
+                        || payment.status != PaymentStatus::ConfirmedCancellation)
                 {
                     payment.status = PaymentStatus::ConfirmedCancellation;
                     notify_about_promise(payment.clone(), PaymentAction::Cancelled);

@@ -12,11 +12,11 @@ pub use queries::*;
 pub use types::*;
 pub use updates::*;
 
-use crate::storage_schema::{ContentTree};
+use crate::files_content::{ContentNode, OldContentNode};
+use crate::storage_schema::ContentTree;
 use crate::user::User;
 use crate::POSTS;
 use crate::{Memory, COUNTER};
-use crate::files_content::{ContentNode, OldContentNode};
 
 mod queries;
 mod types;
@@ -60,7 +60,9 @@ impl Storable for Post {
             match Decode!(bytes.as_ref(), OldPost) {
                 Ok(old) => Post {
                     id: old.id,
-                    content_tree: old.content_tree.into_iter()
+                    content_tree: old
+                        .content_tree
+                        .into_iter()
                         .map(|old_node| ContentNode {
                             formats: Vec::new(),
                             id: old_node.id,
@@ -223,7 +225,6 @@ impl Post {
                         is_comment: post.is_comment.clone(),
                         children: post.children.clone(),
                         parent: post.parent.clone(),
-
                     }
                 })
                 .collect()

@@ -141,7 +141,9 @@ impl FileNode {
                 if id == child_id {
                     return Err("Cannot move a file into its own descendant".to_string());
                 }
-                current_id = user_files.files.iter()
+                current_id = user_files
+                    .files
+                    .iter()
                     .find(|f| f.id == id)
                     .and_then(|f| f.parent.clone());
             }
@@ -190,7 +192,9 @@ impl FileNode {
                 .unwrap_or_else(|| FileNodeVector { files: Vec::new() });
 
             // Verify file exists and get its current position
-            let old_index = user_files.files.iter()
+            let old_index = user_files
+                .files
+                .iter()
                 .position(|f| f.id == file_id)
                 .ok_or("File not found".to_string())?;
 
@@ -206,7 +210,7 @@ impl FileNode {
 
             // Remove the file and reinsert it at the new position
             let mut file_node = user_files.files.remove(old_index);
-            file_node.parent = None;  // Set to root level
+            file_node.parent = None; // Set to root level
 
             // Ensure new_index is within bounds
             let safe_index = new_index.min(user_files.files.len());
@@ -216,7 +220,6 @@ impl FileNode {
             Ok(())
         })
     }
-
 
     pub fn save(&self) -> Result<Self, String> {
         if caller().to_string() != self.author {
@@ -380,7 +383,6 @@ impl FileNode {
             Some(deleted_file)
         })
     }
-
 
     fn delete_children_recursive(file_id: &FileId, files: &mut Vec<FileNode>) {
         if let Some(pos) = files.iter().position(|f| &f.id == file_id) {

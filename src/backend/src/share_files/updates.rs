@@ -38,7 +38,7 @@ fn share_file(new_share_file: ShareFileInput) -> Result<ShareFile, String> {
     file.share_id = Some(id.clone());
 
     // Set the default permission for the file
-    file.permission = ShareFilePermission::CanView;  // Set default to CanView
+    file.permission = ShareFilePermission::CanView; // Set default to CanView
 
     // Add the specific permissions for users
     file.users_permissions = users_permissions;
@@ -58,4 +58,3 @@ fn share_file(new_share_file: ShareFileInput) -> Result<ShareFile, String> {
 
     shared_file.save()
 }
-

@@ -176,12 +176,11 @@ impl ShareFile {
             })
             .ok_or("No such share id.")?;
 
-
         // Then try to find the file in USER_FILES
         let file = USER_FILES.with(|files_store| {
             let user_files_vec = files_store.borrow();
             let user_files_vec = user_files_vec
-                .get(&shared_file.owner.to_string())  // Using owner's ID
+                .get(&shared_file.owner.to_string()) // Using owner's ID
                 .ok_or("Owner not found.")?;
 
             // Looking for file with ID matching shared_file.id
@@ -193,7 +192,6 @@ impl ShareFile {
                 .ok_or("No such file.")
         })?;
 
-
         let can_view = file.check_permission(ShareFilePermission::CanView);
 
         if !can_view {
@@ -201,7 +199,8 @@ impl ShareFile {
         }
 
         let content_tree =
-            ContentNode::get_file_content(shared_file.owner.to_string(), shared_file.id).unwrap_or_else(|| ContentTree::new());
+            ContentNode::get_file_content(shared_file.owner.to_string(), shared_file.id)
+                .unwrap_or_else(|| ContentTree::new());
 
         Ok((file, content_tree))
     }

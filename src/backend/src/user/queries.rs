@@ -1,8 +1,8 @@
 use candid::types::principal::PrincipalError;
 use candid::Principal;
+use ic_cdk::caller;
 use std::collections::HashMap;
 use std::fmt::format;
-use ic_cdk::caller;
 
 // use ic_cdk_macros::query;
 use ic_cdk_macros::query;
@@ -88,12 +88,10 @@ fn get_user(usd_id: String) -> Result<User, String> {
     Err("User not found.".to_string())
 }
 
-
 #[query]
 fn get_users() -> f64 {
     User::get_number_of_users()
 }
-
 
 #[query]
 fn get_emails() -> Vec<String> {

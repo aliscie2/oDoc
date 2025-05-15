@@ -46,9 +46,7 @@ impl User {
         })
     }
     pub fn get_number_of_users() -> f64 {
-        PROFILE_STORE.with(|profile_store| {
-            profile_store.borrow().len() as f64
-        })
+        PROFILE_STORE.with(|profile_store| profile_store.borrow().len() as f64)
     }
 
     pub fn new(profile: RegisterUser) -> Self {
@@ -153,7 +151,9 @@ impl User {
     pub fn user_name_is_duplicate(name: String) -> bool {
         PROFILE_STORE.with(|profile_store| {
             let store = profile_store.borrow();
-            store.iter().any(|(_, user)| user.name == name && user.id != caller().to_string())
+            store
+                .iter()
+                .any(|(_, user)| user.name == name && user.id != caller().to_string())
         })
     }
 

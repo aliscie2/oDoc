@@ -18,7 +18,9 @@ pub fn notify_about_promise(payment: CPayment, action_type: PaymentAction) {
     }
     // If we have an existing notification
     if let Some(mut old_note) = Notification::get(receiver.to_text().clone(), payment.id.clone()) {
-        if let NoteContent::CPaymentContract(old_payment, old_action_type) = old_note.content.clone() {
+        if let NoteContent::CPaymentContract(old_payment, old_action_type) =
+            old_note.content.clone()
+        {
             // Check if any relevant fields have changed
             let has_changes = payment.amount != old_payment.amount
                 || payment.sender != old_payment.sender
@@ -29,13 +31,13 @@ pub fn notify_about_promise(payment: CPayment, action_type: PaymentAction) {
             // Only update notification if there are actual changes
             if has_changes {
                 old_note.is_seen = false;
-                old_note.content = NoteContent::CPaymentContract(payment.clone(), action_type.clone());
+                old_note.content =
+                    NoteContent::CPaymentContract(payment.clone(), action_type.clone());
                 old_note.time = ic_cdk::api::time() as f64;
                 old_note.save();
             }
         }
     } else {
-
         // Create new notification if one doesn't exist
         let content = NoteContent::CPaymentContract(payment.clone(), action_type);
         let new_notification = Notification {
@@ -49,4 +51,3 @@ pub fn notify_about_promise(payment: CPayment, action_type: PaymentAction) {
         new_notification.save();
     }
 }
-

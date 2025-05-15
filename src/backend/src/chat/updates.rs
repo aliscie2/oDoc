@@ -69,7 +69,10 @@ fn send_message(user: Option<Principal>, mut message: Message) -> Result<String,
 
     match chat {
         Some(mut chat) => {
-            if !(chat.members.contains(&caller()) || chat.admins.contains(&caller()) || chat.creator == caller()) {
+            if !(chat.members.contains(&caller())
+                || chat.admins.contains(&caller())
+                || chat.creator == caller())
+            {
                 return Err("You are not a member of this chat.".to_string());
             }
             for member in chat.members.iter().filter(|m| m != &&caller()) {

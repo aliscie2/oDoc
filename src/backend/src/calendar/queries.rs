@@ -1,13 +1,13 @@
-use candid::Principal;
-use ic_cdk_macros::query;
 use crate::calendar::{Calendar, Event};
+use candid::Principal;
 use ic_cdk::caller;
+use ic_cdk_macros::query;
 
 #[query]
 fn get_my_calendar() -> Calendar {
     match Calendar::get(&caller().to_text()) {
         Some(calendar) => calendar,
-        None => Calendar::default()
+        None => Calendar::default(),
     }
 }
 
@@ -18,10 +18,9 @@ fn get_calendar(calendar_id: String) -> Option<Calendar> {
     // }
     match Calendar::get_calendar(&calendar_id) {
         Ok(calendar) => Some(calendar),
-        Err(_) => None
+        Err(_) => None,
     }
 }
-
 
 #[query]
 fn load_more_events(week_offset: i32) -> Vec<Event> {
@@ -31,6 +30,6 @@ fn load_more_events(week_offset: i32) -> Vec<Event> {
 
     match Calendar::get_calendar(&caller().to_text()) {
         Ok(calendar) => calendar.get_events_by_week(week_offset),
-        Err(_) => Vec::new()
+        Err(_) => Vec::new(),
     }
 }

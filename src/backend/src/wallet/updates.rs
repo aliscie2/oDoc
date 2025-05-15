@@ -4,7 +4,7 @@ use crate::workspaces::{
     estimate_transaction_fees, nat_to_u256, nat_to_u64, validate_caller_not_anonymous,
     EthereumNetwork, EVM_RPC,
 };
-use crate::{assert_token_symbol_length, parse_eth_address, wallet, UserToken, Exchange};
+use crate::{assert_token_symbol_length, parse_eth_address, wallet, Exchange, UserToken};
 use crate::{CPayment, ExchangeType, PaymentStatus, Wallet};
 use alloy_consensus::{SignableTransaction, TxEip1559, TxEnvelope};
 use alloy_primitives::{address, hex, Signature, TxKind, U256};
@@ -31,13 +31,13 @@ async fn get_user_balance() -> Result<Nat, String> {
         owner: caller(),
         subaccount: None,
     };
-    let res = ic_cdk::call::<(Account, ), (Nat, )>(
+    let res = ic_cdk::call::<(Account,), (Nat,)>(
         Principal::from_text("xevnm-gaaaa-aaaar-qafnq-cai").unwrap(),
         "icrc1_balance_of",
-        (args, ),
+        (args,),
     )
-        .await
-        .map_err(|(_, message)| Error::IcCdkError { message });
+    .await
+    .map_err(|(_, message)| Error::IcCdkError { message });
     return if let Ok(x) = res {
         Ok(x.0)
     } else {
@@ -46,18 +46,16 @@ async fn get_user_balance() -> Result<Nat, String> {
     };
 }
 
-
 async fn get_fee() -> Nat {
-    let res = ic_cdk::call::<(), (Nat, )>(
+    let res = ic_cdk::call::<(), (Nat,)>(
         Principal::from_text("xevnm-gaaaa-aaaar-qafnq-cai").unwrap(),
         "icrc1_fee",
         (),
     )
-        .await
-        .map_err(|(_, message)| Error::IcCdkError { message });
+    .await
+    .map_err(|(_, message)| Error::IcCdkError { message });
     res.unwrap().0
 }
-
 
 #[update]
 async fn check_external_transactions(max_results: Nat) -> Result<GetTransactions, Error> {
@@ -70,17 +68,20 @@ async fn check_external_transactions(max_results: Nat) -> Result<GetTransactions
         },
     };
 
-    let res = ic_cdk::call::<(GetAccountTransactionsArgs, ), (Result<GetTransactions, GetTransactionsErr>, )>(
+    let res = ic_cdk::call::<
+        (GetAccountTransactionsArgs,),
+        (Result<GetTransactions, GetTransactionsErr>,),
+    >(
         Principal::from_text("xrs4b-hiaaa-aaaar-qafoa-cai").unwrap(),
         "get_account_transactions",
-        (args, ),
+        (args,),
     )
-        .await
-        .map_err(|(_, message)| Error::IcCdkError { message })?
-        .0
-        .map_err(|e| Error::IcCdkError {
-            message: format!("{:?}", e.message),
-        })?;
+    .await
+    .map_err(|(_, message)| Error::IcCdkError { message })?
+    .0
+    .map_err(|e| Error::IcCdkError {
+        message: format!("{:?}", e.message),
+    })?;
 
     let mut wallet = Wallet::get(caller());
     for transaction in &res.transactions {
@@ -100,11 +101,12 @@ async fn check_external_transactions(max_results: Nat) -> Result<GetTransactions
 
         if let Some(t) = &transaction.transaction.transfer {
             if t.from.owner == ic_cdk::id() {
-                wallet.withdraw(
-                    nat_to_u64(t.amount.clone()) as f64,
-                    "ExternalWallet".to_string(),
-                    ExchangeType::Withdraw,
-                )
+                wallet
+                    .withdraw(
+                        nat_to_u64(t.amount.clone()) as f64,
+                        "ExternalWallet".to_string(),
+                        ExchangeType::Withdraw,
+                    )
                     .map_err(|e| Error::IcCdkError {
                         message: format!("{:?}", e),
                     })?;
@@ -131,25 +133,23 @@ async fn transfer_from(amount: Nat, from: Principal, to: Principal) -> Result<Bl
         memo: None,
         created_at_time: None,
     };
-    ic_cdk::call::<(TransferFromArgs, ), (Result<BlockIndex, TransferFromError>, )>(
+    ic_cdk::call::<(TransferFromArgs,), (Result<BlockIndex, TransferFromError>,)>(
         Principal::from_text("xevnm-gaaaa-aaaar-qafnq-cai").unwrap(),
         "icrc2_transfer_from",
-        (args, ),
+        (args,),
     )
-        .await
-        .map_err(|(_, message)| Error::IcCdkError { message })?
-        .0
-        .map_err(|e| Error::IcCdkError {
-            message: format!("{:?}", e),
-        })
+    .await
+    .map_err(|(_, message)| Error::IcCdkError { message })?
+    .0
+    .map_err(|e| Error::IcCdkError {
+        message: format!("{:?}", e),
+    })
 }
-
 
 // #[update]
 // async fn get_local_balance() -> Result<Nat, String> {
 //     get_user_balance().await
 // }
-
 
 #[update]
 async fn deposit_ckusdt() -> Result<Wallet, Error> {
@@ -164,21 +164,20 @@ async fn deposit_ckusdt() -> Result<Wallet, Error> {
     if balance > Nat::from(3000000 as u64) {
         let fee: Nat = get_fee().await;
         transfer_from(balance.clone() - fee.clone(), caller(), ic_cdk::id()).await?;
-        let res = wallet
-            .deposit(
-                nat_to_u64((balance.clone() - fee) / Nat::from(1000000 as u64)) as f64,
-                "ExternalWallet".to_string(),
-                ExchangeType::Deposit,
-            );
+        let res = wallet.deposit(
+            nat_to_u64((balance.clone() - fee) / Nat::from(1000000 as u64)) as f64,
+            "ExternalWallet".to_string(),
+            ExchangeType::Deposit,
+        );
         if let Err(wallet_error) = res {
             return Err(Error::IcCdkError {
-                message: format!("{:?}", wallet_error)
+                message: format!("{:?}", wallet_error),
             });
         }
         return Ok(wallet.clone());
     }
     Err(Error::IcCdkError {
-        message: format!("{:?}", "Minimum deposit should be 0.1 USD".to_string())
+        message: format!("{:?}", "Minimum deposit should be 0.1 USD".to_string()),
     })
 }
 
@@ -206,14 +205,17 @@ async fn withdraw_ckusdt(amount: u64, address: String) -> Result<Wallet, Error> 
             ic_cdk::id(),
             Principal::from_text(address.clone()).unwrap(),
         )
-            .await?;
+        .await?;
     }
     Ok(wallet)
 }
 
-
 #[update]
-pub fn internal_transaction(amount: f64, receiver: String, _type: ExchangeType) -> Result<(), String> {
+pub fn internal_transaction(
+    amount: f64,
+    receiver: String,
+    _type: ExchangeType,
+) -> Result<(), String> {
     // let mut wallet = Wallet::get(caller());
     let payment = CPayment {
         contract_id: "none".to_string(),

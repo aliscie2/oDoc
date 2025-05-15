@@ -8,10 +8,10 @@ use crate::contracts::Contract;
 use crate::files::FileNode;
 use crate::files_content::ContentNode;
 use crate::friends::Friend;
-use crate::storage_schema::{ ContentTree, ContractId, FileId};
+use crate::storage_schema::{ContentTree, ContractId, FileId};
 use crate::user::User;
-use crate::{StoredContract, Wallet, PROFILE_STORE};
 use crate::user_history::UserHistory;
+use crate::{StoredContract, Wallet, PROFILE_STORE};
 
 #[derive(Clone, Debug, Default, CandidType, Deserialize)]
 pub struct InitialData {
@@ -24,13 +24,11 @@ pub struct InitialData {
     Wallet: Wallet,
 }
 
-
 #[derive(Clone, Debug, Default, CandidType, Deserialize)]
 pub struct SNSStatus {
     number_users: f64,
     active_users: f64,
 }
-
 
 #[query]
 fn get_sns_status() -> Result<SNSStatus, String> {
@@ -72,7 +70,6 @@ fn get_initial_data() -> Result<InitialData, String> {
 
     let files_contents = ContentNode::get_page_files_content(1_f32);
     let files = FileNode::get_page_files(1_f32);
-
 
     let contracts: HashMap<ContractId, StoredContract> =
         Contract::get_all_contracts().unwrap_or(HashMap::new());

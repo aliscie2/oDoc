@@ -75,7 +75,7 @@ pub enum PaymentStatus {
 //     pub id: String,
 //     pub amount: f64,
 //     pub condition: "Test",
-//     pub sender: Principal, 
+//     pub sender: Principal,
 //     pub receiver: Principal,
 //     pub date_created: f64,
 //     pub date_released: f64,
@@ -83,7 +83,6 @@ pub enum PaymentStatus {
 //     pub cells: Vec<CCell>,
 //     pub wdithnesses: {id:, conformed: {sender:true, reciver: true, widtness: true }}
 // }
-
 
 #[derive(PartialOrd, PartialEq, Clone, Debug, CandidType, Deserialize, Serialize)]
 pub struct CPayment {
@@ -357,10 +356,7 @@ impl CustomContract {
     pub fn get(id: &String, creator: &String) -> Option<Self> {
         CONTRACTS_STORE.with(|contracts_store| {
             let caller_contracts = contracts_store.borrow();
-            let stored_contract_vec = caller_contracts
-                .get(&creator)?
-                .stored_contracts
-                .clone();
+            let stored_contract_vec = caller_contracts.get(&creator)?.stored_contracts.clone();
             if let Some(contract) = stored_contract_vec.iter().find(|contract| match contract {
                 StoredContract::CustomContract(contract) => contract.id == *id,
                 _ => false,
@@ -384,14 +380,14 @@ impl CustomContract {
                 .clone();
 
             // Directly find the contract in the vector
-            stored_contract_vec.into_iter()
+            stored_contract_vec
+                .into_iter()
                 .find_map(|contract| match contract {
                     StoredContract::CustomContract(c) if c.id == id => Some(c),
-                    _ => None
+                    _ => None,
                 })
         })
     }
-
 
     pub fn delete(mut self) -> Result<(), String> {
         if caller().to_string() != self.creator {
@@ -472,14 +468,14 @@ impl CustomContract {
     }
     // TODO for the save if there is error message just return the error
     //  TODO in the frontend for better user expernce make the  UI handle the persmisions so users don't see many errors and wait for save to return
-    // 
+    //
     pub fn save(&mut self) -> Result<Self, Vec<ContractError>> {
         let mut contract_errors: Vec<ContractError> = vec![];
         if let Some(old_contract) = Self::get(&self.id, &self.creator) {
             self.date_created = old_contract.date_created.clone();
             self.date_updated = ic_cdk::api::time() as f64;
             self.creator = old_contract.creator.clone(); // no need for this cuz Self::get() already check for this
-            // self.payments = old_contract.clone().update_payments(self.payments.clone());
+                                                         // self.payments = old_contract.clone().update_payments(self.payments.clone());
             self.payments = old_contract.payments.clone();
 
             let contracts: Vec<CContract> = self
@@ -721,10 +717,10 @@ impl CustomContract {
             let not = Notification::get(promise.receiver.to_string(), promise.id.clone());
             if not.is_none()
                 || not.unwrap().content
-                != NoteContent::CPaymentContract(
-                promise.clone(),
-                PaymentAction::RequestCancellation(promise.clone()),
-            )
+                    != NoteContent::CPaymentContract(
+                        promise.clone(),
+                        PaymentAction::RequestCancellation(promise.clone()),
+                    )
             {
                 notify_about_promise(
                     promise.clone(),

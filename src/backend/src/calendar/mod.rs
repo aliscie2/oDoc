@@ -1,7 +1,7 @@
 mod queries;
+mod tests;
 mod types;
 mod updates;
-mod tests;
 // mod mail_smtp;  // Add this line
 
 pub use queries::*;
