@@ -20,8 +20,8 @@ import ODOCTokenImage from "@/assets/ODOCTOKEN.png";
 
 // Styled Components
 const GradientPaper = styled(Paper)(({ theme }) => ({
-  background: "#1e1f1c", // Changed from #000000
-  color: "#fff",
+  background: "linear-gradient(135deg, #8B4513 0%, #CD7F32 50%, #8B4513 100%)", // Dark bronze gradient
+  color: "#FFF", // White text for contrast
   padding: 0,
   display: "flex",
   alignItems: "center",
@@ -30,10 +30,28 @@ const GradientPaper = styled(Paper)(({ theme }) => ({
   width: "100%",
   margin: theme.spacing(1),
   borderRadius: theme.spacing(2),
-  border: "3px solid #a0a19c", // Changed from #C0C0C0
-  boxShadow: "0 0 10px rgba(160, 161, 156, 0.5)", // Updated to match new border color
+  border: "3px solid #CD7F32", // Bronze border
+  boxShadow: `
+    0 0 10px rgba(205, 127, 50, 0.8),
+    inset 0 0 20px rgba(0, 0, 0, 0.3)
+  `, // Metallic effect with inner shadow
   backdropFilter: "blur(8px)",
   overflow: 'visible',
+}));
+
+const ProgressBar = styled(LinearProgress)(({ theme }) => ({
+  position: 'absolute',
+  bottom: 0,
+  left: theme.spacing(4),
+  right: theme.spacing(4),
+  height: '2px',
+  marginBottom: theme.spacing(1),
+  backgroundColor: 'rgba(255, 255, 255, 0.2)', // Lighter background for contrast
+  borderRadius: theme.spacing(0.5),
+  '& .MuiLinearProgress-bar': {
+    backgroundColor: 'rgba(255, 255, 255, 0.7)', // Lighter progress bar
+    borderRadius: theme.spacing(0.5),
+  },
 }));
 
 const IconWrapper = styled(Box)(({ theme }) => ({
@@ -76,20 +94,7 @@ const DigitBox = styled(Box)({
   color: "white",
 });
 
-const ProgressBar = styled(LinearProgress)(({ theme }) => ({
-  position: 'absolute',
-  bottom: 0,
-  left: theme.spacing(4),
-  right: theme.spacing(4),
-  height: '2px',
-  marginBottom: theme.spacing(1),
-  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  borderRadius: theme.spacing(0.5),
-  '& .MuiLinearProgress-bar': {
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    borderRadius: theme.spacing(0.5),
-  },
-}));
+
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component<

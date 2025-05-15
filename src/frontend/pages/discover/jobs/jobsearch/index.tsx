@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button, CircularProgress, Box, Typography, Card, CardContent, Chip, Link } from '@mui/material';
 import WorkIcon from '@mui/icons-material/Work';
-import { AnthropicAgent } from '../AnthropicAgent';
 
 // Define the job interface
 interface Job {
@@ -18,118 +17,51 @@ interface JobSearchProps {
   modelProvider?: 'anthropic' | 'deepseek';
 }
 
-const JobSearch: React.FC<JobSearchProps> = ({ modelProvider = 'deepseek' }) => {
+const JobSearch: React.FC<JobSearchProps> = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [agent] = useState(() => new AnthropicAgent());
 
-  // Load saved job results when component mounts
-  useEffect(() => {
-    const savedJobs = localStorage.getItem('job_search_results');
-    if (savedJobs) {
-      try {
-        setJobs(JSON.parse(savedJobs));
-      } catch (err) {
-        console.error('Error parsing saved jobs:', err);
-      }
-    }
-  }, []);
-
-  const handleFindJobs = async () => {
-    // Get resume data from localStorage
-    const resumeData = localStorage.getItem('resume_data');
-    if (!resumeData) {
-      setError('No resume data found. Please upload your resume first.');
-      return;
-    }
-
+  const handleFindJobs = () => {
     setLoading(true);
     setError(null);
     
-    try {
-      // Parse resume data
-      const parsedResumeData = JSON.parse(resumeData);
-      
-      console.log(`Using ${modelProvider} for job search`);
-      
-      // Clear previous conversation to start fresh
-      agent.clearConversation();
-      
-      // Create a prompt for the AI to generate job recommendations
-      const prompt = `
-      I need you to analyze this resume data and recommend relevant jobs:
-      
-      ${JSON.stringify(parsedResumeData, null, 2)}
-      
-      Please provide 3-5 job recommendations based on this resume. For each job:
-      1. Create a realistic job title
-      2. Write a brief job description
-      3. Calculate a matching score (0-100) based on how well the resume matches the job
-      4. Include any missing skills the candidate should acquire
-      5. Suggest a realistic job source (job board or company)
-      
-      Format your response as a JSON array of job objects with these properties:
-      - title: string
-      - description: string
-      - matchingScore: number
-      - source: string
-      - missingSkills: string[]
-      - applyLink: string (leave empty)
-      - potentialCoverLetter: string (leave empty)
-      
-      IMPORTANT: Return ONLY the JSON array, nothing else.
-      `;
-      
-      // Send the prompt to the AI
-      const response = await agent.sendMessage(prompt);
-      
-      // Parse the response to extract the JSON
-      let jobsData: Job[] = [];
-      try {
-        // Find JSON in the response (it might be wrapped in markdown code blocks)
-        const jsonMatch = response.match(/```(?:json)?([\s\S]*?)```/) || 
-                          response.match(/\[([\s\S]*)\]/);
-                          
-        if (jsonMatch) {
-          // Parse the extracted JSON
-          jobsData = JSON.parse(jsonMatch[0].replace(/```json|```/g, '').trim());
-        } else {
-          // Try parsing the whole response as JSON
-          jobsData = JSON.parse(response);
+    // Simulate API call with timeout
+    setTimeout(() => {
+      const dummyJobs: Job[] = [
+        {
+          title: 'Frontend Developer',
+          description: 'Develop user interfaces using React and Material-UI.',
+          matchingScore: 85,
+          applyLink: '',
+          source: 'LinkedIn',
+          potentialCoverLetter: '',
+          missingSkills: ['TypeScript', 'GraphQL']
+        },
+        {
+          title: 'Full Stack Engineer',
+          description: 'Build end-to-end web applications with React and Node.js.',
+          matchingScore: 75,
+          applyLink: '',
+          source: 'Indeed',
+          potentialCoverLetter: '',
+          missingSkills: ['AWS', 'Docker']
+        },
+        {
+          title: 'UI/UX Designer',
+          description: 'Create beautiful and functional user interfaces.',
+          matchingScore: 65,
+          applyLink: '',
+          source: 'Glassdoor',
+          potentialCoverLetter: '',
+          missingSkills: ['Figma', 'User Research']
         }
-        
-        // Validate the parsed data
-        if (!Array.isArray(jobsData)) {
-          throw new Error('Response is not an array');
-        }
-        
-        // Ensure each job has the required properties
-        jobsData = jobsData.map(job => ({
-          title: job.title || 'Unknown Position',
-          description: job.description || 'No description available',
-          matchingScore: typeof job.matchingScore === 'number' ? job.matchingScore : 70,
-          applyLink: job.applyLink || '',
-          source: job.source || 'Unknown Source',
-          potentialCoverLetter: job.potentialCoverLetter || '',
-          missingSkills: Array.isArray(job.missingSkills) ? job.missingSkills : []
-        }));
-        
-        // Store the jobs in localStorage
-        localStorage.setItem('job_search_results', JSON.stringify(jobsData));
-        
-        setJobs(jobsData);
-      } catch (parseError) {
-        console.error('Error parsing AI response:', parseError);
-        setError('Failed to parse job recommendations. Please try again.');
-      }
+      ];
       
+      setJobs(dummyJobs);
       setLoading(false);
-    } catch (err) {
-      setError('An error occurred while searching for jobs. Please try again.');
-      setLoading(false);
-      console.error('Error searching for jobs:', err);
-    }
+    }, 1000);
+  };
   };
 
   const renderJobList = () => {

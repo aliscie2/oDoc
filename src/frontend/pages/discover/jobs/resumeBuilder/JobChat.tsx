@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 // Change import from AnthropicAgent to GeminiAgent
-import { GeminiAgent } from '../GeminiAgent';
+import { GeminiAgent } from '../../../../AIAgents/GeminiAgent';
 import { Message } from '@solana/web3.js';
 import AiChat from '@/components/AiChat';
 import { useResume } from '../ResumeContext';

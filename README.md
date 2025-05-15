@@ -41,9 +41,6 @@
 5. `dfx generate`
 6. `yarn start`
 7. open http://127.0.0.1:5173/
-8. You should see this
-   page <img width="1280" alt="Screenshot 2023-06-06 at 10 36 20 AM" src="https://github.com/aliscie/Odoc/assets/58806996/301e5cc2-3be0-44b4-92ba-05a565e169e9">
-
 <hr/>
 
 <h1 align="center">Odoc</h1>

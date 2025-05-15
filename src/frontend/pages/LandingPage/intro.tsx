@@ -107,7 +107,7 @@ export default function Intro() {
               textAlign: { xs: "center", sm: "left" },
             }}
           >
-            ODOC
+            oDoc
           </MotionTypography>
         </MotionBox>
 
@@ -128,7 +128,7 @@ export default function Intro() {
                 : "0px 1px 2px rgba(255, 255, 255, 0.5)",
             }}
           >
-            Effortless Teams & Payments Management
+            Crypto agreement platform, designed for limiltess collaboration.
           </MotionTypography>
           <Box sx={{ position: "relative", zIndex: 10 }}>
             <FloatingFeatures />
@@ -146,7 +146,19 @@ export default function Intro() {
                 : "0px 1px 2px rgba(255, 255, 255, 0.4)",
             }}
           >
-           Odoc where freelancers & clients connect and effortlessly manage contracts, payments and tasks with the power of AI and blockchain.
+            Designed to obviate the need for middlemen, spreadsheets, documents, or task managers wich eliminate all obstacles to gain <b>limiltess collaboration</b>. Powered by AI & {" "}
+            <Link
+              href="https://internetcomputer.org/"
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={{
+                color: isDarkMode ? "#90caf9" : "#1976d2",
+                textShadow: "none",
+                "&:hover": { color: isDarkMode ? "#64b5f6" : "#0d47a1" },
+              }}
+            >
+              Internet Computer.
+            </Link>
           </MotionTypography>
           <MotionBox
             variants={itemVariants}
@@ -158,22 +170,10 @@ export default function Intro() {
                 : "0px 1px 2px rgba(255, 255, 255, 0.4)",
             }}
           >
-            Built on the{" "}
-            <Link
-              href="https://internetcomputer.org/"
-              target="_blank"
-              rel="noopener noreferrer"
-              sx={{
-                color: isDarkMode ? "#90caf9" : "#1976d2",
-                textShadow: "none",
-                "&:hover": { color: isDarkMode ? "#64b5f6" : "#0d47a1" },
-              }}
-            >
-              Internet Computer
-            </Link>
-            , it simplifies tasks, payments, escrow, and contracts into one
+            Streamline tasks, payments, escrow, and contracts into one
             seamless solution. Enjoy transparent pricing, no middlemen, and
-            enterprise-level security. all from anywhere in the world no country restrictions.
+            enterprise-level security. All from anywhere in the world no country restrictions.
+            Odoc made for busnessmen, lawers, freelancers and clients connect and effortlessly manage agreements, contracts, payments and tasks with the power of AI and blockchain.
           </MotionBox>
         </Box>
         <MotionBox

@@ -22,6 +22,7 @@ use ic_websocket_cdk::*;
 use ic_websocket_cdk::*;
 use icrc_ledger_types::icrc1::transfer::BlockIndex;
 use init::*;
+use job_matcher::pallet::Job;
 use queries::*;
 pub use share_files::*;
 use share_files::*;
@@ -32,6 +33,8 @@ use user::*;
 use user_history::*;
 pub use wallet::*;
 use websocket::*;
+mod job_matcher;
+use job_matcher::*;
 
 use ic_stable_structures::memory_manager::{MemoryId, MemoryManager, VirtualMemory};
 
@@ -223,6 +226,13 @@ thread_local! {
     static CALENDAR_STORE: RefCell<StableBTreeMap<UserId, Calendar, Memory>> = RefCell::new(
         StableBTreeMap::init(
             MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(16))),
+        )
+    );
+    
+    // String is JobId
+    static JOBS_MATCH_STORE: RefCell<StableBTreeMap<String, Job, Memory>> = RefCell::new(
+        StableBTreeMap::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(17))),
         )
     );
 }

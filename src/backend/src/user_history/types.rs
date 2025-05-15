@@ -62,7 +62,7 @@ pub struct UserHistory {
     pub users_interacted: HashSet<String>,
     // only the shares between at least two people that got approved by both
     pub rates_by_others: Vec<Rating>,
-    pub rates_by_actions: Vec<ActionRating>,
+    pub rates_by_actions: Vec<ActionRating>, // Trust score or Reputation score
     pub actions_rate: f64,
     pub users_rate: f64,
     // CUSTOm contract field will be calculated later
@@ -255,11 +255,11 @@ impl UserHistory {
     pub fn calc_users_rate(&mut self) -> f64 {
         let total_rate_sum: f64 = self.rates_by_others.iter_mut().map(|r| r.rating).sum();
         let len_rate: f64 = self.rates_by_others.len() as f64;
-        let mut rate = total_rate_sum / len_rate; // out of 5 stars
-        if len_rate < 10.0 {
-            rate *= 0.7;
-        } else if len_rate < 5.0 {
+        let mut rate = total_rate_sum / len_rate; // get the mean (μ = (x₁ + x₂ + ... + xₙ)/n) ( out of 5 stars)
+        if len_rate < 5.0 { // if less than 5 ratings, the have less whight 
             rate *= 0.3;
+        } else if len_rate < 10.0 {
+            rate *= 0.7;
         }
         self.users_rate = rate;
         rate.clone()
