@@ -289,8 +289,9 @@ export interface Job {
   'education' : Array<string>,
   'notification_username' : string,
   'user_id' : string,
+  'links' : Array<string>,
   'experience' : Array<string>,
-  'descrption' : string,
+  'description' : string,
   'notification_id' : string,
   'matches' : Array<Match>,
   'job_titles' : Array<string>,
@@ -304,7 +305,7 @@ export interface Job {
 export interface JobUpdate {
   'active' : [] | [boolean],
   'matches' : [] | [Array<Match>],
-  'updates' : Array<[string, string]>,
+  'updates' : Array<[string, Array<string>]>,
   'category' : [] | [Category],
   'required_match_score' : [] | [number],
 }

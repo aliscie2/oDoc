@@ -406,8 +406,9 @@ export const idlFactory = ({ IDL }) => {
     'education' : IDL.Vec(IDL.Text),
     'notification_username' : IDL.Text,
     'user_id' : IDL.Text,
+    'links' : IDL.Vec(IDL.Text),
     'experience' : IDL.Vec(IDL.Text),
-    'descrption' : IDL.Text,
+    'description' : IDL.Text,
     'notification_id' : IDL.Text,
     'matches' : IDL.Vec(Match),
     'job_titles' : IDL.Vec(IDL.Text),
@@ -570,7 +571,7 @@ export const idlFactory = ({ IDL }) => {
   const JobUpdate = IDL.Record({
     'active' : IDL.Opt(IDL.Bool),
     'matches' : IDL.Opt(IDL.Vec(Match)),
-    'updates' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text)),
+    'updates' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Vec(IDL.Text))),
     'category' : IDL.Opt(Category),
     'required_match_score' : IDL.Opt(IDL.Float32),
   });

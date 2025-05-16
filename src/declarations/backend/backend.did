@@ -265,8 +265,9 @@ type Job = record {
   education : vec text;
   notification_username : text;
   user_id : text;
+  links : vec text;
   experience : vec text;
-  descrption : text;
+  description : text;
   notification_id : text;
   matches : vec Match;
   job_titles : vec text;
@@ -280,7 +281,7 @@ type Job = record {
 type JobUpdate = record {
   active : opt bool;
   matches : opt vec Match;
-  updates : vec record { text; text };
+  updates : vec record { text; vec text };
   category : opt Category;
   required_match_score : opt float32;
 };

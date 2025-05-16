@@ -7,7 +7,7 @@ use serde::Serialize;
 
 #[derive(PartialOrd, PartialEq, Clone, Debug, Serialize, CandidType, Deserialize)]
 pub struct JobUpdate {
-    pub updates: Vec<(String, String)>,
+    pub updates: Vec<(String, Vec<String>)>,
     pub active: Option<bool>,
     pub required_match_score: Option<f32>,
     pub category: Option<Category>,

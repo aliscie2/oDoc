@@ -1,5 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-
+// TODO 
+// instead of `import { GoogleGenerativeAI } from "@google/generative-ai";
+// ` use GeminiAgent GeminiAgent.ts fineTuneGemeni.tsx
 const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(apiKey);
 

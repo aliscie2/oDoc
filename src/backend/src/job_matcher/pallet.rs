@@ -27,10 +27,11 @@ pub struct Job {
     pub user_id: String,
     pub skills: Vec<String>,
     pub education: Vec<String>,
+    pub links: Vec<String>,
     pub experience: Vec<String>,
     pub certifications: Vec<String>,
     pub job_titles: Vec<String>,
-    pub descrption: String,
+    pub description: String,
     pub proficiency_level: String, // e.g., "Junior"
     pub date_created: u64,
     pub date_updated: u64,

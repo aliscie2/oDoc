@@ -20,34 +20,34 @@ impl Job {
             experience: Vec::new(),
             certifications: Vec::new(),
             job_titles: Vec::new(),
-            descrption: String::new(),
+            description: String::new(),
             proficiency_level: String::new(),
             date_created: now,
             date_updated: now,
             active: false,
             matches: Vec::new(),
             required_match_score: 0.0,
-            category: Category::Job, // Default to Job category
+            category: Category::Job,
+            links: Vec::new(),
         })
     }
 
 
-    pub fn update(&mut self, field_name: &str, data: String) {
+    pub fn update(&mut self, field_name: &str, data: Vec<String>) {
         self.date_updated = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_secs();
 
         match field_name {
-            "skills" => self.skills = vec![data],
-            "education" => self.education = vec![data],
-            "experience" => self.experience = vec![data],
-            "certifications" => self.certifications = vec![data],
-            "job_titles" => self.job_titles = vec![data],
-            "description" => self.descrption = data,
-            "proficiency_level" => self.proficiency_level = data,
-            "active" => self.active = data.parse().unwrap_or(false),
-            "required_match_score" => self.required_match_score = data.parse().unwrap_or(0.0),
+            "skills" => self.skills = data,
+            "education" => self.education = data,
+            "experience" => self.experience = data,
+            "certifications" => self.certifications = data,
+            "job_titles" => self.job_titles = data,
+            "links" => self.links = data,
+            "description" => self.description = data[0].clone(),
+            "proficiency_level" => self.proficiency_level = data[0].clone(),
             _ => (),
         }
     }
@@ -150,7 +150,7 @@ impl Job {
                     updated_job.experience = Vec::new();
                     updated_job.certifications = Vec::new();
                     updated_job.job_titles = Vec::new();
-                    updated_job.descrption = String::new();
+                    updated_job.description = String::new();
                     updated_job.proficiency_level = String::new();
                     updated_job.active = false;
                     updated_job.required_match_score = 0.0;

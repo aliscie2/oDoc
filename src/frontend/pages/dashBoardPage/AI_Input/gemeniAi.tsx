@@ -1,4 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+// TODO 
+// instead of `import { GoogleGenerativeAI } from "@google/generative-ai";
+// ` use GeminiAgent GeminiAgent.ts gemeniAi.tsx
 import { Calendar } from "../../../../declarations/backend/backend.did";
 
 // Types for the calendar actions
