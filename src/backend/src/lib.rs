@@ -22,7 +22,7 @@ use ic_websocket_cdk::*;
 use ic_websocket_cdk::*;
 use icrc_ledger_types::icrc1::transfer::BlockIndex;
 use init::*;
-use job_matcher::pallet::Job;
+use job_matcher::pallet::{Category,Job};
 use queries::*;
 pub use share_files::*;
 use share_files::*;

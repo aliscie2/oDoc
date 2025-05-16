@@ -4,7 +4,8 @@ import { uiReducer } from "./uiReducer";
 import { filesReducer } from "./filesReducer";
 import { chatsReducer } from "./chatsReducer";
 import { notificationReducer } from "./notificationReducer";
-import {calendarReducer} from "./calendarReducer";
+import { calendarReducer } from "./calendarReducer";
+import { jobReducer } from "./jobReducer";
 
 const rootReducer = combineReducers({
   ui: uiReducer,
@@ -12,8 +13,8 @@ const rootReducer = combineReducers({
   chats: chatsReducer,
   notification: notificationReducer,
   calendar: calendarReducer,
+  jobs: jobReducer,
 });
 
-// export type RootState = ReturnType<typeof rootReducer>;
 export type RootState = ReturnType<typeof rootReducer>;
 export default rootReducer;

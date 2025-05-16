@@ -391,6 +391,33 @@ export const idlFactory = ({ IDL }) => {
     'message' : IDL.Text,
     'timestamp' : IDL.Nat64,
   });
+  const Category = IDL.Variant({ 'Job' : IDL.Null, 'Talent' : IDL.Null });
+  const Match = IDL.Record({
+    'matching_skills' : IDL.Vec(IDL.Text),
+    'user_id' : IDL.Text,
+    'score' : IDL.Float32,
+    'job_id' : IDL.Text,
+    'date_updated' : IDL.Nat64,
+  });
+  const Job = IDL.Record({
+    'id' : IDL.Text,
+    'active' : IDL.Bool,
+    'date_created' : IDL.Nat64,
+    'education' : IDL.Vec(IDL.Text),
+    'notification_username' : IDL.Text,
+    'user_id' : IDL.Text,
+    'experience' : IDL.Vec(IDL.Text),
+    'descrption' : IDL.Text,
+    'notification_id' : IDL.Text,
+    'matches' : IDL.Vec(Match),
+    'job_titles' : IDL.Vec(IDL.Text),
+    'category' : Category,
+    'date_updated' : IDL.Nat64,
+    'proficiency_level' : IDL.Text,
+    'certifications' : IDL.Vec(IDL.Text),
+    'required_match_score' : IDL.Float32,
+    'skills' : IDL.Vec(IDL.Text),
+  });
   const FEChat = IDL.Record({
     'id' : IDL.Text,
     'creator' : UserFE,
@@ -540,6 +567,13 @@ export const idlFactory = ({ IDL }) => {
     'availabilities' : IDL.Vec(Availability),
   });
   const Result_16 = IDL.Variant({ 'Ok' : Calendar, 'Err' : IDL.Text });
+  const JobUpdate = IDL.Record({
+    'active' : IDL.Opt(IDL.Bool),
+    'matches' : IDL.Opt(IDL.Vec(Match)),
+    'updates' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text)),
+    'category' : IDL.Opt(Category),
+    'required_match_score' : IDL.Opt(IDL.Float32),
+  });
   const ClientKey = IDL.Record({
     'client_principal' : IDL.Principal,
     'client_nonce' : IDL.Nat64,
@@ -597,6 +631,7 @@ export const idlFactory = ({ IDL }) => {
     'delete_chat' : IDL.Func([IDL.Text], [Result_1], []),
     'delete_custom_contract' : IDL.Func([IDL.Text], [Result_3], []),
     'delete_file' : IDL.Func([IDL.Text], [IDL.Opt(FileNode)], []),
+    'delete_job' : IDL.Func([IDL.Text], [Result_3], []),
     'delete_post' : IDL.Func([IDL.Text], [Result_3], []),
     'delete_work_space' : IDL.Func([WorkSpace], [Result_5], []),
     'deposit_ckusdt' : IDL.Func([], [Result_6], []),
@@ -625,6 +660,11 @@ export const idlFactory = ({ IDL }) => {
     'get_friends' : IDL.Func([], [IDL.Vec(Friend)], ['query']),
     'get_initial_data' : IDL.Func([], [Result_9], ['query']),
     'get_logs' : IDL.Func([GetErrorLogsArgs], [IDL.Vec(Log)], ['query']),
+    'get_matches' : IDL.Func(
+        [IDL.Vec(IDL.Text), Category],
+        [IDL.Vec(Job)],
+        ['query'],
+      ),
     'get_more_files' : IDL.Func(
         [IDL.Float32],
         [IDL.Vec(FileNode), IDL.Vec(IDL.Tuple(IDL.Text, IDL.Vec(ContentNode)))],
@@ -632,6 +672,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'get_my_calendar' : IDL.Func([], [Calendar], ['query']),
     'get_my_chats' : IDL.Func([], [IDL.Vec(FEChat)], ['query']),
+    'get_my_jobs' : IDL.Func([], [IDL.Vec(Job)], ['query']),
     'get_owners' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
     'get_post' : IDL.Func([IDL.Text], [Result_10], ['query']),
     'get_posts' : IDL.Func(
@@ -693,6 +734,7 @@ export const idlFactory = ({ IDL }) => {
     'unvote' : IDL.Func([IDL.Text], [Result_10], []),
     'update_calendar' : IDL.Func([IDL.Text, CalendarActions], [Result_16], []),
     'update_chat' : IDL.Func([Chat], [Result_1], []),
+    'update_job' : IDL.Func([IDL.Text, JobUpdate], [Result_3], []),
     'update_user_profile' : IDL.Func([RegisterUser], [Result], []),
     'vote_down' : IDL.Func([IDL.Text], [Result_10], []),
     'vote_up' : IDL.Func([IDL.Text], [Result_10], []),

@@ -118,6 +118,7 @@ type CanisterWsOpenArguments = record {
   gateway_principal : principal;
   client_nonce : nat64;
 };
+type Category = variant { Job; Talent };
 type Chat = record {
   id : text;
   creator : principal;
@@ -257,8 +258,41 @@ type InitialData = record {
   Profile : User;
   Wallet : Wallet;
 };
+type Job = record {
+  id : text;
+  active : bool;
+  date_created : nat64;
+  education : vec text;
+  notification_username : text;
+  user_id : text;
+  experience : vec text;
+  descrption : text;
+  notification_id : text;
+  matches : vec Match;
+  job_titles : vec text;
+  category : Category;
+  date_updated : nat64;
+  proficiency_level : text;
+  certifications : vec text;
+  required_match_score : float32;
+  skills : vec text;
+};
+type JobUpdate = record {
+  active : opt bool;
+  matches : opt vec Match;
+  updates : vec record { text; text };
+  category : opt Category;
+  required_match_score : opt float32;
+};
 type Log = record { level : LogLevel; message : text; timestamp : nat64 };
 type LogLevel = variant { Error; Info; Debug };
+type Match = record {
+  matching_skills : vec text;
+  user_id : text;
+  score : float32;
+  job_id : text;
+  date_updated : nat64;
+};
 type Message = record {
   id : text;
   date : nat64;
@@ -503,6 +537,7 @@ service : () -> {
   delete_chat : (text) -> (Result_1);
   delete_custom_contract : (text) -> (Result_3);
   delete_file : (text) -> (opt FileNode);
+  delete_job : (text) -> (Result_3);
   delete_post : (text) -> (Result_3);
   delete_work_space : (WorkSpace) -> (Result_5);
   deposit_ckusdt : () -> (Result_6);
@@ -519,12 +554,14 @@ service : () -> {
   get_friends : () -> (vec Friend) query;
   get_initial_data : () -> (Result_9) query;
   get_logs : (GetErrorLogsArgs) -> (vec Log) query;
+  get_matches : (vec text, Category) -> (vec Job) query;
   get_more_files : (float32) -> (
       vec FileNode,
       vec record { text; vec ContentNode },
     ) query;
   get_my_calendar : () -> (Calendar) query;
   get_my_chats : () -> (vec FEChat) query;
+  get_my_jobs : () -> (vec Job) query;
   get_owners : () -> (vec principal) query;
   get_post : (text) -> (Result_10) query;
   get_posts : (nat64, nat64) -> (vec PostUser) query;
@@ -566,6 +603,7 @@ service : () -> {
   unvote : (text) -> (Result_10);
   update_calendar : (text, CalendarActions) -> (Result_16);
   update_chat : (Chat) -> (Result_1);
+  update_job : (text, JobUpdate) -> (Result_3);
   update_user_profile : (RegisterUser) -> (Result);
   vote_down : (text) -> (Result_10);
   vote_up : (text) -> (Result_10);

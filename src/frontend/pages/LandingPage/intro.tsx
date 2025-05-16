@@ -146,7 +146,7 @@ export default function Intro() {
                 : "0px 1px 2px rgba(255, 255, 255, 0.4)",
             }}
           >
-            Designed to obviate the need for middlemen, spreadsheets, documents, or task managers wich eliminate all obstacles to gain <b>limiltess collaboration</b>. Powered by AI & {" "}
+            We can build skyscrapers and rockets because we can collaborate, weather you are in China, Russia or USA does not matters anymore. oDoc designed to obviate the need for middlemen, spreadsheets, documents, or task managers wich eliminate all obstacles to gain <b>limiltess collaboration</b>. Powered by AI & {" "}
             <Link
               href="https://internetcomputer.org/"
               target="_blank"

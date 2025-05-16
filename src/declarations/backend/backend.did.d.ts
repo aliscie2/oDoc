@@ -122,6 +122,8 @@ export interface CanisterWsOpenArguments {
   'gateway_principal' : Principal,
   'client_nonce' : bigint,
 }
+export type Category = { 'Job' : null } |
+  { 'Talent' : null };
 export interface Chat {
   'id' : string,
   'creator' : Principal,
@@ -280,6 +282,32 @@ export interface InitialData {
   'Profile' : User,
   'Wallet' : Wallet,
 }
+export interface Job {
+  'id' : string,
+  'active' : boolean,
+  'date_created' : bigint,
+  'education' : Array<string>,
+  'notification_username' : string,
+  'user_id' : string,
+  'experience' : Array<string>,
+  'descrption' : string,
+  'notification_id' : string,
+  'matches' : Array<Match>,
+  'job_titles' : Array<string>,
+  'category' : Category,
+  'date_updated' : bigint,
+  'proficiency_level' : string,
+  'certifications' : Array<string>,
+  'required_match_score' : number,
+  'skills' : Array<string>,
+}
+export interface JobUpdate {
+  'active' : [] | [boolean],
+  'matches' : [] | [Array<Match>],
+  'updates' : Array<[string, string]>,
+  'category' : [] | [Category],
+  'required_match_score' : [] | [number],
+}
 export interface Log {
   'level' : LogLevel,
   'message' : string,
@@ -288,6 +316,13 @@ export interface Log {
 export type LogLevel = { 'Error' : null } |
   { 'Info' : null } |
   { 'Debug' : null };
+export interface Match {
+  'matching_skills' : Array<string>,
+  'user_id' : string,
+  'score' : number,
+  'job_id' : string,
+  'date_updated' : bigint,
+}
 export interface Message {
   'id' : string,
   'date' : bigint,
@@ -556,6 +591,7 @@ export interface _SERVICE {
   'delete_chat' : ActorMethod<[string], Result_1>,
   'delete_custom_contract' : ActorMethod<[string], Result_3>,
   'delete_file' : ActorMethod<[string], [] | [FileNode]>,
+  'delete_job' : ActorMethod<[string], Result_3>,
   'delete_post' : ActorMethod<[string], Result_3>,
   'delete_work_space' : ActorMethod<[WorkSpace], Result_5>,
   'deposit_ckusdt' : ActorMethod<[], Result_6>,
@@ -578,12 +614,14 @@ export interface _SERVICE {
   'get_friends' : ActorMethod<[], Array<Friend>>,
   'get_initial_data' : ActorMethod<[], Result_9>,
   'get_logs' : ActorMethod<[GetErrorLogsArgs], Array<Log>>,
+  'get_matches' : ActorMethod<[Array<string>, Category], Array<Job>>,
   'get_more_files' : ActorMethod<
     [number],
     [Array<FileNode>, Array<[string, Array<ContentNode>]>]
   >,
   'get_my_calendar' : ActorMethod<[], Calendar>,
   'get_my_chats' : ActorMethod<[], Array<FEChat>>,
+  'get_my_jobs' : ActorMethod<[], Array<Job>>,
   'get_owners' : ActorMethod<[], Array<Principal>>,
   'get_post' : ActorMethod<[string], Result_10>,
   'get_posts' : ActorMethod<[bigint, bigint], Array<PostUser>>,
@@ -631,6 +669,7 @@ export interface _SERVICE {
   'unvote' : ActorMethod<[string], Result_10>,
   'update_calendar' : ActorMethod<[string, CalendarActions], Result_16>,
   'update_chat' : ActorMethod<[Chat], Result_1>,
+  'update_job' : ActorMethod<[string, JobUpdate], Result_3>,
   'update_user_profile' : ActorMethod<[RegisterUser], Result>,
   'vote_down' : ActorMethod<[string], Result_10>,
   'vote_up' : ActorMethod<[string], Result_10>,

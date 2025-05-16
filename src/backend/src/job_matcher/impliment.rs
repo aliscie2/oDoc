@@ -1,168 +1,251 @@
-// use super::pallet::{Job, Match, Category};
-// use std::time::{SystemTime, UNIX_EPOCH};
-// use ic_cdk::caller;
+use super::pallet::{Job, Match, Category};
+use std::time::{SystemTime, UNIX_EPOCH};
+use ethers_core::abi::token::LenientTokenizer;
+use ic_cdk::caller;
 
-// impl Job {
-//     pub fn new(
-//         notification_id: String,
-//         notification_username: String,
-//         id: String,
-//         user_id: String,
-//         skills: Vec<String>,
-//         education: Vec<String>,
-//         experience: Vec<String>,
-//         certifications: Vec<String>,
-//         job_titles: Vec<String>,
-//         description: String,
-//         proficiency_level: String,
-//         active: bool,
-//         required_match_score: f32,
-//         category: Category,
-//     ) -> Result<Self, String> {
-//         // Check existing jobs count based on category
-//         crate::JOBS_MATCH_STORE.with(|store| {
-//             let store = store.borrow();
-//             let user_jobs_count = store.iter()
-//                 .filter(|(_, job)| job.user_id == user_id && job.category == category)
-//                 .count();
+impl Job {
+    pub fn new() -> Result<Self, String> {
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs();
 
-//             match category {
-//                 Category::Talent if user_jobs_count >= 1 => {
-//                     Err("User can only have one Talent profile".to_string())
-//                 },
-//                 Category::Job if user_jobs_count >= 3 => {
-//                     Err("User can only have up to 3 Job posts".to_string())
-//                 },
-//                 _ => Ok(())
-//             }
-//         });
+        Ok(Job {
+            notification_id: String::new(),
+            notification_username: String::new(),
+            id: String::new(),
+            user_id: caller().to_string(),
+            skills: Vec::new(),
+            education: Vec::new(),
+            experience: Vec::new(),
+            certifications: Vec::new(),
+            job_titles: Vec::new(),
+            descrption: String::new(),
+            proficiency_level: String::new(),
+            date_created: now,
+            date_updated: now,
+            active: false,
+            matches: Vec::new(),
+            required_match_score: 0.0,
+            category: Category::Job, // Default to Job category
+        })
+    }
 
-//         let now = SystemTime::now()
-//             .duration_since(UNIX_EPOCH)
-//             .unwrap()
-//             .as_secs();
 
-//         Ok(Job {
-//             notification_id,
-//             notification_username,
-//             id,
-//             user_id,
-//             skills,
-//             education,
-//             experience,
-//             certifications,
-//             job_titles,
-//             descrption: description,
-//             proficiency_level,
-//             date_created: now,
-//             date_updated: now,
-//             active,
-//             matches: Vec::new(),
-//             required_match_score,
-//             category,
-//         })
-//     }
+    pub fn update(&mut self, field_name: &str, data: String) {
+        self.date_updated = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs();
 
-//     pub fn update(&mut self, field_name: &str, data: String) {
-//         self.date_updated = SystemTime::now()
-//             .duration_since(UNIX_EPOCH)
-//             .unwrap()
-//             .as_secs();
+        match field_name {
+            "skills" => self.skills = vec![data],
+            "education" => self.education = vec![data],
+            "experience" => self.experience = vec![data],
+            "certifications" => self.certifications = vec![data],
+            "job_titles" => self.job_titles = vec![data],
+            "description" => self.descrption = data,
+            "proficiency_level" => self.proficiency_level = data,
+            "active" => self.active = data.parse().unwrap_or(false),
+            "required_match_score" => self.required_match_score = data.parse().unwrap_or(0.0),
+            _ => (),
+        }
+    }
+    
+    // You are looking for a talent with these skills
+    // You are looking for a job with these requried skills
+    // When catagory is Talent then skills are required skills
+    // When catagory is Job then skills are skills you have
+    // mismatches are list of skillks required in a job but not found in talent
+    
+    pub fn get_matches(skills: Vec<String>, category: Category) -> Vec<Job> {
+        crate::JOBS_MATCH_STORE.with(|store| {
+            let mut matches: Vec<(usize, Job)> = store.borrow()
+                .iter()
+                .filter(|(_, job)| job.category == category && job.active) // Added active check
+                .map(|(_, job)| {
+                    let mismatches = job.get_mismatches(skills.clone());
+                    (mismatches.len(), job.clone())
+                })
+                .collect();
 
-//         match field_name {
-//             "skills" => self.skills = vec![data],
-//             "education" => self.education = vec![data],
-//             "experience" => self.experience = vec![data],
-//             "certifications" => self.certifications = vec![data],
-//             "job_titles" => self.job_titles = vec![data],
-//             "description" => self.descrption = data,
-//             "proficiency_level" => self.proficiency_level = data,
-//             "active" => self.active = data.parse().unwrap_or(false),
-//             "required_match_score" => self.required_match_score = data.parse().unwrap_or(0.0),
-//             _ => (),
-//         }
-//     }
+            // Sort by mismatch count (ascending)
+            matches.sort_by(|a, b| a.0.cmp(&b.0));
+            
+            // Take top 10 and return just the jobs
+            matches.into_iter()
+                .take(10)
+                .map(|(_, job)| job)
+                .collect()
+        })
+    }
 
-//     pub fn get_matches(&self) -> Vec<Job> {
-//         let mut matches = Vec::new();
 
-//         crate::JOBS_MATCH_STORE.with(|store| {
-//             let store = store.borrow();
+    // fn create_matched_candidate(&self, candidate: &Job, score: f32) -> Job {
+    //     let mut matched_candidate = candidate.clone();
+    //     matched_candidate.matches.push(Match {
+    //         score,
+    //         user_id: self.user_id.clone(),
+    //         matching_skills: self.skills.iter()
+    //             .filter(|s| candidate.skills.contains(s))
+    //             .cloned()
+    //             .collect(),
+    //         date_updated: SystemTime::now()
+    //             .duration_since(UNIX_EPOCH)
+    //             .unwrap()
+    //             .as_secs(),
+    //     });
+    //     matched_candidate
+    // }
 
-//             for (_, candidate) in store.iter().filter(|(_, c)| c.category != self.category) {
-//                 if let Some(matched_candidate) = self.process_candidate(&candidate) {
-//                     matches.push(matched_candidate);
-//                 }
-//             }
-//         });
+    // fn sort_and_limit_matches(&self, mut matches: Vec<(usize, Job)>) -> Vec<Job> {
+    //     matches.sort_by(|a, b| a.0.cmp(&b.0));
+    //     matches.into_iter()
+    //         .take(10)
+    //         .map(|(_, candidate)| candidate)
+    //         .collect()
+    // }
 
-//         self.sort_and_limit_matches(matches)
-//     }
+    pub fn save(&self) {
+        crate::JOBS_MATCH_STORE.with(|store| {
+            store.borrow_mut().insert(self.id.clone(), self.clone());
+        });
+    }
 
-//     fn process_candidate(&self, candidate: &Job) -> Option<(usize, Job)> {
-//         if self.user_id == candidate.user_id {
-//             return None;
-//         }
+    pub fn get_my_jobs() -> Vec<Job> {
+        let caller_id = caller().to_string();
+        crate::JOBS_MATCH_STORE.with(|store| {
+            store.borrow()
+                .iter()
+                .filter(|(_, job)| job.user_id == caller_id)
+                .map(|(_, job)| job.clone())
+                .collect()
+        })
+    }
 
-//         let mismatches = self.calculate_mismatches(
-//             matches!(self.category, Category::Talent),
-//             candidate
-//         );
-//         let score = self.calculate_match_score(&mismatches);
+    pub fn get(job_id: &String) -> Option<Job> {
+        crate::JOBS_MATCH_STORE.with(|store| {
+            store.borrow()
+                .get(job_id)
+                .map(|job| job.clone())
+        })
+    }
 
-//         if score >= self.required_match_score {
-//             Some((mismatches.len(), self.create_matched_candidate(candidate, score)))
-//         } else {
-//             None
-//         }
-//     }
+    pub fn clear_fields(job_id: String) -> Result<(), String> {
+        crate::JOBS_MATCH_STORE.with(|store| {
+            let mut store = store.borrow_mut();
+            match store.get(&job_id) {
+                Some(job) if job.user_id != caller().to_string() => {
+                    Err("Permission denied".to_string())
+                },
+                Some(job) => {
+                    let now = SystemTime::now()
+                        .duration_since(UNIX_EPOCH)
+                        .unwrap()
+                        .as_secs();
+                    
+                    let mut updated_job = job.clone();
+                    updated_job.skills = Vec::new();
+                    updated_job.education = Vec::new();
+                    updated_job.experience = Vec::new();
+                    updated_job.certifications = Vec::new();
+                    updated_job.job_titles = Vec::new();
+                    updated_job.descrption = String::new();
+                    updated_job.proficiency_level = String::new();
+                    updated_job.active = false;
+                    updated_job.required_match_score = 0.0;
+                    updated_job.date_updated = now;
+                    updated_job.matches = Vec::new();
+                    updated_job.active = false;
+                    store.insert(job_id, updated_job);
+                    Ok(())
+                },
+                None => Err("Job not found".to_string())
+            }
+        })
+    }
 
-//     fn calculate_mismatches(&self, search_for_jobs: bool, candidate: &Job) -> Vec<String> {
-//         if search_for_jobs {
-//             self.skills.iter()
-//                 .filter(|skill| !candidate.skills.contains(skill))
-//                 .cloned()
-//                 .collect()
-//         } else {
-//             candidate.skills.iter()
-//                 .filter(|skill| !self.skills.contains(skill))
-//                 .cloned()
-//                 .collect()
-//         }
-//     }
+    pub fn delete(job_id: String) -> Result<(), String> {
+        crate::JOBS_MATCH_STORE.with(|store| {
+            let mut store = store.borrow_mut();
+            match store.get(&job_id) {
+                Some(job) if job.user_id != caller().to_string() => {
+                    Err("Permission denied".to_string())
+                },
+                Some(_) => {
+                    store.remove(&job_id);
+                    Ok(())
+                },
+                None => Err("Job not found".to_string())
+            }
+        })
+    }
 
-//     fn calculate_match_score(&self, mismatches: &[String]) -> f32 {
-//         1.0 - (mismatches.len() as f32 / self.skills.len().max(1) as f32)
-//     }
+    pub fn get_mismatches(&self, skills: Vec<String>) -> Vec<String> {
+        match self.category {
+            Category::Job => self.skills.iter()
+                .filter(|skill| !skills.contains(skill))
+                .cloned()
+                .collect(),
+                
+            Category::Talent => skills.iter()
+                .filter(|skill| !self.skills.contains(skill))
+                .cloned()
+                .collect(),
+        }
+    }
 
-//     fn create_matched_candidate(&self, candidate: &Job, score: f32) -> Job {
-//         let mut matched_candidate = candidate.clone();
-//         matched_candidate.matches.push(Match {
-//             score,
-//             user_id: self.user_id.clone(),
-//             matching_skills: self.skills.iter()
-//                 .filter(|s| candidate.skills.contains(s))
-//                 .cloned()
-//                 .collect(),
-//             date_updated: SystemTime::now()
-//                 .duration_since(UNIX_EPOCH)
-//                 .unwrap()
-//                 .as_secs(),
-//         });
-//         matched_candidate
-//     }
-
-//     fn sort_and_limit_matches(&self, mut matches: Vec<(usize, Job)>) -> Vec<Job> {
-//         matches.sort_by(|a, b| a.0.cmp(&b.0));
-//         matches.into_iter()
-//             .take(10)
-//             .map(|(_, candidate)| candidate)
-//             .collect()
-//     }
-
-//     pub fn save(&self) {
-//         crate::JOBS_MATCH_STORE.with(|store| {
-//             store.borrow_mut().insert(self.id.clone(), self.clone());
-//         });
-//     }
-// }
+    pub fn update_matches(job_id: String, matches: Vec<Match>) -> Result<(), String> {
+        crate::JOBS_MATCH_STORE.with(|store| {
+            let mut store = store.borrow_mut();
+            
+            // Get the job we're updating matches for
+            let mut job = match store.get(&job_id) {
+                Some(j) => j.clone(),
+                None => return Err("Job not found".to_string()),
+            };
+    
+            // Update the job's matches
+            job.matches = matches;
+            job.date_updated = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_secs();
+            
+            // Save the updated job
+            store.insert(job_id.clone(), job.clone());
+    
+            // Create reciprocal matches for other jobs
+            for match_item in &job.matches {
+                if let Some(mut other_job) = store.get(&match_item.job_id) {
+                    // Create reciprocal match
+                    let reciprocal_match = Match {
+                        score: match_item.score,
+                        job_id: job_id.clone(),
+                        user_id: job.user_id.clone(),
+                        matching_skills: match_item.matching_skills.clone(),
+                        date_updated: SystemTime::now()
+                            .duration_since(UNIX_EPOCH)
+                            .unwrap()
+                            .as_secs(),
+                    };
+    
+                    // Remove existing match if it exists
+                    other_job.matches.retain(|m| m.job_id != job_id);
+                    
+                    // Add the new reciprocal match
+                    other_job.matches.push(reciprocal_match);
+                    other_job.date_updated = SystemTime::now()
+                        .duration_since(UNIX_EPOCH)
+                        .unwrap()
+                        .as_secs();
+                    
+                    // Save the other job
+                    store.insert(match_item.job_id.clone(), other_job);
+                }
+            }
+    
+            Ok(())
+        })
+    }
+}
