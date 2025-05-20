@@ -44,14 +44,14 @@ deploy-backend:
 	dfx generate backend
 
 deploy-frontend:
-	pnpm install
+	yarn install
 	dfx deploy frontend
 
 deploy-all: create-canisters deploy-provider deploy-backend deploy-frontend
 
 run-frontend:
-	pnpm install
-	pnpm run dev
+	yarn install
+	yarn dev 
 
 clean:
 	rm -rf .dfx

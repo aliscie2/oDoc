@@ -18,7 +18,7 @@
     },
     "frontend": {
       "build": [
-        "pnpm run build"
+        "yarn build"
       ],
       "source": [
         "dist"
