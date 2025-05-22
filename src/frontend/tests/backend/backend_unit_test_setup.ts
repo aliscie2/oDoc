@@ -32,7 +32,7 @@ const setupTestEnvironment = async () => {
   process.env.PIC_URL = url;
   global.__PIC__ = picIcServer;
 
-  const fixture = await pic.setupCanister<_SERVICE>(idlFactory, WASM_PATH);
+  const fixture = await pic.setupCanister<_SERVICE>(idlFactory);
   fixture.actor.setIdentity(alice);
 
   global.pic = pic;

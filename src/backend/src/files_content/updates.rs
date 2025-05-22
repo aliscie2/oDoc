@@ -7,7 +7,7 @@ use ic_cdk_macros::update;
 use crate::files::FileNode;
 use crate::files_content::ContentNode;
 use crate::storage_schema::{ContentId, ContentTree, ContractId, FileId};
-use crate::{CColumn, CPayment, CRow, StoredContract};
+use crate::{CColumn, CPayment, CRow, Contract, StoredContract};
 use crate::{ShareFile, FILE_CONTENTS, USER_FILES};
 // #[update]
 // fn content_updates(file_id: FileId, content_parent_id: Option<ContentId>, new_text: String) -> Result<String, String> {
@@ -74,7 +74,7 @@ fn multi_updates(
     files: Vec<FileNode>,
     content_trees: Vec<HashMap<FileId, ContentTree>>,
     // contracts: Vec<StoredContract>,
-    contracts: Vec<ContractUpdates>,
+    contracts_updates: Vec<ContractUpdates>,
     files_indexing: Vec<FileIndexing>,
 ) -> Result<String, String> {
     let mut messages = "".to_string();
@@ -82,18 +82,26 @@ fn multi_updates(
     for file in files.clone() {
         file.save()?;
     }
-
-    // for contract in contracts.clone() {
-    //     if let StoredContract::CustomContract(mut custom_contract) = contract {
-    //         let res = custom_contract.save();
-    //         if let Err(errors) = res {
-    //             for err in errors {
-    //                 let formatted_err = format!("Error: {} ", err.message);
-    //                 messages.push_str(&formatted_err);
-    //             }
-    //         }
-    //     }
-    // }
+    
+    for contract_update in contracts_updates{
+        let mut old_contract: StoredContract = Contract::get_contract(caller().to_string(),contract_update.id.clone())?;
+        if let StoredContract::CustomContract(mut old_contract) = old_contract {
+            for promise in contract_update.promises {
+                let res = old_contract.updaet_or_create_promise(promise.clone())?;
+                // if let Err(errors) = res {
+                //     messages.push_str(&errors.to_string());
+                // }
+            }
+            // for delete_promise in contract_update.delete_promises {
+            //     let res = old_contract.delete_promise(delete_promise.clone())?;
+            //     if let Err(errors) = res {
+            //         messages.push_str(&errors.to_string());
+            //     }
+            // }
+        }
+        
+    }
+    
 
     // Update FILE_CONTENTS
     for update in content_trees {

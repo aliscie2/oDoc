@@ -3,10 +3,7 @@ import { defineConfig } from "vitest/config";
 import path from "path";
 
 // Determine setup files based on test environment
-const setupFiles =
-  process.env.VITE_TEST_ENV === "backend"
-    ? ["./src/frontend/tests/backend/backend_unit_test_setup.ts"]
-    : [];
+const setupFiles = ["./src/frontend/tests/backend/backend_unit_test_setup.ts"]
 
 export default defineConfig({
   test: {

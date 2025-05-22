@@ -22,6 +22,7 @@ import RegistrationForm from "../components/MainComponents/RegistrationForm";
 import ContractPage from "./profile/ContractPage";
 import Scheduler from "./dashBoardPage/calindarView";
 import { useNavigate, Link, Navigate } from 'react-router-dom';
+import Dashboard from "./dash_board_v1";
 
 function Pages() {
   const navigate = useNavigate();
@@ -48,7 +49,8 @@ function Pages() {
   return (
     <Routes>
       <Route path="/" element={<MainPage />} />
-      <Route path="/dashboard" element={<ProductManagerDashboard />} />
+      {/* <Route path="/dashboard" element={<ProductManagerDashboard />} /> */}
+      <Route path="/dashboard" element={<Dashboard />} />
       <Route
         path="/about"
         element={<LandingPage isLoggedIn={isLoggedIn} login={login} />}

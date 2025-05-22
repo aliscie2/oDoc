@@ -41,10 +41,6 @@ type Approve = record {
   expires_at : opt nat64;
   spender : Index_Account;
 };
-type AssistantMessage = record {
-  content : opt text;
-  tool_calls : vec ToolCall;
-};
 type Availability = record {
   id : text;
   title : opt text;
@@ -132,12 +128,6 @@ type Chat = record {
   workspaces : vec text;
   admins : vec principal;
 };
-type ChatMessage = variant {
-  tool : record { content : text; tool_call_id : text };
-  user : record { content : text };
-  assistant : AssistantMessage;
-  system : record { content : text };
-};
 type ClientKey = record { client_principal : principal; client_nonce : nat64 };
 type Column = record {
   id : text;
@@ -173,6 +163,13 @@ type ContractPermissionType = variant {
   AnyOneView;
   AnyOneEdite;
   AnyOneAdd;
+};
+type ContractUpdates = record {
+  id : text;
+  delete_tables : vec text;
+  tables : vec TableUpdates;
+  delete_promises : vec text;
+  promises : vec CPayment;
 };
 type CustomContract = record {
   id : text;
@@ -253,7 +250,6 @@ type Friend = record {
   receiver : User;
 };
 type FriendRequestNotification = record { friend : Friend };
-type FunctionCall = record { name : text; arguments : vec ToolCallArgument };
 type GetErrorLogsArgs = record { start : opt nat64; length : opt nat64 };
 type GetJobs = record { jobs : vec Job; matching_jobs : vec Job };
 type GetTransactions = record {
@@ -476,9 +472,15 @@ type ShareFileInput = record {
 type ShareFilePermission = variant { CanComment; None; CanView; CanUpdate };
 type StoredContract = variant { CustomContract : CustomContract };
 type Table = record { rows : vec Row; columns : vec Column };
+type TableUpdates = record {
+  id : text;
+  name : text;
+  rows : vec CRow;
+  delete_columns : vec text;
+  columns : vec CColumn;
+  delete_rows : vec text;
+};
 type TimeSlot = record { end_time : nat64; start_time : nat64 };
-type ToolCall = record { id : text; function : FunctionCall };
-type ToolCallArgument = record { value : text; name : text };
 type Transaction = record {
   burn : opt Burn;
   kind : text;
@@ -552,8 +554,6 @@ service : () -> {
   add_google_calendar_id : (text, vec text) -> (Result_1);
   add_owner : (AddOwnerArgs) -> (Result_2);
   add_swap : (AddSwapArgs) -> (Result_2);
-  ai_chat : (vec ChatMessage) -> (text);
-  ai_rompt : (text) -> (text);
   approve_high_promise : (CPayment) -> (Result_3);
   buy_ai_credits : (float64) -> (Result_3);
   cancel_friend_request : (text) -> (Result);
@@ -615,7 +615,7 @@ service : () -> {
   multi_updates : (
       vec FileNode,
       vec vec record { text; vec ContentNode },
-      vec StoredContract,
+      vec ContractUpdates,
       vec FileIndexing,
     ) -> (Result_1);
   object_on_cancel : (CPayment, text) -> (Result_3);

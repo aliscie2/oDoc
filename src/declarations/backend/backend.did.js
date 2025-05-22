@@ -28,25 +28,6 @@ export const idlFactory = ({ IDL }) => {
     'token1' : IDL.Principal,
     'pool_canister' : IDL.Principal,
   });
-  const ToolCallArgument = IDL.Record({
-    'value' : IDL.Text,
-    'name' : IDL.Text,
-  });
-  const FunctionCall = IDL.Record({
-    'name' : IDL.Text,
-    'arguments' : IDL.Vec(ToolCallArgument),
-  });
-  const ToolCall = IDL.Record({ 'id' : IDL.Text, 'function' : FunctionCall });
-  const AssistantMessage = IDL.Record({
-    'content' : IDL.Opt(IDL.Text),
-    'tool_calls' : IDL.Vec(ToolCall),
-  });
-  const ChatMessage = IDL.Variant({
-    'tool' : IDL.Record({ 'content' : IDL.Text, 'tool_call_id' : IDL.Text }),
-    'user' : IDL.Record({ 'content' : IDL.Text }),
-    'assistant' : AssistantMessage,
-    'system' : IDL.Record({ 'content' : IDL.Text }),
-  });
   const PaymentStatus = IDL.Variant({
     'None' : IDL.Null,
     'RequestCancellation' : IDL.Null,
@@ -563,6 +544,21 @@ export const idlFactory = ({ IDL }) => {
     'admins' : IDL.Vec(IDL.Principal),
   });
   const Result_17 = IDL.Variant({ 'Ok' : IDL.Null, 'Err' : IDL.Null });
+  const TableUpdates = IDL.Record({
+    'id' : IDL.Text,
+    'name' : IDL.Text,
+    'rows' : IDL.Vec(CRow),
+    'delete_columns' : IDL.Vec(IDL.Text),
+    'columns' : IDL.Vec(CColumn),
+    'delete_rows' : IDL.Vec(IDL.Text),
+  });
+  const ContractUpdates = IDL.Record({
+    'id' : IDL.Text,
+    'delete_tables' : IDL.Vec(IDL.Text),
+    'tables' : IDL.Vec(TableUpdates),
+    'delete_promises' : IDL.Vec(IDL.Text),
+    'promises' : IDL.Vec(CPayment),
+  });
   const FileIndexing = IDL.Record({
     'id' : IDL.Text,
     'new_index' : IDL.Nat64,
@@ -658,8 +654,6 @@ export const idlFactory = ({ IDL }) => {
       ),
     'add_owner' : IDL.Func([AddOwnerArgs], [Result_2], []),
     'add_swap' : IDL.Func([AddSwapArgs], [Result_2], []),
-    'ai_chat' : IDL.Func([IDL.Vec(ChatMessage)], [IDL.Text], []),
-    'ai_rompt' : IDL.Func([IDL.Text], [IDL.Text], []),
     'approve_high_promise' : IDL.Func([CPayment], [Result_3], []),
     'buy_ai_credits' : IDL.Func([IDL.Float64], [Result_3], []),
     'cancel_friend_request' : IDL.Func([IDL.Text], [Result], []),
@@ -763,7 +757,7 @@ export const idlFactory = ({ IDL }) => {
         [
           IDL.Vec(FileNode),
           IDL.Vec(IDL.Vec(IDL.Tuple(IDL.Text, IDL.Vec(ContentNode)))),
-          IDL.Vec(StoredContract),
+          IDL.Vec(ContractUpdates),
           IDL.Vec(FileIndexing),
         ],
         [Result_1],
