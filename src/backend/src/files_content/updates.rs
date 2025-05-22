@@ -43,11 +43,23 @@ pub struct FileIndexing {
     pub parent: Option<FileId>,
 }
 
+#[derive(Clone, Debug, Deserialize, CandidType)]
+pub struct ChangedContract {
+    pub id: ContractId,
+    pub contract: StoredContract,
+}
+
+#[derive(Clone, Debug, Deserialize, CandidType)]
+pub struct ChangedContent {
+    pub file_id: FileId,
+    pub content_tree: ContentTree,
+}
+
 #[update]
 fn multi_updates(
     files: Vec<FileNode>,
-    content_trees: Vec<HashMap<FileId, ContentTree>>,
-    contracts: Vec<StoredContract>,
+    changed_contents: Vec<ChangedContent>,
+    changed_contracts: Vec<ChangedContract>,
     files_indexing: Vec<FileIndexing>,
 ) -> Result<String, String> {
     let mut messages = "".to_string();
@@ -56,8 +68,8 @@ fn multi_updates(
         file.save()?;
     }
 
-    for contract in contracts.clone() {
-        if let StoredContract::CustomContract(mut custom_contract) = contract {
+    for changed_contract in changed_contracts.clone() {
+        if let StoredContract::CustomContract(mut custom_contract) = changed_contract.contract {
             let res = custom_contract.save();
             if let Err(errors) = res {
                 for err in errors {
@@ -69,10 +81,8 @@ fn multi_updates(
     }
 
     // Update FILE_CONTENTS
-    for update in content_trees {
-        for (file_id, content_tree) in update {
-            ContentNode::update_file_contents(file_id, content_tree);
-        }
+    for changed_content in changed_contents {
+        ContentNode::update_file_contents(changed_content.file_id, changed_content.content_tree);
     }
 
     for indexing in files_indexing {
