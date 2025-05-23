@@ -46,12 +46,14 @@ export type FilesActions =
   | { type: "GET" }
   | { type: "GET_ALL" }
   | { type: "CURRENT_FILE"; file: FileNode }
-  | { type: "UPDATE_CONTENT"; id: string; content: any }
-  | { type: "ADD_CONTENT"; id: string; content: any }
+  | { type: "UPDATE_CONTENT_ITEM"; id: string; content: any }
+  | { type: "ADD_CONTENT_ITEM"; id: string; content: any }
+  | { type: "DELETE_CONTENT_ITEM"; id: string; contentId: string }
   | { type: "UPDATE_FILE_TITLE"; id: string; title: string }
   | { type: "UPDATE_FILE_WORKSPACES"; id: string; workspaces: string[] }
-  | { type: "ADD_CONTRACT"; contract: StoredContract }
-  | { type: "UPDATE_CONTRACT"; contract: StoredContract }
+  | { type: "ADD_PROMISE"; promise: StoredContract }
+  | { type: "UPDATE_PROMISE"; promise: StoredContract }
+  | { type: "DELETE_PROMISE"; id: string }
   | { type: "CONTENT_CHANGES"; id: string; changes: any }
   | { type: "CONTRACT_CHANGES"; changes: StoredContract }
   | { type: "RESOLVE_CHANGES" }

@@ -32,7 +32,13 @@ export default function SlateCustomContract(props: any) {
         setLoading(false);
         if (contract && "Ok" in contract) {
           setContract(contract.Ok.CustomContract);
-          dispatch(handleRedux("UPDATE_CONTRACT", { contract: contract.Ok }));
+          if (contract.Ok.CustomContract) {
+            if (contract.Ok.CustomContract.promises.some(p => p.id === promise.id)) {
+              dispatch(handleRedux("UPDATE_PROMISE", { promise: contract.Ok }));
+            } else {
+              dispatch(handleRedux("ADD_PROMISE", { promise: contract.Ok }));
+            }
+          }
         }
       } else {
         setContract(contracts[props.id]);
@@ -54,6 +60,13 @@ export default function SlateCustomContract(props: any) {
 
   const onContractChange = (contract: CustomContract) => {
     dispatch(handleRedux("UPDATE_CONTRACT", { contract }));
+    if (contract.CustomContract) {
+      if (contract.CustomContract.promises.some(p => p.id === promise.id)) {
+        dispatch(handleRedux("UPDATE_PROMISE", { promise: contract }));
+      } else {
+        dispatch(handleRedux("ADD_PROMISE", { promise: contract }));
+      }
+    }
   };
 
   return (

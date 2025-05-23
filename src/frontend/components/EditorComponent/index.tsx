@@ -53,7 +53,9 @@ function EditorComponent(props: Props) {
             creator: profile.id,
             date_created: Date.now() * 1e6,
           };
-          dispatch(handleRedux("ADD_CONTRACT", { contract: newContract }));
+          if (newContract.CustomContract) {
+            dispatch(handleRedux("ADD_PROMISE", { promise: newContract }));
+          }
           return null;
         case "data_grid":
         default:

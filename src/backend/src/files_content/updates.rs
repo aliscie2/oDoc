@@ -32,7 +32,7 @@ use crate::{ShareFile, FILE_CONTENTS, USER_FILES};
 //     if caller().to_string() != file.author {
 //         if let Some(share_id) = file.share_id {
 //             let share_file = ShareFile::get_file(share_id);
-//         };
+//         };'
 //     }
 //     Ok(())
 // }
