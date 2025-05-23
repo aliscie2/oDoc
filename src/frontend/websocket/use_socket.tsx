@@ -122,10 +122,13 @@ function useSocket() {
             });
             break;
           case "SharePayment":
-            dispatch({
-              type: "UPDATE_CONTRACT",
-              contract: content?.SharePayment,
-            });
+            if (data.contract.CustomContract) {
+              if (data.contract.CustomContract.promises.some(p => p.id === promise.id)) {
+                dispatch(handleRedux("UPDATE_PROMISE", { promise: data.contract }));
+              } else {
+                dispatch(handleRedux("ADD_PROMISE", { promise: data.contract }));
+              }
+            }
             break;
           case "Unfriend":
             const { id, sender, receiver } = notification;

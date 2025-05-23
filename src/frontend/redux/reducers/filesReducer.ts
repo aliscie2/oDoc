@@ -365,6 +365,191 @@ export function filesReducer(
         ...state,
       };
 
+    case "UPDATE_CONTENT_ITEM": {
+      const { id, content } = action;
+      const currentContent = state.files_content[id] || [];
+      const updatedContent = currentContent.map((item: any) =>
+        item.id === content.id ? content : item
+      );
+      
+      return {
+        ...state,
+        changes: {
+          ...state.changes,
+          contents: {
+            ...state.changes.contents,
+            [id]: updatedContent,
+          },
+        },
+        files_content: {
+          ...state.files_content,
+          [id]: updatedContent,
+        },
+      };
+    }
+
+    case "ADD_CONTENT_ITEM": {
+      const { id, content } = action;
+      const currentContent = state.files_content[id] || [];
+      
+      return {
+        ...state,
+        changes: {
+          ...state.changes,
+          contents: {
+            ...state.changes.contents,
+            [id]: [...currentContent, content],
+          },
+        },
+        files_content: {
+          ...state.files_content,
+          [id]: [...currentContent, content],
+        },
+      };
+    }
+
+    case "DELETE_CONTENT_ITEM": {
+      const { id, contentId } = action;
+      const currentContent = state.files_content[id] || [];
+      const updatedContent = currentContent.filter((item: any) => item.id !== contentId);
+      
+      return {
+        ...state,
+        changes: {
+          ...state.changes,
+          contents: {
+            ...state.changes.contents,
+            [id]: updatedContent,
+          },
+        },
+        files_content: {
+          ...state.files_content,
+          [id]: updatedContent,
+        },
+      };
+    }
+
+    case "ADD_PROMISE": {
+      const { promise } = action;
+      if (!promise.CustomContract) return state;
+      
+      const contractId = promise.CustomContract.id;
+      const currentContract = state.contracts[contractId];
+      
+      if (!currentContract) {
+        return {
+          ...state,
+          changes: {
+            ...state.changes,
+            contracts: {
+              ...state.changes.contracts,
+              [contractId]: promise,
+            },
+          },
+          contracts: {
+            ...state.contracts,
+            [contractId]: promise.CustomContract,
+          },
+        };
+      }
+
+      const updatedPromises = [
+        ...currentContract.promises,
+        ...promise.CustomContract.promises,
+      ];
+
+      const updatedContract = {
+        ...currentContract,
+        promises: updatedPromises,
+      };
+
+      return {
+        ...state,
+        changes: {
+          ...state.changes,
+          contracts: {
+            ...state.changes.contracts,
+            [contractId]: { CustomContract: updatedContract },
+          },
+        },
+        contracts: {
+          ...state.contracts,
+          [contractId]: updatedContract,
+        },
+      };
+    }
+
+    case "UPDATE_PROMISE": {
+      const { promise } = action;
+      if (!promise.CustomContract) return state;
+      
+      const contractId = promise.CustomContract.id;
+      const currentContract = state.contracts[contractId];
+      
+      if (!currentContract) return state;
+
+      const updatedPromises = currentContract.promises.map((p: any) => {
+        const updatedPromise = promise.CustomContract.promises.find(
+          (newP: any) => newP.id === p.id
+        );
+        return updatedPromise || p;
+      });
+
+      const updatedContract = {
+        ...currentContract,
+        promises: updatedPromises,
+      };
+
+      return {
+        ...state,
+        changes: {
+          ...state.changes,
+          contracts: {
+            ...state.changes.contracts,
+            [contractId]: { CustomContract: updatedContract },
+          },
+        },
+        contracts: {
+          ...state.contracts,
+          [contractId]: updatedContract,
+        },
+      };
+    }
+
+    case "DELETE_PROMISE": {
+      const { id } = action;
+      const contractId = Object.keys(state.contracts).find(
+        (key) => state.contracts[key].promises.some((p: any) => p.id === id)
+      );
+
+      if (!contractId) return state;
+
+      const currentContract = state.contracts[contractId];
+      const updatedPromises = currentContract.promises.filter(
+        (p: any) => p.id !== id
+      );
+
+      const updatedContract = {
+        ...currentContract,
+        promises: updatedPromises,
+      };
+
+      return {
+        ...state,
+        changes: {
+          ...state.changes,
+          contracts: {
+            ...state.changes.contracts,
+            [contractId]: { CustomContract: updatedContract },
+          },
+        },
+        contracts: {
+          ...state.contracts,
+          [contractId]: updatedContract,
+        },
+      };
+    }
+
     default:
       return state;
   }

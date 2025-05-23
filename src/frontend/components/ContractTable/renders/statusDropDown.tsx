@@ -53,7 +53,14 @@ export function StatusDropDown(props) {
     contract.promises = contract.promises
       .filter((p) => p.id !== promise.id)
       .concat(promise);
-    dispatch(handleRedux("UPDATE_CONTRACT", { contract }));
+
+    if (contract.CustomContract) {
+      if (contract.CustomContract.promises.some(p => p.id === promise.id)) {
+        dispatch(handleRedux("UPDATE_PROMISE", { promise: contract }));
+      } else {
+        dispatch(handleRedux("ADD_PROMISE", { promise: contract }));
+      }
+    }
   };
 
   return (

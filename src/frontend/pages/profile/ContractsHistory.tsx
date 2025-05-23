@@ -33,7 +33,9 @@ function ContractsHistory(props: any) {
         creator: profile.id,
         date_created: Date.now() * 1e6,
       };
-      dispatch(handleRedux("ADD_CONTRACT", { contract: newContract }));
+      if (newContract.CustomContract) {
+        dispatch(handleRedux("ADD_PROMISE", { promise: newContract }));
+      }
     } catch (error) {
       console.error("Error creating new contract:", error);
       //we can display error for user with snack bar here
@@ -43,7 +45,13 @@ function ContractsHistory(props: any) {
     return <div>please login to see this page</div>;
   }
   const onContractChange = (contract: CustomContract) => {
-    dispatch(handleRedux("UPDATE_CONTRACT", { contract }));
+    if (contract.CustomContract) {
+      if (contract.CustomContract.promises.some(p => p.id === promise.id)) {
+        dispatch(handleRedux("UPDATE_PROMISE", { promise: contract }));
+      } else {
+        dispatch(handleRedux("ADD_PROMISE", { promise: contract }));
+      }
+    }
   };
 
   return (

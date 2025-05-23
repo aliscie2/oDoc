@@ -123,16 +123,49 @@ function FileContentPage() {
   const onChange = debounce((changes: any) => {
     if (!currentFile) return;
 
-    const prevContent = JSON.stringify(files_content[currentFile.id]);
-    const newContent = JSON.stringify(changes);
+    const prevContent = files_content[currentFile.id] || [];
+    const newContent = changes;
 
-    if (prevContent !== newContent) {
-      dispatch(
-        handleRedux("UPDATE_CONTENT", {
-          id: currentFile.id,
-          content: changes,
-        }),
+    // Compare and dispatch granular updates
+    if (Array.isArray(newContent)) {
+      // Handle additions
+      const addedItems = newContent.filter(
+        (item) => !prevContent.some((prev: any) => prev.id === item.id)
       );
+      addedItems.forEach((item) => {
+        dispatch(
+          handleRedux("ADD_CONTENT_ITEM", {
+            id: currentFile.id,
+            content: item,
+          })
+        );
+      });
+
+      // Handle updates
+      const updatedItems = newContent.filter((item) =>
+        prevContent.some((prev: any) => prev.id === item.id && JSON.stringify(prev) !== JSON.stringify(item))
+      );
+      updatedItems.forEach((item) => {
+        dispatch(
+          handleRedux("UPDATE_CONTENT_ITEM", {
+            id: currentFile.id,
+            content: item,
+          })
+        );
+      });
+
+      // Handle deletions
+      const deletedItems = prevContent.filter(
+        (prev: any) => !newContent.some((item) => item.id === prev.id)
+      );
+      deletedItems.forEach((item: any) => {
+        dispatch(
+          handleRedux("DELETE_CONTENT_ITEM", {
+            id: currentFile.id,
+            contentId: item.id,
+          })
+        );
+      });
     }
   }, 250);
 

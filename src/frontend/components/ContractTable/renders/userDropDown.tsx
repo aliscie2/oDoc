@@ -47,7 +47,13 @@ export function UserDropDown(props) {
       .filter((p) => p.id !== promise.id)
       .concat(promise);
     // console.log({ contract });
-    dispatch(handleRedux("UPDATE_CONTRACT", { contract }));
+    if (contract.CustomContract) {
+      if (contract.CustomContract.promises.some(p => p.id === promise.id)) {
+        dispatch(handleRedux("UPDATE_PROMISE", { promise: contract }));
+      } else {
+        dispatch(handleRedux("ADD_PROMISE", { promise: contract }));
+      }
+    }
   }
   // console.log({ z: props.column.colId == "receiver" });
   // console.log({ x: props.column.colId == "sender" });

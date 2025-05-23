@@ -93,7 +93,13 @@ function useParser(props: ParserProps) {
       let to_store: StoredContract = {
         CustomContract: updatedContract,
       };
-      dispatch(handleRedux("UPDATE_CONTRACT", { contract: to_store }));
+      if (to_store.CustomContract) {
+        if (to_store.CustomContract.promises.some(p => p.id === promise.id)) {
+          dispatch(handleRedux("UPDATE_PROMISE", { promise: to_store }));
+        } else {
+          dispatch(handleRedux("ADD_PROMISE", { promise: to_store }));
+        }
+      }
     }
   }
 
