@@ -286,12 +286,16 @@ export interface Job {
   'id' : string,
   'active' : boolean,
   'date_created' : bigint,
+  'contacts' : Array<string>,
+  'trust_note' : string,
   'education' : Array<string>,
   'notification_username' : string,
+  'description' : string,
+  'emails' : Array<string>,
+  'trust_score' : string,
   'user_id' : string,
   'links' : Array<string>,
   'experience' : Array<string>,
-  'description' : string,
   'notification_id' : string,
   'matches' : Array<Match>,
   'job_titles' : Array<string>,
@@ -303,9 +307,10 @@ export interface Job {
   'skills' : Array<string>,
 }
 export interface JobUpdate {
+  'id' : string,
   'active' : [] | [boolean],
   'matches' : [] | [Array<Match>],
-  'updates' : Array<[string, Array<string>]>,
+  'updates' : Array<Update>,
   'category' : [] | [Category],
   'required_match_score' : [] | [number],
 }
@@ -318,11 +323,12 @@ export type LogLevel = { 'Error' : null } |
   { 'Info' : null } |
   { 'Debug' : null };
 export interface Match {
-  'matching_skills' : Array<string>,
+  'missmatching_skills' : Array<string>,
   'user_id' : string,
   'score' : number,
   'job_id' : string,
   'date_updated' : bigint,
+  'is_connected' : boolean,
 }
 export interface Message {
   'id' : string,
@@ -528,6 +534,7 @@ export interface Transfer {
   'amount' : bigint,
   'spender' : [] | [Index_Account],
 }
+export interface Update { 'field' : string, 'values' : Array<string> }
 export interface User {
   'id' : string,
   'name' : string,
@@ -615,7 +622,7 @@ export interface _SERVICE {
   'get_friends' : ActorMethod<[], Array<Friend>>,
   'get_initial_data' : ActorMethod<[], Result_9>,
   'get_logs' : ActorMethod<[GetErrorLogsArgs], Array<Log>>,
-  'get_matches' : ActorMethod<[Array<string>, Category], Array<Job>>,
+  'get_matches' : ActorMethod<[string, Array<string>, Category], Array<Job>>,
   'get_more_files' : ActorMethod<
     [number],
     [Array<FileNode>, Array<[string, Array<ContentNode>]>]
@@ -670,7 +677,7 @@ export interface _SERVICE {
   'unvote' : ActorMethod<[string], Result_10>,
   'update_calendar' : ActorMethod<[string, CalendarActions], Result_16>,
   'update_chat' : ActorMethod<[Chat], Result_1>,
-  'update_job' : ActorMethod<[string, JobUpdate], Result_3>,
+  'update_job' : ActorMethod<[Array<JobUpdate>], Result_3>,
   'update_user_profile' : ActorMethod<[RegisterUser], Result>,
   'vote_down' : ActorMethod<[string], Result_10>,
   'vote_up' : ActorMethod<[string], Result_10>,

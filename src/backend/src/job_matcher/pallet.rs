@@ -9,8 +9,9 @@ pub struct Match {
     pub score: f32,
     pub job_id: String,
     pub user_id: String,
-    pub matching_skills: Vec<String>,
+    pub missmatching_skills: Vec<String>,
     pub date_updated: u64,
+    pub is_connected :bool,
 }
 
 #[derive(PartialOrd, PartialEq, Clone, Debug, Serialize, CandidType, Deserialize)]
@@ -39,6 +40,10 @@ pub struct Job {
     pub matches: Vec<Match>,
     pub required_match_score: f32,
     pub category: Category,
+    pub trust_score: String,
+    pub trust_note: String,
+    pub emails: Vec<String>,
+    pub contacts: Vec<String>,
 }
 
 impl Storable for Job {

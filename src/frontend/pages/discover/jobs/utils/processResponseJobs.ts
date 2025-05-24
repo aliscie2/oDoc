@@ -56,7 +56,6 @@ export const processResponseJobs = (response: string) => {
         extractedData = JSON.parse(jsonText);
       }
       
-      console.log('Extracted data from response:', extractedData);
     } catch (error) {
       console.error('Error parsing JSON from response:', error);
     }

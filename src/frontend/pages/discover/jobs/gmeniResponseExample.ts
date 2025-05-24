@@ -1,8 +1,30 @@
 export const gmeniResponseExample = `json
 {
+
+  "required_match_score": 7.8,
   "category": "Talent",
   "feedback": "Thank you for providing your profile information. We are updating your job profile.",
+  "done": true,
   "updates": [
+  {
+    "field": "trust_score",
+    "values": [
+        "8.5"
+    ]
+},
+  {
+    "field": "trust_note",
+    "values": [
+        "The post seams to be well trusted it is fine"
+    ]
+},
+  {
+    "field": "emails",
+    "values": [
+        "example@gmail.com",
+        "example2@gmail.com"
+    ]
+},
     {
       "field": "description",
       "values": [
@@ -93,12 +115,38 @@ export const gmeniResponseExample = `json
         "https://youtube.com/@odocic",
         "https://app.kajabi.com/certificates/9b82fde3"
       ]
-    }
+    },
+    {
+      "field": "contacts",
+      "values": [
+          "http://x.com/username",
+          "https://t.me/OdocBot"
+      ]
+  }
   ]
 }
 `
 
 export const parsedRespnoseExample = [
+  {
+    "field": "trust_score",
+    "values": [
+        "8.5",
+    ]
+},
+  {
+    "field": "trust_note",
+    "values": [
+        "The post seams to be well trusted it is fine",
+    ]
+},
+  {
+    "field": "emails",
+    "values": [
+        "example@gmail.com",
+        "example2@gmail.com",
+    ]
+},
     {
         "field": "job_titles",
         "values": [
@@ -193,5 +241,13 @@ export const parsedRespnoseExample = [
             "https://x.com/alihushamsci",
             "https://youtube.com/@odocic"
         ]
-    }
+    },
+    {
+      "field": "contacts",
+      "values": [
+          "http://x.com/username",
+          "https://t.me/OdocBot"
+      ]
+  },
+    
 ]

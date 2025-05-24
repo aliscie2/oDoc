@@ -35,45 +35,7 @@ const GmailConnection = () => {
     }
   }, [calendar?.googleIds]);
 
-  const handleGoogleAuth = async () => {
-    if (!window.google) return;
-
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-    const scope = 'email profile';
-
-    const tokenClient = google.accounts.oauth2.initTokenClient({
-      client_id: clientId,
-      scope: scope,
-      callback: async (tokenResponse) => {
-        if (tokenResponse?.access_token) {
-          try {
-            const userInfo = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-              headers: {
-                Authorization: `Bearer ${tokenResponse.access_token}`
-              }
-            }).then(res => res.json());
-
-            if (userInfo.email) {
-              const res = await backendActor.add_google_calendar_id(calendar.id, [userInfo.email]);
-              if (res.Err) {
-                console.error({ error_add_google_calendar_id: res.Err });
-              } else {
-                // Update local state
-                setEmails(prev => [...prev, userInfo.email]);
-              }
-            }
-          } catch (error) {
-            console.error('Error getting user info:', error);
-          }
-        }
-      },
-      error_callback: (error) => {
-        console.error('Google OAuth error:', error);
-      }
-    });
-
-    tokenClient.requestAccessToken();
-  };
+  const handleGoogleAuth = async () => {};
 
   const handleMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);

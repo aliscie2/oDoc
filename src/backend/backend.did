@@ -262,12 +262,16 @@ type Job = record {
   id : text;
   active : bool;
   date_created : nat64;
+  contacts : vec text;
+  trust_note : text;
   education : vec text;
   notification_username : text;
+  description : text;
+  emails : vec text;
+  trust_score : text;
   user_id : text;
   links : vec text;
   experience : vec text;
-  description : text;
   notification_id : text;
   matches : vec Match;
   job_titles : vec text;
@@ -279,20 +283,22 @@ type Job = record {
   skills : vec text;
 };
 type JobUpdate = record {
+  id : text;
   active : opt bool;
   matches : opt vec Match;
-  updates : vec record { text; vec text };
+  updates : vec Update;
   category : opt Category;
   required_match_score : opt float32;
 };
 type Log = record { level : LogLevel; message : text; timestamp : nat64 };
 type LogLevel = variant { Error; Info; Debug };
 type Match = record {
-  matching_skills : vec text;
+  missmatching_skills : vec text;
   user_id : text;
   score : float32;
   job_id : text;
   date_updated : nat64;
+  is_connected : bool;
 };
 type Message = record {
   id : text;
@@ -474,6 +480,7 @@ type Transfer = record {
   amount : nat;
   spender : opt Index_Account;
 };
+type Update = record { field : text; values : vec text };
 type User = record {
   id : text;
   name : text;
@@ -555,7 +562,7 @@ service : () -> {
   get_friends : () -> (vec Friend) query;
   get_initial_data : () -> (Result_9) query;
   get_logs : (GetErrorLogsArgs) -> (vec Log) query;
-  get_matches : (vec text, Category) -> (vec Job) query;
+  get_matches : (text, vec text, Category) -> (vec Job) query;
   get_more_files : (float32) -> (
       vec FileNode,
       vec record { text; vec ContentNode },
@@ -604,7 +611,7 @@ service : () -> {
   unvote : (text) -> (Result_10);
   update_calendar : (text, CalendarActions) -> (Result_16);
   update_chat : (Chat) -> (Result_1);
-  update_job : (text, JobUpdate) -> (Result_3);
+  update_job : (vec JobUpdate) -> (Result_3);
   update_user_profile : (RegisterUser) -> (Result);
   vote_down : (text) -> (Result_10);
   vote_up : (text) -> (Result_10);

@@ -23,6 +23,33 @@ fn get_my_jobs() -> Vec<Job> {
 // Don't get confused category is what you are looking for.
 // Not what you are now.
 #[query]
-fn get_matches(skills: Vec<String>, category: Category) -> Vec<Job> {
-    Job::get_matches(skills, category)
+fn get_matches(current_job_id:String, skills: Vec<String>, category: Category) -> Vec<Job> {
+    let curr = Job::get(&current_job_id);
+    let machig_jobs: Vec<Job> = Job::get_matches(skills, category);
+
+    if curr.is_none() {
+        return machig_jobs.into_iter()
+        .take(10)
+        .collect();;
+    }
+    
+    let curr = curr.unwrap();
+    let mut filtered_jobs = machig_jobs.iter()
+       .filter(|job| {
+           !curr.matches.iter().any(|m| 
+               m.job_id == job.id && 
+               m.date_updated >= job.date_updated
+           )
+       })
+       .cloned()
+       .collect::<Vec<Job>>();
+
+    if filtered_jobs.len() > 10 {
+        filtered_jobs = filtered_jobs[..10].to_vec();
+    }
+    filtered_jobs
 }
+
+//TODO
+//  In the future allow users to ignore some jobs Ignore { job_id, date}
+//  to filter out jobs that job.id == job_id && job.date_updated < date

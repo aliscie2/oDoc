@@ -6,8 +6,16 @@ use serde::Serialize;
 
 
 #[derive(PartialOrd, PartialEq, Clone, Debug, Serialize, CandidType, Deserialize)]
+pub struct Update {
+    pub field: String,
+    pub values: Vec<String>,
+}
+
+#[derive(PartialOrd, PartialEq, Clone, Debug, Serialize, CandidType, Deserialize)]
 pub struct JobUpdate {
-    pub updates: Vec<(String, Vec<String>)>,
+    pub id: String,
+    pub updates: Vec<Update>,
+    // pub updates: Vec<(String, Vec<String>)>,
     pub active: Option<bool>,
     pub required_match_score: Option<f32>,
     pub category: Option<Category>,
@@ -16,41 +24,43 @@ pub struct JobUpdate {
 
 
 #[update]
-fn update_job(id: String, update: JobUpdate) -> Result<(), String> {
-    let mut job = match Job::get(&id) {
-        Some(job) => job,
-        None => return Err("Job not found".to_string()),
-    };
+fn update_job(updates: Vec<JobUpdate>) -> Result<(), String> {
 
-    if job.user_id != ic_cdk::caller().to_string() {
+    if ic_cdk::caller().to_string() == Principal::anonymous().to_string() {
         return Err("Permission denied".to_string());
     }
+    for update in updates {
+        let mut job = match Job::get(&update.id) {
+            Some(job) => job,
+            None => Job::new(update.id.clone())
+        };
 
-    // Handle regular field updates
-    for (field, data) in update.updates {
-        job.update(&field, data);
+        if job.user_id != ic_cdk::caller().to_string() {
+            return Err("Permission denied".to_string());
+        }
+
+        // Handle regular field updates
+        for d in update.updates {
+            job.update(&d.field, d.values);
+        }
+
+        // Handle optional fields using if let chains
+        if let Some(active) = update.active {
+            job.active = active;
+        }
+        if let Some(score) = update.required_match_score {
+            job.required_match_score = score;
+        }
+        if let Some(category) = update.category {
+            job.category = category;
+        }
+        job.save();
+        if let Some(matches) = update.matches {
+            Job::update_matches(update.id.clone(), matches)?;
+        }
+
+        
     }
-
-    // Handle optional fields
-    if let Some(active) = update.active {
-        job.active = active;
-    }
-
-    if let Some(score) = update.required_match_score {
-        job.required_match_score = score;
-    }
-
-    // Handle category update
-    if let Some(category) = update.category {
-        job.category = category;
-    }
-
-    // Handle matches update
-    if let Some(matches) = update.matches {
-        Job::update_matches(id.clone(), matches)?;
-    }
-
-    job.save();
     Ok(())
 }
 

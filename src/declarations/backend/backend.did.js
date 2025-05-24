@@ -393,22 +393,27 @@ export const idlFactory = ({ IDL }) => {
   });
   const Category = IDL.Variant({ 'Job' : IDL.Null, 'Talent' : IDL.Null });
   const Match = IDL.Record({
-    'matching_skills' : IDL.Vec(IDL.Text),
+    'missmatching_skills' : IDL.Vec(IDL.Text),
     'user_id' : IDL.Text,
     'score' : IDL.Float32,
     'job_id' : IDL.Text,
     'date_updated' : IDL.Nat64,
+    'is_connected' : IDL.Bool,
   });
   const Job = IDL.Record({
     'id' : IDL.Text,
     'active' : IDL.Bool,
     'date_created' : IDL.Nat64,
+    'contacts' : IDL.Vec(IDL.Text),
+    'trust_note' : IDL.Text,
     'education' : IDL.Vec(IDL.Text),
     'notification_username' : IDL.Text,
+    'description' : IDL.Text,
+    'emails' : IDL.Vec(IDL.Text),
+    'trust_score' : IDL.Text,
     'user_id' : IDL.Text,
     'links' : IDL.Vec(IDL.Text),
     'experience' : IDL.Vec(IDL.Text),
-    'description' : IDL.Text,
     'notification_id' : IDL.Text,
     'matches' : IDL.Vec(Match),
     'job_titles' : IDL.Vec(IDL.Text),
@@ -568,10 +573,15 @@ export const idlFactory = ({ IDL }) => {
     'availabilities' : IDL.Vec(Availability),
   });
   const Result_16 = IDL.Variant({ 'Ok' : Calendar, 'Err' : IDL.Text });
+  const Update = IDL.Record({
+    'field' : IDL.Text,
+    'values' : IDL.Vec(IDL.Text),
+  });
   const JobUpdate = IDL.Record({
+    'id' : IDL.Text,
     'active' : IDL.Opt(IDL.Bool),
     'matches' : IDL.Opt(IDL.Vec(Match)),
-    'updates' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Vec(IDL.Text))),
+    'updates' : IDL.Vec(Update),
     'category' : IDL.Opt(Category),
     'required_match_score' : IDL.Opt(IDL.Float32),
   });
@@ -662,7 +672,7 @@ export const idlFactory = ({ IDL }) => {
     'get_initial_data' : IDL.Func([], [Result_9], ['query']),
     'get_logs' : IDL.Func([GetErrorLogsArgs], [IDL.Vec(Log)], ['query']),
     'get_matches' : IDL.Func(
-        [IDL.Vec(IDL.Text), Category],
+        [IDL.Text, IDL.Vec(IDL.Text), Category],
         [IDL.Vec(Job)],
         ['query'],
       ),
@@ -735,7 +745,7 @@ export const idlFactory = ({ IDL }) => {
     'unvote' : IDL.Func([IDL.Text], [Result_10], []),
     'update_calendar' : IDL.Func([IDL.Text, CalendarActions], [Result_16], []),
     'update_chat' : IDL.Func([Chat], [Result_1], []),
-    'update_job' : IDL.Func([IDL.Text, JobUpdate], [Result_3], []),
+    'update_job' : IDL.Func([IDL.Vec(JobUpdate)], [Result_3], []),
     'update_user_profile' : IDL.Func([RegisterUser], [Result], []),
     'vote_down' : IDL.Func([IDL.Text], [Result_10], []),
     'vote_up' : IDL.Func([IDL.Text], [Result_10], []),

@@ -1,8 +1,6 @@
-import React, { useEffect } from 'react';
-
+import React from 'react';
 import { useGoogleCalendar } from './useGoogleCalendar';
-// Add to imports
-import { Button, Badge, Avatar } from '@mui/material';
+import { Button, Badge } from '@mui/material';
 import GoogleCalendarLogo from '@mui/icons-material/Event';
 import Tooltip from '@mui/material/Tooltip';
 

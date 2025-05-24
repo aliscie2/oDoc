@@ -4,16 +4,13 @@ use ethers_core::abi::token::LenientTokenizer;
 use ic_cdk::caller;
 
 impl Job {
-    pub fn new() -> Result<Self, String> {
-        let now = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_secs();
+    pub fn new(id:String) -> Self {
+        let now = ic_cdk::api::time() as u64;
 
-        Ok(Job {
+        Job {
             notification_id: String::new(),
             notification_username: String::new(),
-            id: String::new(),
+            id,
             user_id: caller().to_string(),
             skills: Vec::new(),
             education: Vec::new(),
@@ -29,15 +26,16 @@ impl Job {
             required_match_score: 0.0,
             category: Category::Job,
             links: Vec::new(),
-        })
+            trust_score: String::new(),
+            trust_note: String::new(),
+            emails: Vec::new(),
+            contacts: Vec::new(),
+        }
     }
 
 
     pub fn update(&mut self, field_name: &str, data: Vec<String>) {
-        self.date_updated = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_secs();
+        self.date_updated = ic_cdk::api::time() as u64;
 
         match field_name {
             "skills" => self.skills = data,
@@ -46,8 +44,12 @@ impl Job {
             "certifications" => self.certifications = data,
             "job_titles" => self.job_titles = data,
             "links" => self.links = data,
+            "emails" => self.emails = data,
+            "contacts" => self.contacts = data,
             "description" => self.description = data[0].clone(),
             "proficiency_level" => self.proficiency_level = data[0].clone(),
+            "trust_score" => self.trust_score = data[0].clone(),
+            "trust_note" => self.trust_note = data[0].clone(),
             _ => (),
         }
     }
@@ -74,7 +76,6 @@ impl Job {
             
             // Take top 10 and return just the jobs
             matches.into_iter()
-                .take(10)
                 .map(|(_, job)| job)
                 .collect()
         })
@@ -139,10 +140,7 @@ impl Job {
                     Err("Permission denied".to_string())
                 },
                 Some(job) => {
-                    let now = SystemTime::now()
-                        .duration_since(UNIX_EPOCH)
-                        .unwrap()
-                        .as_secs();
+                    let now = ic_cdk::api::time() as u64;
                     
                     let mut updated_job = job.clone();
                     updated_job.skills = Vec::new();
@@ -152,6 +150,7 @@ impl Job {
                     updated_job.job_titles = Vec::new();
                     updated_job.description = String::new();
                     updated_job.proficiency_level = String::new();
+                    updated_job.contacts = Vec::new();
                     updated_job.active = false;
                     updated_job.required_match_score = 0.0;
                     updated_job.date_updated = now;
@@ -207,10 +206,7 @@ impl Job {
     
             // Update the job's matches
             job.matches = matches;
-            job.date_updated = SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .unwrap()
-                .as_secs();
+            job.date_updated = ic_cdk::api::time() as u64;
             
             // Save the updated job
             store.insert(job_id.clone(), job.clone());
@@ -223,11 +219,9 @@ impl Job {
                         score: match_item.score,
                         job_id: job_id.clone(),
                         user_id: job.user_id.clone(),
-                        matching_skills: match_item.matching_skills.clone(),
-                        date_updated: SystemTime::now()
-                            .duration_since(UNIX_EPOCH)
-                            .unwrap()
-                            .as_secs(),
+                        missmatching_skills: match_item.missmatching_skills.clone(),
+                        date_updated: ic_cdk::api::time() as u64,
+                        is_connected: match_item.is_connected,
                     };
     
                     // Remove existing match if it exists
@@ -235,10 +229,7 @@ impl Job {
                     
                     // Add the new reciprocal match
                     other_job.matches.push(reciprocal_match);
-                    other_job.date_updated = SystemTime::now()
-                        .duration_since(UNIX_EPOCH)
-                        .unwrap()
-                        .as_secs();
+                    other_job.date_updated = ic_cdk::api::time() as u64;
                     
                     // Save the other job
                     store.insert(match_item.job_id.clone(), other_job);

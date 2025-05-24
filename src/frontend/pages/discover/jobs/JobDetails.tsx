@@ -26,51 +26,48 @@ const CustomTreeItem = React.forwardRef(function CustomTreeItem(
 });
 
 const JobDetails: React.FC<JobDetailsProps> = ({ job }) => {
-    const basicInfoTreeData = [
-        { id: 'id', label: `ID: ${job.id}` },
-        { id: 'description', label: `Description: ${job.description}` },
-        { id: 'proficiency', label: `Proficiency Level: ${job.proficiency_level}` },
-        { id: 'score', label: `Required Match Score: ${job.required_match_score}` }
-    ];
+    // Generate basic info tree data dynamically for all non-array fields
+    const basicInfoTreeData = Object.keys(job)
+        .filter(key => !Array.isArray(job[key as keyof Job]) && 
+                key !== 'category' && // Skip category field
+                job[key as keyof Job] !== undefined)
+        .map(key => ({
+            id: key,
+            label: `${key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ')}: ${job[key as keyof Job]}`
+        }));
 
-    const jobTitlesTreeData = job.job_titles?.map((title, index) => ({
-        id: `title-${index}`,
-        label: title
-    })) || [];
+    // Generate tree data for array fields dynamically
+    const generateArrayTreeData = (fieldName: string) => {
+        const fieldValue = job[fieldName as keyof Job];
+        if (!fieldValue || !Array.isArray(fieldValue) || fieldValue.length === 0) {
+            return [];
+        }
+        
+        return fieldValue.map((item, index) => ({
+            id: `${fieldName}-${index}`,
+            label: item
+        }));
+    };
 
-    const skillsTreeData = job.skills?.map((skill, index) => ({
-        id: `skill-${index}`,
-        label: skill
-    })) || [];
+    // Get all array fields from job object
+    const arrayFields = Object.keys(job).filter(key => {
+        const value = job[key as keyof Job];
+        return Array.isArray(value) && 
+               key !== 'matches' && // Exclude matches from display
+               value.length > 0;
+    });
 
-    const educationTreeData = job.education?.map((edu, index) => ({
-        id: `edu-${index}`,
-        label: edu
-    })) || [];
+    // Generate section data for all array fields
+    const sectionData = arrayFields.map(field => ({
+        id: field,
+        label: field.charAt(0).toUpperCase() + field.slice(1).replace(/_/g, ' '),
+        children: generateArrayTreeData(field)
+    }));
 
-    const certificationsTreeData = job.certifications?.map((cert, index) => ({
-        id: `cert-${index}`,
-        label: cert
-    })) || [];
-
-    const experienceTreeData = job.experience?.map((exp, index) => ({
-        id: `exp-${index}`,
-        label: exp
-    })) || [];
-
-    const linksTreeData = job.links?.map((link, index) => ({
-        id: `link-${index}`,
-        label: link
-    })) || [];
-
+    // Combine basic info with array sections
     const allTreeData = [
         { id: 'basic', label: 'Basic Information', children: basicInfoTreeData },
-        { id: 'titles', label: 'Job Titles', children: jobTitlesTreeData },
-        { id: 'skills', label: 'Skills', children: skillsTreeData },
-        { id: 'education', label: 'Education', children: educationTreeData },
-        { id: 'certifications', label: 'Certifications', children: certificationsTreeData },
-        { id: 'experience', label: 'Experience', children: experienceTreeData },
-        { id: 'links', label: 'Links', children: linksTreeData }
+        ...sectionData
     ].filter(section => section.children.length > 0);
 
     return (
@@ -80,7 +77,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job }) => {
                 <RichTreeView
                     items={allTreeData}
                     slots={{ item: CustomTreeItem }}
-                    defaultExpandedItems={['basic', 'titles', 'skills', 'education', 'certifications', 'experience', 'links']}
+                    defaultExpandedItems={['basic', ...arrayFields]}
                 />
             </Box>
         </Box>

@@ -25,6 +25,7 @@ import { useSelector } from "react-redux";
 // Import our custom hook
 import useScrollingEffect from "../../hooks/useScrollingEffect";
 import PlatformProgress from "./platformProgress";
+import SplitIntro from "./splitIntro";
 
 export default function LandingPage(props) {
   // Add video reference and scroll progress
@@ -72,9 +73,14 @@ export default function LandingPage(props) {
         />
       </Box> */}
 
+
+      
       {/* Hero Section */}
       <Section id="intro" sx={{ position: "relative", zIndex: 1 }} transparent={true}>
         <Intro />
+      </Section>
+      <Section id="intro" sx={{ position: "relative", zIndex: 1 }} transparent={true}>
+        <SplitIntro />
       </Section>
       <Section id="social" transparent={true}>
         <SocialButton />

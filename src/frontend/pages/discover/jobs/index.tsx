@@ -1,14 +1,16 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Box } from '@mui/material';
 import { GeminiAgent } from '@/AIAgents/GeminiAgent';
 import AiChat from '@/components/AiChat';
 import { v4 as uuidv4 } from 'uuid';
 import { processResponseJobs } from './utils/processResponseJobs';
 import { useDispatch, useSelector } from 'react-redux';
-import { Job,JobUpdate } from '$/declarations/backend/backend.did';
+import { Job, JobUpdate } from '$/declarations/backend/backend.did';
 import { BUILD_JOB_PROMPT } from './buildProfilePrompt';
 import { gmeniResponseExample } from './gmeniResponseExample';
 import JobSelector from '@/pages/discover/jobs/JobSelector';
+import JobSearchComponent from './JobSearchComponent';
+import SaveChanges from './saveChanges';
 
 interface Message {
   id: string;
@@ -18,6 +20,7 @@ interface Message {
 }
 
 interface ProcessedJobResponse {
+  done: boolean;
   feedback: string;
   actions: Array<
     | { type: "SET_CURRENT_JOB"; job: Job }
@@ -29,20 +32,22 @@ interface ProcessedJobResponse {
 }
 
 const JobsPage: React.FC = () => {
-
-  const { currentJobId, jobs } = useSelector((state: any) => state.jobState);
-  let current_job = jobs.find((job: Job) => job.id === currentJobId);
-
+  const { jobChanges, isChanged, currentJobId, jobs } = useSelector((state: any) => state.jobState);
+  const currentJobRef = useRef<Job | undefined>(undefined);
   const dispatch = useDispatch();
   const [showJobSearch, setShowJobSearch] = useState(false);
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [geminiAgent, setGeminiAgent] = useState<GeminiAgent | null>(null);
+  const [isProfileDone, setIsProfileDone] = useState<boolean>(false);
 
   useEffect(() => {
-    // Initialize GeminiAgent when component mounts
     setGeminiAgent(new GeminiAgent());
   }, []);
+
+  useEffect(() => {
+    currentJobRef.current = jobs.find((job: Job) => job.id === currentJobId);
+  }, [currentJobId, jobs]);
 
   const handleSendMessage = useCallback(async (content: string) => {
     if (!geminiAgent) return;
@@ -58,24 +63,42 @@ const JobsPage: React.FC = () => {
       
       setMessages(prev => [...prev, newMessage]);
       
+     
+
       const messageToSend = `
       ${BUILD_JOB_PROMPT}
       User Input: ${content}
-      Current Job Data: ${JSON.stringify(current_job)} // !IMPORTANT if there are missing fields ask user please provide more infor about your {fieldNmae}
+      Current Job Data: ${JSON.stringify(currentJobRef.current)}
       `;
-      
+      // TODO do not touch this line keep it
       // const response = await geminiAgent.sendMessage(messageToSend);
 
-      const  response= "```"+gmeniResponseExample+"```";
+      const response = "```" + gmeniResponseExample + "```";
       const parsed: ProcessedJobResponse = processResponseJobs(response).extractedData;
-      console.log({response,parsed})
+      
+       // Validate before processing
+       if (!currentJobId) {
+        
+        if (parsed.category =="Talent"&&jobs.some((j: Job) => Object.keys(j.category)[0] === "Talent")) {    
+          alert("You can create only one talent profile");
+          return;
+        } else if (jobs.filter((j: Job) => Object.keys(j.category)[0] === "Job").length >= 3) {
+          alert("You can have max 3 job posts");
+          return;
+        }
+      }
+
+      
       dispatch({
         type: "UPDATE_FIELDS",
-        updates:parsed.updates,
-        category:parsed.category, // parsed.category =="Job"|"Talent"
-        
+        updates: parsed.updates,
+        category: parsed.category,
+        required_match_score:parsed.required_match_score
       });
 
+      if (parsed.done) {
+        setIsProfileDone(true);
+      }
 
       const aiMessage: Message = {
         id: uuidv4(),
@@ -89,7 +112,7 @@ const JobsPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [geminiAgent]);
+  }, [geminiAgent, jobs, currentJobId, dispatch]);
 
   return (
     <Box className="jobs-page-container" sx={{ padding: 3, maxWidth: '1200px', margin: '0 auto' }}>
@@ -101,6 +124,8 @@ const JobsPage: React.FC = () => {
         loading={loading}
         onSendMessage={handleSendMessage}
       />
+      {isProfileDone && <JobSearchComponent />}
+      {isChanged && <SaveChanges />}
     </Box>
   );
 };

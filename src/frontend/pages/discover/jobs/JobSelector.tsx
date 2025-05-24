@@ -54,8 +54,15 @@ const JobSelector: React.FC = () => {
                     <MenuItem 
                         value=""
                         onClick={() => handleJobSelect(null)}
+                        disabled={jobs.length >= 4}
+                        title={jobs.length >= 4 ? "You've reached the maximum number of posts (4)" : ""}
                     >
                         Create New Job Post
+                        {jobs.length >= 4 && (
+                            <Typography variant="caption" color="textSecondary" component="div">
+                                (Maximum reached)
+                            </Typography>
+                        )}
                     </MenuItem>
                     {jobs.map((job: Job) => (
                         <MenuItem 

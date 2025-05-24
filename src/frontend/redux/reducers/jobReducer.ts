@@ -1,24 +1,21 @@
-import { Job, Match, Category } from "$/declarations/backend/backend.did";
+import { Job, Match, Category ,JobUpdate} from "$/declarations/backend/backend.did";
 
-interface JobUpdate {
-    'id': string,
-    'active': [] | [boolean],
-    'matches': [] | [Array<Match>],
-    'updates': Array<[string, Array<string>]>,
-    'category': [] | [Category],
-    'required_match_score': [] | [number],
-}
 
+  
 interface JobState {
     currentJobId: string | null;
     jobChanges: JobUpdate[];
     jobs: Job[];
+    isChanged: boolean;
+    matchingJobs: Job[]
 }
 
 const initialState: JobState = {
     currentJobId: null,
     jobChanges: [],
     jobs: [],
+    isChanged: false,
+    matchingJobs:[]
 };
 
 type JobAction =
@@ -27,18 +24,17 @@ type JobAction =
     | { type: "SET_JOBS"; jobs: Job[] }
     | { type: "ADD_JOB"; job: Job }
     | { type: "DELETE_JOB"; id: string }
-    | { type: "UPDATE_MATCHES"; matches: Match[] }
-    | { type: "UPDATE_FIELDS"; updates: Array<{ field: string; values: string[] }>; category?: string };
+    | { type: "UPDATE_FIELDS"; updates: Array<[string, Array<string>]>; category?: string; required_match_score: number }
+    | { type: "UPDATE_MATCHING_JOBS"; matchingJobs: Job[]; matches: Match[] }
+    | { type: "CLEAR_CHANGES" };
 
+// Helper functions
 function generateDummyJob(): Job {
-    let category = {};
-    category["Job"] = null;
-
     return {
         id: `${Math.random().toString(36).substring(2, 9)}`,
         active: true,
         required_match_score: 0,
-        category: category as Category,
+        category: { Job: null } as Category,
         description: '',
         proficiency_level: '',
         education: [],
@@ -51,27 +47,25 @@ function generateDummyJob(): Job {
     };
 }
 
-function applyFieldUpdates(job: Job, updates: Array<{ field: string; values: string[] }>, category?: string): Job {
+function applyFieldUpdates(job: Job, updates: Array<{field: string; values: string[]}>, category?: string): Job {
     const updatedJob = { ...job };
     
     if (category) {
         const formattedCategory = category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
         if (formattedCategory === 'Job' || formattedCategory === 'Talent') {
-            const categoryObj = {};
-            categoryObj[formattedCategory] = null;
-            updatedJob.category = categoryObj as Category;
+            updatedJob.category = { [formattedCategory]: null } as Category;
         }
     }
     
-    updates.forEach(({ field, values }) => {
+    updates.forEach(({field, values}) => {
         const cleanedValues = field === 'links' 
             ? values.map(v => v.replace(/`/g, '').trim())
             : values;
-        
-        if (['education', 'experience', 'job_titles', 'certifications', 'skills', 'links'].includes(field)) {
+
+        const listFields = ['skills', 'education', 'experience', 'certifications', 'job_titles', 'links', 'emails'];
+        if (listFields.includes(field)) {
             (updatedJob as any)[field] = cleanedValues;
-        } 
-        else if (['description', 'proficiency_level'].includes(field)) {
+        } else if (['description', 'proficiency_level', 'trust_score', 'trust_note'].includes(field)) {
             (updatedJob as any)[field] = cleanedValues.length > 0 ? cleanedValues[0] : '';
         }
     });
@@ -79,109 +73,111 @@ function applyFieldUpdates(job: Job, updates: Array<{ field: string; values: str
     return updatedJob;
 }
 
-function createJobUpdate(jobId: string, job: Job, updates: Array<{ field: string; values: string[] }>, category?: string): JobUpdate {
-    const categoryValue = category 
-        ? [{[category.charAt(0).toUpperCase() + category.slice(1).toLowerCase()]: null} as Category]
-        : [job.category];
-        
-    return {
-        id: jobId,
-        active: [job.active],
-        matches: [],
-        updates: updates.map(({ field, values }) => [field, values]),
-        category: categoryValue,
-        required_match_score: [job.required_match_score]
-    };
+
+function mergeMatches(existing: Match[], newMatches: Match[]): Match[] {
+    return [
+        ...existing.filter(em => !newMatches.some(nm => nm.job_id === em.job_id)),
+        ...newMatches.map(match => ({
+            ...match,
+            date_updated: BigInt(0),
+            is_connected: match.is_connected || false
+        }))
+    ];
 }
 
 export function jobReducer(state: JobState = initialState, action: JobAction): JobState {
     switch (action.type) {
         case "SET_CURRENT_JOB":
-            return {
-                ...state,
-                currentJobId: action.job?.id,
-                // jobs: [...state.jobs.filter(j => j.id !== action.job.id), action.job]
-            };
-        case "UPDATE_JOB":
-            if (!state.currentJobId) return state;
-            
-            const jobToUpdate1 = state.jobs.find(j => j.id === state.currentJobId);
-            if (!jobToUpdate1) return state;
-            
-            const updatedJob1 = { ...jobToUpdate1 };
-            
-            action.update.updates.forEach(([field, values]) => {
-                (updatedJob1 as any)[field] = values.length > 0 ? values[0] : '';
-            });
-    
-            if (action.update.active !== undefined) {
-                updatedJob1.active = action.update.active;
-            }
-            if (action.update.required_match_score !== undefined) {
-                updatedJob1.required_match_score = action.update.required_match_score;
-            }
-            if (action.update.category !== undefined) {
-                updatedJob1.category = action.update.category;
-            }
-    
-            return {
-                ...state,
-                jobs: [...state.jobs.filter(j => j.id !== state.currentJobId), updatedJob1],
-                jobChanges: [
-                    ...state.jobChanges.filter(j => j.id !== action.update.id),
-                    action.update
-                ],
-            };
-        case "UPDATE_FIELDS":
-            if (!state.currentJobId) {
-                const newJob = applyFieldUpdates(generateDummyJob(), action.updates, action.category);
+            return { ...state, currentJobId: action.job?.id };
+
+            case "UPDATE_FIELDS":
+                let category: any = {};
+                let jobUpdate: JobUpdate ={
+                    id: state.currentJobId,
+                    active: [],
+                    matches: [],
+                    updates: [],
+                    category: [category],
+                    required_match_score: [action.required_match_score]
+                }
+
+                if (!state.currentJobId) {
+                    
+                    let c: string = action.category =="Job"? "Job" : "Talent";
+                    category[c] = null;
+                    const newJob = applyFieldUpdates(generateDummyJob(), action.updates, action.category);
+                    jobUpdate.id = newJob.id
+                    jobUpdate.active = [true]
+                    jobUpdate.updates = action.updates
+                    console.log(jobUpdate)
+                    return {
+                        ...state,
+                        currentJobId: newJob.id,
+                        jobs: [...state.jobs, newJob],
+                        jobChanges: [...state.jobChanges, jobUpdate],
+                        isChanged: true
+                    };
+                }
+                
+                const job2 = state.jobs.find(j => j.id === state.currentJobId);
+                if (!job2) return state;
+                
+                const updatedJob2 = applyFieldUpdates(job2, action.updates, action.category);
+                // let isAlreadyHaseUpdate = state.jobChanges.some(j=>j.id==state.currentJobId);
+                const oldJobUpdate = state.jobChanges.find(j=>j.id==state.currentJobId);
+                jobUpdate.id = state.currentJobId
+                
+                if (oldJobUpdate){
+                    jobUpdate = {...oldJobUpdate};
+                    jobUpdate.updates = [...jobUpdate.updates, ...action.updates]
+                    return {
+                       ...state,
+                        jobs: state.jobs.map(j => j.id === state.currentJobId? updatedJob2 : j),
+                        jobChanges: state.jobChanges.map(j => j.id === state.currentJobId? jobUpdate : j),
+                        isChanged: true
+                    };
+                }
+                jobUpdate.active = [true]
+                jobUpdate.updates = action.updates
                 return {
                     ...state,
-                    currentJobId: newJob.id,
-                    jobs: [...state.jobs, newJob],
-                    jobChanges: [createJobUpdate(newJob.id, newJob, action.updates, action.category)]
+                    jobs: state.jobs.map(j => j.id === state.currentJobId ? updatedJob2 : j),
+                    jobChanges: [...state.jobChanges.filter(j => j.id !== state.currentJobId), jobUpdate],
+                    isChanged: true
                 };
-            }
-            
-            const jobToUpdate = state.jobs.find(j => j.id === state.currentJobId);
-            if (!jobToUpdate) return state;
-            
-            const updatedJob = applyFieldUpdates(jobToUpdate, action.updates, action.category);
-            
-            return {
-                ...state,
-                jobs: [...state.jobs.filter(j => j.id !== state.currentJobId), updatedJob],
-                jobChanges: [
-                    ...state.jobChanges.filter(j => j.id !== state.currentJobId),
-                    createJobUpdate(state.currentJobId, updatedJob, action.updates, action.category)
-                ],
+
+
+        case "UPDATE_MATCHING_JOBS":
+            let oldJob = {...state.jobs.find(j => j.id === state.currentJobId)};
+            let jobUpdate2: JobUpdate ={
+                id: state.currentJobId,
+                active: [],
+                matches: [],
+                updates: [],
+                category: [],
+                required_match_score: []
             };
-        case "UPDATE_MATCHES":
-            if (!state.currentJobId) return state;
-            
-            const jobToUpdate3 = state.jobs.find(j => j.id === state.currentJobId);
-            if (!jobToUpdate3) return state;
-            
-            const updatedJob3 = {
-                ...jobToUpdate3,
-                matches: action.matches
+
+            let oldJobUpdate2 = state.jobChanges.find(j=>j.id==state.currentJobId);
+            const mergedMatches = mergeMatches(oldJobUpdate2.matches[0] || [], action.matches || [])||[];
+            if (oldJobUpdate2){
+                jobUpdate2 = {...oldJobUpdate2};
+                jobUpdate2.matches = [mergedMatches]
             };
+
+            oldJob.matches = mergeMatches(oldJob.matches || [], mergedMatches || [])||[]; ;
 
             return {
                 ...state,
-                jobs: [...state.jobs.filter(j => j.id !== state.currentJobId), updatedJob3],
-                jobChanges: [
-                    ...state.jobChanges.filter(j => j.id !== state.currentJobId),
-                    {
-                        id: state.currentJobId,
-                        active: [updatedJob3.active],
-                        matches: [action.matches],
-                        updates: [],
-                        category: [updatedJob3.category],
-                        required_match_score: [updatedJob3.required_match_score]
-                    }
-                ]
+                jobs: state.jobs.map(j => j.id === state.currentJobId ? oldJob : j),
+                matchingJobs: action.matchingJobs,
+                jobChanges: [...state.jobChanges.filter(j => j.id!== state.currentJobId), jobUpdate2],
+                    
             };
+
+        case "CLEAR_CHANGES":
+            return { ...state, jobChanges: [], isChanged: false };
+
         case "SET_JOBS":
             return {
                 ...state,
@@ -190,11 +186,10 @@ export function jobReducer(state: JobState = initialState, action: JobAction): J
                     ? state.currentJobId 
                     : null
             };
+
         case "ADD_JOB":
-            return {
-                ...state,
-                jobs: [...state.jobs, action.job],
-            };
+            return { ...state, jobs: [...state.jobs, action.job] };
+
         case "DELETE_JOB":
             return {
                 ...state,
@@ -202,6 +197,7 @@ export function jobReducer(state: JobState = initialState, action: JobAction): J
                 currentJobId: state.currentJobId === action.id ? null : state.currentJobId,
                 jobChanges: state.jobChanges.filter(j => j.id !== action.id),
             };
+
         default:
             return state;
     }
