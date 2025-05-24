@@ -27,6 +27,7 @@ import useScrollingEffect from "../../hooks/useScrollingEffect";
 import PlatformProgress from "./platformProgress";
 import SplitIntro from "./splitIntro";
 import OdocStrecture from "./oDocStrecture";
+import TrustBehaviorSystem from "./insetnivesSystem";
 
 export default function LandingPage(props) {
   // Add video reference and scroll progress
@@ -81,6 +82,11 @@ export default function LandingPage(props) {
       <Section id="intro" sx={{ position: "relative", zIndex: 1 }} transparent={true}>
       <OdocStrecture/>
       </Section>
+      
+      <Section id="intro" sx={{ position: "relative", zIndex: 1 }} transparent={true}>
+      <TrustBehaviorSystem/>
+      </Section>
+
       <Section id="intro" sx={{ position: "relative", zIndex: 1 }} transparent={true}>
         <Intro />
       </Section>
