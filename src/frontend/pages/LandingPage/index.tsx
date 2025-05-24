@@ -26,6 +26,7 @@ import { useSelector } from "react-redux";
 import useScrollingEffect from "../../hooks/useScrollingEffect";
 import PlatformProgress from "./platformProgress";
 import SplitIntro from "./splitIntro";
+import OdocStrecture from "./oDocStrecture";
 
 export default function LandingPage(props) {
   // Add video reference and scroll progress
@@ -76,6 +77,10 @@ export default function LandingPage(props) {
 
       
       {/* Hero Section */}
+      
+      <Section id="intro" sx={{ position: "relative", zIndex: 1 }} transparent={true}>
+      <OdocStrecture/>
+      </Section>
       <Section id="intro" sx={{ position: "relative", zIndex: 1 }} transparent={true}>
         <Intro />
       </Section>

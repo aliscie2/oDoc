@@ -128,7 +128,7 @@ export default function Intro() {
                 : "0px 1px 2px rgba(255, 255, 255, 0.5)",
             }}
           >
-            Crypto agreement platform, designed for limiltess collaboration.
+            Crypto agreement platform, limiltess collaboration.
           </MotionTypography>
           <Box sx={{ position: "relative", zIndex: 10 }}>
             <FloatingFeatures />
