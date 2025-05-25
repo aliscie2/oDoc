@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -7,6 +7,7 @@ import {
   Container,
   Grid,
   Typography,
+  Tooltip,
 } from "@mui/material";
 import CheckCircle from "@mui/icons-material/CheckCircle";
 import Schedule from "@mui/icons-material/Schedule";
@@ -33,6 +34,7 @@ export default function LandingPage(props) {
   // Add video reference and scroll progress
   const videoRef = useRef(null);
   const { scrollYProgress } = useScroll();
+  const [activeSection, setActiveSection] = useState('');
   
   // Use our custom hook for video scrolling effect with zoom
   useScrollingEffect(videoRef, scrollYProgress, { 
@@ -45,74 +47,126 @@ export default function LandingPage(props) {
   
   // Always use dark video, but adjust opacity for light mode
   const videoOpacity = isDarkMode ? 0.8 : 0.6;
+
+  const sections = [
+    { id: 'odoc-structure', title: 'ODOC Structure' },
+    { id: 'why', title: 'Why ODOC' },
+    { id: 'trust-behavior', title: 'Trust & Behavior' },
+    { id: 'split-intro', title: 'Split Intro' },
+    { id: 'main-intro', title: 'Introduction' },
+    { id: 'social', title: 'Social' },
+    { id: 'getting-started', title: 'Getting Started' },
+    { id: 'security', title: 'Security' },
+    { id: 'features', title: 'Features' },
+    { id: 'progress', title: 'Progress' },
+    { id: 'bottom', title: 'Get Started' },
+  ];
+
+  const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    }
+  };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.pageYOffset + window.innerHeight / 2;
+      let currentSection = '';
+
+      sections.forEach(({ id }) => {
+        const element = document.getElementById(id);
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          const elementTop = rect.top + window.pageYOffset;
+          const elementBottom = elementTop + rect.height;
+
+          if (scrollPosition >= elementTop && scrollPosition <= elementBottom) {
+            currentSection = id;
+          }
+        }
+      });
+
+      if (currentSection !== activeSection) {
+        setActiveSection(currentSection);
+      }
+    };
+
+    handleScroll();
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [activeSection, sections]);
   
   return (
     <Box sx={{ minHeight: "100vh", position: "relative" }}>
-      {/* Background Video */}
-      {/* <Box
-        sx={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          width: "100vw",
-          height: "100vh",
-          zIndex: 0, // Changed from 0 to -1 to ensure it stays behind all content
-          pointerEvents: "none", // Allows clicking through the video
-        }}
-      >
-        <video 
-          ref={videoRef}
-          src={handshakeVideo}
-          muted
-          playsInline
-          preload="auto"
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            opacity: videoOpacity,
-          }}
-        />
-      </Box> */}
-
-
       
-      {/* Hero Section */}
-      
-      <Section id="intro" sx={{ position: "relative", zIndex: 1 }} transparent={true}>
-      <OdocStrecture/>
+      {/* Navigation Dots */}
+      <Box sx={{
+        position: 'fixed',
+        right: '20px',
+        top: '50%',
+        transform: 'translateY(-50%)',
+        zIndex: 1000,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px',
+      }}>
+        {sections.map(({ id, title }) => (
+          <Tooltip key={id} title={title} placement="left" arrow>
+            <Box
+              onClick={() => scrollToSection(id)}
+              sx={{
+                width: '12px',
+                height: '12px',
+                backgroundColor: activeSection === id ? '#2563eb' : 'rgba(37, 99, 235, 0.3)',
+                border: `2px solid ${activeSection === id ? '#2563eb' : 'rgba(37, 99, 235, 0.5)'}`,
+                borderRadius: '50%',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  backgroundColor: '#2563eb',
+                  transform: 'scale(1.2)',
+                  boxShadow: '0 0 8px rgba(37, 99, 235, 0.6)',
+                },
+              }}
+            />
+          </Tooltip>
+        ))}
+      </Box>
+     
+      <Section id="odoc-structure" sx={{ position: "relative", zIndex: 1 }} transparent={true}>
+        <OdocStrecture/>
       </Section>
-      
-      <Section id="intro" sx={{ position: "relative", zIndex: 1 }} transparent={true}>
-      <TrustBehaviorSystem/>
-      </Section>
-
-      <Section id="intro" sx={{ position: "relative", zIndex: 1 }} transparent={true}>
-        <Intro />
-      </Section>
-      <Section id="intro" sx={{ position: "relative", zIndex: 1 }} transparent={true}>
-        <SplitIntro />
-      </Section>
-      <Section id="social" transparent={true}>
-        <SocialButton />
-      </Section>
-      <Section id="social" transparent={true}>
-      <GettingStarted/>
-      </Section>
-      
-      
       <Section id="why"  sx={{ position: "relative", zIndex: 1 }} transparent={true} >
         <WhyOdoc />
       </Section>
+      <Section id="trust-behavior" sx={{ position: "relative", zIndex: 1 }} transparent={true}>
+        <TrustBehaviorSystem/>
+      </Section>
+      <Section id="split-intro" sx={{ position: "relative", zIndex: 1 }} transparent={true}>
+        <SplitIntro />
+      </Section>
+
+      <Section id="main-intro" sx={{ position: "relative", zIndex: 1 }} transparent={true}>
+        <Intro />
+      </Section>
     
+      <Section id="social" transparent={true}>
+        <SocialButton />
+      </Section>
+      <Section id="getting-started" transparent={true}>
+        <GettingStarted/>
+      </Section>
+      
       <Section id="security" transparent={true}>
         <SecuritySection />
       </Section>
 
-      
-      
       {/* Features Grid */}
-      <Container maxWidth="lg" sx={{ py: 8 }}>
+      <Container id="features" maxWidth="lg" sx={{ py: 8 }}>
         <Typography
           variant="h3"
           sx={{ textAlign: "center", fontWeight: "bold", mb: 6 }}
@@ -157,7 +211,9 @@ export default function LandingPage(props) {
       </Container>
 
       {/* Current Progress */}
-      <PlatformProgress/>
+      <Box id="progress">
+        <PlatformProgress/>
+      </Box>
 
       {/* Call to Action */}
       {!props.isLoggedIn && (

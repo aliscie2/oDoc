@@ -6,7 +6,7 @@ interface SectionProps {
   children: React.ReactNode;
   containerWidth?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   sx?: object;
-  transparent?: boolean; // Add a new prop to control transparency
+  transparent?: boolean;
 }
 
 const Section: React.FC<SectionProps> = ({
@@ -14,7 +14,7 @@ const Section: React.FC<SectionProps> = ({
   children,
   containerWidth = 'lg',
   sx = {},
-  transparent = false // Default to false for backward compatibility
+  transparent = false
 }) => {
   const theme = useTheme();
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -25,11 +25,7 @@ const Section: React.FC<SectionProps> = ({
         if (entry.isIntersecting) {
           entry.target.style.opacity = '1';
           entry.target.style.transform = 'translateY(0)';
-          entry.target.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center',
-            inline: 'center'
-          });
+          // REMOVED: scrollIntoView call that was causing the issue
         }
       },
       {
@@ -63,7 +59,6 @@ const Section: React.FC<SectionProps> = ({
         justifyContent: 'center',
         scrollSnapAlign: 'start',
         transition: 'opacity 0.5s ease, transform 0.5s ease',
-        // Only apply background color if not transparent
         bgcolor: transparent ? 'transparent' : theme.palette.background.default,
         color: theme.palette.text.primary,
         px: { xs: 2, sm: 3, md: 4 },

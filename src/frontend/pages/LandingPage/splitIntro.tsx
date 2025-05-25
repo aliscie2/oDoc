@@ -1,194 +1,325 @@
-import React, { useState } from "react";
-import { Box, Typography, Grid, useTheme } from "@mui/material";
-import { motion, AnimatePresence } from "framer-motion";
-import { useSelector } from "react-redux";
+import React, { useState, useEffect } from 'react';
+import {
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  Grid,
+  Button,
+  Stepper,
+  Step,
+  StepLabel,
+  StepContent,
+  Fade,
+  Chip,
+  Container,
+  useTheme,
+  alpha,
+  Paper,
+  Avatar,
+  Zoom,
+} from '@mui/material';
+import {
+  Work,
+  Business,
+  Security,
+  SmartToy,
+  Payment,
+  Analytics,
+  PersonAdd,
+  Description,
+  AttachMoney,
+  Search,
+  Handshake,
+} from '@mui/icons-material';
 
-const SplitIntro = () => {
+interface StepData {
+  label: string;
+  description: string;
+  icon: React.ReactElement;
+}
+
+interface UserTypeCardProps {
+  type: 'freelancer' | 'business';
+  title: string;
+  features: string[];
+  steps: StepData[];
+  isHovered: boolean;
+  onHover: (type: 'freelancer' | 'business' | null) => void;
+}
+
+const UserTypeCard: React.FC<UserTypeCardProps> = ({
+  type,
+  title,
+  features,
+  steps,
+  isHovered,
+  onHover,
+}) => {
   const theme = useTheme();
-  const [hoveredSide, setHoveredSide] = useState<"left" | "right" | null>(null);
-  const { isDarkMode } = useSelector((state: any) => state.uiState);
+  const [activeStep, setActiveStep] = useState(0);
 
-  const freelancerFeatures = [
-    "Trustless contracts - Get paid automatically when work is approved",
-    "No more payment scams - Funds held securely in blockchain escrow",
-    "AI-powered job matching - Find perfect projects for your skills"
+  useEffect(() => {
+    if (isHovered) {
+      const timer = setInterval(() => {
+        setActiveStep((prev) => (prev + 1) % steps.length);
+      }, 2000);
+      return () => clearInterval(timer);
+    }
+  }, [isHovered, steps.length]);
+
+  const cardColor = type === 'freelancer' ? theme.palette.primary : theme.palette.secondary;
+
+  return (
+    <Card
+      elevation={isHovered ? 12 : 4}
+      onMouseEnter={() => onHover(type)}
+      onMouseLeave={() => onHover(null)}
+      sx={{
+        height: isHovered ? 600 : 400,
+        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+        cursor: 'pointer',
+        background: isHovered
+          ? `linear-gradient(135deg, ${alpha(cardColor.main, 0.1)} 0%, ${alpha(cardColor.light, 0.05)} 100%)`
+          : 'background.paper',
+        border: isHovered ? `2px solid ${cardColor.main}` : '1px solid',
+        borderColor: isHovered ? cardColor.main : alpha(theme.palette.divider, 0.2),
+        position: 'relative',
+        overflow: 'hidden',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 4,
+          background: `linear-gradient(90deg, ${cardColor.main}, ${cardColor.light})`,
+          transform: isHovered ? 'scaleX(1)' : 'scaleX(0)',
+          transformOrigin: 'left',
+          transition: 'transform 0.4s ease',
+        },
+      }}
+    >
+      <CardContent sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <Avatar
+            sx={{
+              bgcolor: cardColor.main,
+              mr: 2,
+              width: 56,
+              height: 56,
+              transition: 'all 0.3s ease',
+              transform: isHovered ? 'scale(1.1)' : 'scale(1)',
+            }}
+          >
+            {type === 'freelancer' ? <Work /> : <Business />}
+          </Avatar>
+          <Typography variant="h5" fontWeight="bold" color={cardColor.main}>
+            {title}
+          </Typography>
+        </Box>
+
+        <Box sx={{ mb: 3 }}>
+          {features.map((feature, index) => (
+            <Zoom
+              key={feature}
+              in={true}
+              style={{ transitionDelay: isHovered ? `${index * 100}ms` : '0ms' }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
+                <Chip
+                  icon={
+                    index === 0 ? <Security /> :
+                    index === 1 ? <SmartToy /> :
+                    index === 2 ? (type === 'freelancer' ? <Work /> : <Payment />) :
+                    <Analytics />
+                  }
+                  label={feature}
+                  variant="outlined"
+                  size="small"
+                  sx={{
+                    color: cardColor.main,
+                    borderColor: cardColor.main,
+                    '& .MuiChip-icon': { color: cardColor.main },
+                  }}
+                />
+              </Box>
+            </Zoom>
+          ))}
+        </Box>
+
+        <Fade in={isHovered} timeout={600}>
+          <Box sx={{ flex: 1 }}>
+            {isHovered && (
+              <>
+                <Typography variant="h6" gutterBottom color={cardColor.main} fontWeight="bold">
+                  Getting Started:
+                </Typography>
+                <Stepper activeStep={activeStep} orientation="vertical">
+                  {steps.map((step, index) => (
+                    <Step key={step.label}>
+                      <StepLabel
+                        StepIconComponent={() => (
+                          <Avatar
+                            sx={{
+                              bgcolor: index <= activeStep ? cardColor.main : 'grey.300',
+                              width: 32,
+                              height: 32,
+                              transition: 'all 0.3s ease',
+                            }}
+                          >
+                            {React.cloneElement(step.icon, { sx: { fontSize: 16 } })}
+                          </Avatar>
+                        )}
+                      >
+                        <Typography fontWeight="medium" color={cardColor.main}>
+                          {step.label}
+                        </Typography>
+                      </StepLabel>
+                      <StepContent>
+                        <Typography variant="body2" color="text.secondary">
+                          {step.description}
+                        </Typography>
+                      </StepContent>
+                    </Step>
+                  ))}
+                </Stepper>
+              </>
+            )}
+          </Box>
+        </Fade>
+
+        <Fade in={!isHovered} timeout={300}>
+          <Box>
+            {!isHovered && (
+              <Button
+                variant="contained"
+                fullWidth
+                size="large"
+                sx={{
+                  mt: 'auto',
+                  bgcolor: cardColor.main,
+                  '&:hover': { bgcolor: cardColor.dark },
+                  borderRadius: 2,
+                  py: 1.5,
+                }}
+              >
+                Get Started
+              </Button>
+            )}
+          </Box>
+        </Fade>
+      </CardContent>
+    </Card>
+  );
+};
+
+const LandingPage: React.FC = () => {
+  const [hoveredSection, setHoveredSection] = useState<'freelancer' | 'business' | null>(null);
+  const theme = useTheme();
+
+  const freelancerSteps: StepData[] = [
+    {
+      label: 'Sign Up',
+      description: 'Create your account and get verified',
+      icon: <PersonAdd />,
+    },
+    {
+      label: 'Upload CV',
+      description: 'Show your CV to our AI Job matcher to find perfect jobs',
+      icon: <Description />,
+    },
+    {
+      label: 'Create Contract',
+      description: 'Generate new document and contract for your project',
+      icon: <Handshake />,
+    },
   ];
 
-  const businessFeatures = [
-    "Automated talent matching - Our AI finds top freelancers for you",
-    "One-click payments - Manage all contracts & payments in one place",
-    "Performance tracking - See freelancer history & ratings"
+  const businessSteps: StepData[] = [
+    {
+      label: 'Sign Up',
+      description: 'Create your business account',
+      icon: <PersonAdd />,
+    },
+    {
+      label: 'Make Deposit',
+      description: 'Secure your funds in blockchain escrow',
+      icon: <AttachMoney />,
+    },
+    {
+      label: 'AI Matching',
+      description: 'Tell our AI your requirements to find top freelancers',
+      icon: <Search />,
+    },
+    {
+      label: 'Create Contract',
+      description: 'Finalize contract with your chosen freelancer',
+      icon: <Handshake />,
+    },
   ];
 
   return (
-    <Box sx={{ 
-      height: "80vh",
-      position: "relative",
-      overflow: "hidden"
-    }}>
-      <Grid container sx={{ height: "100%" }}>
-        {/* Left Side - Freelancer */}
-        <Grid item xs={6}>
-          <Box
-            component={motion.div}
-            initial={{ 
-              backgroundColor: isDarkMode ? "#1b5e20" : "#e6f7e6",
-              color: isDarkMode ? "#ffffff" : "#000000",
-              flex: 1,
-              opacity: 1,
-              scale: 1
-            }}
-            animate={{
-              backgroundColor: hoveredSide === "left" 
-                ? (isDarkMode ? "#2e7d32" : "#c8e6c9")
-                : (isDarkMode ? "#1b5e20" : "#e6f7e6"),
-              flex: hoveredSide === "left" ? 2 : hoveredSide === "right" ? 0.5 : 1,
-              opacity: hoveredSide === "right" ? 0.7 : 1,
-              scale: hoveredSide === "right" ? 0.98 : 1
-            }}
-            transition={{ 
-              duration: 0.5,
-              ease: [0.16, 1, 0.3, 1]
-            }}
+    <Box sx={{ minHeight: '100vh', py: 8 }}>
+      <Container maxWidth="lg">
+        <Box sx={{ textAlign: 'center', mb: 8 }}>
+          <Typography
+            variant="h2"
+            fontWeight="bold"
+            gutterBottom
             sx={{
-              p: 8,
-              height: "100%",
-              cursor: "pointer",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center"
+              background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              mb: 2,
             }}
-            onMouseEnter={() => setHoveredSide("left")}
-            onMouseLeave={() => setHoveredSide(null)}
           >
-            <motion.div
-              initial={{ scale: 1 }}
-              animate={{ scale: hoveredSide === "left" ? 1.05 : 1 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Typography variant="h2" gutterBottom sx={{ 
-                fontWeight: "bold", 
-                mb: 4,
-                textAlign: "center",
-                color: isDarkMode ? "#ffffff" : "#000000"
-              }}>
-                I'm a Freelancer
-              </Typography>
-            </motion.div>
-            
-            <AnimatePresence>
-              <Box sx={{ maxWidth: "60%" }}>
-                {freelancerFeatures.map((feature, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0.8, y: 10 }}
-                    animate={{ 
-                      opacity: hoveredSide === "left" ? 1 : 0.8,
-                      y: hoveredSide === "left" ? 0 : 10,
-                      fontSize: hoveredSide === "left" ? "1.2rem" : "1rem"
-                    }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <Typography
-                      variant="h5"
-                      sx={{ 
-                        mb: 3,
-                        transition: "all 0.3s ease",
-                        color: isDarkMode ? "#ffffff" : "#000000"
-                      }}
-                    >
-                      {feature}
-                    </Typography>
-                  </motion.div>
-                ))}
-              </Box>
-            </AnimatePresence>
-          </Box>
+            oDoc
+          </Typography>
+          <Typography variant="h5" color="text.secondary" gutterBottom>
+            Easy to use. Trustless contracts. Automated payments.
+          </Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 600, mx: 'auto' }}>
+            The future of freelancing with blockchain security and AI-powered matching
+          </Typography>
+        </Box>
+
+        <Grid container spacing={4} justifyContent="center">
+          <Grid item xs={12} md={6}>
+            <UserTypeCard
+              type="freelancer"
+              title="I'm a Freelancer"
+              features={[
+                'Trustless contracts - Get paid automatically when work is approved',
+                'No more payment scams - Funds held securely in blockchain escrow',
+                'AI-powered job matching - Find perfect projects for your skills',
+              ]}
+              steps={freelancerSteps}
+              isHovered={hoveredSection === 'freelancer'}
+              onHover={setHoveredSection}
+            />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <UserTypeCard
+              type="business"
+              title="I'm a Business Owner"
+              features={[
+                'Automated talent matching - Our AI finds top freelancers for you',
+                'One-click payments - Manage all contracts & payments in one place',
+                'Performance tracking - See freelancer history & ratings',
+              ]}
+              steps={businessSteps}
+              isHovered={hoveredSection === 'business'}
+              onHover={setHoveredSection}
+            />
+          </Grid>
         </Grid>
 
-        {/* Right Side - Business Owner */}
-        <Grid item xs={6}>
-          <Box
-            component={motion.div}
-            initial={{ 
-              backgroundColor: isDarkMode ? "#4a148c" : "#f3e5f6",
-              color: isDarkMode ? "#ffffff" : "#000000",
-              flex: 1,
-              opacity: 1,
-              scale: 1
-            }}
-            animate={{
-              backgroundColor: hoveredSide === "right" 
-                ? (isDarkMode ? "#7b1fa2" : "#e1bee7")
-                : (isDarkMode ? "#4a148c" : "#f3e5f6"),
-              flex: hoveredSide === "right" ? 2 : hoveredSide === "left" ? 0.5 : 1,
-              opacity: hoveredSide === "left" ? 0.7 : 1,
-              scale: hoveredSide === "left" ? 0.98 : 1
-            }}
-            transition={{ 
-              duration: 0.5,
-              ease: [0.16, 1, 0.3, 1]
-            }}
-            sx={{
-              p: 8,
-              height: "100%",
-              cursor: "pointer",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center"
-            }}
-            onMouseEnter={() => setHoveredSide("right")}
-            onMouseLeave={() => setHoveredSide(null)}
-          >
-            <motion.div
-              initial={{ scale: 1 }}
-              animate={{ scale: hoveredSide === "right" ? 1.05 : 1 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Typography variant="h2" gutterBottom sx={{ 
-                fontWeight: "bold", 
-                mb: 4,
-                textAlign: "center",
-                color: isDarkMode ? "#ffffff" : "#000000"
-              }}>
-                I'm a Business Owner
-              </Typography>
-            </motion.div>
-            
-            <AnimatePresence>
-              <Box sx={{ maxWidth: "60%" }}>
-                {businessFeatures.map((feature, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0.8, y: 10 }}
-                    animate={{ 
-                      opacity: hoveredSide === "right" ? 1 : 0.8,
-                      y: hoveredSide === "right" ? 0 : 10,
-                      fontSize: hoveredSide === "right" ? "1.2rem" : "1rem"
-                    }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <Typography
-                      variant="h5"
-                      sx={{ 
-                        mb: 3,
-                        transition: "all 0.3s ease",
-                        color: isDarkMode ? "#ffffff" : "#000000"
-                      }}
-                    >
-                      {feature}
-                    </Typography>
-                  </motion.div>
-                ))}
-              </Box>
-            </AnimatePresence>
-          </Box>
-        </Grid>
-      </Grid>
+        
+      </Container>
     </Box>
   );
 };
 
-export default SplitIntro;
+export default LandingPage;

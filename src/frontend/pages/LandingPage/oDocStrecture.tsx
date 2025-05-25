@@ -213,74 +213,42 @@ const ODOCInfographic: React.FC = () => {
       }}>
         {/* Central Core - Enhanced */}
         <Box sx={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          zIndex: 10,
-          cursor: 'pointer'
-        }}
-        onClick={() => {
-          setPulseActive(!pulseActive);
-          setCoreActive(!coreActive);
-        }}>
-          {/* Core Glow Rings */}
-          <Box sx={{
-            position: 'absolute',
-            width: '220px',
-            height: '220px',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            borderRadius: '50%',
-            background: 'conic-gradient(from 0deg, #00ffff, #ff00ff, #ffff00, #00ffff)',
-            animation: 'spin 8s linear infinite',
-            opacity: coreActive ? 0.8 : 0.4,
-            filter: 'blur(2px)'
-          }} />
-          
-          <Box sx={{
-            position: 'absolute',
-            width: '190px',
-            height: '190px',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            borderRadius: '50%',
-            background: 'conic-gradient(from 180deg, #ff00ff, #00ffff, #ff00ff)',
-            animation: 'spin 6s linear infinite reverse',
-            opacity: coreActive ? 0.6 : 0.3,
-            filter: 'blur(1px)'
-          }} />
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  zIndex: 10,
+  cursor: 'pointer'
+}}
+onMouseEnter={() => setCoreActive(true)}
+onMouseLeave={() => setCoreActive(false)}>
+     
+           
 
           {/* Core Container */}
           <Box sx={{
-            position: 'relative',
-            width: '200px',
-            height: '200px',
-            borderRadius: '50%',
-            background: 'radial-gradient(circle, #1a1a1a 30%, #0a0a0a 100%)',
-            border: '2px solid #00ffff',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'all 0.4s ease',
-            '&:hover': {
-              transform: 'scale(1.15)',
-              boxShadow: '0 0 40px rgba(0, 255, 255, 0.8)'
-            }
-          }}>
-            <img 
-              src={odocIcon} 
-              alt="ODOC Logo" 
-              style={{ 
-                width: '160px', 
-                height: '160px',
-                filter: `drop-shadow(0 0 12px rgba(0, 255, 255, 0.8)) ${coreActive ? 'brightness(1.3)' : 'brightness(1)'}`,
-                transition: 'all 0.4s ease',
-                animation: pulseActive ? 'corePulse 2s ease-in-out infinite' : 'none'
-              }} 
-            />
+    position: 'relative',
+    width: '150px',
+    height: '150px',
+    borderRadius: '50%',
+    background: 'radial-gradient(circle, #1a1a1a 30%, #0a0a0a 100%)',
+    border: '2px solid #00ffff',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'all 0.3s ease',
+    transform: coreActive ? 'scale(1.1)' : 'scale(1)',
+    boxShadow: coreActive ? '0 0 30px rgba(0, 255, 255, 0.8)' : '0 0 15px rgba(0, 255, 255, 0.4)'
+  }}>
+             <img 
+      src={odocIcon} 
+      alt="ODOC Logo" 
+      style={{ 
+        width: '150px',
+        filter: `drop-shadow(0 0 8px rgba(0, 255, 255, 0.8)) ${coreActive ? 'brightness(1.2)' : 'brightness(1)'}`,
+        transition: 'all 0.3s ease'
+      }} 
+    />
           </Box>
 
           {/* Energy Pulses */}
@@ -505,6 +473,12 @@ const ODOCInfographic: React.FC = () => {
 
       {/* Keyframe Animations */}
       <style>{`
+      @keyframes simplePulse {
+      0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
+      50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+        }
+
+
         @keyframes spin {
           from { transform: translate(-50%, -50%) rotate(0deg); }
           to { transform: translate(-50%, -50%) rotate(360deg); }
