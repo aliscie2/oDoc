@@ -102,7 +102,7 @@ const createAuthClient = async (): Promise<AuthClient> => {
 
 const createHttpAgent = async (identity: Identity, host: string): Promise<HttpAgent> => {
   const agent = new HttpAgent({
-    identity,
+    identity, //TODO  if siwe is conncted use siweIdentity
     host,
   });
 
