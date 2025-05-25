@@ -48,8 +48,8 @@ root.render(
             <RainbowKitProvider>
               <Provider store={store}>
                 <ThemeProvider>
-                  <SiweIdentityProvider<_SERVICE>
-                    canisterId={canisterId}
+                <SiweIdentityProvider 
+                  canisterId={canisterId}
                     idlFactory={idlFactory}
                   >
                     <BackendProvider>
@@ -63,7 +63,8 @@ root.render(
                         <App />
                       </SnackbarProvider>
                     </BackendProvider>
-                  </SiweIdentityProvider>
+                    </SiweIdentityProvider>
+                   
                 </ThemeProvider>
               </Provider>
             </RainbowKitProvider>

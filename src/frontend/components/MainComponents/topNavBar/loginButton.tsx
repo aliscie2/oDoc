@@ -31,7 +31,7 @@ const LoginButton: React.FC<LoginButtonProps> = ({
   sx = {},
 }) => {
   const dispatch = useDispatch();
-  const { login, loginWithMetaMask } = useBackendContext();
+  const { login, loginWithEth } = useBackendContext();
   const { isFetching, isLoggedIn } = useSelector((state: RootState) => state.uiState);
   const { openConnectModal } = useConnectModal();
   const { isConnected } = useAccount();
@@ -76,7 +76,7 @@ const LoginButton: React.FC<LoginButtonProps> = ({
 
   const handleMetaMaskLogin = async () => {
     if (openConnectModal) {
-      await loginWithMetaMask();
+      await loginWithEth();
       handleClose();
     }
   };
@@ -111,19 +111,19 @@ const LoginButton: React.FC<LoginButtonProps> = ({
           <MenuItem onClick={handleMetaMaskLogin}>
             <ListItemIcon>
               <img 
-                src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/MetaMask_Fox.svg/1200px-MetaMask_Fox.svg.png" 
-                alt="MetaMask" 
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Ethereum-icon-purple.svg/langfr-250px-Ethereum-icon-purple.svg.png" 
+                alt="Ethereum" 
                 style={styles.menuIcon} 
               />
             </ListItemIcon>
-            <ListItemText>MetaMask</ListItemText>
+            <ListItemText>Ethereum</ListItemText>
           </MenuItem>
         </Menu>
       </>
     );
   }
 
-  // Update the MenuItem for MetaMask to be enabled
+
   return (
     <>
       <Button
@@ -153,12 +153,12 @@ const LoginButton: React.FC<LoginButtonProps> = ({
         <MenuItem onClick={handleMetaMaskLogin}>
           <ListItemIcon>
             <img 
-              src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/MetaMask_Fox.svg/1200px-MetaMask_Fox.svg.png" 
-              alt="MetaMask" 
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Ethereum-icon-purple.svg/langfr-250px-Ethereum-icon-purple.svg.png" 
+              alt="Ethereum" 
               style={styles.menuIcon} 
             />
           </ListItemIcon>
-          <ListItemText>MetaMask</ListItemText>
+          <ListItemText>Ethereum</ListItemText>
         </MenuItem>
       </Menu>
     </>
