@@ -27,7 +27,7 @@ pub struct JobUpdate {
 fn update_job(updates: Vec<JobUpdate>) -> Result<(), String> {
 
     if ic_cdk::caller().to_string() == Principal::anonymous().to_string() {
-        return Err("Permission denied".to_string());
+        return Err("Permission denied (anonymous)".to_string());
     }
     for update in updates {
         let mut job = match Job::get(&update.id) {
@@ -36,7 +36,7 @@ fn update_job(updates: Vec<JobUpdate>) -> Result<(), String> {
         };
 
         if job.user_id != ic_cdk::caller().to_string() {
-            return Err("Permission denied".to_string());
+            return Err("Permission denied (not aowner)".to_string());
         }
 
         // Handle regular field updates

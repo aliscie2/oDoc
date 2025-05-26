@@ -79,3 +79,7 @@ deploy-all:
 	yarn start
 	deploy-provider
 	
+upgrade-backend: 
+	sh scripts/did.sh backend
+	dfx generate backend
+	dfx deploy backend

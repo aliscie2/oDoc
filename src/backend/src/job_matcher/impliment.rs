@@ -5,7 +5,7 @@ use ic_cdk::caller;
 
 impl Job {
     pub fn new(id:String) -> Self {
-        let now = ic_cdk::api::time() as u64;
+        let now = ic_cdk::api::time() as f32;
 
         Job {
             notification_id: String::new(),
@@ -35,7 +35,7 @@ impl Job {
 
 
     pub fn update(&mut self, field_name: &str, data: Vec<String>) {
-        self.date_updated = ic_cdk::api::time() as u64;
+        self.date_updated = ic_cdk::api::time() as f32;
 
         match field_name {
             "skills" => self.skills = data,
@@ -140,7 +140,7 @@ impl Job {
                     Err("Permission denied".to_string())
                 },
                 Some(job) => {
-                    let now = ic_cdk::api::time() as u64;
+                    let now = ic_cdk::api::time() as f32;
                     
                     let mut updated_job = job.clone();
                     updated_job.skills = Vec::new();
@@ -206,7 +206,7 @@ impl Job {
     
             // Update the job's matches
             job.matches = matches;
-            job.date_updated = ic_cdk::api::time() as u64;
+            job.date_updated = ic_cdk::api::time() as f32;
             
             // Save the updated job
             store.insert(job_id.clone(), job.clone());
@@ -220,7 +220,7 @@ impl Job {
                         job_id: job_id.clone(),
                         user_id: job.user_id.clone(),
                         missmatching_skills: match_item.missmatching_skills.clone(),
-                        date_updated: ic_cdk::api::time() as u64,
+                        date_updated: ic_cdk::api::time() as f32,
                         is_connected: match_item.is_connected,
                     };
     
@@ -229,7 +229,7 @@ impl Job {
                     
                     // Add the new reciprocal match
                     other_job.matches.push(reciprocal_match);
-                    other_job.date_updated = ic_cdk::api::time() as u64;
+                    other_job.date_updated = ic_cdk::api::time() as f32;
                     
                     // Save the other job
                     store.insert(match_item.job_id.clone(), other_job);

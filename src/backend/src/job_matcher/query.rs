@@ -1,23 +1,41 @@
 use ic_cdk_macros::query;
 use ic_cdk::caller;
-use super::pallet::{Job, Category};
+
+
+
+
+use super::pallet::{Job, Match, Category};
+use ic_cdk_macros::update;
+use candid::{CandidType, Decode, Deserialize, Encode, Principal};
+use serde::Serialize;
+
+
+#[derive(PartialOrd, PartialEq, Clone, Debug, Serialize, CandidType, Deserialize)]
+pub struct  GetJobs {
+    pub jobs: Vec<Job>,
+    pub matching_jobs: Vec<Job>,
+}
 
 #[query]
-fn get_my_jobs() -> Vec<Job> {
+fn get_my_jobs() -> GetJobs {
+
+
     let mut jobs = Job::get_my_jobs();
-    let mut all_jobs = Vec::new();
+    let mut matching_jobs = Vec::new();
     
     for job in jobs.iter() {
         job.matches.iter()
             .filter_map(|m| Job::get(&m.job_id))
-            .for_each(|job| all_jobs.push(job));
+            .for_each(|job| matching_jobs.push(job));
         // let category = match job.category { Category::Talent => Category::Job, _ => Category::Talent };
         // let matching_jobs = Job::get_matches(job.skills.clone(), category);
         // all_jobs.extend(matching_jobs);
     }
     
-    jobs.extend(all_jobs);
-    jobs
+    GetJobs{
+        jobs,
+        matching_jobs,
+    }
 }
 
 // Don't get confused category is what you are looking for.

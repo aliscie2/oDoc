@@ -17,10 +17,29 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({ jobId }) => {
     setConnecting(true);
     
     try {
-      await sendEmail('alihushamsci@icloud.com');
+
+      const options = {
+        from: {
+          Email: "weplutus.1@gmail.com",
+          Name: "Sender Name"
+        },
+        to: [
+          {
+            Email: "alihushamsci@icloud.com",
+            Name: "Recipient Name"
+          }
+        ],
+        subject: "Test Email",
+        textPart: "Hello from Mailjet!",
+        htmlPart: "<h1>Hello from Mailjet!</h1><p>This is a test email.</p>"
+      }
+
+      const result = await sendEmail(options);
+      
       setConnected(true);
       enqueueSnackbar('Email sent successfully!', { variant: 'success' });
     } catch (error) {
+      console.log('Error sending email:', error);
       enqueueSnackbar('Failed to send email', { variant: 'error' });
     } finally {
       setConnecting(false);

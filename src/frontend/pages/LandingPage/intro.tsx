@@ -176,11 +176,7 @@ export default function Intro() {
             Odoc made for busnessmen, lawers, freelancers and clients connect and effortlessly manage agreements, contracts, payments and tasks with the power of AI and blockchain.
           </MotionBox>
         </Box>
-        <MotionBox
-          variants={itemVariants}
-        >
-          <GetStartedButton key={profile?.id} />
-        </MotionBox>
+        <GetStartedButton key={profile?.id} />
       </MotionBox>
     </Box>
   );

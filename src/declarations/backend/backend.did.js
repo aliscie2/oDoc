@@ -397,13 +397,13 @@ export const idlFactory = ({ IDL }) => {
     'user_id' : IDL.Text,
     'score' : IDL.Float32,
     'job_id' : IDL.Text,
-    'date_updated' : IDL.Nat64,
+    'date_updated' : IDL.Float32,
     'is_connected' : IDL.Bool,
   });
   const Job = IDL.Record({
     'id' : IDL.Text,
     'active' : IDL.Bool,
-    'date_created' : IDL.Nat64,
+    'date_created' : IDL.Float32,
     'contacts' : IDL.Vec(IDL.Text),
     'trust_note' : IDL.Text,
     'education' : IDL.Vec(IDL.Text),
@@ -418,7 +418,7 @@ export const idlFactory = ({ IDL }) => {
     'matches' : IDL.Vec(Match),
     'job_titles' : IDL.Vec(IDL.Text),
     'category' : Category,
-    'date_updated' : IDL.Nat64,
+    'date_updated' : IDL.Float32,
     'proficiency_level' : IDL.Text,
     'certifications' : IDL.Vec(IDL.Text),
     'required_match_score' : IDL.Float32,
@@ -432,6 +432,10 @@ export const idlFactory = ({ IDL }) => {
     'name' : IDL.Text,
     'workspaces' : IDL.Vec(IDL.Text),
     'admins' : IDL.Vec(UserFE),
+  });
+  const GetJobs = IDL.Record({
+    'jobs' : IDL.Vec(Job),
+    'matching_jobs' : IDL.Vec(Job),
   });
   const Post = IDL.Record({
     'id' : IDL.Text,
@@ -683,7 +687,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'get_my_calendar' : IDL.Func([], [Calendar], ['query']),
     'get_my_chats' : IDL.Func([], [IDL.Vec(FEChat)], ['query']),
-    'get_my_jobs' : IDL.Func([], [IDL.Vec(Job)], ['query']),
+    'get_my_jobs' : IDL.Func([], [GetJobs], ['query']),
     'get_owners' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
     'get_post' : IDL.Func([IDL.Text], [Result_10], ['query']),
     'get_posts' : IDL.Func(

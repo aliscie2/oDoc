@@ -9,15 +9,25 @@ import { dummyMatches, dummyMatchingJobs } from './dummyMatchingJobs';
 import { useBackendContext } from '@/contexts/BackendContext';
 import JobDetails from './JobDetails';
 import { JOB_MATCHING_PROMPT } from './jobMatchingPrompt';
+import { GeminiAgent } from '@/AIAgents/GeminiAgent';
+import { processResponseJobs } from './utils/processResponseJobs';
 
 
 const JobSearchComponent: React.FC = () => {
+  const { backendActor } = useBackendContext();
+
   const dispatch = useDispatch();
   const { currentJobId, jobs,matchingJobs } = useSelector((state: any) => state.jobState);
+
   const currentJob = jobs.find((job: Job) => job.id === currentJobId);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [openDialogId, setOpenDialogId] = useState<string | null>(null);
+  const [geminiAgent, setGeminiAgent] = useState<GeminiAgent | null>(null);
+
+  useEffect(() => {
+    setGeminiAgent(new GeminiAgent());
+  }, []);
 
   useEffect(() => {
     const fetchMatchingJobs = async () => {
@@ -27,39 +37,62 @@ const JobSearchComponent: React.FC = () => {
       setError(null);
       
       try {
-        // TODO keep this for later
-        // const currentJob = jobs.find((job: Job) => job.id === currentJobId);
-        // const skills = currentJob?.skills || [];
-        // const matchingJobs = await backendActor.get_matches(currentJobId, skills);
-        const matchingJobs = dummyMatchingJobs;
-
-        const messageToSend = `
-        ${JOB_MATCHING_PROMPT}
-        candidates: ${JSON.stringify(matchingJobs)}
-        Current : ${JSON.stringify(currentJob)}
-        `;
-        // TODO do not touch this line keep it
-        // const response = await geminiAgent.sendMessage(messageToSend);
-  
-        //TODO keep this part do not remove it
-        //  const response = "```" + gmeniResponseExample + "```";
-        // export interface Match {
-        //   'matching_skills' : Array<string>,
-        //   'user_id' : string,
-        //   'score' : number,
-        //   'job_id' : string,
-        //   'date_updated' : bigint,
-        //   'is_connected' : boolean,
-        // }
-        // const parsed: Array<Match> = processResponseJobs(response).extractedData;
+        const currentJob = jobs.find((job: Job) => job.id === currentJobId);
+        const skills = currentJob?.skills || [];
+        let lookingForCategory = {};
+        if (currentJob?.category && JSON.stringify(currentJob.category) === JSON.stringify({Job: null})) {
+            lookingForCategory = {Talent: null};
+        } else if (currentJob?.category && JSON.stringify(currentJob.category) === JSON.stringify({Talent: null})) {
+            lookingForCategory = {Job: null};
+        } else {
+            lookingForCategory = currentJob?.category || {Other: null};
+        }
+        const newMatches: Array<Job> = await backendActor.get_matches(currentJobId, skills, lookingForCategory);
+        console.log({newMatches,currentJobId, skills, lookingForCategory});
         
+        // Filter out matches that are already in currentJob.matches
+        let allJobMatches = newMatches.filter(
+          (m: Match) => !currentJob?.matches?.some(
+            (existing: Match) => existing.job_id === m.job_id
+          )
+        );
+
+        
+        // let oldMatches = currentJob?.matches.map(m=>jobs.find(j=>j.id==m.job_id)) || [];
+        // console.log({oldMatches});
+        // oldMatches = oldMatches?oldMatches.fiter(o=>!allJobMatches.some((m: Match) => m.job_id === o.id)):[];
+        // allJobMatches.push(...oldMatches);
+        
+        
+        let actualNewMatches = newMatches.filter(
+          job => !matchingJobs.some((matchingJob:Job) => matchingJob.id === job.id)
+        );
+
+        if (actualNewMatches.length > 0) {
+          const messageToSend = `
+          ${JOB_MATCHING_PROMPT}
+          candidates: ${JSON.stringify(allJobMatches)}
+          Current: ${JSON.stringify(currentJob)}
+          `;
+          
+          const response = await geminiAgent?.sendMessage(messageToSend);
+            const parsed: any =response&& processResponseJobs(response).extractedData;
+            
+            parsed && dispatch({
+              type: "UPDATE_MATCHES",
+              matches: parsed.matches,
+            });  
+
+        }
+        
+
         dispatch({
           type: "UPDATE_MATCHING_JOBS",
-          matchingJobs,
-          matches:dummyMatches,
+          matchingJobs: allJobMatches,
+          matches: [],
         });
       } catch (err) {
-        console.error("Error fetching matching jobs:", err);
+        console.log("Error fetching matching jobs:", err);
         setError("Failed to fetch matching jobs. Please try again.");
       } finally {
         setLoading(false);
@@ -125,7 +158,7 @@ const JobSearchComponent: React.FC = () => {
             >
               <CardContent>
                 <Typography variant="h6">
-                  {truncateTitle(job?.job_titles[0])}
+                  {job?.job_titles&&truncateTitle(job?.job_titles[0])}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   Matching Score: {match?.score || 'N/A'}

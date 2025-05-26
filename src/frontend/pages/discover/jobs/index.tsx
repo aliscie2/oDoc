@@ -7,17 +7,17 @@ import { processResponseJobs } from './utils/processResponseJobs';
 import { useDispatch, useSelector } from 'react-redux';
 import { Job, JobUpdate } from '$/declarations/backend/backend.did';
 import { BUILD_JOB_PROMPT } from './buildProfilePrompt';
-import { gmeniResponseExample } from './gmeniResponseExample';
 import JobSelector from '@/pages/discover/jobs/JobSelector';
 import JobSearchComponent from './JobSearchComponent';
 import SaveChanges from './saveChanges';
+import { useBackendContext } from '@/contexts/BackendContext';
 
 interface Message {
   id: string;
   content: string;
   sender: 'user' | 'ai';
   timestamp: Date;
-}
+};
 
 interface ProcessedJobResponse {
   done: boolean;
@@ -32,10 +32,11 @@ interface ProcessedJobResponse {
 }
 
 const JobsPage: React.FC = () => {
+
+  const { backendActor } = useBackendContext();
   const { jobChanges, isChanged, currentJobId, jobs } = useSelector((state: any) => state.jobState);
   const currentJobRef = useRef<Job | undefined>(undefined);
   const dispatch = useDispatch();
-  const [showJobSearch, setShowJobSearch] = useState(false);
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [geminiAgent, setGeminiAgent] = useState<GeminiAgent | null>(null);
@@ -48,6 +49,20 @@ const JobsPage: React.FC = () => {
   useEffect(() => {
     currentJobRef.current = jobs.find((job: Job) => job.id === currentJobId);
   }, [currentJobId, jobs]);
+
+
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        const res: { jobs: Job[]; matching_jobs: Job[] } = await backendActor.get_my_jobs();
+        dispatch({ type: "INIT_JOBS", jobs: res.jobs, matchingJobs: res.matching_jobs, });
+      } catch (error) {
+        console.error("Error fetching jobs:", error);
+      }
+    };
+    
+    fetchJobs();
+  }, [dispatch]);
 
   const handleSendMessage = useCallback(async (content: string) => {
     if (!geminiAgent) return;
@@ -64,16 +79,16 @@ const JobsPage: React.FC = () => {
       setMessages(prev => [...prev, newMessage]);
       
      
-
+      console.log("currentJobRef", currentJobRef.current);
       const messageToSend = `
       ${BUILD_JOB_PROMPT}
       User Input: ${content}
       Current Job Data: ${JSON.stringify(currentJobRef.current)}
       `;
-      // TODO do not touch this line keep it
-      // const response = await geminiAgent.sendMessage(messageToSend);
 
-      const response = "```" + gmeniResponseExample + "```";
+      const response = await geminiAgent.sendMessage(messageToSend);
+
+      // const response = "```" + gmeniResponseExample + "```";
       const parsed: ProcessedJobResponse = processResponseJobs(response).extractedData;
       
        // Validate before processing
@@ -124,7 +139,8 @@ const JobsPage: React.FC = () => {
         loading={loading}
         onSendMessage={handleSendMessage}
       />
-      {isProfileDone && <JobSearchComponent />}
+      {/* {isProfileDone && <JobSearchComponent />} */}
+      <JobSearchComponent />
       {isChanged && <SaveChanges />}
     </Box>
   );

@@ -265,6 +265,7 @@ export interface GetErrorLogsArgs {
   'start' : [] | [bigint],
   'length' : [] | [bigint],
 }
+export interface GetJobs { 'jobs' : Array<Job>, 'matching_jobs' : Array<Job> }
 export interface GetTransactions {
   'balance' : bigint,
   'transactions' : Array<TransactionWithId>,
@@ -285,7 +286,7 @@ export interface InitialData {
 export interface Job {
   'id' : string,
   'active' : boolean,
-  'date_created' : bigint,
+  'date_created' : number,
   'contacts' : Array<string>,
   'trust_note' : string,
   'education' : Array<string>,
@@ -300,7 +301,7 @@ export interface Job {
   'matches' : Array<Match>,
   'job_titles' : Array<string>,
   'category' : Category,
-  'date_updated' : bigint,
+  'date_updated' : number,
   'proficiency_level' : string,
   'certifications' : Array<string>,
   'required_match_score' : number,
@@ -327,7 +328,7 @@ export interface Match {
   'user_id' : string,
   'score' : number,
   'job_id' : string,
-  'date_updated' : bigint,
+  'date_updated' : number,
   'is_connected' : boolean,
 }
 export interface Message {
@@ -629,7 +630,7 @@ export interface _SERVICE {
   >,
   'get_my_calendar' : ActorMethod<[], Calendar>,
   'get_my_chats' : ActorMethod<[], Array<FEChat>>,
-  'get_my_jobs' : ActorMethod<[], Array<Job>>,
+  'get_my_jobs' : ActorMethod<[], GetJobs>,
   'get_owners' : ActorMethod<[], Array<Principal>>,
   'get_post' : ActorMethod<[string], Result_10>,
   'get_posts' : ActorMethod<[bigint, bigint], Array<PostUser>>,
