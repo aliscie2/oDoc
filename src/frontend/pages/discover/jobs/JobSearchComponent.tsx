@@ -36,79 +36,84 @@ const JobSearchComponent: React.FC = () => {
       setLoading(true);
       setError(null);
       
-      try {
-        const currentJob = jobs.find((job: Job) => job.id === currentJobId);
-        const skills = currentJob?.skills || [];
-        let lookingForCategory = {};
-        if (currentJob?.category && JSON.stringify(currentJob.category) === JSON.stringify({Job: null})) {
-            lookingForCategory = {Talent: null};
-        } else if (currentJob?.category && JSON.stringify(currentJob.category) === JSON.stringify({Talent: null})) {
-            lookingForCategory = {Job: null};
-        } else {
-            lookingForCategory = currentJob?.category || {Other: null};
-        }
-        const newMatches: Array<Job> = await backendActor.get_matches(currentJobId, skills, lookingForCategory);
-        console.log({newMatches,currentJobId, skills, lookingForCategory});
+      // try {
+      //   const currentJob = jobs.find((job: Job) => job.id === currentJobId);
+      //   const skills = currentJob?.skills || [];
+      //   let lookingForCategory = {};
+      //   if (currentJob?.category && JSON.stringify(currentJob.category) === JSON.stringify({Job: null})) {
+      //       lookingForCategory = {Talent: null};
+      //   } else if (currentJob?.category && JSON.stringify(currentJob.category) === JSON.stringify({Talent: null})) {
+      //       lookingForCategory = {Job: null};
+      //   } else {
+      //       lookingForCategory = currentJob?.category || {Other: null};
+      //   }
+      //   const newMatches: Array<Job> = await backendActor.get_matches(currentJobId, skills, lookingForCategory);
+      //   // console.log({newMatches,currentJobId, skills, lookingForCategory});
         
-        // Filter out matches that are already in currentJob.matches
-        let allJobMatches = newMatches.filter(
-          (m: Match) => !currentJob?.matches?.some(
-            (existing: Match) => existing.job_id === m.job_id
-          )
-        );
+      //   // Filter out matches that are already in currentJob.matches
+      //   let allJobMatches = newMatches.filter(
+      //     (m: Match) => !currentJob?.matches?.some(
+      //       (existing: Match) => existing.job_id === m.job_id
+      //     )
+      //   );
 
         
-        // let oldMatches = currentJob?.matches.map(m=>jobs.find(j=>j.id==m.job_id)) || [];
-        // console.log({oldMatches});
-        // oldMatches = oldMatches?oldMatches.fiter(o=>!allJobMatches.some((m: Match) => m.job_id === o.id)):[];
-        // allJobMatches.push(...oldMatches);
+      //   // we put the matchs and old matches togather
+      //   // we filter out repeated ones from the old matches
+      //   // if there is ID repeattion we remove only the old one and keep new ones
+      //   // if new one != old_one we set is_updated=true
+      //   // if is_updated do not filter it out and put it back into the ai.
+      //   // we can check that if matchingJob.dated_updated > matche.dated_updated
+      //   // let oldMatches = currentJob?.matches.map(m=>jobs.find(j=>j.id==m.job_id)) || [];
+      //   // console.log({oldMatches});
+      //   // oldMatches = oldMatches?oldMatches.fiter(o=>!allJobMatches.some((m: Match) => m.job_id === o.id)):[];
+      //   // allJobMatches.push(...oldMatches);
         
         
-        let actualNewMatches = newMatches.filter(
-          job => !matchingJobs.some((matchingJob:Job) => matchingJob.id === job.id)
-        );
+      //   let actualNewMatches = newMatches.filter(
+      //     job => !matchingJobs.some((matchingJob:Job) => matchingJob.id === job.id)
+      //   );
 
-        if (actualNewMatches.length > 0) {
-          const messageToSend = `
-          ${JOB_MATCHING_PROMPT}
-          candidates: ${JSON.stringify(allJobMatches)}
-          Current: ${JSON.stringify(currentJob)}
-          `;
+      //   if (actualNewMatches.length > 0) {
+      //     const messageToSend = `
+      //     ${JOB_MATCHING_PROMPT}
+      //     candidates: ${JSON.stringify(allJobMatches)}
+      //     Current: ${JSON.stringify(currentJob)}
+      //     `;
           
-          const response = await geminiAgent?.sendMessage(messageToSend);
-            const parsed: any =response&& processResponseJobs(response).extractedData;
+      //     const response = await geminiAgent?.sendMessage(messageToSend);
+      //       const parsed: any =response&& processResponseJobs(response).extractedData;
             
-            parsed && dispatch({
-              type: "UPDATE_MATCHES",
-              matches: parsed.matches,
-            });  
-
-        }
+      //       parsed && dispatch({
+      //         type: "UPDATE_MATCHES",
+      //         matches: parsed.matches,
+      //       });  
+      //   }
         
 
-        dispatch({
-          type: "UPDATE_MATCHING_JOBS",
-          matchingJobs: allJobMatches,
-          matches: [],
-        });
-      } catch (err) {
-        console.log("Error fetching matching jobs:", err);
-        setError("Failed to fetch matching jobs. Please try again.");
-      } finally {
-        setLoading(false);
-      }
+      //   dispatch({
+      //     type: "UPDATE_MATCHING_JOBS",
+      //     matchingJobs: allJobMatches,
+      //     matches: [],
+      //   });
+      // } catch (err) {
+      //   console.log("Error fetching matching jobs:", err);
+      //   setError("Failed to fetch matching jobs. Please try again.");
+      // } finally {
+      //   setLoading(false);
+      // }
     };
     
     fetchMatchingJobs();
   }, [currentJobId, dispatch]);
   
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+  //       <CircularProgress />
+  //     </Box>
+  //   );
+  // }
   
   if (error) {
     return (

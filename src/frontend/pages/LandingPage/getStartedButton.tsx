@@ -32,32 +32,11 @@ const AttractiveButton = {
   backdropFilter: "blur(10px)",
   border: "1px solid rgba(255, 255, 255, 0.3)",
   boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
-  "&::before": {
-    content: '""',
-    position: "absolute",
-    top: 0,
-    left: "-100%",
-    width: "200%",
-    height: "100%",
-    background: `linear-gradient(
-                  to right,
-                  transparent 0%,
-                  rgba(255, 255, 255, 0.4) 50%,
-                  transparent 100%
-                )`,
-    animation: `${shineAnimation} 3s infinite linear`,
-  },
   "&:hover": {
     background: "rgba(255, 71, 71, 0.9)",
     transform: "translateY(-2px)",
-    transition: "all 0.3s ease",
-  },
-  animation: "float 3s ease-in-out infinite",
-  "@keyframes float": {
-    "0%": { transform: "translateY(0px)" },
-    "50%": { transform: "translateY(-10px)" },
-    "100%": { transform: "translateY(0px)" },
-  },
+    transition: "all 0.3s ease"
+  }
 };
 
 function GetStartedButton() {
