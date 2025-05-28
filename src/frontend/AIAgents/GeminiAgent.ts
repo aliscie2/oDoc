@@ -35,7 +35,7 @@ export class GeminiAgent {
       });
 
       if (!response.ok) {
-        throw new Error(`API request failed with status ${response.status}`);
+        alert(`API request failed with status ${response.status}`)
       }
 
       const data = await response.json();

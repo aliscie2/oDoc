@@ -1,15 +1,12 @@
 import React, { useState } from "react";
-import emailjs from "@emailjs/browser";
 import sanitizeHtml from "sanitize-html";
+import sendEmail from "../discover/jobs/utils/sendEmail";
 
 const EmailComposer = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [htmlContent, setHtmlContent] = useState("");
   const [subject, setSubject] = useState("");
   const [isSending, setIsSending] = useState(false);
-
-  // Initialize EmailJS
-  emailjs.init(import.meta.env.VITE_REACT_APP_EMAILJS_USER_ID);
 
   const handleSendEmail = async () => {
     try {
@@ -23,20 +20,10 @@ const EmailComposer = () => {
           img: ["src", "alt"],
         },
       });
+      let response =  await sendEmail(subject,sanitizedHtml, ['alihushamsci@yahoo.com',"alihushamsci@icloud.com", "weplutus.1@gmail.com"])
 
-      const response = await emailjs.send(
-        import.meta.env.VITE_REACT_APP_EMAILJS_SERVICE_ID,
-        import.meta.env.VITE_REACT_APP_EMAILJS_TEMPLATE_ID,
-        {
-          from_email: "contact@odoc.app",
-          to_email: ['alihushamsci@yahoo.com',"alihushamsci@icloud.com", "weplutus.1@gmail.com"], // Hardcoded recipient
-          subject: subject,
-          html_message: sanitizedHtml,
-        },
-      );
 
       if (response.status === 200) {
-        alert("Email sent successfully!");
         setIsDialogOpen(false);
         setHtmlContent("");
         setSubject("");

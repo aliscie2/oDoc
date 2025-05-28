@@ -80,7 +80,7 @@ const JsonEditor: React.FC<JsonEditorProps> = () => {
   };
 
   const handleTuning = async () => {
-    // logger({ training_data });
+
     await fineTuneGemeni(training_data);
     return { Ok: "" };
   };

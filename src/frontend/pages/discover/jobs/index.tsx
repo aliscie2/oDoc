@@ -6,11 +6,13 @@ import { v4 as uuidv4 } from 'uuid';
 import { processResponseJobs } from './utils/processResponseJobs';
 import { useDispatch, useSelector } from 'react-redux';
 import { Job, JobUpdate } from '$/declarations/backend/backend.did';
-import { BUILD_JOB_PROMPT } from './buildProfilePrompt';
+import { BUILD_JOB_PROMPT } from './utils/buildProfilePrompt';
 import JobSelector from '@/pages/discover/jobs/JobSelector';
 import JobSearchComponent from './JobSearchComponent';
 import SaveChanges from './saveChanges';
 import { useBackendContext } from '@/contexts/BackendContext';
+import { dummyMatchingJobs } from './utils/dummyMatchingJobs';
+import { gmeniResponseExample } from './utils/gmeniResponseExample';
 
 interface Message {
   id: string;
@@ -34,7 +36,7 @@ interface ProcessedJobResponse {
 const JobsPage: React.FC = () => {
 
   const { backendActor } = useBackendContext();
-  const { jobChanges, isChanged, currentJobId, jobs } = useSelector((state: any) => state.jobState);
+  const { jobChanges, isChanged, currentJobId, jobs, matchingJobs } = useSelector((state: any) => state.jobState);
   const currentJobRef = useRef<Job | undefined>(undefined);
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
@@ -55,6 +57,7 @@ const JobsPage: React.FC = () => {
     const fetchJobs = async () => {
       try {
         const res: { jobs: Job[]; matching_jobs: Job[] } = await backendActor.get_my_jobs();
+        console.log("res", {res});
         dispatch({ type: "INIT_JOBS", jobs: res.jobs, matchingJobs: res.matching_jobs, });
       } catch (error) {
         console.error("Error fetching jobs:", error);
@@ -79,7 +82,6 @@ const JobsPage: React.FC = () => {
       setMessages(prev => [...prev, newMessage]);
       
      
-      console.log("currentJobRef", currentJobRef.current);
       const messageToSend = `
       ${BUILD_JOB_PROMPT}
       User Input: ${content}
@@ -90,7 +92,7 @@ const JobsPage: React.FC = () => {
 
       // const response = "```" + gmeniResponseExample + "```";
       const parsed: ProcessedJobResponse = processResponseJobs(response).extractedData;
-      
+      //TODO renreder <JobSearchComponent /> if parsed.isBreakingChanges == true
        // Validate before processing
        if (!currentJobId) {
         
@@ -139,8 +141,7 @@ const JobsPage: React.FC = () => {
         loading={loading}
         onSendMessage={handleSendMessage}
       />
-      {/* {isProfileDone && <JobSearchComponent />} */}
-      <JobSearchComponent />
+      {isProfileDone || matchingJobs.lenght > 0  || currentJobRef?.current?.skills.length > 0 && <JobSearchComponent />}
       {isChanged && <SaveChanges />}
     </Box>
   );

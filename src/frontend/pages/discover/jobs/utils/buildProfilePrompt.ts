@@ -13,7 +13,8 @@ Response format:
     }
   ],
   "category":"String", // "Job" if the person is offering a job (looking for Talent to here) | "Talent" if the person is offering Talent (looking for a job to be hired)
-  "done": False // Some fields are not done yet, and the user still seams to discuss more things
+  "done": False, // Some fields are not done yet, and the user still seams to discuss more things
+  "isBreakingChanges":False
 }
 
 Example response 1:
@@ -27,7 +28,8 @@ Example response 1:
     }
   ],
   "category":"Talent",
-  "done":False // Some fields are not done yet, and the user still seams to discuss more things
+  "done":False,// Some fields are not done yet, and the user still seams to discuss more things
+  "isBreakingChanges":False
 }
 
 Example response 2:
@@ -52,7 +54,7 @@ Example response 2:
   "required_match_score": 7,
     "field": "emails",
     "values": [
-        "example@gmail.com",
+        "example@gmail.com", // Do not add example, keep it empty if no emails provided 
         "example2@gmail.com",
     ]
 },
@@ -68,7 +70,8 @@ Example response 2:
     }
   ],
   "category":"Job",
-  "done":True // User say this is all what I have, or they fulled are fields in both cases this should be true
+  "done":True, // User say this is all what I have, or they fulled are fields in both cases this should be true
+  "isBreakingChanges":True //  if there are changes in skills or breaking changes may changes things.
 }
 
 Job structure reference:

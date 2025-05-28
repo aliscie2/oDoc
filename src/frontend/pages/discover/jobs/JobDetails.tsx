@@ -1,86 +1,217 @@
 import * as React from 'react';
 import { Job } from '$/declarations/backend/backend.did';
-import { Box, Typography, Divider } from '@mui/material';
-import { RichTreeView } from '@mui/x-tree-view/RichTreeView';
-import { TreeItem, TreeItemProps } from '@mui/x-tree-view/TreeItem';
+import { 
+    Box, 
+    Typography, 
+    Divider, 
+    Paper, 
+    Chip, 
+    Stack, 
+    Accordion,
+    AccordionSummary,
+    AccordionDetails
+} from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 interface JobDetailsProps {
     job: Job;
 }
 
-const CustomTreeItem = React.forwardRef(function CustomTreeItem(
-  props: TreeItemProps,
-  ref: React.Ref<HTMLLIElement>,
-) {
-  return (
-    <TreeItem
-      {...props}
-      ref={ref}
-      slotProps={{
-        label: {
-          id: `${props.itemId}-label`,
-        },
-      }}
-    />
-  );
-});
-
 const JobDetails: React.FC<JobDetailsProps> = ({ job }) => {
-    // Generate basic info tree data dynamically for all non-array fields
-    const basicInfoTreeData = Object.keys(job)
-        .filter(key => !Array.isArray(job[key as keyof Job]) && 
-                key !== 'category' && // Skip category field
-                job[key as keyof Job] !== undefined)
-        .map(key => ({
-            id: key,
-            label: `${key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ')}: ${job[key as keyof Job]}`
-        }));
+    const [expandedSection, setExpandedSection] = React.useState<string | false>('basic');
 
-    // Generate tree data for array fields dynamically
-    const generateArrayTreeData = (fieldName: string) => {
-        const fieldValue = job[fieldName as keyof Job];
-        if (!fieldValue || !Array.isArray(fieldValue) || fieldValue.length === 0) {
-            return [];
-        }
-        
-        return fieldValue.map((item, index) => ({
-            id: `${fieldName}-${index}`,
-            label: item
-        }));
+    // Helper function to format field names
+    const formatFieldName = (key: string) => {
+        return key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
     };
 
-    // Get all array fields from job object
+    // Get basic info fields (non-array fields)
+    const basicInfoFields = Object.keys(job)
+        .filter(key => !Array.isArray(job[key as keyof Job]) && 
+                key !== 'category' && 
+                job[key as keyof Job] !== undefined);
+
+    // Get array fields
     const arrayFields = Object.keys(job).filter(key => {
         const value = job[key as keyof Job];
         return Array.isArray(value) && 
-               key !== 'matches' && // Exclude matches from display
+               key !== 'matches' && 
                value.length > 0;
     });
 
-    // Generate section data for all array fields
-    const sectionData = arrayFields.map(field => ({
-        id: field,
-        label: field.charAt(0).toUpperCase() + field.slice(1).replace(/_/g, ' '),
-        children: generateArrayTreeData(field)
-    }));
-
-    // Combine basic info with array sections
-    const allTreeData = [
-        { id: 'basic', label: 'Basic Information', children: basicInfoTreeData },
-        ...sectionData
-    ].filter(section => section.children.length > 0);
+    const handleAccordionChange = (panel: string) => (
+        event: React.SyntheticEvent,
+        isExpanded: boolean,
+    ) => {
+        setExpandedSection(isExpanded ? panel : false);
+    };
 
     return (
-        <Box sx={{ p: 2 }}>
-            <Divider sx={{ mb: 2 }} />
-            <Box sx={{ minHeight: 400, minWidth: 350 }}>
-                <RichTreeView
-                    items={allTreeData}
-                    slots={{ item: CustomTreeItem }}
-                    defaultExpandedItems={['basic', ...arrayFields]}
-                />
-            </Box>
-        </Box>
+        <Paper 
+            elevation={0} 
+            sx={{ 
+                p: 4, 
+                maxWidth: 800, 
+                mx: 'auto',
+                lineHeight: 1.8,
+                fontFamily: 'Georgia, serif'
+            }}
+        >
+            {/* Job Title */}
+            {job.job_titles && (
+                <Typography 
+                    variant="h3" 
+                    component="h1" 
+                    sx={{ 
+                        mb: 3, 
+                        fontWeight: 'bold',
+                        textAlign: 'center',
+                        borderBottom: 2,
+                        borderColor: 'divider',
+                        pb: 2
+                    }}
+                >
+                    {job.job_titles[0]}
+                </Typography>
+            )}
+
+            {/* Basic Information Accordion */}
+            <Accordion 
+                expanded={expandedSection === 'basic'} 
+                onChange={handleAccordionChange('basic')}
+                sx={{
+                    mb: 2,
+                    '&:before': {
+                        display: 'none',
+                    },
+                    borderRadius: '8px !important'
+                }}
+            >
+                <AccordionSummary
+                    expandIcon={<ExpandMoreIcon color="primary" />}
+                    sx={{
+                        borderLeft: 4,
+                        borderColor: 'primary.main',
+                        '& .MuiAccordionSummary-content': {
+                            margin: '12px 0',
+                        }
+                    }}
+                >
+                    <Typography 
+                        variant="h5" 
+                        component="h2" 
+                        sx={{ 
+                            fontWeight: 'bold',
+                            pl: 2
+                        }}
+                    >
+                        Job Overview
+                    </Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                    <Box sx={{ pl: 2 }}>
+                        {basicInfoFields.map((key) => {
+                            const value = job[key as keyof Job];
+                            if (!value) return null;
+                            
+                            return (
+                                <Typography 
+                                    key={key} 
+                                    variant="body1" 
+                                    sx={{ 
+                                        mb: 1.5,
+                                        fontSize: '1.1rem'
+                                    }}
+                                >
+                                    <strong>{formatFieldName(key)}:</strong> {String(value)}
+                                </Typography>
+                            );
+                        })}
+                    </Box>
+                </AccordionDetails>
+            </Accordion>
+
+            {/* Array Fields Accordions */}
+            {arrayFields.map((fieldName) => {
+                const fieldValue = job[fieldName as keyof Job] as string[];
+                if (!fieldValue || fieldValue.length === 0) return null;
+
+                return (
+                    <Accordion 
+                        key={fieldName}
+                        expanded={expandedSection === fieldName} 
+                        onChange={handleAccordionChange(fieldName)}
+                        sx={{
+                            mb: 2,
+                            '&:before': {
+                                display: 'none',
+                            },
+                            borderRadius: '8px !important'
+                        }}
+                    >
+                        <AccordionSummary
+                            expandIcon={<ExpandMoreIcon color="primary" />}
+                            sx={{
+                                borderLeft: 4,
+                                borderColor: 'primary.main',
+                                '& .MuiAccordionSummary-content': {
+                                    margin: '12px 0',
+                                }
+                            }}
+                        >
+                            <Typography 
+                                variant="h5" 
+                                component="h2" 
+                                sx={{ 
+                                    fontWeight: 'bold',
+                                    pl: 2
+                                }}
+                            >
+                                {formatFieldName(fieldName)}
+                            </Typography>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                            {/* Display as chips for better readability */}
+                            {fieldName === 'skills' || fieldName === 'technologies' || fieldName === 'tags' ? (
+                                <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1, pl: 2 }}>
+                                    {fieldValue.map((item, index) => (
+                                        <Chip 
+                                            key={index} 
+                                            label={item} 
+                                            variant="outlined"
+                                            sx={{ 
+                                                fontSize: '0.9rem'
+                                            }}
+                                        />
+                                    ))}
+                                </Stack>
+                            ) : (
+                                /* Display as bulleted list for other arrays */
+                                <Box component="ul" sx={{ pl: 4, mt: 1 }}>
+                                    {fieldValue.map((item, index) => (
+                                        <Typography 
+                                            key={index} 
+                                            component="li" 
+                                            variant="body1"
+                                            sx={{ 
+                                                mb: 1,
+                                                fontSize: '1.1rem',
+                                                lineHeight: 1.6
+                                            }}
+                                        >
+                                            {item}
+                                        </Typography>
+                                    ))}
+                                </Box>
+                            )}
+                        </AccordionDetails>
+                    </Accordion>
+                );
+            })}
+
+            {/* Footer divider */}
+            <Divider sx={{ mt: 4 }} />
+        </Paper>
     );
 };
 

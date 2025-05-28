@@ -55,8 +55,8 @@ fn get_matches(current_job_id:String, skills: Vec<String>, category: Category) -
     let mut filtered_jobs = machig_jobs.iter()
        .filter(|job| {
            !curr.matches.iter().any(|m| 
-               m.job_id == job.id && 
-               m.date_updated >= job.date_updated
+               m.job_id == job.id  
+               && job.date_updated >= m.date_updated
            )
        })
        .cloned()

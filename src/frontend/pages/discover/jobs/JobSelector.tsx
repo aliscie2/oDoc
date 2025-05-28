@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Job } from '$/declarations/backend/backend.did';
 import { Box, Typography, Select, MenuItem, Paper, Divider, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from '@mui/material';
 import JobDetails from './JobDetails';
+import { useBackendContext } from '@/contexts/BackendContext';
 
 const JobSelector: React.FC = () => {
     const dispatch = useDispatch();
@@ -25,16 +26,21 @@ const JobSelector: React.FC = () => {
                 type: "SET_CURRENT_JOB",
                 job: job
             });
-            setSelectedJob(job);
-            setDialogOpen(true);
         }
         setExpanded(false);
+    };
+
+    const handleShowDetails = (job: Job, event: React.MouseEvent) => {
+        event.stopPropagation();
+        setSelectedJob(job);
+        setDialogOpen(true);
     };
 
     const truncateDescription = (desc: string) => {
         const words = desc.split(' ');
         return words.length > 5 ? words.slice(0, 5).join(' ') + '...' : desc;
     };
+    const { backendActor } = useBackendContext();
 
     return (
         <Box sx={{ width: '100%', maxWidth: 800, margin: '0 auto' }}>
@@ -69,8 +75,38 @@ const JobSelector: React.FC = () => {
                             key={job.id} 
                             value={job.id}
                             onClick={() => handleJobSelect(job.id)}
+                            sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                         >
-                            {job.category ? Object.keys(job.category)[0] || '' : ''} - {job.description ? truncateDescription(job.description) : 'Untitled Job'}
+                            <Box sx={{ flex: 1 }}>
+                                {job.category ? Object.keys(job.category)[0] || '' : ''} - {job.description ? truncateDescription(job.description) : 'Untitled Job'}
+                            </Box>
+                            <Button
+                                color='warning'
+                                size="small"
+                                variant="outlined"
+                                onClick={(event) => handleShowDetails(job, event)}
+                                sx={{ ml: 2, minWidth: 'auto' }}
+                            >
+                                Show Details
+                            </Button>
+                            <Button 
+                                color='error' 
+                                size="small" 
+                                variant="outlined" 
+                                disabled={currentJob?.skills.lenght==0 && jobs.length === 1}
+                                onClick={() => {
+                                    if (window.confirm('Are you sure you want to delete this job?')) {
+                                        backendActor?.delete_job(job.id);
+                                        dispatch({
+                                            type: "DELETE_JOB",
+                                            id:job.id
+                                        });
+                                    }
+                                }}
+                                sx={{ ml: 2, minWidth: 'auto' }}
+                            >
+                                Delete
+                            </Button>
                         </MenuItem>
                     ))}
                 </Select>

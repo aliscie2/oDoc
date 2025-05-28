@@ -64,7 +64,7 @@ impl Job {
         crate::JOBS_MATCH_STORE.with(|store| {
             let mut matches: Vec<(usize, Job)> = store.borrow()
                 .iter()
-                .filter(|(_, job)| job.category == category && job.active) // Added active check
+                .filter(|(_, job)| job.user_id != caller().to_string() && job.category == category && job.active) // Added active check
                 .map(|(_, job)| {
                     let mismatches = job.get_mismatches(skills.clone());
                     (mismatches.len(), job.clone())

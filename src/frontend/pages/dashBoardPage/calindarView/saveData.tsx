@@ -70,7 +70,6 @@ function SaveCalendarData() {
 
     try {
       console.log({ calendar_actions });
-      // logger({ calendar_actions });
       let serializedCalendar: CalendarActions = {
         ...calendar_actions,
         events: calendar_actions.events?.map((event) =>

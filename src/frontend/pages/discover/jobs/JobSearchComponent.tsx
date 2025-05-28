@@ -1,120 +1,163 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Box, Typography, CircularProgress, Grid, Card, CardContent, CardActions, Dialog } from '@mui/material';
-import { RichTreeView } from '@mui/x-tree-view/RichTreeView';
-import { TreeItem, TreeItemProps } from '@mui/x-tree-view/TreeItem';
+import { Box, Typography, CircularProgress, Card, CardContent, CardActions, Dialog } from '@mui/material';
 import { Job, Match } from '$/declarations/backend/backend.did';
 import ConnectButton from './ConnectButton';
-import { dummyMatches, dummyMatchingJobs } from './dummyMatchingJobs';
 import { useBackendContext } from '@/contexts/BackendContext';
 import JobDetails from './JobDetails';
-import { JOB_MATCHING_PROMPT } from './jobMatchingPrompt';
+import { JOB_MATCHING_PROMPT } from './utils/jobMatchingPrompt';
 import { GeminiAgent } from '@/AIAgents/GeminiAgent';
 import { processResponseJobs } from './utils/processResponseJobs';
+import DummyMatches from './utils/makeDummyMatches';
 
+// Helper function to determine the category for job matching
+const determineLookingForCategory = (currentJob: Job | undefined) => {
+  let key = Object.keys(currentJob?.category || {})[0];
+  if (key == "Job"){
+    return {"Talent":null}
+  } else {
+    return {"Job":null}
+  }
+};
 
 const JobSearchComponent: React.FC = () => {
   const { backendActor } = useBackendContext();
-
   const dispatch = useDispatch();
-  const { currentJobId, jobs,matchingJobs } = useSelector((state: any) => state.jobState);
-
+  const { currentJobId, jobs, matchingJobs } = useSelector((state: any) => state.jobState);
   const currentJob = jobs.find((job: Job) => job.id === currentJobId);
+  const skills = currentJob?.skills || [];
+  // State management
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [openDialogId, setOpenDialogId] = useState<string | null>(null);
   const [geminiAgent, setGeminiAgent] = useState<GeminiAgent | null>(null);
 
+  // Initialize Gemini Agent once
   useEffect(() => {
-    setGeminiAgent(new GeminiAgent());
-  }, []);
-
-  useEffect(() => {
-    const fetchMatchingJobs = async () => {
-      if (!currentJobId) return;
-      
-      setLoading(true);
-      setError(null);
-      
-      // try {
-      //   const currentJob = jobs.find((job: Job) => job.id === currentJobId);
-      //   const skills = currentJob?.skills || [];
-      //   let lookingForCategory = {};
-      //   if (currentJob?.category && JSON.stringify(currentJob.category) === JSON.stringify({Job: null})) {
-      //       lookingForCategory = {Talent: null};
-      //   } else if (currentJob?.category && JSON.stringify(currentJob.category) === JSON.stringify({Talent: null})) {
-      //       lookingForCategory = {Job: null};
-      //   } else {
-      //       lookingForCategory = currentJob?.category || {Other: null};
-      //   }
-      //   const newMatches: Array<Job> = await backendActor.get_matches(currentJobId, skills, lookingForCategory);
-      //   // console.log({newMatches,currentJobId, skills, lookingForCategory});
-        
-      //   // Filter out matches that are already in currentJob.matches
-      //   let allJobMatches = newMatches.filter(
-      //     (m: Match) => !currentJob?.matches?.some(
-      //       (existing: Match) => existing.job_id === m.job_id
-      //     )
-      //   );
-
-        
-      //   // we put the matchs and old matches togather
-      //   // we filter out repeated ones from the old matches
-      //   // if there is ID repeattion we remove only the old one and keep new ones
-      //   // if new one != old_one we set is_updated=true
-      //   // if is_updated do not filter it out and put it back into the ai.
-      //   // we can check that if matchingJob.dated_updated > matche.dated_updated
-      //   // let oldMatches = currentJob?.matches.map(m=>jobs.find(j=>j.id==m.job_id)) || [];
-      //   // console.log({oldMatches});
-      //   // oldMatches = oldMatches?oldMatches.fiter(o=>!allJobMatches.some((m: Match) => m.job_id === o.id)):[];
-      //   // allJobMatches.push(...oldMatches);
-        
-        
-      //   let actualNewMatches = newMatches.filter(
-      //     job => !matchingJobs.some((matchingJob:Job) => matchingJob.id === job.id)
-      //   );
-
-      //   if (actualNewMatches.length > 0) {
-      //     const messageToSend = `
-      //     ${JOB_MATCHING_PROMPT}
-      //     candidates: ${JSON.stringify(allJobMatches)}
-      //     Current: ${JSON.stringify(currentJob)}
-      //     `;
-          
-      //     const response = await geminiAgent?.sendMessage(messageToSend);
-      //       const parsed: any =response&& processResponseJobs(response).extractedData;
-            
-      //       parsed && dispatch({
-      //         type: "UPDATE_MATCHES",
-      //         matches: parsed.matches,
-      //       });  
-      //   }
-        
-
-      //   dispatch({
-      //     type: "UPDATE_MATCHING_JOBS",
-      //     matchingJobs: allJobMatches,
-      //     matches: [],
-      //   });
-      // } catch (err) {
-      //   console.log("Error fetching matching jobs:", err);
-      //   setError("Failed to fetch matching jobs. Please try again.");
-      // } finally {
-      //   setLoading(false);
-      // }
+    const initAgent = async () => {
+      try {
+        setGeminiAgent(new GeminiAgent());
+      } catch (err) {
+        console.error('Failed to initialize Gemini Agent:', err);
+        setError('Failed to initialize AI agent');
+      }
     };
     
-    fetchMatchingJobs();
-  }, [currentJobId, dispatch]);
+    initAgent();
+  }, []);
+
+  const fetchNewMtches = async ()=>{
+    // !currentJob && return [];
+    const lookingForCategory = determineLookingForCategory(currentJob);
+
+      // Backend handles all filtering logic
+      const matchingJobs: Array<Job> = await backendActor.get_matches(
+        currentJobId,
+        skills,
+        lookingForCategory
+      );
+      // Process with AI and dispatch
+      return matchingJobs
+  }
+  // Process matches with AI and dispatch results
+  const processAndDispatchMatches = async (newMatches)=>{
+    {
+      // if (!geminiAgent || newMatches.length === 0) {
+        
+      //   return;
+      // }
   
-  // if (loading) {
-  //   return (
-  //     <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-  //       <CircularProgress />
-  //     </Box>
-  //   );
-  // }
+      try {
+        // Process with AI
+        const messageToSend = `
+          ${JOB_MATCHING_PROMPT}
+          candidates: ${JSON.stringify(newMatches)}
+          Current: ${JSON.stringify(currentJob)}
+        `;
+        
+        const response = await geminiAgent.sendMessage(messageToSend);
+        const parsed = response && processResponseJobs(response).extractedData;
+        
+        // Dispatch results
+        if (parsed?.matches) {
+          return parsed.matches.map((match: any) => ({
+            job_id: match.job_id,
+            score: match.score,
+            missmatching_skills: match.missmatching_skills,
+            date_updated: 0,
+            is_connected: false,
+            user_id: '',
+          }));
+        }
+        
   
+      } catch (err) {
+        console.error('AI processing failed:', err);
+        // Still dispatch the jobs even if AI processing fails
+        dispatch({
+          type: "UPDATE_MATCHING_JOBS",
+          matchingJobs: newMatches,
+          matches: [],
+        });
+      }
+    }
+
+  }
+
+  // Fetch matches from backend
+  
+
+
+  useEffect(() => {
+    if (!geminiAgent){
+      return
+    }
+    (async()=>{
+      setLoading(true);
+      const matchingJobs = await fetchNewMtches();
+      console.log("matches", {matchingJobs, currentJob})
+      let matches = await processAndDispatchMatches(matchingJobs);
+      // let matches = DummyMatches(matchingJobs)
+      setLoading(false);
+      if (matches && matches.length>0){  
+        dispatch({
+          type: "UPDATE_MATCHING_JOBS",
+          matchingJobs,
+          matches
+        });
+      }
+    })()
+  }, [currentJobId, backendActor, geminiAgent]);
+
+  // UI Event Handlers
+  const handleOpenDialog = useCallback((jobId: string) => {
+    setOpenDialogId(jobId);
+  }, []);
+
+  const handleCloseDialog = useCallback(() => {
+    setOpenDialogId(null);
+  }, []);
+
+  const truncateTitle = useCallback((title: string) => {
+    if (!title) return '';
+    const words = title.split(' ');
+    return words.slice(0, 5).join(' ') + (words.length > 5 ? '...' : '');
+  }, []);
+
+
+  // Loading State
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+        <CircularProgress />
+        <Typography sx={{ ml: 2 }}>
+          {!geminiAgent ? 'Initializing AI agent...' : 'Finding matches...'}
+        </Typography>
+      </Box>
+    );
+  }
+
+  // Error State
   if (error) {
     return (
       <Box sx={{ p: 2, color: 'error.main' }}>
@@ -122,65 +165,92 @@ const JobSearchComponent: React.FC = () => {
       </Box>
     );
   }
-  
-  if (matchingJobs?.length === 0) {
+
+  // No current job selected
+  if (!currentJob) {
     return (
       <Box sx={{ p: 2 }}>
-        <Typography>No matching jobs found. Try updating your profile with more skills.</Typography>
+        <Typography>Please select a job to view matches.</Typography>
       </Box>
     );
   }
-  
-  const handleOpenDialog = (jobId: string) => {
-    setOpenDialogId(jobId);
-  };
 
-  const handleCloseDialog = () => {
-    setOpenDialogId(null);
-  };
-
-  const truncateTitle = (title: string) => {
-    const words = title?.split(' ');
-    return words&&words.slice(0, 5).join(' ') + (words.length > 5 ? '...' : '');
-  };
-
+  // Prepare sorted matches for display
+  const sortedMatches = currentJob.matches
+    .map(match => ({
+      job: matchingJobs.find((j: Job) => j.id === match.job_id),
+      match
+    }))
+    .sort((a, b) => (b.match?.score || 0) - (a.match?.score || 0));
+    
+  console.log("sortedMatches", { sortedMatches })
   return (
     <Box sx={{ mt: 4 }}>
-      <Typography variant="h5" sx={{ mb: 2 }}>Matching Jobs ({matchingJobs.length})</Typography>
+      <Typography variant="h5" sx={{ mb: 2 }}>
+        Matching Jobs ({currentJob.matches.length})
+        {!geminiAgent && (
+          <Typography component="span" variant="caption" sx={{ ml: 1, color: 'warning.main' }}>
+            (AI scoring pending...)
+          </Typography>
+        )}
+      </Typography>
       
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        {matchingJobs
-          .map(job => ({
-            job,
-            match: currentJob?.matches?.find((m: Match) => m.job_id === job.id)
-          }))
-          .sort((a, b) => (b.match?.score || 0) - (a.match?.score || 0))
-          .map(({ job, match }) => (
+      {sortedMatches.length === 0 ? (
+        <Box sx={{ p: 3, textAlign: 'center' }}>
+          <Typography color="text.secondary">
+            No matching jobs found. Try adjusting your job criteria.
+          </Typography>
+        </Box>
+      ) : (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {sortedMatches.map(({ job, match }) => {
+            if (!job) return <Card onClick={()=> dispatch({type:"DELETE_MATCH", id:match.job_id})} >Job deleted</Card>
+            return (
             <Card 
               key={job.id}
-              sx={{ cursor: 'pointer', width: '100%' }}
+              sx={{ 
+                cursor: 'pointer', 
+                width: '100%',
+                '&:hover': { 
+                  boxShadow: 2,
+                  transform: 'translateY(-2px)',
+                  transition: 'all 0.2s ease-in-out'
+                }
+              }}
               onClick={() => handleOpenDialog(job.id)}
             >
               <CardContent>
-                <Typography variant="h6">
-                  {job?.job_titles&&truncateTitle(job?.job_titles[0])}
+                <Typography variant="h6" sx={{ mb: 1 }}>
+                  {job?.job_titles && truncateTitle(job.job_titles[0])}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Matching Score: {match?.score || 'N/A'}
+                
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                  Matching Score: {match?.score ? `${match.score}%` : 'Calculating...'}
                 </Typography>
+                
                 {job.emails?.[0] && (
                   <Typography variant="body2" color="text.secondary">
                     Contact: {job.emails[0]}
                   </Typography>
                 )}
+                
+                {match?.missmatching_skills?.length > 0 && (
+                  <Typography variant="caption" color="warning.main" sx={{ display: 'block', mt: 1 }}>
+                    Missing skills: {match.missmatching_skills.slice(0, 3).join(', ')}
+                    {match.missmatching_skills.length > 3 && '...'}
+                  </Typography>
+                )}
               </CardContent>
+              
               <CardActions>
                 <ConnectButton jobId={job.id} />
               </CardActions>
             </Card>
-          ))}
-      </Box>
+          )})}
+        </Box>
+      )}
       
+      {/* Job Details Dialogs */}
       {matchingJobs.map((job: Job) => (
         <Dialog
           key={job.id}

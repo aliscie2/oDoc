@@ -111,7 +111,6 @@ const Scheduler = React.memo(() => {
       fetchAttempted.current = true;
       if (isCalendarPage) {
         let fetchedCalendar = await backendActor.get_calendar(calendarID);
-        // logger({ fetchedCalendar });
         fetchedCalendar = fetchedCalendar[0];
         if (!fetchedCalendar) {
           enqueueSnackbar("Calendar not found", { variant: "error" });

@@ -49,7 +49,7 @@ const SaveChanges: React.FC = () => {
     setLoading(true);
     
     try {
-      logger({ jobChanges });
+      logger({jobChanges})
       const res = await backendActor.update_job(jobChanges);
       if (res?.Err) {
         enqueueSnackbar(res.Err, { variant: "error" });
@@ -72,40 +72,40 @@ const SaveChanges: React.FC = () => {
   }, [backendActor, jobChanges, dispatch, enqueueSnackbar]);
 
   // Handle browser/tab close with auto-save
-  useEffect(() => {
-    const handleBeforeUnload = async (e: BeforeUnloadEvent) => {
-      if (isChanged && jobChanges.length > 0) {
-        e.preventDefault();
-        e.returnValue = "You have unsaved changes. Please wait while we save them...";
+  // useEffect(() => {
+  //   const handleBeforeUnload = async (e: BeforeUnloadEvent) => {
+  //     if (isChanged && jobChanges.length > 0) {
+  //       e.preventDefault();
+  //       e.returnValue = "You have unsaved changes. Please wait while we save them...";
         
-        // Show saving dialog
-        setShowSavingDialog(true);
+  //       // Show saving dialog
+  //       setShowSavingDialog(true);
         
-        try {
-          // Attempt to save changes
-          const result = await saveChanges();
+  //       try {
+  //         // Attempt to save changes
+  //         const result = await saveChanges();
           
-          // If save was successful, allow the tab to close
-          if (result.Ok) {
-            // Small delay to ensure the save completes
-            setTimeout(() => {
-              setShowSavingDialog(false);
-              window.removeEventListener('beforeunload', handleBeforeUnload);
-            }, 500);
-          } else {
-            // If save failed, keep the dialog open
-            setShowSavingDialog(false);
-          }
-        } catch (error) {
-          setShowSavingDialog(false);
-          console.error("Error during auto-save:", error);
-        }
-      }
-    };
+  //         // If save was successful, allow the tab to close
+  //         if (result.Ok) {
+  //           // Small delay to ensure the save completes
+  //           setTimeout(() => {
+  //             setShowSavingDialog(false);
+  //             window.removeEventListener('beforeunload', handleBeforeUnload);
+  //           }, 500);
+  //         } else {
+  //           // If save failed, keep the dialog open
+  //           setShowSavingDialog(false);
+  //         }
+  //       } catch (error) {
+  //         setShowSavingDialog(false);
+  //         console.error("Error during auto-save:", error);
+  //       }
+  //     }
+  //   };
 
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [isChanged, jobChanges, saveChanges]);
+  //   window.addEventListener("beforeunload", handleBeforeUnload);
+  //   return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  // }, [isChanged, jobChanges, saveChanges]);
 
   const handleSave = useCallback(() => {
     saveChanges();

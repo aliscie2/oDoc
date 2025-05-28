@@ -24,6 +24,7 @@ type JobAction =
     | { type: "SET_JOBS"; jobs: Job[] }
     | { type: "ADD_JOB"; job: Job }
     | { type: "DELETE_JOB"; id: string }
+    | { type: "DELETE_MATCH"; id: string }
     | { type: "UPDATE_FIELDS"; updates: Array<[string, Array<string>]>; category?: string; required_match_score: number }
     | { type: "UPDATE_MATCHING_JOBS"; matchingJobs: Job[]; matches: Match[] }
     | { type: "UPDATE_MATCHES"; matches: Match[], }
@@ -118,7 +119,6 @@ export function jobReducer(state: JobState = initialState, action: JobAction): J
                     jobUpdate.id = newJob.id
                     jobUpdate.active = [true]
                     jobUpdate.updates = action.updates
-                    console.log(jobUpdate)
                     return {
                         ...state,
                         currentJobId: newJob.id,
@@ -156,33 +156,37 @@ export function jobReducer(state: JobState = initialState, action: JobAction): J
                 };
 
 
-        case "UPDATE_MATCHING_JOBS":
-            let oldJob = {...state.jobs.find(j => j.id === state.currentJobId)};
-            let jobUpdate2: JobUpdate ={
-                id: state.currentJobId,
-                active: [],
-                matches: [],
-                updates: [],
-                category: [],
-                required_match_score: []
-            };
+                case "UPDATE_MATCHING_JOBS":
+                    //  is newMatches action.matches + state.currentJobId)?.matches if job_id is repeated we replace with match from action.matches
+                    let newMatches2 = state.jobs.find(j => j.id === state.currentJobId)?.matches.filter(match => !action.matches.some(m=>m.job_id==match.job_id) ) || [];
 
-            let oldJobUpdate2 = state.jobChanges.find(j=>j.id==state.currentJobId);
-            const mergedMatches = mergeMatches(oldJobUpdate2?.matches[0] || [], action.matches || [])||[];
-            if (oldJobUpdate2){
-                jobUpdate2 = {...oldJobUpdate2};
-                jobUpdate2.matches = [mergedMatches]
-            };
+                    newMatches2.push(...action.matches);
 
-            oldJob.matches = mergeMatches(oldJob.matches || [], mergedMatches || [])||[]; ;
 
-            return {
-                ...state,
-                jobs: state.jobs.map(j => j.id === state.currentJobId ? oldJob : j),
-                matchingJobs: action.matchingJobs,
-                jobChanges: [...state.jobChanges.filter(j => j.id!== state.currentJobId), jobUpdate2],
-                isChanged:true,
-            };
+                    let newmMtchingJobs = state.matchingJobs.filter(j => !action.matchingJobs.some(m=>m.id==j.id));
+                    newmMtchingJobs.push(...action.matchingJobs);
+                    
+                    
+                    return {
+                        ...state,
+                        jobs: state.jobs.map(j => j.id === state.currentJobId ? {...j,matches:newMatches2} : j),
+                        matchingJobs: newmMtchingJobs,
+                        jobChanges: state.jobChanges.some(j => j.id === state.currentJobId)
+                        ? state.jobChanges.map(j => 
+                            j.id === state.currentJobId 
+                                ? { ...j, matches: [newMatches2] }
+                                : j
+                          )
+                        : [...state.jobChanges, {
+                            id: state.currentJobId,
+                            active: [],
+                            matches: [newMatches2],
+                            updates: [],
+                            category: [],
+                            required_match_score: []
+                          }],
+                        isChanged: true,
+                    };
 
             case "UPDATE_MATCHES":
                 const existingJobChange = state.jobChanges.find(j => j.id === state.currentJobId);
@@ -193,7 +197,7 @@ export function jobReducer(state: JobState = initialState, action: JobAction): J
                     // Change exists - update the existing one
                     newChange = {
                         ...existingJobChange,
-                        matches: [action.matches]
+                        matches: [[...action.matches, ...(existingJobChange.matches[0] || [])]]
                     };
                 } else {
                     // Change doesn't exist - create a new one
@@ -227,6 +231,7 @@ export function jobReducer(state: JobState = initialState, action: JobAction): J
         
 
         case "INIT_JOBS":
+
                 return {
                     ...state,
                     jobs: action.jobs,
@@ -250,10 +255,41 @@ export function jobReducer(state: JobState = initialState, action: JobAction): J
             return {
                 ...state,
                 jobs: state.jobs.filter(job => job.id !== action.id),
-                currentJobId: state.currentJobId === action.id ? null : state.currentJobId,
-                jobChanges: state.jobChanges.filter(j => j.id !== action.id),
+                // currentJobId: state.currentJobId === action.id ? null : state.currentJobId,
+                // jobChanges: state.jobChanges.filter(j => j.id !== action.id),
             };
 
+            case "DELETE_MATCH":
+                let newMatches = state.jobs.find(j => j.id === state.currentJobId)?.matches.filter(match => match.job_id !== action.id) || [];
+            
+                // Calculate updated jobChanges once
+                let updatedJobChanges = state.jobChanges.some(j => j.id === state.currentJobId)
+                    ? state.jobChanges.map(j => 
+                        j.id === state.currentJobId 
+                            ? { ...j, matches: [newMatches] }
+                            : j
+                      )
+                    : [...state.jobChanges, {
+                        id: state.currentJobId,
+                        active: [],
+                        matches: [newMatches],
+                        updates: [],
+                        category: [],
+                        required_match_score: []
+                      }];
+            
+                return {
+                    ...state,
+                    jobChanges: updatedJobChanges,
+                    jobs: state.jobs.map(job => 
+                        job.id === state.currentJobId 
+                            ? { ...job, matches: job.matches.filter(match => match.job_id !== action.id) }
+                            : job
+                    ),
+                    isChanged: true,
+                };
+
+            
         default:
             return state;
     }
