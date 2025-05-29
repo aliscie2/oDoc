@@ -137,7 +137,7 @@ const CustomToolbar = (toolbar) => {
               <CalendarManagement />
               <SaveCalendarData />
               <ResetCalendarData />
-              <GoogleCalendarIntegration />  {/* Add to desktop toolbar */}
+              <GoogleCalendarIntegration /> 
               <GmailConnection/>
             </ButtonGroup>
           )}

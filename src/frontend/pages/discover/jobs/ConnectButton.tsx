@@ -14,7 +14,7 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({ jobId }) => {
   const { currentJobId, jobs, matches } = useSelector((state: any) => state.jobState);
   const currentJob = jobs?.find((job: any) => job.id === currentJobId);
   let match = currentJob.matches?.find((match: any) => match.job_id === jobId);
-  console.log("match", match);
+
   const dispatch = useDispatch();
   const [connecting, setConnecting] = useState(false);
   const [connected, setConnected] = useState(false);
@@ -24,12 +24,12 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({ jobId }) => {
     e.stopPropagation();
     // setConnecting(true);
     
-    dispatch({
-      type: "UPDATE_MATCHES",
-      matches: [{...match,is_connected:true}]
-    });
+    // dispatch({
+    //   type: "UPDATE_MATCHES",
+    //   matches: [{...match,is_connected:true}]
+    // });
     let res = await sendEmail("test","<h1>title is her</h1>",['alihushamsci@icloud.com'])
-    console.log("res", res);
+    console.log({res})
     // try {
 
     //   const options =

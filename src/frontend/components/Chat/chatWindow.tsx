@@ -44,6 +44,7 @@ const ChatWindow = memo(
     onUpdateChat,
     dialog = false,
   }) => {
+
     const [isDragging, setIsDragging] = useState(false);
     const [isSettingsView, setIsSettingsView] = useState(false);
     const [formData, setFormData] = useState({
@@ -221,7 +222,7 @@ const ChatWindow = memo(
           <Toolbar variant="dense">
             <DragHandle sx={{ mr: 1 }} />
             <Typography
-              to={`user?id=${chat.members.find((m) => m.toText() != profile?.id)}`}
+              to={`user?id=${chat.members.find((m) => String(m) != profile?.id)}`}
               component={Link}
               variant="subtitle2"
               sx={{ flex: 1 }}

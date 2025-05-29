@@ -27,6 +27,7 @@ import { RootState } from "../../redux/reducers";
 import LoadMorePosts from "./LoadMorePosts";
 import Posts from "./posts";
 import Jobs from "./jobs";
+import GmailConnection from "./jobs/setUpConnect";
 
 
 const SidebarCard = ({ title, children }) => (
@@ -254,16 +255,18 @@ const SocialFeed = () => {
         <MainContainer>
           <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
             <Tabs value={activeTab} onChange={handleTabChange} aria-label="discover tabs">
-              <Tab label="Posts" />
               <Tab label="Jobs" />
+              <Tab label="Posts" />
             </Tabs>
           </Box>
           
-          {activeTab === 0 && <Posts posts={posts} isLoggedIn={isLoggedIn} searchValue={searchValue} />}
-          {activeTab === 1 && <Jobs />}
+          
+          {activeTab === 0 && <Jobs />}
+          {activeTab === 1 && <Posts posts={posts} isLoggedIn={isLoggedIn} searchValue={searchValue} />}
         </MainContainer>
         <Sidebar items={sidebarContent.right} position="right" />
       </FeedWrapper>
+      <GmailConnection/>
     </ThemeProvider>
   );
 };

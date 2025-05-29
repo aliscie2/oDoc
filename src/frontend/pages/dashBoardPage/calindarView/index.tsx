@@ -128,18 +128,19 @@ const Scheduler = React.memo(() => {
           type: "SET_CALENDAR",
           calendar: fetchedCalendar,
         });
-      } else if (profile) {
-        let res = await backendActor.get_my_calendar();
-        // console.log({ res });
-        res.events = res.events.map((event) => EventTimezone(event));
-        res.availabilities = res.availabilities.map((event) =>
-          AvailabilityTimezone(event),
-        );
-        dispatch({
-          type: "SET_CALENDAR",
-          calendar: res,
-        });
-      }
+      } 
+      // else if (profile) {
+      //   let res = await backendActor.get_my_calendar();
+      //   // console.log({ res });
+      //   res.events = res.events.map((event) => EventTimezone(event));
+      //   res.availabilities = res.availabilities.map((event) =>
+      //     AvailabilityTimezone(event),
+      //   );
+      //   dispatch({
+      //     type: "SET_CALENDAR",
+      //     calendar: res,
+      //   });
+      // }
     } catch (err) {
       console.log({ err });
       if (isMounted.current) {

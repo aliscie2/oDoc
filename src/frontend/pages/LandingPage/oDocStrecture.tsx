@@ -46,7 +46,7 @@ const ODOCInfographic: React.FC = () => {
       title: "AI Job Matcher",
       description: "Match-based system finds opportunities instantly, or get alerted later.",
       icon: <img src={jobMatcherImage} width="50px" style={{ filter: 'drop-shadow(0 0 8px rgba(0, 212, 255, 0.8))' }} />,
-      angle: 0,
+      angle: 228,
       color: "from-blue-500 to-cyan-400",
       glowColor: "rgba(0, 212, 255, 0.8)"
     },
@@ -55,7 +55,7 @@ const ODOCInfographic: React.FC = () => {
       title: "AI Auto-Release",
       description: "Conditions met? Payment flows automatically",
       icon: <img src={autoReleaseImage} width="60px" style={{ filter: 'drop-shadow(0 0 8px rgba(255, 149, 0, 0.8))' }} />,
-      angle: 60,
+      angle: 40.5,
       color: "from-yellow-500 to-orange-400",
       glowColor: "rgba(255, 149, 0, 0.8)"
     },
@@ -64,7 +64,7 @@ const ODOCInfographic: React.FC = () => {
       title: "AI Analytics",
       description: "Data-driven suggestions for team and tasks",
       icon: <img src={analyticsImage} width="50px" style={{ filter: 'drop-shadow(0 0 8px rgba(0, 255, 136, 0.8))' }} />,
-      angle: 120,
+      angle: 143,
       color: "from-green-500 to-emerald-400",
       glowColor: "rgba(0, 255, 136, 0.8)"
     },
@@ -73,7 +73,7 @@ const ODOCInfographic: React.FC = () => {
       title: "Trust/Karma Score",
       description: "Transparent behavior builds or breaks your score",
       icon: <img src={karmaImage} width="50px" style={{ filter: 'drop-shadow(0 0 8px rgba(184, 76, 255, 0.8))' }} />,
-      angle: 180,
+      angle: 312,
       color: "from-purple-500 to-violet-400",
       glowColor: "rgba(184, 76, 255, 0.8)"
     },
@@ -82,7 +82,7 @@ const ODOCInfographic: React.FC = () => {
       title: "SNS DAO",
       description: "Decentralized governance layer for collaboration",
       icon: <img src={snsimage} width="50px" style={{ filter: 'drop-shadow(0 0 8px rgba(255, 76, 139, 0.8))' }} />,
-      angle: 240,
+      angle: 0,
       color: "from-pink-500 to-rose-400",
       glowColor: "rgba(255, 76, 139, 0.8)"
     },
@@ -91,7 +91,8 @@ const ODOCInfographic: React.FC = () => {
       title: "Origyn Identity Verification",
       description: "Authenticate users using on-chain identity tech",
       icon: <img src={identityImage} width="50px" style={{ filter: 'drop-shadow(0 0 8px rgba(76, 154, 255, 0.8))' }} />,
-      angle: 300,
+      
+      angle: 180,
       color: "from-indigo-500 to-blue-400",
       glowColor: "rgba(76, 154, 255, 0.8)"
     }
@@ -227,45 +228,19 @@ onMouseLeave={() => setCoreActive(false)}>
 
           {/* Core Container */}
           <Box sx={{
-    position: 'relative',
-    width: '150px',
-    height: '150px',
-    borderRadius: '50%',
-    background: 'radial-gradient(circle, #1a1a1a 30%, #0a0a0a 100%)',
-    border: '2px solid #00ffff',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'all 0.3s ease',
-    transform: coreActive ? 'scale(1.1)' : 'scale(1)',
-    boxShadow: coreActive ? '0 0 30px rgba(0, 255, 255, 0.8)' : '0 0 15px rgba(0, 255, 255, 0.4)'
   }}>
              <img 
       src={odocIcon} 
       alt="ODOC Logo" 
       style={{ 
-        width: '150px',
+        width: '200px',
         filter: `drop-shadow(0 0 8px rgba(0, 255, 255, 0.8)) ${coreActive ? 'brightness(1.2)' : 'brightness(1)'}`,
         transition: 'all 0.3s ease'
       }} 
     />
           </Box>
 
-          {/* Energy Pulses */}
-          <Box sx={{
-            position: 'absolute',
-            inset: '-20px',
-            borderRadius: '50%',
-            border: '1px solid rgba(0, 255, 255, 0.5)',
-            animation: pulseActive ? 'energyPulse 2s ease-out infinite' : 'none'
-          }} />
-          <Box sx={{
-            position: 'absolute',
-            inset: '-40px',
-            borderRadius: '50%',
-            border: '1px solid rgba(255, 0, 255, 0.3)',
-            animation: pulseActive ? 'energyPulse 2s ease-out infinite 0.5s' : 'none'
-          }} />
+        
         </Box>
 
         {/* Connection Lines and Orbital Elements */}

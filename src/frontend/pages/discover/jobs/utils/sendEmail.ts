@@ -28,7 +28,7 @@ const sendEmail = async (subject:string, body:string, receiverEmail:string[]) =>
       import.meta.env.VITE_REACT_APP_EMAILJS_TEMPLATE_ID,
       {
         // from_email: "contact@odoc.app",
-        from_email: "weplutus.1@gmail.com",
+        from_email: "weplutus@gmail.com",
         to_email: receiverEmail,
         subject: subject,
         html_message: sanitizedBody,

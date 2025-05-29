@@ -323,5 +323,5 @@ fn add_google_calendar_id(calendar_id: String, ids: Vec<String>) -> Result<Strin
     }
 
     calendar.save()?;
-    Ok("Google calendar IDs added successfully".to_string())
+    Ok(calendar.id)
 }

@@ -57,7 +57,7 @@ export const AvailabilityTimezone = (
       };
       WeeklyRecurring?: {
         days: number[];
-        valid_until?: number[] | null; // Make valid_until optional
+        valid_until?: number[]; // Make valid_until optional
       };
       SpecificDates?: number[];
     };
@@ -79,7 +79,7 @@ export const AvailabilityTimezone = (
       ...convertedScheduleType.WeeklyRecurring,
       valid_until: convertedScheduleType.WeeklyRecurring.valid_until 
         ? convertedScheduleType.WeeklyRecurring.valid_until.map(
-            (time) => (time ? Number(converter(BigInt(time))) : null)
+            (time) => (time ? Number(converter(BigInt(time))) : 0)
           )
         : undefined, // Handle undefined/null valid_until
     };

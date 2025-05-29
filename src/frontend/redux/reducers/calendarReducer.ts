@@ -310,7 +310,6 @@ export function calendarReducer(state = initialState, action: any): any {
       };
 
     case "SET_GOOGLE_CALENDAR":
-      console.log({action})
       return {
         ...state,
         is_google_connected:true,
@@ -319,6 +318,25 @@ export function calendarReducer(state = initialState, action: any): any {
           id: `${event.id}`, // Add prefix to avoid ID conflicts
           isGoogleEvent: true // Add flag to identify Google events
         })),
+      };
+
+    case "ADD_CALENDAR_EMAIL":
+      if (state.calendar.id === action.id){
+        return {
+         ...state,
+          calendar: {
+           ...state.calendar,
+            googleIds: [...(state.calendar.googleIds || []), action.email]
+          }
+        };
+      }
+      return {
+        ...state,
+        calendar: {
+          ...state.calendar,
+          googleIds: [...(state.calendar.googleIds || []), action.email],
+          id: action.id,
+        }
       };
 
     default:

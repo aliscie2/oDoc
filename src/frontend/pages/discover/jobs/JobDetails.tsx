@@ -9,9 +9,19 @@ import {
     Stack, 
     Accordion,
     AccordionSummary,
-    AccordionDetails
+    AccordionDetails,
+    Card,
+    CardContent,
+    Grid,
+    Button
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import PauseCircleIcon from '@mui/icons-material/PauseCircle';
+import PersonIcon from '@mui/icons-material/Person';
+import { Link } from 'react-router-dom';
+import { formatRelativeTime } from '@/utils/time';
+import { useSelector } from 'react-redux';
 
 interface JobDetailsProps {
     job: Job;
@@ -19,23 +29,32 @@ interface JobDetailsProps {
 
 const JobDetails: React.FC<JobDetailsProps> = ({ job }) => {
     const [expandedSection, setExpandedSection] = React.useState<string | false>('basic');
+    const { profile } = useSelector((state: any) => state.filesState);
 
     // Helper function to format field names
     const formatFieldName = (key: string) => {
         return key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
     };
 
-    // Get basic info fields (non-array fields)
+    // Get basic info fields (filtered to exclude specified fields)
     const basicInfoFields = Object.keys(job)
-        .filter(key => !Array.isArray(job[key as keyof Job]) && 
-                key !== 'category' && 
-                job[key as keyof Job] !== undefined);
+        .filter(key => 
+            !Array.isArray(job[key as keyof Job]) && 
+            key !== 'category' && 
+            key !== 'date_created' &&
+            key !== 'date_updated' &&
+            key !== 'user_id' &&
+            key !== 'active' &&
+            key !== 'job_titles' &&
+            job[key as keyof Job] !== undefined
+        );
 
     // Get array fields
     const arrayFields = Object.keys(job).filter(key => {
         const value = job[key as keyof Job];
         return Array.isArray(value) && 
                key !== 'matches' && 
+               key !== 'job_titles' &&
                value.length > 0;
     });
 
@@ -51,85 +70,161 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job }) => {
             elevation={0} 
             sx={{ 
                 p: 4, 
-                maxWidth: 800, 
+                maxWidth: 900, 
                 mx: 'auto',
-                lineHeight: 1.8,
-                fontFamily: 'Georgia, serif'
+                borderRadius: 3
             }}
         >
-            {/* Job Title */}
-            {job.job_titles && (
-                <Typography 
-                    variant="h3" 
-                    component="h1" 
-                    sx={{ 
-                        mb: 3, 
-                        fontWeight: 'bold',
-                        textAlign: 'center',
-                        borderBottom: 2,
-                        borderColor: 'divider',
-                        pb: 2
-                    }}
-                >
-                    {job.job_titles[0]}
-                </Typography>
-            )}
-
-            {/* Basic Information Accordion */}
-            <Accordion 
-                expanded={expandedSection === 'basic'} 
-                onChange={handleAccordionChange('basic')}
-                sx={{
-                    mb: 2,
-                    '&:before': {
-                        display: 'none',
-                    },
-                    borderRadius: '8px !important'
-                }}
-            >
-                <AccordionSummary
-                    expandIcon={<ExpandMoreIcon color="primary" />}
-                    sx={{
-                        borderLeft: 4,
-                        borderColor: 'primary.main',
-                        '& .MuiAccordionSummary-content': {
-                            margin: '12px 0',
-                        }
-                    }}
-                >
+            {/* Header Section */}
+            <Box sx={{ 
+                textAlign: 'center', 
+                mb: 4,
+                position: 'relative'
+            }}>
+                {/* Job Title */}
+                {job.job_titles && (
                     <Typography 
-                        variant="h5" 
-                        component="h2" 
+                        variant="h3" 
+                        component="h1" 
                         sx={{ 
-                            fontWeight: 'bold',
-                            pl: 2
+                            mb: 2, 
+                            fontWeight: 800,
+                            textShadow: '0 2px 10px rgba(0,0,0,0.1)'
                         }}
                     >
-                        Job Overview
+                        {job.job_titles[0]}
                     </Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                    <Box sx={{ pl: 2 }}>
-                        {basicInfoFields.map((key) => {
-                            const value = job[key as keyof Job];
-                            if (!value) return null;
-                            
-                            return (
-                                <Typography 
-                                    key={key} 
-                                    variant="body1" 
-                                    sx={{ 
-                                        mb: 1.5,
-                                        fontSize: '1.1rem'
-                                    }}
-                                >
-                                    <strong>{formatFieldName(key)}:</strong> {String(value)}
-                                </Typography>
-                            );
-                        })}
-                    </Box>
-                </AccordionDetails>
-            </Accordion>
+                )}
+
+                {/* Status and Actions Row */}
+                <Stack 
+                    direction="row" 
+                    spacing={2} 
+                    justifyContent="center" 
+                    alignItems="center"
+                    sx={{ mb: 3 }}
+                >
+                    {/* Active Status */}
+                    <Chip
+                        icon={job.active ? <CheckCircleIcon /> : <PauseCircleIcon />}
+                        label={job.active ? "Active" : "Inactive"}
+                        color={job.active ? "success" : "default"}
+                        variant="filled"
+                        sx={{ 
+                            fontWeight: 'bold',
+                            px: 2,
+                            py: 1,
+                            height: 'auto'
+                        }}
+                    />
+
+                    {/* Profile Link or Owner Indicator */}
+                    {profile.id === job.user_id ? (
+                        <Chip
+                            label="Created by You"
+                            color="primary"
+                            variant="filled"
+                            sx={{
+                                fontWeight: 'bold',
+                                px: 2,
+                                py: 1,
+                                height: 'auto'
+                            }}
+                        />
+                    ) : (
+                        <Button
+                            component={Link}
+                            to={`/user/?id=${job.user_id}`}
+                            variant="outlined"
+                            startIcon={<PersonIcon />}
+                            sx={{
+                                borderRadius: 3,
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                px: 3,
+                                py: 1
+                            }}
+                        >
+                            View Profile
+                        </Button>
+                    )}
+                </Stack>
+
+                {/* Timestamps */}
+                <Stack direction="row" spacing={3} justifyContent="center">
+                    <Typography variant="body2" color="text.secondary">
+                        Created: {formatRelativeTime(job.date_created)}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                        Updated: {formatRelativeTime(job.date_updated)}
+                    </Typography>
+                </Stack>
+            </Box>
+
+            {/* Key Metrics Grid */}
+            {basicInfoFields.length > 0 && (
+                <Card sx={{ 
+                    mb: 3, 
+                    borderRadius: 2,
+                    boxShadow: 1
+                }}>
+                    <CardContent sx={{ p: 3 }}>
+                        <Typography 
+                            variant="h5" 
+                            gutterBottom 
+                            sx={{ 
+                                fontWeight: 700,
+                                color: 'primary.main',
+                                mb: 3,
+                                textAlign: 'center'
+                            }}
+                        >
+                            Job Details
+                        </Typography>
+                        <Grid container spacing={3}>
+                            {basicInfoFields.map((key) => {
+                                const value = job[key as keyof Job];
+                                if (!value) return null;
+                                
+                                return (
+                                    <Grid item xs={12} sm={6} md={4} key={key}>
+                                        <Box sx={{ 
+                                            p: 2,
+                                            borderRadius: 2,
+                                            border: 1,
+                                            borderColor: 'divider',
+                                            minHeight: 80,
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            justifyContent: 'center'
+                                        }}>
+                                            <Typography 
+                                                variant="body2" 
+                                                color="text.secondary"
+                                                sx={{ 
+                                                    fontWeight: 500,
+                                                    mb: 0.5
+                                                }}
+                                            >
+                                                {formatFieldName(key)}
+                                            </Typography>
+                                            <Typography 
+                                                variant="h6" 
+                                                sx={{ 
+                                                    fontWeight: 700,
+                                                    wordBreak: 'break-word'
+                                                }}
+                                            >
+                                                {String(value)}
+                                            </Typography>
+                                        </Box>
+                                    </Grid>
+                                );
+                            })}
+                        </Grid>
+                    </CardContent>
+                </Card>
+            )}
 
             {/* Array Fields Accordions */}
             {arrayFields.map((fieldName) => {
@@ -143,66 +238,84 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job }) => {
                         onChange={handleAccordionChange(fieldName)}
                         sx={{
                             mb: 2,
+                            borderRadius: '12px !important',
+                            boxShadow: 1,
                             '&:before': {
                                 display: 'none',
                             },
-                            borderRadius: '8px !important'
+                            '&.Mui-expanded': {
+                                margin: '0 0 16px 0'
+                            }
                         }}
                     >
                         <AccordionSummary
                             expandIcon={<ExpandMoreIcon color="primary" />}
                             sx={{
-                                borderLeft: 4,
-                                borderColor: 'primary.main',
+                                borderRadius: '12px',
+                                bgcolor: 'primary.main',
+                                color: 'primary.contrastText',
                                 '& .MuiAccordionSummary-content': {
-                                    margin: '12px 0',
+                                    margin: '16px 0',
+                                },
+                                '&.Mui-expanded': {
+                                    borderBottomLeftRadius: 0,
+                                    borderBottomRightRadius: 0
                                 }
                             }}
                         >
                             <Typography 
-                                variant="h5" 
+                                variant="h6" 
                                 component="h2" 
                                 sx={{ 
-                                    fontWeight: 'bold',
-                                    pl: 2
+                                    fontWeight: 700
                                 }}
                             >
-                                {formatFieldName(fieldName)}
+                                {formatFieldName(fieldName)} ({fieldValue.length})
                             </Typography>
                         </AccordionSummary>
-                        <AccordionDetails>
+                        <AccordionDetails sx={{ p: 3 }}>
                             {/* Display as chips for better readability */}
                             {fieldName === 'skills' || fieldName === 'technologies' || fieldName === 'tags' ? (
-                                <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1, pl: 2 }}>
+                                <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1.5 }}>
                                     {fieldValue.map((item, index) => (
                                         <Chip 
                                             key={index} 
                                             label={item} 
                                             variant="outlined"
                                             sx={{ 
-                                                fontSize: '0.9rem'
+                                                fontSize: '0.9rem',
+                                                fontWeight: 600,
+                                                borderRadius: 2,
+                                                px: 1
                                             }}
                                         />
                                     ))}
                                 </Stack>
                             ) : (
-                                /* Display as bulleted list for other arrays */
-                                <Box component="ul" sx={{ pl: 4, mt: 1 }}>
+                                /* Display as styled list for other arrays */
+                                <Stack spacing={1}>
                                     {fieldValue.map((item, index) => (
-                                        <Typography 
-                                            key={index} 
-                                            component="li" 
-                                            variant="body1"
-                                            sx={{ 
-                                                mb: 1,
-                                                fontSize: '1.1rem',
-                                                lineHeight: 1.6
+                                        <Box
+                                            key={index}
+                                            sx={{
+                                                p: 2,
+                                                borderRadius: 2,
+                                                background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                                                color: 'white'
                                             }}
                                         >
-                                            {item}
-                                        </Typography>
+                                            <Typography 
+                                                variant="body1"
+                                                sx={{ 
+                                                    fontWeight: 500,
+                                                    lineHeight: 1.6
+                                                }}
+                                            >
+                                                {item}
+                                            </Typography>
+                                        </Box>
                                     ))}
-                                </Box>
+                                </Stack>
                             )}
                         </AccordionDetails>
                     </Accordion>
@@ -210,10 +323,14 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job }) => {
             })}
 
             {/* Footer divider */}
-            <Divider sx={{ mt: 4 }} />
+            <Divider sx={{ 
+                mt: 4,
+                background: 'linear-gradient(90deg, transparent, #667eea, transparent)',
+                height: 2,
+                border: 'none'
+            }} />
         </Paper>
     );
 };
 
 export default JobDetails;
-

@@ -57,7 +57,6 @@ const JobsPage: React.FC = () => {
     const fetchJobs = async () => {
       try {
         const res: { jobs: Job[]; matching_jobs: Job[] } = await backendActor.get_my_jobs();
-        console.log("res", {res});
         dispatch({ type: "INIT_JOBS", jobs: res.jobs, matchingJobs: res.matching_jobs, });
       } catch (error) {
         console.error("Error fetching jobs:", error);
@@ -89,6 +88,8 @@ const JobsPage: React.FC = () => {
       `;
 
       const response = await geminiAgent.sendMessage(messageToSend);
+      let gemini_uage = geminiAgent?.getUsage();
+        console.log({ gemini_uage });
 
       // const response = "```" + gmeniResponseExample + "```";
       const parsed: ProcessedJobResponse = processResponseJobs(response).extractedData;
@@ -135,9 +136,9 @@ const JobsPage: React.FC = () => {
     <Box className="jobs-page-container" sx={{ padding: 3, maxWidth: '1200px', margin: '0 auto' }}>
       <JobSelector />
       <AiChat
-        title="Job Application Assistant"
+        // title="Job Application Assistant"
         initialMessages={messages}
-        infoMessage="Share your resume details or tell me about your skills, education, and experience."
+        infoMessage="Tell us are you looking for Job or talent?. Share ur resume/reqruemtsn and we will find it for you while you are sleeping."
         loading={loading}
         onSendMessage={handleSendMessage}
       />

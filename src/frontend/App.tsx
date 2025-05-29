@@ -17,6 +17,7 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { DndProvider } from "react-dnd";
 import { canisterId } from "../declarations/backend";
 import getckUsdcBalance from "./utils/getBalance";
+import { AvailabilityTimezone, EventTimezone } from "./pages/dashBoardPage/calindarView/serializers";
 
 // Create a styled component for the main content
 const MainContent = styled(Box)(({ theme }) => ({
@@ -90,7 +91,11 @@ const App: React.FC = () => {
             type:"INIT_FILES_STATE",
             data: { ...res.Ok, ProfileHistory: getProfileRes.Ok, workspaces },
           })
-        }
+        };
+
+
+
+       
       } catch (error) {
         console.log("Issue fetching initial data from backend: ", error);
       }
@@ -103,6 +108,33 @@ const App: React.FC = () => {
     fetchInitialData();
 
   }, [isLoggedIn,backendActor]);
+
+
+  // after setup
+
+  useEffect(() => {
+    if (profile?.id) {
+      (async () => {
+        try {
+          if (profile) {
+            let res = await backendActor.get_my_calendar();
+            // console.log({ res });
+            res.events = res.events.map((event) => EventTimezone(event));
+            res.availabilities = res.availabilities.map((event) =>
+              AvailabilityTimezone(event),
+            );
+            dispatch({
+              type: "SET_CALENDAR",
+              calendar: res,
+            });
+          }
+        }
+        catch (error) {
+          console.log("Issue fetching calendar from backend: ", error);
+        }
+      })();
+    }
+  },[profile])
 
   
   useSocket();
