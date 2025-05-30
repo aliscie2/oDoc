@@ -377,21 +377,6 @@ export const idlFactory = ({ IDL }) => {
     'Wallet' : Wallet,
   });
   const Result_9 = IDL.Variant({ 'Ok' : InitialData, 'Err' : IDL.Text });
-  const GetErrorLogsArgs = IDL.Record({
-    'start' : IDL.Opt(IDL.Nat64),
-    'length' : IDL.Opt(IDL.Nat64),
-  });
-  const LogLevel = IDL.Variant({
-    'Error' : IDL.Null,
-    'Info' : IDL.Null,
-    'Debug' : IDL.Null,
-  });
-  const Log = IDL.Record({
-    'level' : LogLevel,
-    'message' : IDL.Text,
-    'timestamp' : IDL.Nat64,
-  });
-  const Category = IDL.Variant({ 'Job' : IDL.Null, 'Talent' : IDL.Null });
   const Match = IDL.Record({
     'missmatching_skills' : IDL.Vec(IDL.Text),
     'user_id' : IDL.Text,
@@ -400,6 +385,7 @@ export const idlFactory = ({ IDL }) => {
     'date_updated' : IDL.Float32,
     'is_connected' : IDL.Bool,
   });
+  const Category = IDL.Variant({ 'Job' : IDL.Null, 'Talent' : IDL.Null });
   const Job = IDL.Record({
     'id' : IDL.Text,
     'active' : IDL.Bool,
@@ -423,6 +409,20 @@ export const idlFactory = ({ IDL }) => {
     'certifications' : IDL.Vec(IDL.Text),
     'required_match_score' : IDL.Float32,
     'skills' : IDL.Vec(IDL.Text),
+  });
+  const GetErrorLogsArgs = IDL.Record({
+    'start' : IDL.Opt(IDL.Nat64),
+    'length' : IDL.Opt(IDL.Nat64),
+  });
+  const LogLevel = IDL.Variant({
+    'Error' : IDL.Null,
+    'Info' : IDL.Null,
+    'Debug' : IDL.Null,
+  });
+  const Log = IDL.Record({
+    'level' : LogLevel,
+    'message' : IDL.Text,
+    'timestamp' : IDL.Nat64,
   });
   const FEChat = IDL.Record({
     'id' : IDL.Text,
@@ -658,6 +658,11 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'get_calendar' : IDL.Func([IDL.Text], [IDL.Opt(Calendar)], ['query']),
+    'get_calendar_by_author' : IDL.Func(
+        [IDL.Text],
+        [IDL.Opt(Calendar)],
+        ['query'],
+      ),
     'get_chats_notifications' : IDL.Func([], [IDL.Vec(Message)], ['query']),
     'get_contract' : IDL.Func([IDL.Text, IDL.Text], [Result_8], ['query']),
     'get_emails' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
@@ -674,6 +679,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'get_friends' : IDL.Func([], [IDL.Vec(Friend)], ['query']),
     'get_initial_data' : IDL.Func([], [Result_9], ['query']),
+    'get_job' : IDL.Func([IDL.Text], [IDL.Opt(Job)], ['query']),
     'get_logs' : IDL.Func([GetErrorLogsArgs], [IDL.Vec(Log)], ['query']),
     'get_matches' : IDL.Func(
         [IDL.Text, IDL.Vec(IDL.Text), Category],

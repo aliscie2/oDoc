@@ -554,6 +554,7 @@ service : () -> {
   get_all_files : () -> (vec FileNode) query;
   get_all_files_content : () -> (vec record { text; vec ContentNode }) query;
   get_calendar : (text) -> (opt Calendar) query;
+  get_calendar_by_author : (text) -> (opt Calendar) query;
   get_chats_notifications : () -> (vec Message) query;
   get_contract : (text, text) -> (Result_8) query;
   get_emails : () -> (vec text) query;
@@ -562,6 +563,7 @@ service : () -> {
   get_filtered_posts : (opt vec text, opt text) -> (vec PostUser) query;
   get_friends : () -> (vec Friend) query;
   get_initial_data : () -> (Result_9) query;
+  get_job : (text) -> (opt Job) query;
   get_logs : (GetErrorLogsArgs) -> (vec Log) query;
   get_matches : (text, vec text, Category) -> (vec Job) query;
   get_more_files : (float32) -> (

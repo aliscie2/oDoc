@@ -4,59 +4,65 @@ import { useSnackbar } from 'notistack';
 import sendEmail from './utils/sendEmail';
 import { useDispatch, useSelector } from 'react-redux';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
+import { useBackendContext } from '@/contexts/BackendContext';
+import { Calendar, Job, Match } from '$/declarations/backend/backend.did';
 
 interface ConnectButtonProps {
   jobId: string;
 }
 
 const ConnectButton: React.FC<ConnectButtonProps> = ({ jobId }) => {
+  
+  const { calendar } = useSelector((state: any) => state.calendarState);
+  const { backendActor } = useBackendContext();
+
 
   const { currentJobId, jobs, matches } = useSelector((state: any) => state.jobState);
-  const currentJob = jobs?.find((job: any) => job.id === currentJobId);
-  let match = currentJob.matches?.find((match: any) => match.job_id === jobId);
+  const currentJob: Job = jobs?.find((job: any) => job.id === currentJobId);
+  const matchJob: Job = jobs?.find((job: any) => job.id === jobId);
+  let match: Match = currentJob.matches?.find((match: any) => match.job_id === jobId);
 
   const dispatch = useDispatch();
   const [connecting, setConnecting] = useState(false);
   const [connected, setConnected] = useState(false);
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  let bookEvent = `${window.location.origin}/calendar?id=${calendar.id}&jobid=${currentJob.id}`;
+  let category = Object.keys(currentJob.category)[0];
+  let message = category == "Job" ? 'We find a new job opertunity for you.' : 'We found a new talent that may meets your requrments.';
 
   const handleConnect = async (e: React.MouseEvent) => {
+    setConnecting(true);
     e.stopPropagation();
-    // setConnecting(true);
+    let res: [Calendar] = await backendActor.get_calendar_by_authoer(matchJob?.user_id);
+    let calendar = res[0];
+    let emails = calendar.googleIds;
+    emails.push(...currentJob.emails);
     
-    // dispatch({
-    //   type: "UPDATE_MATCHES",
-    //   matches: [{...match,is_connected:true}]
-    // });
-    let res = await sendEmail("test","<h1>title is her</h1>",['alihushamsci@icloud.com'])
-    console.log({res})
-    // try {
-
-    //   const options =
-    //    {
-    //     fromEmail: "weplutus.1@gmail.com",
-    //     fromName: "Sender Name",
-    //     to: [
-    //       {
-    //         Email: "alihushamsci@icloud.com",
-    //         Name: "Recipient Name"
-    //       }
-    //     ],
-    //     subject: "Test Email",
-    //     textPart: "Hello from Mailjet!",
-    //     htmlPart: "<h1>Hello from Mailjet!</h1><p>This is a test email.</p>"
-    //   };
-
-    //   const result = await sendEmail(options);
+    for (let email of emails) {
+      let jobData = {
+        job: {...currentJob,category},
+        match:{...match, score: match?.score * 10 },
+        bookEvent,
+      }
+      let isEmailSent = await sendEmail("oDoc AI job matcher",message ,[email],jobData,"odoc_job_match")
       
-    //   setConnected(true);
-    //   enqueueSnackbar('Email sent successfully!', { variant: 'success' });
-    // } catch (error) {
-    //   console.log('Error sending email:', error);
-    //   enqueueSnackbar('Failed to send email', { variant: 'error' });
-    // } finally {
-    //   setConnecting(false);
-    // }
+      if (isEmailSent== true){
+        setConnected(true);
+        dispatch({
+          type: "UPDATE_MATCHES",
+          matches: [{...match,is_connected:true}]
+        });    
+        
+        enqueueSnackbar("Email sent.", {
+          variant: 'success',
+        })
+        break;
+      }
+    }
+    // !connected && enqueueSnackbar("Email not sent. Try to contact them manilly by viaing thier contacts in the job post, or thier profile send them friend request.", {
+    //   variant:'error',
+    // })
+    setConnecting(false);
   };
 
   return (

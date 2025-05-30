@@ -611,6 +611,7 @@ export interface _SERVICE {
     Array<[string, Array<ContentNode>]>
   >,
   'get_calendar' : ActorMethod<[string], [] | [Calendar]>,
+  'get_calendar_by_author' : ActorMethod<[string], [] | [Calendar]>,
   'get_chats_notifications' : ActorMethod<[], Array<Message>>,
   'get_contract' : ActorMethod<[string, string], Result_8>,
   'get_emails' : ActorMethod<[], Array<string>>,
@@ -622,6 +623,7 @@ export interface _SERVICE {
   >,
   'get_friends' : ActorMethod<[], Array<Friend>>,
   'get_initial_data' : ActorMethod<[], Result_9>,
+  'get_job' : ActorMethod<[string], [] | [Job]>,
   'get_logs' : ActorMethod<[GetErrorLogsArgs], Array<Log>>,
   'get_matches' : ActorMethod<[string, Array<string>, Category], Array<Job>>,
   'get_more_files' : ActorMethod<

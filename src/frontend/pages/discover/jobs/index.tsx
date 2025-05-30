@@ -36,6 +36,13 @@ interface ProcessedJobResponse {
 const JobsPage: React.FC = () => {
 
   const { backendActor } = useBackendContext();
+  const { profile  } = useSelector(
+    (state: any) => state.filesState,
+  );
+  if (!profile) {
+    return <div>Please login.</div>;
+  }
+
   const { jobChanges, isChanged, currentJobId, jobs, matchingJobs } = useSelector((state: any) => state.jobState);
   const currentJobRef = useRef<Job | undefined>(undefined);
   const dispatch = useDispatch();

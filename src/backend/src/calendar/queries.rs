@@ -22,6 +22,19 @@ fn get_calendar(calendar_id: String) -> Option<Calendar> {
     }
 }
 
+
+#[query]
+fn get_calendar_by_author(author: String) -> Option<Calendar> {
+    crate::CALENDAR_STORE.with(|store| {
+        let store = store.borrow();
+        store
+            .iter()
+            .filter(|(_, calendar)| calendar.owner == author)
+            .map(|(_, calendar)| calendar.clone())
+            .next()
+    })
+}
+
 #[query]
 fn load_more_events(week_offset: i32) -> Vec<Event> {
     if caller() == Principal::anonymous() {

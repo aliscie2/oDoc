@@ -71,3 +71,12 @@ fn get_matches(current_job_id:String, skills: Vec<String>, category: Category) -
 //TODO
 //  In the future allow users to ignore some jobs Ignore { job_id, date}
 //  to filter out jobs that job.id == job_id && job.date_updated < date
+
+
+
+#[query]
+fn get_job(job_id:String) -> Option<Job>  {
+
+    Job::get(&job_id)
+}
+

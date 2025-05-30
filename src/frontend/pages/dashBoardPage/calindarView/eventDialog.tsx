@@ -18,13 +18,40 @@ import {
 } from "@mui/material";
 import format from "date-fns/format";
 import { RootState } from "../../../redux/reducers";
-import GoogleCalendarButton from "./addEventToGoogleCalenar";
+import GoogleCalendarButton, { createGoogleCalendarUrl } from "./addEventToGoogleCalenar";
 import { Link } from "react-router-dom";
 import { useGoogleCalendar } from "./googleAccounts/useGoogleCalendar";
-const EventDialog = ({ open, onClose, slotInfo, selectedEvent = null }) => {
+import { useBackendContext } from "@/contexts/BackendContext";
 
-  
-  
+
+// Job interface based on your Rust struct
+interface Job {
+  notification_id: string;
+  notification_username: string;
+  id: string;
+  user_id: string;
+  skills: string[];
+  education: string[];
+  links: string[];
+  experience: string[];
+  certifications: string[];
+  job_titles: string[];
+  description: string;
+  proficiency_level: string;
+  date_created: number;
+  date_updated: number;
+  active: boolean;
+  matches: any[]; // Define Match interface if needed
+  required_match_score: number;
+  category: any; // Define Category interface if needed
+  trust_score: string;
+  trust_note: string;
+  emails: string[];
+  contacts: string[];
+}
+
+const EventDialog = ({ open, onClose, slotInfo, selectedEvent = null }) => {
+  const { backendActor } = useBackendContext();
   const { profile } = useSelector((state: any) => state.filesState);
   const { calendar } = useSelector((state: RootState) => state.calendarState);
   const calendarOwnerId = calendar?.owner;
@@ -49,9 +76,96 @@ const EventDialog = ({ open, onClose, slotInfo, selectedEvent = null }) => {
     attendees: [],
   });
   const [showRecurrence, setShowRecurrence] = useState(false);
+  const [job, setJob] = useState<Job | null>(null);
+  const [isLoadingJob, setIsLoadingJob] = useState(false);
+  const [jobError, setJobError] = useState<string | null>(null);
 
+  // Helper function to safely extract jobId from URL
+  const getJobIdFromUrl = (): string | null => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const jobIdFromParam = urlParams.get('jobId');
+      
+      if (jobIdFromParam) {
+        return jobIdFromParam;
+      }
+
+      // Fallback: parse manually if URLSearchParams doesn't work
+      const searchString = window.location.search;
+      const jobIdMatch = searchString.match(/[?&]jobId=([^&]*)/);
+      return jobIdMatch ? decodeURIComponent(jobIdMatch[1]) : null;
+    } catch (error) {
+      console.warn('Error parsing jobId from URL:', error);
+      return null;
+    }
+  };
+
+  // Fetch job data when component mounts or jobId changes
+  useEffect(() => {
+    const fetchJobData = async () => {
+      const jobId = getJobIdFromUrl();
+      
+      if (!jobId || !backendActor) {
+        return;
+      }
+
+      setIsLoadingJob(true);
+      setJobError(null);
+
+      try {
+        const jobData = await backendActor.get_job(jobId);
+        
+        if (jobData && jobData.length > 0) {
+          setJob(jobData[0]);
+        } else {
+          setJobError('Job not found');
+        }
+      } catch (error) {
+        console.error('Error fetching job data:', error);
+        setJobError('Failed to fetch job data');
+      } finally {
+        setIsLoadingJob(false);
+      }
+    };
+
+    fetchJobData();
+  }, [backendActor, open]); // Re-fetch when dialog opens
+
+  // Generate event title and description from job data
+  const generateEventDataFromJob = (job: Job) => {
+    const jobTitlesStr = job.job_titles.length > 0 
+      ? job.job_titles.join(', ') 
+      : 'Job Opportunity';
+    
+    const title = `Interview: ${jobTitlesStr}`;
+    
+    let description = `Job Interview Details:\n\n`;
+    description += `Position: ${jobTitlesStr}\n`;
+    description += `Proficiency Level: ${job.proficiency_level}\n`;
+    
+    if (job.skills.length > 0) {
+      description += `Required Skills: ${job.skills.join(', ')}\n`;
+    }
+    
+    if (job.description) {
+      description += `\nJob Description:\n${job.description}\n`;
+    }
+    
+    if (job.contacts.length > 0) {
+      description += `\nContact Information: ${job.contacts.join(', ')}\n`;
+    }
+    
+    if (job.emails.length > 0) {
+      description += `Email: ${job.emails.join(', ')}\n`;
+    }
+
+    return { title, description };
+  };
+
+  // Initialize event data
   useEffect(() => {
     if (selectedEvent) {
+      // Edit mode: use existing event data
       setEventData({
         title: selectedEvent.title,
         description: selectedEvent.description,
@@ -66,7 +180,8 @@ const EventDialog = ({ open, onClose, slotInfo, selectedEvent = null }) => {
       });
       setShowRecurrence(selectedEvent.recurrence?.length > 0);
     } else {
-      setEventData({
+      // Create mode: potentially use job data
+      let initialData = {
         title: "",
         description: "",
         recurrence: {
@@ -76,10 +191,19 @@ const EventDialog = ({ open, onClose, slotInfo, selectedEvent = null }) => {
           until: null,
         },
         attendees: [],
-      });
+      };
+
+      // If we have job data and we're creating a new event, use job info
+      if (job && !isEditMode) {
+        const jobEventData = generateEventDataFromJob(job);
+        initialData.title = jobEventData.title;
+        initialData.description = jobEventData.description;
+      }
+
+      setEventData(initialData);
       setShowRecurrence(false);
     }
-  }, [selectedEvent]);
+  }, [selectedEvent, job, isEditMode]);
 
   const handleChange = (field) => (event) => {
     setEventData((prev) => ({
@@ -99,14 +223,24 @@ const EventDialog = ({ open, onClose, slotInfo, selectedEvent = null }) => {
   };
 
   const dispatch = useDispatch();
-
   const { executeGoogleAction, isConnected, calendarId } = useGoogleCalendar();
 
   const handleSubmit = async () => {
+    // Validation
+    if (!eventData.title.trim()) {
+      alert('Event title is required');
+      return;
+    }
+
+    if (!slotInfo?.start || !slotInfo?.end) {
+      alert('Invalid event time slot');
+      return;
+    }
+
     const eventPayload = {
       id: selectedEvent?.id || Math.random().toString(),
-      title: eventData.title,
-      description: eventData.description,
+      title: eventData.title.trim(),
+      description: eventData.description.trim(),
       start_time: slotInfo.start.getTime() * 1e6,
       end_time: slotInfo.end.getTime() * 1e6,
       attendees: eventData.attendees,
@@ -114,26 +248,52 @@ const EventDialog = ({ open, onClose, slotInfo, selectedEvent = null }) => {
       created_by: profile?.id,
     };
 
-    if (isEditMode) {
-      if (isConnected) await executeGoogleAction({ type: "UPDATE_EVENT", event: eventPayload });
-      dispatch({ type: "UPDATE_EVENT", event: eventPayload });
-    } else {
-      const attendees = [
-        calendar?.googleIds[0],
-        calendarId
-      ];
-      console.log({attendees})
-      if (isConnected) await executeGoogleAction({ type: "ADD_EVENT", event: {...eventPayload, attendees} });
-      dispatch({ type: "ADD_EVENT", event: eventPayload });
-    }
+    try {
+      if (isEditMode) {
+        if (isConnected) {
+          await executeGoogleAction({ type: "UPDATE_EVENT", event: eventPayload });
+        }
+        dispatch({ type: "UPDATE_EVENT", event: eventPayload });
+      } else {
+        const attendees = [
+          calendar?.googleIds?.[0],
+          calendarId
+        ].filter(Boolean); // Remove null/undefined values
+        
+        console.log({ attendees });
+        
+        if (isConnected) {
+          await executeGoogleAction({ 
+            type: "ADD_EVENT", 
+            event: { ...eventPayload, attendees } 
+          });
+        }
+        dispatch({ type: "ADD_EVENT", event: eventPayload });
+      }
 
-    handleClose();
+      handleClose();
+    } catch (error) {
+      console.error('Error saving event:', error);
+      alert('Failed to save event. Please try again.');
+    }
   };
 
   const handleDelete = async () => {
-    if (isConnected) await executeGoogleAction({ type: "DELETE_EVENT", id: selectedEvent.id });
-    dispatch({ type: "DELETE_EVENT", id: selectedEvent.id });
-    handleClose();
+    if (!selectedEvent?.id) {
+      alert('Cannot delete event: Invalid event ID');
+      return;
+    }
+
+    try {
+      if (isConnected) {
+        await executeGoogleAction({ type: "DELETE_EVENT", id: selectedEvent.id });
+      }
+      dispatch({ type: "DELETE_EVENT", id: selectedEvent.id });
+      handleClose();
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      alert('Failed to delete event. Please try again.');
+    }
   };
 
   const handleClose = () => {
@@ -149,9 +309,11 @@ const EventDialog = ({ open, onClose, slotInfo, selectedEvent = null }) => {
       attendees: [],
     });
     setShowDeleteConfirm(false);
+    setJobError(null);
     onClose();
   };
 
+  // Delete confirmation dialog
   if (showDeleteConfirm) {
     return (
       <Dialog open={open} onClose={() => setShowDeleteConfirm(false)}>
@@ -175,8 +337,26 @@ const EventDialog = ({ open, onClose, slotInfo, selectedEvent = null }) => {
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>
         {isEditMode ? "Update Event" : "Create New Event"}
+        {job && !isEditMode && (
+          <Typography variant="caption" display="block" sx={{ mt: 1, opacity: 0.7 }}>
+            Auto-filled from job: {job.job_titles.join(', ') || 'Untitled Job'}
+          </Typography>
+        )}
       </DialogTitle>
       <DialogContent>
+        {/* Loading and error states */}
+        {isLoadingJob && (
+          <Typography variant="body2" sx={{ mb: 2, fontStyle: 'italic' }}>
+            Loading job information...
+          </Typography>
+        )}
+        
+        {jobError && (
+          <Typography variant="body2" color="error" sx={{ mb: 2 }}>
+            {jobError}
+          </Typography>
+        )}
+
         <Stack spacing={2} sx={{ mt: 1 }}>
           <TextField
             autoFocus
@@ -185,6 +365,9 @@ const EventDialog = ({ open, onClose, slotInfo, selectedEvent = null }) => {
             value={eventData.title}
             onChange={handleChange("title")}
             disabled={!canEdit}
+            required
+            error={!eventData.title.trim() && eventData.title !== ""}
+            helperText={!eventData.title.trim() && eventData.title !== "" ? "Title is required" : ""}
           />
 
           <TextField
@@ -287,7 +470,8 @@ const EventDialog = ({ open, onClose, slotInfo, selectedEvent = null }) => {
             </Typography>
           </Box>
         )}
-        {canEdit && (
+        
+        {canEdit && slotInfo && (
           <GoogleCalendarButton
             event={{
               title: eventData.title,
@@ -306,14 +490,22 @@ const EventDialog = ({ open, onClose, slotInfo, selectedEvent = null }) => {
             {showRecurrence ? "Hide Recurrence" : "Add Recurrence"}
           </Button>
         )}
+        
         {isEditMode && canEdit && (
           <Button onClick={() => setShowDeleteConfirm(true)} color="error">
             Delete
           </Button>
         )}
+        
         <Button onClick={handleClose}>Close</Button>
+        
         {canEdit && (
-          <Button onClick={handleSubmit} color="primary" variant="contained">
+          <Button 
+            onClick={handleSubmit} 
+            color="primary" 
+            variant="contained"
+            disabled={!eventData.title.trim() || isLoadingJob}
+          >
             {isEditMode ? "Update" : "Create"}
           </Button>
         )}
