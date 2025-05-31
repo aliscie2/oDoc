@@ -762,7 +762,11 @@ export const idlFactory = ({ IDL }) => {
     'unvote' : IDL.Func([IDL.Text], [Result_11], []),
     'update_calendar' : IDL.Func([IDL.Text, CalendarActions], [Result_18], []),
     'update_chat' : IDL.Func([Chat], [Result_1], []),
-    'update_job' : IDL.Func([IDL.Vec(JobUpdate)], [Result_3], []),
+    'update_job' : IDL.Func(
+        [IDL.Vec(JobUpdate), IDL.Opt(IDL.Float32)],
+        [Result_3],
+        [],
+      ),
     'update_user_profile' : IDL.Func([RegisterUser], [Result], []),
     'vote_down' : IDL.Func([IDL.Text], [Result_11], []),
     'vote_up' : IDL.Func([IDL.Text], [Result_11], []),

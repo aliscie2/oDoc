@@ -102,59 +102,59 @@ const Scheduler = React.memo(() => {
 
 
   // Memoized handlers
-  const handleFetchCalendar = useCallback(async () => {
-    if (!backendActor || fetchAttempted.current || calendar.owner !== "string")
-      return;
+  // const handleFetchCalendar = useCallback(async () => {
+  //   if (!backendActor || fetchAttempted.current || calendar.owner !== "string")
+  //     return;
 
-    try {
-      setError(null);
-      fetchAttempted.current = true;
-      if (isCalendarPage) {
-        let fetchedCalendar = await backendActor.get_calendar(calendarID);
-        fetchedCalendar = fetchedCalendar[0];
-        if (!fetchedCalendar) {
-          enqueueSnackbar("Calendar not found", { variant: "error" });
-          return;
-        }
-        // console.log({ get_calendar: fetchedCalendar, calendarID });
-        fetchedCalendar.events = fetchedCalendar.events?.map((event) =>
-          EventTimezone(event),
-        );
-        fetchedCalendar.availabilities = fetchedCalendar.availabilities?.map(
-          (event) => AvailabilityTimezone(event),
-        );
-        // console.log({ after: fetchedCalendar });
-        dispatch({
-          type: "SET_CALENDAR",
-          calendar: fetchedCalendar,
-        });
-      } 
-      // else if (profile) {
-      //   let res = await backendActor.get_my_calendar();
-      //   // console.log({ res });
-      //   res.events = res.events.map((event) => EventTimezone(event));
-      //   res.availabilities = res.availabilities.map((event) =>
-      //     AvailabilityTimezone(event),
-      //   );
-      //   dispatch({
-      //     type: "SET_CALENDAR",
-      //     calendar: res,
-      //   });
-      // }
-    } catch (err) {
-      console.log({ err });
-      if (isMounted.current) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Failed to fetch calendar";
-        setError(errorMessage);
-        enqueueSnackbar(errorMessage, { variant: "error" });
-        fetchAttempted.current = false;
-      }
-    } finally {
-      if (isMounted.current) {
-      }
-    }
-  }, [backendActor, profile, dispatch, enqueueSnackbar]);
+  //   try {
+  //     setError(null);
+  //     fetchAttempted.current = true;
+  //     if (isCalendarPage) {
+  //       let fetchedCalendar = await backendActor.get_calendar(calendarID);
+  //       fetchedCalendar = fetchedCalendar[0];
+  //       if (!fetchedCalendar) {
+  //         enqueueSnackbar("Calendar not found", { variant: "error" });
+  //         return;
+  //       }
+  //       // console.log({ get_calendar: fetchedCalendar, calendarID });
+  //       fetchedCalendar.events = fetchedCalendar.events?.map((event) =>
+  //         EventTimezone(event),
+  //       );
+  //       fetchedCalendar.availabilities = fetchedCalendar.availabilities?.map(
+  //         (event) => AvailabilityTimezone(event),
+  //       );
+  //       // console.log({ after: fetchedCalendar });
+  //       dispatch({
+  //         type: "SET_CALENDAR",
+  //         calendar: fetchedCalendar,
+  //       });
+  //     } 
+  //     // else if (profile) {
+  //     //   let res = await backendActor.get_my_calendar();
+  //     //   // console.log({ res });
+  //     //   res.events = res.events.map((event) => EventTimezone(event));
+  //     //   res.availabilities = res.availabilities.map((event) =>
+  //     //     AvailabilityTimezone(event),
+  //     //   );
+  //     //   dispatch({
+  //     //     type: "SET_CALENDAR",
+  //     //     calendar: res,
+  //     //   });
+  //     // }
+  //   } catch (err) {
+  //     console.log({ err });
+  //     if (isMounted.current) {
+  //       const errorMessage =
+  //         err instanceof Error ? err.message : "Failed to fetch calendar";
+  //       setError(errorMessage);
+  //       enqueueSnackbar(errorMessage, { variant: "error" });
+  //       fetchAttempted.current = false;
+  //     }
+  //   } finally {
+  //     if (isMounted.current) {
+  //     }
+  //   }
+  // }, [backendActor, profile, dispatch, enqueueSnackbar]);
 
   // Remove the tab state and handler
   // const [selectedTab, setSelectedTab] = useState<number>(0);
@@ -163,9 +163,9 @@ const Scheduler = React.memo(() => {
   // };
 
   // Effects
-  useEffect(() => {
-    handleFetchCalendar();
-  }, [handleFetchCalendar]);
+  // useEffect(() => {
+  //   handleFetchCalendar();
+  // }, [handleFetchCalendar]);
 
   // Cleanup
   useEffect(() => {

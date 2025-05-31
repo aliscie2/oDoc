@@ -1,4 +1,6 @@
 
+use crate::current_user_state::UserState;
+
 use super::pallet::{Job, Match, Category};
 use ic_cdk_macros::update;
 use candid::{CandidType, Decode, Deserialize, Encode, Principal};
@@ -24,11 +26,16 @@ pub struct JobUpdate {
 
 
 #[update]
-fn update_job(updates: Vec<JobUpdate>) -> Result<(), String> {
+fn update_job(updates: Vec<JobUpdate>,ai_credits: Option<f32>) -> Result<(), String> {
 
     if ic_cdk::caller().to_string() == Principal::anonymous().to_string() {
         return Err("Permission denied (anonymous)".to_string());
+    };
+    // TODO this can be a security isssue.
+    if let Some(credits) = ai_credits {
+        UserState::set_credits(credits);
     }
+    
     for update in updates {
         let mut job = match Job::get(&update.id) {
             Some(job) => job,

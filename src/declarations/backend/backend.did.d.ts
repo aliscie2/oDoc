@@ -689,7 +689,7 @@ export interface _SERVICE {
   'unvote' : ActorMethod<[string], Result_11>,
   'update_calendar' : ActorMethod<[string, CalendarActions], Result_18>,
   'update_chat' : ActorMethod<[Chat], Result_1>,
-  'update_job' : ActorMethod<[Array<JobUpdate>], Result_3>,
+  'update_job' : ActorMethod<[Array<JobUpdate>, [] | [number]], Result_3>,
   'update_user_profile' : ActorMethod<[RegisterUser], Result>,
   'vote_down' : ActorMethod<[string], Result_11>,
   'vote_up' : ActorMethod<[string], Result_11>,

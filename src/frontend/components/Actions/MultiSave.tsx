@@ -1,166 +1,433 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
+  Menu,
+  MenuItem,
   Tooltip,
-} from "@mui/material";
-import { useDispatch, useSelector } from "react-redux";
-import { LoadingButton } from "@mui/lab";
-import { useSnackbar } from "notistack";
-import {
-  CPayment,
-  StoredContract,
-} from "../../../declarations/backend/backend.did";
-import { handleRedux } from "../../redux/store/handleRedux";
-import serializeFileContents from "../../DataProcessing/serialize/serializeFileContents";
-import { useBackendContext } from "../../contexts/BackendContext";
+  Box,
+  Divider,
+  Typography,
+  styled,
+  keyframes,
+} from '@mui/material';
+import { LoadingButton } from '@mui/lab';
+import { Save, Warning, Block } from '@mui/icons-material';
 
-interface MultiSaveButtonProps {}
 
-const MultiSaveButton: React.FC<MultiSaveButtonProps> = () => {
-  const isFilesSavedRef = useRef(false);
-  const dispatch = useDispatch();
-  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-  const { backendActor } = useBackendContext();
+// import SaveButtons, { SaveButtonItem } from './SaveButtons';
+import { useDocsSave } from './useDocsSave';
+import { useCalendarSave } from './useCalendarSave';
+import { useJobsSave } from './useJobSave';
 
-  const changes = useSelector((state: any) => state.filesState.changes);
 
-  const [loading, setLoading] = useState(false);
-  const [openDialog, setOpenDialog] = useState<number>(0);
+const shakeAndScaleAnimation = keyframes`
+  0% { transform: translateX(0) scale(1); }
+  10% { transform: translateX(-5px) scale(1.3); }
+  20% { transform: translateX(5px) scale(1.3); }
+  30% { transform: translateX(-5px) scale(1.3); }
+  40% { transform: translateX(5px) scale(1.3); }
+  50% { transform: translateX(-5px) scale(1.3); }
+  60% { transform: translateX(5px) scale(1.3); }
+  70% { transform: translateX(-5px) scale(1.3); }
+  80% { transform: translateX(5px) scale(1.3); }
+  90% { transform: translateX(-5px) scale(1.3); }
+  100% { transform: translateX(0) scale(1); }
+`;
 
-  const isFilesSaved =
-    Object.keys(changes.contents).length === 0 &&
-    changes.files.length === 0 &&
-    Object.keys(changes.contracts).length === 0 &&
-    changes.files_indexing.length === 0;
-  const serializedContent = serializeFileContents(changes.contents);
-  const serializedContracts = Object.values(
-    changes.contracts,
-  ) as StoredContract[];
+const radiationAnimation = keyframes`
+  0% { 
+    box-shadow: 0 0 0 0 rgba(255, 82, 82, 0.7);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(255, 82, 82, 0);
+    transform: scale(1.05);
+  }
+  100% { 
+    box-shadow: 0 0 0 0 rgba(255, 82, 82, 0);
+    transform: scale(1);
+  }
+`;
 
-  const confirm = async () => {
-    setOpenDialog(0);
-    setLoading(true);
+const floatingAnimation = keyframes`
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+`;
 
-    const loadingSnackbar = enqueueSnackbar(
-      <span>
-        Process saving... <span className="loader" />
-      </span>,
-    );
-    // console.log({ x: changes.files_indexing });
-    try {
-      console.log({ serializedContent });
-      const res: any = await backendActor?.multi_updates(
-        changes.files,
-        serializedContent,
-        serializedContracts,
-        changes.files_indexing || [],
-      );
-
-      if (res?.Ok && res.Ok.includes("Error")) {
-        enqueueSnackbar(res.Ok, { variant: "error" });
-      } else if (res?.Err) {
-        enqueueSnackbar(res.Err, { variant: "error" });
-      } else {
-        enqueueSnackbar("Saved!", { variant: "success" });
-        dispatch(handleRedux("RESOLVE_CHANGES"));
+// Styled Components
+const AnimatedButtonWrapper = styled(Box)`
+  display: inline-block;
+  
+  &.shake {
+    animation: ${shakeAndScaleAnimation} 1.2s cubic-bezier(0.36, 0, 0.66, -0.56);
+    animation-fill-mode: forwards;
+  }
+  
+  &.radiation {
+    animation: ${radiationAnimation} 1.5s infinite;
+    
+    .MuiButton-root {
+      background-color: #ff5252 !important;
+      color: white !important;
+      
+      &:hover {
+        background-color: #d32f2f !important;
       }
-    } catch (error) {
-      console.error({ saveError: error });
-      // enqueueSnackbar("An error occurred while saving", {variant: "error"});
-    } finally {
-      closeSnackbar(loadingSnackbar);
-      setLoading(false);
     }
-  };
+  }
+`;
 
-  const handleClick = async () => {
-    let total = 0;
-    const payments: CPayment[] = [];
-
-    serializedContracts.forEach((contract) => {
-      if (contract.CustomContract) {
-        contract.CustomContract.promises.forEach((promise) => {
-          if (promise.status.Released === null) {
-            total += promise.amount;
-            payments.push(promise);
-          }
-        });
-      }
-    });
-
-    if (total > 0) {
-      setOpenDialog(total);
-    } else {
-      await confirm();
+const FloatingTooltip = styled(Tooltip)(({ theme }) => ({
+  '& .MuiTooltip-tooltip': {
+    backgroundColor: theme.palette.grey[900],
+    color: theme.palette.common.white,
+    fontSize: '0.875rem',
+    fontWeight: 500,
+    padding: theme.spacing(1.5, 2),
+    borderRadius: 12,
+    maxWidth: 280,
+    textAlign: 'center',
+    boxShadow: '0 8px 32px rgba(0,0,0,0.24)',
+    border: `1px solid ${theme.palette.divider}`,
+    animation: `${floatingAnimation} 2s ease-in-out infinite`,
+    
+    '&.changes-warning': {
+      backgroundColor: theme.palette.warning.dark,
+      color: theme.palette.warning.contrastText,
+    },
+    
+    '&.prevent-close': {
+      backgroundColor: theme.palette.error.dark,
+      color: theme.palette.error.contrastText,
+      animation: `${floatingAnimation} 1.5s ease-in-out infinite`,
     }
-  };
+  },
+  '& .MuiTooltip-arrow': {
+    color: theme.palette.grey[900],
+    fontSize: '1.2rem',
+    
+    '&::before': {
+      border: `1px solid ${theme.palette.divider}`,
+    }
+  },
+  '&[data-popper-placement*="bottom"] .MuiTooltip-arrow': {
+    '&::before': {
+      borderTop: 'none',
+      borderLeft: 'none',
+    }
+  },
+  '&[data-popper-placement*="top"] .MuiTooltip-arrow': {
+    '&::before': {
+      borderBottom: 'none',
+      borderRight: 'none',
+    }
+  },
+  '&[data-popper-placement*="right"] .MuiTooltip-arrow': {
+    '&::before': {
+      borderBottom: 'none',
+      borderLeft: 'none',
+    }
+  },
+  '&[data-popper-placement*="left"] .MuiTooltip-arrow': {
+    '&::before': {
+      borderTop: 'none',
+      borderRight: 'none',
+    }
+  }
+}));
 
-  useEffect(() => {
-    isFilesSavedRef.current = isFilesSaved;
-  }, [isFilesSaved]);
+const StyledMenu = styled(Menu)(({ theme }) => ({
+  '& .MuiPaper-root': {
+    minWidth: 200,
+    borderRadius: 12,
+    marginTop: theme.spacing(1),
+    boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+    border: `1px solid ${theme.palette.divider}`,
+  },
+}));
 
+const MenuSection = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(1),
+}));
+
+const SectionTitle = styled(Typography)(({ theme }) => ({
+  fontSize: '0.75rem',
+  fontWeight: 600,
+  color: theme.palette.text.secondary,
+  textTransform: 'uppercase',
+  letterSpacing: '0.5px',
+  marginBottom: theme.spacing(0.5),
+}));
+
+const ActionButton = styled(Button)(({ theme }) => ({
+  justifyContent: 'flex-start',
+  width: '100%',
+  textTransform: 'none',
+  fontSize: '0.875rem',
+  padding: theme.spacing(0.5, 1),
+  borderRadius: 6,
+  '&:hover': {
+    backgroundColor: theme.palette.action.hover,
+  },
+}));
+
+// Types
+export interface SaveButtonItem {
+  name: string;
+  isChanged: boolean;
+  onSave: () => Promise<void> | void;
+  onReset: () => Promise<void> | void;
+  loading?: boolean;
+}
+
+interface SaveButtonsProps {
+  items: SaveButtonItem[];
+}
+
+const SaveButtons: React.FC<SaveButtonsProps> = ({ items }) => {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [isPreventingClose, setIsPreventingClose] = useState(false);
+  const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>({});
+  const buttonWrapperRef = useRef<HTMLDivElement>(null);
+  
+  const hasChanges = items.some(item => item.isChanged);
+  const open = Boolean(anchorEl);
+
+  // Handle browser/tab close prevention
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (!isFilesSavedRef.current) {
+      if (hasChanges) {
         e.preventDefault();
-        e.returnValue = "";
+        e.returnValue = "You have unsaved changes. Are you sure you want to leave?";
+        setIsPreventingClose(true);
+        
+        // Trigger shake animation
+        if (buttonWrapperRef.current) {
+          buttonWrapperRef.current.classList.remove('shake');
+          void buttonWrapperRef.current.offsetWidth; // Trigger reflow
+          buttonWrapperRef.current.classList.add('shake');
+        }
+        
+        // Reset preventing close state after animation
+        setTimeout(() => setIsPreventingClose(false), 2000);
       }
     };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, []);
 
-  const tipForSaved = "Your changes saved to the blockchain.";
-  const tipForChanged = <span>You need to save</span>;
-  if (isFilesSaved){
-    return null
-  }
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasChanges]);
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    if (!hasChanges) return;
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleAction = async (itemName: string, action: 'save' | 'reset') => {
+    const item = items.find(i => i.name === itemName);
+    if (!item) return;
+
+    setLoadingStates(prev => ({ ...prev, [itemName]: true }));
+    
+    try {
+      if (action === 'save') {
+        await item.onSave();
+      } else {
+        await item.onReset();
+      }
+    } catch (error) {
+      console.error(`Error ${action}ing ${itemName}:`, error);
+    } finally {
+      setLoadingStates(prev => ({ ...prev, [itemName]: false }));
+    }
+    
+    handleClose();
+  };
+
+  const getButtonProps = () => {
+    if (!hasChanges) {
+      return {
+        variant: 'outlined' as const,
+        color: 'inherit' as const,
+        startIcon: <Save />,
+        disabled: true,
+      };
+    }
+    
+    if (isPreventingClose) {
+      return {
+        variant: 'contained' as const,
+        color: 'error' as const,
+        startIcon: <Block />,
+        disabled: false,
+      };
+    }
+    
+    return {
+      variant: 'contained' as const,
+      color: 'warning' as const,
+      startIcon: <Warning />,
+      disabled: false,
+    };
+  };
+
+  const getTooltipMessage = () => {
+    if (!hasChanges) return "No changes to save";
+    if (isPreventingClose) return "You have unsaved changes! Save before closing.";
+    
+    const changedItems = items.filter(item => item.isChanged);
+    return `Unsaved changes in: ${changedItems.map(item => item.name).join(', ')}`;
+  };
+
+  const getWrapperClasses = () => {
+    const classes = [];
+    if (isPreventingClose) classes.push('radiation');
+    return classes.join(' ');
+  };
+
+  const getTooltipClasses = () => {
+    if (isPreventingClose) return 'prevent-close';
+    if (hasChanges) return 'changes-warning';
+    return '';
+  };
+
+  const buttonProps = getButtonProps();
+
   return (
     <>
-      <Dialog
-        open={openDialog > 0}
-        onClose={() => setOpenDialog(0)}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
+      <FloatingTooltip 
+        title={getTooltipMessage()} 
+        arrow 
+        placement="top" 
+        className={getTooltipClasses()}
+        componentsProps={{
+          tooltip: {
+            className: getTooltipClasses(),
+          },
+          arrow: {
+            className: getTooltipClasses(),
+          }
+        }}
       >
-        <DialogTitle id="alert-dialog-title">Confirm</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            Are you sure you want to release {openDialog} USDT?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDialog(0)} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={confirm} color="primary" autoFocus>
-            Confirm
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Tooltip
-        arrow
-        leaveDelay={200}
-        title={isFilesSaved ? tipForSaved : tipForChanged}
-      >
-        <LoadingButton
-          loading={loading}
-          color="warning"
-          variant={!isFilesSaved ? "contained" : "text"}
-          disabled={isFilesSaved}
-          onClick={handleClick}
+        <AnimatedButtonWrapper 
+          ref={buttonWrapperRef}
+          className={getWrapperClasses()}
         >
-          SAVE
-        </LoadingButton>
-      </Tooltip>
+          <LoadingButton
+            {...buttonProps}
+            onClick={handleClick}
+            loading={Object.values(loadingStates).some(Boolean)}
+            sx={{
+              transition: 'all 0.3s ease-in-out',
+              '&:not(:disabled):hover': {
+                transform: 'scale(1.05)',
+              },
+            }}
+          >
+            Save Changes
+          </LoadingButton>
+        </AnimatedButtonWrapper>
+      </FloatingTooltip>
+
+      <StyledMenu
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'center',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'center',
+        }}
+      >
+        {items.map((item, index) => (
+          <div key={item.name}>
+            <MenuSection>
+              <SectionTitle>
+                {item.name.charAt(0).toUpperCase() + item.name.slice(1)}
+                {item.isChanged && (
+                  <Typography 
+                    component="span" 
+                    sx={{ 
+                      ml: 1, 
+                      color: 'warning.main', 
+                      fontSize: '0.7rem' 
+                    }}
+                  >
+                    • Modified
+                  </Typography>
+                )}
+              </SectionTitle>
+              
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <ActionButton
+                  onClick={() => handleAction(item.name, 'save')}
+                  disabled={!item.isChanged || loadingStates[item.name]}
+                  startIcon={<Save fontSize="small" />}
+                  color="primary"
+                >
+                  Save
+                </ActionButton>
+                
+                <ActionButton
+                  onClick={() => handleAction(item.name, 'reset')}
+                  disabled={!item.isChanged || loadingStates[item.name]}
+                  color="inherit"
+                >
+                  Reset
+                </ActionButton>
+              </Box>
+            </MenuSection>
+            
+            {index < items.length - 1 && <Divider />}
+          </div>
+        ))}
+      </StyledMenu>
     </>
   );
 };
 
-export default MultiSaveButton;
+
+
+
+// save buttons action compnent 
+const SaveButtonsContainer: React.FC = () => {
+  const docsHook = useDocsSave();
+  const calendarHook = useCalendarSave();
+  const jobsHook = useJobsSave();
+
+  const saveItems: SaveButtonItem[] = [
+    {
+      name: 'docs',
+      isChanged: docsHook.isChanged,
+      onSave: docsHook.save,
+      onReset: docsHook.reset,
+      loading: docsHook.loading,
+    },
+    {
+      name: 'calendar',
+      isChanged: calendarHook.isChanged,
+      onSave: calendarHook.save,
+      onReset: calendarHook.reset,
+      loading: calendarHook.loading,
+    },
+    {
+      name: 'jobs',
+      isChanged: jobsHook.isChanged,
+      onSave: jobsHook.save,
+      onReset: jobsHook.reset,
+      loading: jobsHook.loading,
+    },
+  ];
+
+  return <SaveButtons items={saveItems} />;
+};
+
+
+
+export default SaveButtonsContainer;

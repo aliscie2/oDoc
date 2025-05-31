@@ -66,19 +66,30 @@ impl UserState {
         });
     }
 
-    pub fn remove_credits(amount: f32) {
+    pub fn set_credits(amount: f32) {
         let current_user = caller().to_string();
         CURRENT_USER_STATE_STORE.with(|store| {
             let mut states = store.borrow_mut();
             let user_state = states.entry(current_user).or_insert_with(UserState::default);
             
-            if user_state.ai_credits >= amount {
-                user_state.ai_credits -= amount;
-            } else {
-                user_state.ai_credits = 0.0;
-            }
+            user_state.ai_credits = amount;
         });
     }
+
+
+    // pub fn remove_credits(amount: f32) {
+    //     let current_user = caller().to_string();
+    //     CURRENT_USER_STATE_STORE.with(|store| {
+    //         let mut states = store.borrow_mut();
+    //         let user_state = states.entry(current_user).or_insert_with(UserState::default);
+            
+    //         if user_state.ai_credits >= amount {
+    //             user_state.ai_credits -= amount;
+    //         } else {
+    //             user_state.ai_credits = 0.0;
+    //         }
+    //     });
+    // }
 
     // Helper method to get current user's full state
     pub fn get_current_user_state() -> UserState {

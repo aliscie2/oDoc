@@ -9,10 +9,8 @@ import { Job, JobUpdate } from '$/declarations/backend/backend.did';
 import { BUILD_JOB_PROMPT } from './utils/buildProfilePrompt';
 import JobSelector from '@/pages/discover/jobs/JobSelector';
 import JobSearchComponent from './JobSearchComponent';
-import SaveChanges from './saveChanges';
+
 import { useBackendContext } from '@/contexts/BackendContext';
-import { dummyMatchingJobs } from './utils/dummyMatchingJobs';
-import { gmeniResponseExample } from './utils/gmeniResponseExample';
 
 interface Message {
   id: string;
@@ -170,7 +168,7 @@ const JobsPage: React.FC = () => {
         onSendMessage={handleSendMessage}
       />
       {isProfileDone || matchingJobs.lenght > 0  || currentJobRef?.current?.skills.length > 0 && <JobSearchComponent />}
-      {isChanged && <SaveChanges />}
+
     </Box>
   );
 };

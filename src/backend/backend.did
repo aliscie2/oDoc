@@ -621,7 +621,7 @@ service : () -> {
   unvote : (text) -> (Result_11);
   update_calendar : (text, CalendarActions) -> (Result_18);
   update_chat : (Chat) -> (Result_1);
-  update_job : (vec JobUpdate) -> (Result_3);
+  update_job : (vec JobUpdate, opt float32) -> (Result_3);
   update_user_profile : (RegisterUser) -> (Result);
   vote_down : (text) -> (Result_11);
   vote_up : (text) -> (Result_11);
