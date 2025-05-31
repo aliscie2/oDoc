@@ -37,7 +37,7 @@ const JobsPage: React.FC = () => {
 
 
   const { isChanged, currentJobId, jobs, matchingJobs } = useSelector((state: any) => state.jobState);
-  const { geminiAgent,cradits } = useSelector((state: any) => state.AIState);
+  const { geminiAgent,credits } = useSelector((state: any) => state.AIState);
   const currentJobRef = useRef<Job | undefined>(undefined);
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
@@ -147,7 +147,7 @@ const JobsPage: React.FC = () => {
     if (buyAiCredits.Ok){
       dispatch({
         type: "ADD_AI_CREDITS",
-        cradits: value*0.8,
+        credits: value*0.8,
       })
     } else {
       alert(buyAiCredits.Err)
@@ -158,7 +158,7 @@ const JobsPage: React.FC = () => {
       <JobSelector />
       <AiChat
         key={geminiAgent}
-        currentAICredits={cradits}
+        currentAICredits={geminiAgent.remainingCredits()}
         onBuyCredit={onBuyCredit}
       
         // title="Job Application Assistant"

@@ -1,4 +1,4 @@
-import { useCallback, useState, useRef } from 'react';
+import { useCallback, useState, useRef, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSnackbar } from 'notistack';
 import { useBackendContext } from '@/contexts/BackendContext';
@@ -17,9 +17,14 @@ export const useJobsSave = (): UseJobsSaveReturn => {
   const { enqueueSnackbar } = useSnackbar();
   const { backendActor } = useBackendContext();
   const saveInProgress = useRef(false);
+  const [aiCreditsChangd, setChangedAICredits] = useState(false);
+  const {  jobChanges, isChanged } = useSelector((state: any) => state.jobState);
+  const { credits, initialCredits, geminiAgent } = useSelector((state: any) => state.AIState);
+
+  console.log({ credits, initialCredits });
   
   // Get state directly from Redux
-  const { jobChanges, isChanged, currentJobId, jobs } = useSelector((state: any) => state.jobState);
+  
 
   const save = useCallback(async () => {
     if (!backendActor || jobChanges.length === 0 || saveInProgress.current || !isChanged) return;
@@ -28,8 +33,9 @@ export const useJobsSave = (): UseJobsSaveReturn => {
     setLoading(true);
     
     try {
-    //   logger({ jobChanges });
-      const res = await backendActor.update_job(jobChanges);
+      
+      
+      const res = await backendActor.update_job(jobChanges, [geminiAgent.remainingCredits()]);
       
       if (res?.Err) {
         enqueueSnackbar(res.Err, { variant: "error" });
@@ -50,17 +56,29 @@ export const useJobsSave = (): UseJobsSaveReturn => {
     }
   }, [backendActor, jobChanges, isChanged, dispatch, enqueueSnackbar]);
 
-  const reset = useCallback(async () => {
+  const reset = async ()=> {
     try {
       // Reset job changes
-      dispatch({ type: "RESET_JOB_CHANGES" });
+      const remainingCredits = geminiAgent?.remainingCredits();
+      console.log({ remainingCredits , initialCredits });
+      if (remainingCredits < initialCredits){
+        const res = await backendActor.update_job([], [geminiAgent.remainingCredits()]);
+        console.log({ res });
+        if (res?.Err) {
+          enqueueSnackbar(res.Err, { variant: "error" });
+          throw new Error(res.Err);
+        }
+        dispatch({ type: "RESET_AI_CREDITS", credits: remainingCredits });
+      }
+      dispatch({ type: "CLEAR_CHANGES" });
+      
       enqueueSnackbar("Job changes reset successfully!", { variant: "info" });
     } catch (error) {
       console.error({ resetJobsError: error });
       enqueueSnackbar("Failed to reset job changes", { variant: "error" });
       throw error;
     }
-  }, [dispatch, enqueueSnackbar]);
+  }
 
   return {
     isChanged,

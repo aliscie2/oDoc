@@ -122,13 +122,16 @@ const App: React.FC = () => {
             if (aiCredits.Err == "User does not exist"){
               let aiFreeDrop = await backendActor.drop_free_credits();
               dispatch({
-                type: "ADD_AI_CREDITS",
-                cradits: 1,
+                type: "INIT_AI_CREDITS",
+                credits: 1,
+                isFree: true,
               })
             } else if (aiCredits.Ok){
+              let isFree = await backendActor.is_ai_free_tier();
               dispatch({
-                type: "ADD_AI_CREDITS",
-                cradits: aiCredits.Ok,
+                type: "INIT_AI_CREDITS",
+                credits: aiCredits.Ok,
+                isFree: isFree.Ok || true,
               })
             }
             // console.log({ res });

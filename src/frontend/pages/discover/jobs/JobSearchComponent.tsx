@@ -25,6 +25,7 @@ import { useBackendContext } from '@/contexts/BackendContext';
 import JobDetails from './JobDetails';
 import { JOB_MATCHING_PROMPT } from './utils/jobMatchingPrompt';
 import { processResponseJobs } from './utils/processResponseJobs';
+import { convertColumnTypes } from 'ag-grid-community/dist/types/src/columns/columnUtils';
 
 
 // Helper function to determine the category for job matching
@@ -50,6 +51,7 @@ const JobSearchComponent: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [openDialogId, setOpenDialogId] = useState<string | null>(null);
   const { geminiAgent } = useSelector((state: any) => state.AIState);
+  console.log({geminiAgent})
  
 
   const fetchNewMatches = async () => {
