@@ -48,6 +48,16 @@ const JobSelector: React.FC = () => {
         }
         setExpanded(false);
     };
+    
+    const handleToggleActive = (job: Job, event: React.MouseEvent) => {
+        event.stopPropagation();
+        console.log('is active',job.active)
+        dispatch({
+            type: "TOGGLE_ACTIVE",
+            id: job.id,
+
+        });
+    };
 
     const handleShowDetails = (job: Job, event: React.MouseEvent) => {
         event.stopPropagation();
@@ -197,6 +207,16 @@ const JobSelector: React.FC = () => {
                                     </Typography>
                                 </Box>
                                 <Box sx={{ display: 'flex', gap: 1 }}>
+                                <IconButton
+                                        color={job.active?"success":"error"}
+                                        size="small"
+                                        onClick={(event) => handleToggleActive(job, event)}
+                                        sx={{ 
+                                            '&:hover': { bgcolor: theme.palette.info.light + '20' }
+                                        }}
+                                    >
+                                        {job.active ?"active":'inactive'}
+                                    </IconButton>
                                     <IconButton
                                         size="small"
                                         onClick={(event) => handleShowDetails(job, event)}

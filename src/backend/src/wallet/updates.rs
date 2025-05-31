@@ -219,12 +219,12 @@ pub fn internal_transaction(
     // let mut wallet = Wallet::get(caller());
     let payment = CPayment {
         contract_id: "none".to_string(),
-        id: "".to_string(),
+        id: ic_cdk::api::time().to_string(),
         amount: amount,
         sender: caller(),
         receiver: Principal::from_text(receiver.clone()).unwrap(),
-        date_created: 0.0,
-        date_released: 0.0,
+        date_created: ic_cdk::api::time() as f64,
+        date_released: ic_cdk::api::time() as f64,
         status: PaymentStatus::Released,
         cells: vec![],
     };

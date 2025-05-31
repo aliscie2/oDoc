@@ -6,6 +6,7 @@ import { notificationReducer } from "../reducers/notificationReducer";
 import {RootState} from "../reducers";
 import {calendarReducer} from "../reducers/calendarReducer";
 import { jobReducer } from "../reducers/jobReducer";
+import { AIReducer } from "../reducers/AIReducer";
 // import { RootState } from "../../tests/React/testsWrapper";
 
 // const store = configureStore({
@@ -29,6 +30,7 @@ export function setupStore(preloadedState?: Partial<RootState>) {
       notificationState: notificationReducer,
       calendarState: calendarReducer,
       jobState : jobReducer,
+      AIState: AIReducer,
     },
     preloadedState,
     // middleware: (getDefaultMiddleware) =>

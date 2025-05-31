@@ -12,6 +12,7 @@ pub struct Match {
     pub missmatching_skills: Vec<String>,
     pub date_updated: f32,
     pub is_connected :bool,
+    pub cover_letter: String,
 }
 
 #[derive(PartialOrd, PartialEq, Clone, Debug, Serialize, CandidType, Deserialize)]

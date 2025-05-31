@@ -47,7 +47,9 @@ mod files;
 mod files_content;
 mod media;
 mod user;
+mod current_user_state;
 
+use current_user_state::*;
 mod friends;
 mod queries;
 mod share_files;
@@ -233,6 +235,13 @@ thread_local! {
     static JOBS_MATCH_STORE: RefCell<StableBTreeMap<String, Job, Memory>> = RefCell::new(
         StableBTreeMap::init(
             MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(17))),
+        )
+    );
+
+     // String is JobId
+     static CURRENT_USER_STATE_STORE: RefCell<StableBTreeMap<String, current_user_state::UserState, Memory>> = RefCell::new(
+        StableBTreeMap::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(18))),
         )
     );
 }

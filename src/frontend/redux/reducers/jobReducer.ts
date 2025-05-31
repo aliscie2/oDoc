@@ -29,7 +29,9 @@ type JobAction =
     | { type: "UPDATE_MATCHING_JOBS"; matchingJobs: Job[]; matches: Match[] }
     | { type: "UPDATE_MATCHES"; matches: Match[], }
     | { type: "CLEAR_CHANGES" }
-    | { type: "INIT_JOBS"; matchingJobs: Job[]; jobs: Job[] };
+    | { type: "INIT_JOBS"; matchingJobs: Job[]; jobs: Job[] }
+    | { type: "TOGGLE_ACTIVE"; id: string};
+    
 
     
 
@@ -96,7 +98,25 @@ export function jobReducer(state: JobState = initialState, action: JobAction): J
     switch (action.type) {
         case "SET_CURRENT_JOB":
             return { ...state, currentJobId: action.job?.id };
+            case "TOGGLE_ACTIVE":
+                return {...state,
+                    jobs: state.jobs.map(j => j.id === action.id? {...j, active: !j.active} : j),
+                    jobChanges: state.jobChanges.some(j => j.id === action.id)
+                       ? state.jobChanges.map(j =>
+                            j.id === action.id
+                               ? {...j, active: [!state.jobs.find(j => j.id === action.id)?.active] } : j
+                        )
+                      : [...state.jobChanges, {
+                            id: action.id,
+                            active: [!state.jobs.find(j => j.id === action.id)?.active],
+                            matches: [],
+                            updates: [],
+                            category: [],
+                            required_match_score: []
+                          }],
+                    isChanged: true,
 
+                }
             case "UPDATE_FIELDS":
                 let category: any = [];
                 let jobUpdate: JobUpdate ={

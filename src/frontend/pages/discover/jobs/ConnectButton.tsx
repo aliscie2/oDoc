@@ -33,6 +33,13 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({ jobId }) => {
   const handleConnect = async (e: React.MouseEvent) => {
     setConnecting(true);
     e.stopPropagation();
+    if (match?.score <= 6){
+      if (!window.confirm("Are you sure you want to connect? This will send an email to them despite the matching score is not that good.")){
+        setConnecting(false);
+        return;
+      }
+    };
+
     let res: [Calendar] = await backendActor.get_calendar_by_authoer(matchJob?.user_id);
     let calendar = res[0];
     let emails = calendar.googleIds;

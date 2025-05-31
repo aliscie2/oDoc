@@ -18,15 +18,14 @@ import {
   IconButton,
   Divider
 } from '@mui/material';
-import { Visibility, Star, Email, Warning } from '@mui/icons-material';
-import { Job, Match } from '$/declarations/backend/backend.did';
+import { Visibility, Star, Email } from '@mui/icons-material';
+import { Job } from '$/declarations/backend/backend.did';
 import ConnectButton from './ConnectButton';
 import { useBackendContext } from '@/contexts/BackendContext';
 import JobDetails from './JobDetails';
 import { JOB_MATCHING_PROMPT } from './utils/jobMatchingPrompt';
-import { GeminiAgent } from '@/AIAgents/GeminiAgent';
 import { processResponseJobs } from './utils/processResponseJobs';
-import DummyMatches from './utils/makeDummyMatches';
+
 
 // Helper function to determine the category for job matching
 const determineLookingForCategory = (currentJob: Job | undefined) => {
@@ -49,23 +48,9 @@ const JobSearchComponent: React.FC = () => {
   
   // State management
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [openDialogId, setOpenDialogId] = useState<string | null>(null);
-  const [geminiAgent, setGeminiAgent] = useState<GeminiAgent | null>(null);
-
-  // Initialize Gemini Agent once
-  useEffect(() => {
-    const initAgent = async () => {
-      try {
-        setGeminiAgent(new GeminiAgent());
-      } catch (err) {
-        console.error('Failed to initialize Gemini Agent:', err);
-        setError('Failed to initialize AI agent');
-      }
-    };
-    
-    initAgent();
-  }, []);
+  const { geminiAgent } = useSelector((state: any) => state.AIState);
+ 
 
   const fetchNewMatches = async () => {
     const lookingForCategory = determineLookingForCategory(currentJob);
@@ -87,8 +72,6 @@ const JobSearchComponent: React.FC = () => {
       `;
       
       const response = await geminiAgent.sendMessage(messageToSend);
-      let gemini_usage = geminiAgent?.getUsage();
-      console.log({ gemini_usage });
       const parsed = response && processResponseJobs(response).extractedData;
       
       if (parsed?.matches) {
@@ -99,6 +82,7 @@ const JobSearchComponent: React.FC = () => {
           date_updated: 0,
           is_connected: false,
           user_id: '',
+          cover_letter:match.cover_letter,
         }));
       }
     } catch (err) {
@@ -173,22 +157,6 @@ const JobSearchComponent: React.FC = () => {
     );
   }
 
-  // Error State
-  if (error) {
-    return (
-      <Box sx={{ 
-        p: 4, 
-        textAlign: 'center',
-        color: 'error.main',
-        bgcolor: 'error.light',
-        borderRadius: 2,
-        border: `1px solid ${theme.palette.error.main}`
-      }}>
-        <Warning sx={{ fontSize: 48, mb: 2 }} />
-        <Typography variant="h6">{error}</Typography>
-      </Box>
-    );
-  }
 
   // No current job selected
   if (!currentJob) {

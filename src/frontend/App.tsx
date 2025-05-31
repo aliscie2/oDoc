@@ -118,6 +118,19 @@ const App: React.FC = () => {
         try {
           if (profile) {
             let res = await backendActor.get_my_calendar();
+            let aiCredits = await backendActor.get_ai_credits();
+            if (aiCredits.Err == "User does not exist"){
+              let aiFreeDrop = await backendActor.drop_free_credits();
+              dispatch({
+                type: "ADD_AI_CREDITS",
+                cradits: 1,
+              })
+            } else if (aiCredits.Ok){
+              dispatch({
+                type: "ADD_AI_CREDITS",
+                cradits: aiCredits.Ok,
+              })
+            }
             // console.log({ res });
             res.events = res.events.map((event) => EventTimezone(event));
             res.availabilities = res.availabilities.map((event) =>

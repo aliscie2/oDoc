@@ -36,24 +36,18 @@ interface ProcessedJobResponse {
 const JobsPage: React.FC = () => {
 
   const { backendActor } = useBackendContext();
-  const { profile  } = useSelector(
-    (state: any) => state.filesState,
-  );
-  if (!profile) {
-    return <div>Please login.</div>;
-  }
 
-  const { jobChanges, isChanged, currentJobId, jobs, matchingJobs } = useSelector((state: any) => state.jobState);
+
+  const { isChanged, currentJobId, jobs, matchingJobs } = useSelector((state: any) => state.jobState);
+  const { geminiAgent,cradits } = useSelector((state: any) => state.AIState);
   const currentJobRef = useRef<Job | undefined>(undefined);
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [geminiAgent, setGeminiAgent] = useState<GeminiAgent | null>(null);
+
   const [isProfileDone, setIsProfileDone] = useState<boolean>(false);
 
-  useEffect(() => {
-    setGeminiAgent(new GeminiAgent());
-  }, []);
+ 
 
   useEffect(() => {
     currentJobRef.current = jobs.find((job: Job) => job.id === currentJobId);
@@ -113,7 +107,9 @@ const JobsPage: React.FC = () => {
         }
       }
 
-      
+      if (!parsed || !parsed.updates){
+        alert("Somthing went wrong please try again. and report the issue on x.com/odoc_ic")
+      }
       dispatch({
         type: "UPDATE_FIELDS",
         updates: parsed.updates,
@@ -139,13 +135,37 @@ const JobsPage: React.FC = () => {
     }
   }, [geminiAgent, jobs, currentJobId, dispatch]);
 
+
+
+  const { profile  } = useSelector(
+    (state: any) => state.filesState,
+  );
+  if (!profile) {
+    return <div>Please login.</div>;
+  }
+
+  const onBuyCredit = async (value)=>{
+    let buyAiCredits = await backendActor.buy_ai_credits(value);
+    if (buyAiCredits.Ok){
+      dispatch({
+        type: "ADD_AI_CREDITS",
+        cradits: value*0.8,
+      })
+    } else {
+      alert(buyAiCredits.Err)
+    }
+  }
   return (
     <Box className="jobs-page-container" sx={{ padding: 3, maxWidth: '1200px', margin: '0 auto' }}>
       <JobSelector />
       <AiChat
+        key={geminiAgent}
+        currentAICredits={cradits}
+        onBuyCredit={onBuyCredit}
+      
         // title="Job Application Assistant"
         initialMessages={messages}
-        infoMessage="Tell us are you looking for Job or talent?. Share ur resume/reqruemtsn and we will find it for you while you are sleeping."
+        infoMessage="Tell us are you looking for Job or talent?. Share ur resume/requirements and we will find it for you while you are sleeping."
         loading={loading}
         onSendMessage={handleSendMessage}
       />

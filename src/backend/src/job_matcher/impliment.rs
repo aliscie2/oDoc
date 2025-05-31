@@ -221,7 +221,8 @@ impl Job {
                         user_id: job.user_id.clone(),
                         missmatching_skills: match_item.missmatching_skills.clone(),
                         date_updated: ic_cdk::api::time() as f32,
-                        is_connected: match_item.is_connected,
+                        is_connected: match_item.is_connected.clone(),
+                        cover_letter: match_item.cover_letter.clone(),
                     };
     
                     // Remove existing match if it exists

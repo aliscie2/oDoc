@@ -184,6 +184,7 @@ export const idlFactory = ({ IDL }) => {
     'users' : IDL.Vec(ReferredUser),
   });
   const Result_7 = IDL.Variant({ 'Ok' : Affiliate, 'Err' : IDL.Text });
+  const Result_8 = IDL.Variant({ 'Ok' : IDL.Float32, 'Err' : IDL.Text });
   const Contract = IDL.Variant({ 'SharesContract' : IDL.Text });
   const Row = IDL.Record({
     'id' : IDL.Text,
@@ -346,7 +347,7 @@ export const idlFactory = ({ IDL }) => {
     'promises' : IDL.Vec(CPayment),
   });
   const StoredContract = IDL.Variant({ 'CustomContract' : CustomContract });
-  const Result_8 = IDL.Variant({ 'Ok' : StoredContract, 'Err' : IDL.Text });
+  const Result_9 = IDL.Variant({ 'Ok' : StoredContract, 'Err' : IDL.Text });
   const UserFE = IDL.Record({ 'id' : IDL.Text, 'name' : IDL.Text });
   const PostUser = IDL.Record({
     'id' : IDL.Text,
@@ -376,12 +377,13 @@ export const idlFactory = ({ IDL }) => {
     'Profile' : User,
     'Wallet' : Wallet,
   });
-  const Result_9 = IDL.Variant({ 'Ok' : InitialData, 'Err' : IDL.Text });
+  const Result_10 = IDL.Variant({ 'Ok' : InitialData, 'Err' : IDL.Text });
   const Match = IDL.Record({
     'missmatching_skills' : IDL.Vec(IDL.Text),
     'user_id' : IDL.Text,
     'score' : IDL.Float32,
     'job_id' : IDL.Text,
+    'cover_letter' : IDL.Text,
     'date_updated' : IDL.Float32,
     'is_connected' : IDL.Bool,
   });
@@ -449,10 +451,10 @@ export const idlFactory = ({ IDL }) => {
     'children' : IDL.Vec(IDL.Text),
     'parent' : IDL.Text,
   });
-  const Result_10 = IDL.Variant({ 'Ok' : Post, 'Err' : IDL.Text });
+  const Result_11 = IDL.Variant({ 'Ok' : Post, 'Err' : IDL.Text });
   const ShareFile = IDL.Record({ 'id' : IDL.Text, 'owner' : IDL.Principal });
-  const Result_11 = IDL.Variant({ 'Ok' : ShareFile, 'Err' : IDL.Text });
-  const Result_12 = IDL.Variant({
+  const Result_12 = IDL.Variant({ 'Ok' : ShareFile, 'Err' : IDL.Text });
+  const Result_13 = IDL.Variant({
     'Ok' : IDL.Tuple(FileNode, IDL.Vec(ContentNode)),
     'Err' : IDL.Text,
   });
@@ -460,7 +462,7 @@ export const idlFactory = ({ IDL }) => {
     'number_users' : IDL.Float64,
     'active_users' : IDL.Float64,
   });
-  const Result_13 = IDL.Variant({ 'Ok' : SNSStatus, 'Err' : IDL.Text });
+  const Result_14 = IDL.Variant({ 'Ok' : SNSStatus, 'Err' : IDL.Text });
   const ContractNotification = IDL.Record({
     'contract_type' : IDL.Text,
     'contract_id' : IDL.Text,
@@ -530,7 +532,8 @@ export const idlFactory = ({ IDL }) => {
     'debts' : IDL.Vec(IDL.Text),
     'received' : IDL.Float64,
   });
-  const Result_14 = IDL.Variant({ 'Ok' : UserProfile, 'Err' : IDL.Text });
+  const Result_15 = IDL.Variant({ 'Ok' : UserProfile, 'Err' : IDL.Text });
+  const Result_16 = IDL.Variant({ 'Ok' : IDL.Bool, 'Err' : IDL.Text });
   const Chat = IDL.Record({
     'id' : IDL.Text,
     'creator' : IDL.Principal,
@@ -540,7 +543,7 @@ export const idlFactory = ({ IDL }) => {
     'workspaces' : IDL.Vec(IDL.Text),
     'admins' : IDL.Vec(IDL.Principal),
   });
-  const Result_15 = IDL.Variant({ 'Ok' : IDL.Null, 'Err' : IDL.Null });
+  const Result_17 = IDL.Variant({ 'Ok' : IDL.Null, 'Err' : IDL.Null });
   const FileIndexing = IDL.Record({
     'id' : IDL.Text,
     'new_index' : IDL.Nat64,
@@ -576,7 +579,7 @@ export const idlFactory = ({ IDL }) => {
     'events' : IDL.Vec(Event),
     'availabilities' : IDL.Vec(Availability),
   });
-  const Result_16 = IDL.Variant({ 'Ok' : Calendar, 'Err' : IDL.Text });
+  const Result_18 = IDL.Variant({ 'Ok' : Calendar, 'Err' : IDL.Text });
   const Update = IDL.Record({
     'field' : IDL.Text,
     'values' : IDL.Vec(IDL.Text),
@@ -606,7 +609,7 @@ export const idlFactory = ({ IDL }) => {
     'tree' : IDL.Vec(IDL.Nat8),
     'is_end_of_queue' : IDL.Bool,
   });
-  const Result_17 = IDL.Variant({
+  const Result_19 = IDL.Variant({
     'Ok' : CanisterOutputCertifiedMessages,
     'Err' : IDL.Text,
   });
@@ -637,6 +640,7 @@ export const idlFactory = ({ IDL }) => {
     'add_owner' : IDL.Func([AddOwnerArgs], [Result_2], []),
     'add_swap' : IDL.Func([AddSwapArgs], [Result_2], []),
     'approve_high_promise' : IDL.Func([CPayment], [Result_3], []),
+    'buy_ai_credits' : IDL.Func([IDL.Float64], [Result_3], []),
     'cancel_friend_request' : IDL.Func([IDL.Text], [Result], []),
     'check_external_transactions' : IDL.Func([IDL.Nat], [Result_4], []),
     'confirmed_c_payment' : IDL.Func([CPayment], [Result_3], []),
@@ -650,7 +654,9 @@ export const idlFactory = ({ IDL }) => {
     'delete_post' : IDL.Func([IDL.Text], [Result_3], []),
     'delete_work_space' : IDL.Func([WorkSpace], [Result_5], []),
     'deposit_ckusdt' : IDL.Func([], [Result_6], []),
+    'drop_free_credits' : IDL.Func([], [Result_3], []),
     'get_affiliate_data' : IDL.Func([IDL.Text], [Result_7], []),
+    'get_ai_credits' : IDL.Func([], [Result_8], ['query']),
     'get_all_files' : IDL.Func([], [IDL.Vec(FileNode)], ['query']),
     'get_all_files_content' : IDL.Func(
         [],
@@ -664,7 +670,7 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'get_chats_notifications' : IDL.Func([], [IDL.Vec(Message)], ['query']),
-    'get_contract' : IDL.Func([IDL.Text, IDL.Text], [Result_8], ['query']),
+    'get_contract' : IDL.Func([IDL.Text, IDL.Text], [Result_9], ['query']),
     'get_emails' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
     'get_file' : IDL.Func([IDL.Text], [IDL.Opt(FileNode)], ['query']),
     'get_file_content' : IDL.Func(
@@ -678,7 +684,7 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'get_friends' : IDL.Func([], [IDL.Vec(Friend)], ['query']),
-    'get_initial_data' : IDL.Func([], [Result_9], ['query']),
+    'get_initial_data' : IDL.Func([], [Result_10], ['query']),
     'get_job' : IDL.Func([IDL.Text], [IDL.Opt(Job)], ['query']),
     'get_logs' : IDL.Func([GetErrorLogsArgs], [IDL.Vec(Log)], ['query']),
     'get_matches' : IDL.Func(
@@ -695,15 +701,15 @@ export const idlFactory = ({ IDL }) => {
     'get_my_chats' : IDL.Func([], [IDL.Vec(FEChat)], ['query']),
     'get_my_jobs' : IDL.Func([], [GetJobs], ['query']),
     'get_owners' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
-    'get_post' : IDL.Func([IDL.Text], [Result_10], ['query']),
+    'get_post' : IDL.Func([IDL.Text], [Result_11], ['query']),
     'get_posts' : IDL.Func(
         [IDL.Nat64, IDL.Nat64],
         [IDL.Vec(PostUser)],
         ['query'],
       ),
-    'get_share_file' : IDL.Func([IDL.Text], [Result_11], ['query']),
-    'get_shared_file' : IDL.Func([IDL.Text], [Result_12], []),
-    'get_sns_status' : IDL.Func([], [Result_13], ['query']),
+    'get_share_file' : IDL.Func([IDL.Text], [Result_12], ['query']),
+    'get_shared_file' : IDL.Func([IDL.Text], [Result_13], []),
+    'get_sns_status' : IDL.Func([], [Result_14], ['query']),
     'get_swaps' : IDL.Func(
         [],
         [IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Principal))],
@@ -711,7 +717,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'get_user' : IDL.Func([IDL.Text], [Result], ['query']),
     'get_user_notifications' : IDL.Func([], [IDL.Vec(Notification)], ['query']),
-    'get_user_profile' : IDL.Func([IDL.Principal], [Result_14], ['query']),
+    'get_user_profile' : IDL.Func([IDL.Principal], [Result_15], ['query']),
     'get_users' : IDL.Func([], [IDL.Float64], ['query']),
     'get_work_spaces' : IDL.Func([], [IDL.Vec(WorkSpace)], ['query']),
     'internal_transaction' : IDL.Func(
@@ -719,10 +725,11 @@ export const idlFactory = ({ IDL }) => {
         [Result_3],
         [],
       ),
+    'is_ai_free_tier' : IDL.Func([], [Result_16], ['query']),
     'load_more_events' : IDL.Func([IDL.Int32], [IDL.Vec(Event)], ['query']),
     'make_new_chat_room' : IDL.Func([Chat], [Result_1], []),
     'message_is_seen' : IDL.Func([Message], [Result_3], []),
-    'move_file' : IDL.Func([IDL.Text, IDL.Opt(IDL.Text)], [Result_15], []),
+    'move_file' : IDL.Func([IDL.Text, IDL.Opt(IDL.Text)], [Result_17], []),
     'multi_updates' : IDL.Func(
         [
           IDL.Vec(FileNode),
@@ -750,20 +757,20 @@ export const idlFactory = ({ IDL }) => {
         [Result_1],
         [],
       ),
-    'share_file' : IDL.Func([ShareFileInput], [Result_11], []),
+    'share_file' : IDL.Func([ShareFileInput], [Result_12], []),
     'unfriend' : IDL.Func([IDL.Text], [Result], []),
-    'unvote' : IDL.Func([IDL.Text], [Result_10], []),
-    'update_calendar' : IDL.Func([IDL.Text, CalendarActions], [Result_16], []),
+    'unvote' : IDL.Func([IDL.Text], [Result_11], []),
+    'update_calendar' : IDL.Func([IDL.Text, CalendarActions], [Result_18], []),
     'update_chat' : IDL.Func([Chat], [Result_1], []),
     'update_job' : IDL.Func([IDL.Vec(JobUpdate)], [Result_3], []),
     'update_user_profile' : IDL.Func([RegisterUser], [Result], []),
-    'vote_down' : IDL.Func([IDL.Text], [Result_10], []),
-    'vote_up' : IDL.Func([IDL.Text], [Result_10], []),
+    'vote_down' : IDL.Func([IDL.Text], [Result_11], []),
+    'vote_up' : IDL.Func([IDL.Text], [Result_11], []),
     'withdraw_ckusdt' : IDL.Func([IDL.Nat64, IDL.Text], [Result_6], []),
     'ws_close' : IDL.Func([CanisterWsCloseArguments], [Result_3], []),
     'ws_get_messages' : IDL.Func(
         [CanisterWsGetMessagesArguments],
-        [Result_17],
+        [Result_19],
         ['query'],
       ),
     'ws_message' : IDL.Func(

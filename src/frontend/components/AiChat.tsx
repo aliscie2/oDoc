@@ -11,6 +11,8 @@ import {
   Divider
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
+import AiCreditsCircle from './ContractTable/AiCreditsCircle';
+
 
 export interface Message {
   id: string;
@@ -24,7 +26,9 @@ interface AiChatProps {
   initialMessages?: Message[];
   infoMessage?: string;
   loading?: boolean;
+  currentAICredits: number;
   onSendMessage: (message: string) => void;
+  onBuyCredit: (value: number) => void;
 }
 
 const AiChat: React.FC<AiChatProps> = ({ 
@@ -32,7 +36,9 @@ const AiChat: React.FC<AiChatProps> = ({
   initialMessages = [], 
   infoMessage = "How can I help you today?",
   loading = false,
-  onSendMessage 
+  currentAICredits,
+  onSendMessage,
+  onBuyCredit
 }) => {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [inputMessage, setInputMessage] = useState('');
@@ -73,7 +79,7 @@ const AiChat: React.FC<AiChatProps> = ({
       flexDirection: 'column'
     }}>
       {/* Header */}
-     {title&& <Typography 
+      {title && <Typography 
         variant="h4" 
         sx={{ 
           mb: 3,
@@ -183,6 +189,12 @@ const AiChat: React.FC<AiChatProps> = ({
             gap: 2,
             alignItems: 'flex-end'
           }}>
+            {/* AI Credits Circle */}
+            <AiCreditsCircle
+              currentAICredits={currentAICredits}
+              onBuyCredit={onBuyCredit}
+            />
+            
             <TextField
               fullWidth
               multiline
