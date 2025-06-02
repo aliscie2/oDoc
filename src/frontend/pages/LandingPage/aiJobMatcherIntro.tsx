@@ -150,7 +150,7 @@ const AIJobMatcherSection = () => {
                     transition: 'all 1s ease-out 0.4s'
                   }}
                 >
-                  Stop searching for Talents or Jobs let AI do it for you, 
+                  Stop searching for Talents or Jobs, let AI do it for you, 
                   
                 </Typography>
                 <Typography
@@ -326,7 +326,7 @@ const AIJobMatcherSection = () => {
                           transition: 'all 0.6s ease-out 1.6s'
                         }}
                       >
-                        15min
+                        5min
                       </Typography>
                       <Typography variant="caption">Setup Time</Typography>
                     </Grid>

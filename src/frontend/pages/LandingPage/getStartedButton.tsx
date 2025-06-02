@@ -14,6 +14,7 @@ import { useSelector } from "react-redux";
 import { useBackendContext } from "../../contexts/BackendContext";
 import { ClickAwayListener } from "@mui/base";
 import { Z_INDEX_SIDE_NAVBAR } from "../../constants/zIndex";
+import LoginButton from "@/components/MainComponents/topNavBar/loginButton";
 
 const shineAnimation = keyframes`
   0% { background-position: 0% 50%; }
@@ -194,15 +195,13 @@ function GetStartedButton() {
             PopperProps={PopperProps}
             title={<TooltipContent videoId="Lg-0q5oEenk" />}
           >
-            <Button
-              variant="contained"
-              size="large"
-              endIcon={<ArrowForward />}
-              sx={AttractiveButton}
-              onClick={async () => await login()}
-            >
-              Get Started
-            </Button>
+            <LoginButton 
+            variant="contained"
+            size="large"
+            endIcon={<ArrowForward />}
+            sx={AttractiveButton}
+            isMobile={isMobile} />
+            
           </Tooltip>
         </Box>
       </ClickAwayListener>

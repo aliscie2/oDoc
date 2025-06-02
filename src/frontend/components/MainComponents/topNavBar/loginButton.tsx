@@ -13,7 +13,8 @@ import {
 } from "@mui/material";
 import { 
   Person2 as Person2Icon,
-  KeyboardArrowDown as KeyboardArrowDownIcon
+  KeyboardArrowDown as KeyboardArrowDownIcon,
+  PropaneSharp
 } from "@mui/icons-material";
 import { RootState } from "../../../redux/reducers";
 import { useBackendContext } from "../../../contexts/BackendContext";
@@ -27,10 +28,8 @@ interface LoginButtonProps {
   sx?: React.CSSProperties | any;
 }
 
-const LoginButton: React.FC<LoginButtonProps> = ({
-  isMobile = false,
-  sx = {},
-}) => {
+const LoginButton: React.FC<LoginButtonProps> = (props) => {
+  const {isMobile = false,sx = {}} = props;
   const dispatch = useDispatch();
   const { login, loginWithEth } = useBackendContext();
   const { isFetching, isLoggedIn } = useSelector((state: RootState) => state.uiState);
@@ -135,11 +134,13 @@ const LoginButton: React.FC<LoginButtonProps> = ({
   return (
     <>
       <Button
+        
         variant="outlined"
         className="login"
         onClick={handleClick}
         endIcon={<KeyboardArrowDownIcon />}
         sx={styles.loginButton}
+        {...props}
       >
         Login
       </Button>

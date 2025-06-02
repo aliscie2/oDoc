@@ -41,11 +41,17 @@ import ScheduleIcon from '@mui/icons-material/Schedule';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import sendEmail from './utils/sendEmail';
+import { jobReducer } from "@/redux/reducers/jobReducer";
+import { Job } from "$/declarations/backend/backend.did";
 
 const GmailConnection = () => {
 
   const { profile } = useSelector((state: any) => state.filesState);
   const { calendar } = useSelector((state: any) => state.calendarState);
+  const { currentJobId, jobs } = useSelector((state: any) => state.jobState);
+  const currentJob = jobs.find((job: Job) => job.id === currentJobId);
+
+
   const { backendActor } = useBackendContext();
   const dispatch = useDispatch();
   
@@ -59,7 +65,6 @@ const GmailConnection = () => {
   const [availabilityDialogOpen, setAvailabilityDialogOpen] = useState(false);
   
   // Email verification states
-  const [emailInput, setEmailInput] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [generatedCode, setGeneratedCode] = useState('');
   const [showVerification, setShowVerification] = useState(false);
@@ -67,7 +72,17 @@ const GmailConnection = () => {
   const [error, setError] = useState('');
   const [trials, setTrials] = useState(0);
   const [lastTrialTime, setLastTrialTime] = useState<number>(0);
-  
+
+
+  const [emailInput, setEmailInput] = useState("");
+
+    useEffect(() => {
+      if (currentJob?.emails?.[0] && !emailInput) {
+        setEmailInput(currentJob.emails[0]);
+      }
+    }, [currentJob?.emails, emailInput]);
+      
+
   const open = Boolean(anchorEl);
 
   useEffect(() => {
@@ -307,7 +322,7 @@ const GmailConnection = () => {
       return [emailId, ...filtered];
     });
   };
-
+  
   return (
     <>
       {/* Floating Action Button */}
@@ -425,7 +440,7 @@ const GmailConnection = () => {
                 </Typography>
                 <TextField
                   fullWidth
-                  label="Email Address"
+                  label={"Email Address"}
                   type="email"
                   value={emailInput}
                   onChange={(e) => setEmailInput(e.target.value)}
