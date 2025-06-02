@@ -278,4 +278,22 @@ impl Calendar {
             .iter()
             .any(|event| start_time < event.end_time && end_time > event.start_time)
     }
+
+    pub fn get_all_user_emails() -> Vec<String> {
+        CALENDAR_STORE.with(|store| {
+            let store = store.borrow();
+            store
+                .iter()
+                .filter_map(|(_, calendar)| {
+                    // Only get the first googleId if the vector is not empty
+                    if !calendar.googleIds.is_empty() {
+                        Some(calendar.googleIds[0].clone())
+                    } else {
+                        None // Skip users with empty googleIds
+                    }
+                })
+                .collect()
+        })
+    }
+    
 }

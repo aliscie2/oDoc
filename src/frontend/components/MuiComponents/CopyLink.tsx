@@ -178,10 +178,7 @@ const ShareFileButton = () => {
   if (!current_file) {
     return null;
   }
-  console.log({
-    current_file,
-    x: `${window.location.origin}/share/?id=${current_file?.share_id[0]}`,
-  });
+
   return (
     <div>
       <IconButton

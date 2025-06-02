@@ -6,6 +6,7 @@ import {
   Tab,
   useTheme,
   useMediaQuery,
+  Tooltip,
 } from "@mui/material";
 import {
   CalendarMonth as CalendarMonthIcon,
@@ -26,15 +27,16 @@ import MetricsView from "./metrices";
 
 const STORAGE_KEY = "dashboardActiveTab";
 
-
 const ProjectDashboard = () => {
   const [activeTab, setActiveTab] = useState(() => {
     try {
       const savedTab = localStorage.getItem(STORAGE_KEY);
-      return savedTab !== null ? parseInt(savedTab, 10) : 0;
+      // Force Calendar tab (index 2) if saved tab is disabled
+      const parsedTab = savedTab !== null ? parseInt(savedTab, 10) : 2;
+      return parsedTab === 2 ? 2 : 2; // Always default to Calendar
     } catch (error) {
       console.error("Error accessing localStorage:", error);
-      return 0;
+      return 2; // Default to Calendar tab
     }
   });
 
@@ -42,11 +44,14 @@ const ProjectDashboard = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const handleTabChange = (_, newValue) => {
-    setActiveTab(newValue);
-    try {
-      localStorage.setItem(STORAGE_KEY, newValue.toString());
-    } catch (error) {
-      console.error("Error saving to localStorage:", error);
+    // Only allow Calendar tab (index 2) to be selected
+    if (newValue === 2) {
+      setActiveTab(newValue);
+      try {
+        localStorage.setItem(STORAGE_KEY, newValue.toString());
+      } catch (error) {
+        console.error("Error saving to localStorage:", error);
+      }
     }
   };
 
@@ -67,9 +72,55 @@ const ProjectDashboard = () => {
       case 6:
         return <MetricsView />;
       default:
-        return null;
+        return <CalendarView />; // Default to Calendar
     }
   };
+
+  // Tab configuration with disabled status
+  const tabsConfig = [
+    { 
+      icon: <TodayIcon />, 
+      label: "Today's tasks", 
+      disabled: true,
+      tooltip: "This feature is not available now, coming soon!" 
+    },
+    { 
+      icon: <ViewKanbanIcon />, 
+      label: "Tasks", 
+      disabled: true,
+      tooltip: "This feature is not available now, coming soon!" 
+    },
+    { 
+      icon: <CalendarMonthIcon />, 
+      label: "Calendar", 
+      disabled: false,
+      tooltip: "Calendar is fully working now" 
+    },
+    { 
+      icon: <InboxIcon />, 
+      label: "Submissions", 
+      disabled: true,
+      tooltip: "This feature is not available now, coming soon!" 
+    },
+    { 
+      icon: <ProjectsIcon />, 
+      label: "Projects", 
+      disabled: true,
+      tooltip: "This feature is not available now, coming soon!" 
+    },
+    { 
+      icon: <TeamsIcon />, 
+      label: "Teams", 
+      disabled: true,
+      tooltip: "This feature is not available now, coming soon!" 
+    },
+    { 
+      icon: <AddchartIcon />, 
+      label: "Metrics", 
+      disabled: true,
+      tooltip: "This feature is not available now, coming soon!" 
+    },
+  ];
 
   return (
     <Container
@@ -109,16 +160,40 @@ const ProjectDashboard = () => {
               "&:hover": {
                 transform: "scale(1.1)",
               },
+              "&.Mui-disabled": {
+                opacity: 0.4,
+                cursor: "not-allowed",
+                "&:hover": {
+                  transform: "scale(0.95)",
+                },
+              },
             },
           }}
         >
-          <Tab icon={<TodayIcon />} label="Today's tasks" />
-          <Tab icon={<ViewKanbanIcon />} label="Tasks" />
-          <Tab icon={<CalendarMonthIcon />} label="Calendar" />
-          <Tab icon={<InboxIcon />} label="Submissions" />
-          <Tab icon={<ProjectsIcon />} label="Projects" />
-          <Tab icon={<TeamsIcon />} label="Teams" />
-          <Tab icon={<AddchartIcon />} label="Metrics" />
+          {tabsConfig.map((tab, index) => (
+            <Tooltip 
+              key={index}
+              title={tab.tooltip} 
+              arrow
+              placement="top"
+            >
+              <span>
+                <Tab
+                  icon={tab.icon}
+                  label={tab.label}
+                  disabled={tab.disabled}
+                  sx={{
+                    ...(tab.disabled && {
+                      color: theme.palette.text.disabled,
+                      '&.Mui-disabled': {
+                        color: theme.palette.text.disabled,
+                      }
+                    })
+                  }}
+                />
+              </span>
+            </Tooltip>
+          ))}
         </Tabs>
       </Box>
 

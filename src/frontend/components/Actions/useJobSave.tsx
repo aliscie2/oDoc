@@ -2,7 +2,6 @@ import { useCallback, useState, useRef, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSnackbar } from 'notistack';
 import { useBackendContext } from '@/contexts/BackendContext';
-// import { logger } from '../DevUtils/logData';
 
 interface UseJobsSaveReturn {
   isChanged: boolean;
@@ -21,7 +20,7 @@ export const useJobsSave = (): UseJobsSaveReturn => {
   const {  jobChanges, isChanged } = useSelector((state: any) => state.jobState);
   const { credits, initialCredits, geminiAgent } = useSelector((state: any) => state.AIState);
 
-  console.log({ credits, initialCredits });
+
   
   // Get state directly from Redux
   
@@ -33,8 +32,7 @@ export const useJobsSave = (): UseJobsSaveReturn => {
     setLoading(true);
     
     try {
-      
-      
+      console.log({ jobChanges });
       const res = await backendActor.update_job(jobChanges, [geminiAgent.remainingCredits()]);
       
       if (res?.Err) {
@@ -60,10 +58,10 @@ export const useJobsSave = (): UseJobsSaveReturn => {
     try {
       // Reset job changes
       const remainingCredits = geminiAgent?.remainingCredits();
-      console.log({ remainingCredits , initialCredits });
+
       if (remainingCredits < initialCredits){
         const res = await backendActor.update_job([], [geminiAgent.remainingCredits()]);
-        console.log({ res });
+
         if (res?.Err) {
           enqueueSnackbar(res.Err, { variant: "error" });
           throw new Error(res.Err);

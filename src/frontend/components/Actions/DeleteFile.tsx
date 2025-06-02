@@ -35,7 +35,7 @@ const DeleteFile: React.FC<DeleteFileProps> = ({ item }) => {
 
     try {
       const res = await backendActor.delete_file(item.id);
-      console.log({ res });
+
       dispatch(handleRedux("REMOVE", { id: item.id }));
       enqueueSnackbar(`${item.name} is deleted`, { variant: "success" });
       return res;

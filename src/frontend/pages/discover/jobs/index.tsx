@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Box } from '@mui/material';
-import { GeminiAgent } from '@/AIAgents/GeminiAgent';
+
 import AiChat from '@/components/AiChat';
 import { v4 as uuidv4 } from 'uuid';
 import { processResponseJobs } from './utils/processResponseJobs';
@@ -82,13 +82,12 @@ const JobsPage: React.FC = () => {
      
       const messageToSend = `
       ${BUILD_JOB_PROMPT}
-      User Input: ${content}
+      User Input: ${content},
       Current Job Data: ${JSON.stringify(currentJobRef.current)}
       `;
 
       const response = await geminiAgent.sendMessage(messageToSend);
-      let gemini_uage = geminiAgent?.getUsage();
-        console.log({ gemini_uage });
+      // let gemini_uage = geminiAgent?.getUsage();
 
       // const response = "```" + gmeniResponseExample + "```";
       const parsed: ProcessedJobResponse = processResponseJobs(response).extractedData;
@@ -106,8 +105,10 @@ const JobsPage: React.FC = () => {
       }
 
       if (!parsed || !parsed.updates){
+        console.error("Invalid response format:", parsed);
         alert("Somthing went wrong please try again. and report the issue on x.com/odoc_ic")
       }
+      console.log("parsed", {parsed});
       dispatch({
         type: "UPDATE_FIELDS",
         updates: parsed.updates,
@@ -158,7 +159,7 @@ const JobsPage: React.FC = () => {
       <JobSelector />
       <AiChat
         key={geminiAgent}
-        currentAICredits={geminiAgent.remainingCredits()}
+        currentAICredits={geminiAgent?.remainingCredits()}
         onBuyCredit={onBuyCredit}
       
         // title="Job Application Assistant"

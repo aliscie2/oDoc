@@ -18,6 +18,7 @@ class GeminiStaticStore {
   public totalOutputTokens: number = 0;
   public credits: number = 0;
   public isFreeTier: boolean = true;
+  public lastAlertTime: number = 0; // Prevent alert spam
 
   private constructor() {}
 
@@ -34,6 +35,7 @@ class GeminiStaticStore {
     this.totalOutputTokens = 0;
     this.credits = 0;
     this.isFreeTier = true;
+    this.lastAlertTime = 0;
   }
 }
 
@@ -48,21 +50,30 @@ export class GeminiAgent {
   private readonly PAID_OUTPUT_TOKEN_COST = 0.0006;   // Pro model: $3.50 per 1M tokens (thinking)
 
   // Cost optimization settings
-  private readonly MAX_HISTORY_MESSAGES = 10; // Limit conversation history
-  private readonly MAX_HISTORY_TOKENS = 4000; // Token-based limit
+  private readonly MAX_HISTORY_MESSAGES = 50; // Limit conversation history
+  private readonly MAX_HISTORY_TOKENS = 7000; // Token-based limit
   private readonly ENABLE_COMPRESSION = true; // Compress old messages
+  private readonly ALERT_COOLDOWN_MS = 3000; // 3 seconds between alerts
 
   constructor(initialCredits: number = 0, isFreeTier: boolean = true) {
     this.apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
+    
+    // Set credits and tier based on constructor parameters
     GeminiAgent.MYSTATICS.credits = initialCredits;
     GeminiAgent.MYSTATICS.isFreeTier = isFreeTier;
+    
+    // If credits are provided but isFreeTier is true, auto-switch to paid
+    if (initialCredits > 0 && isFreeTier) {
+      console.log('Credits provided - automatically switching to paid tier');
+      GeminiAgent.MYSTATICS.isFreeTier = false;
+    }
   }
 
   // Get the appropriate model based on tier
   private getCurrentModel(): string {
     return GeminiAgent.MYSTATICS.isFreeTier 
-      ? 'gemini-2.0-flash-lite'  // Free tier - Lite model
-      : 'gemini-2.0-flash-thinking-exp-1219';  // Paid tier - Pro model
+      ? 'gemini-2.5-flash-preview-05-20'  // Free tier - Lite model
+      : 'gemini-2.5-flash-preview-05-20';  // Paid tier - Pro model (same model for now)
   }
 
   // Get current pricing based on tier
@@ -125,15 +136,21 @@ export class GeminiAgent {
     return estimatedTokens * pricing.input;
   }
 
-  // Add credits and set tier
-  addCredits(amount: number, isFreeTier: boolean = true): void {
+  // Add credits and optionally change tier
+  addCredits(amount: number, switchToPaid: boolean = false): void {
     GeminiAgent.MYSTATICS.credits += amount;
-    GeminiAgent.MYSTATICS.isFreeTier = isFreeTier;
+    if (switchToPaid) {
+      GeminiAgent.MYSTATICS.isFreeTier = false;
+    }
   }
 
-  // Check if user should upgrade to paid tier
-  private shouldUpgradeToPaid(): boolean {
-    return GeminiAgent.MYSTATICS.isFreeTier && GeminiAgent.MYSTATICS.credits > 0;
+  // Show alert with cooldown to prevent spam
+  private showAlert(message: string): void {
+    const now = Date.now();
+    if (now - GeminiAgent.MYSTATICS.lastAlertTime > this.ALERT_COOLDOWN_MS) {
+      alert(message);
+      GeminiAgent.MYSTATICS.lastAlertTime = now;
+    }
   }
 
   // Check if request should be allowed based on cost and credits
@@ -155,7 +172,7 @@ export class GeminiAgent {
     if (GeminiAgent.MYSTATICS.credits < bufferCost) {
       return { 
         allowed: false, 
-        reason: 'Insufficient credits for this request. Please add more credits to continue.' 
+        reason: `Insufficient credits for this request. Available: $${GeminiAgent.MYSTATICS.credits.toFixed(4)}, Required: ~$${bufferCost.toFixed(4)}. Please add more credits to continue.` 
       };
     }
 
@@ -163,17 +180,13 @@ export class GeminiAgent {
   }
 
   async sendMessage(message: string, files: any[] = []): Promise<string> {
-    // Auto-upgrade to paid tier if they have credits
-    if (this.shouldUpgradeToPaid()) {
-      GeminiAgent.MYSTATICS.isFreeTier = false;
-    }
-
     const estimatedCost = this.estimateInputCost(message);
     const requestCheck = this.shouldAllowRequest(estimatedCost);
     
     if (!requestCheck.allowed) {
-      alert(requestCheck.reason);
-      throw new Error(requestCheck.reason);
+      // Show alert with cooldown and throw error immediately
+      this.showAlert(requestCheck.reason || 'Request not allowed');
+      throw new Error('INSUFFICIENT_CREDITS'); // Use a specific error code
     }
 
     try {
@@ -197,9 +210,9 @@ export class GeminiAgent {
               parts: [{ text: message }]
             }
           ],
-          // Add generation config to control output length and reduce costs
+          // Increased generation config limits for better JSON responses
           generationConfig: {
-            maxOutputTokens: GeminiAgent.MYSTATICS.isFreeTier ? 1000 : 2000, // Limit response length
+            maxOutputTokens: GeminiAgent.MYSTATICS.isFreeTier ? 2000 : 4000, // Increased limits
             temperature: 0.7,
             candidateCount: 1 // Only generate one candidate
           }
@@ -239,15 +252,18 @@ export class GeminiAgent {
     } catch (error) {
       console.error('Error calling Gemini API:', error);
       
-      // Show different alert based on error type
-      if (error instanceof Error && error.message.includes('403')) {
-        alert("API key invalid or quota exceeded");
-      } else if (error instanceof Error && error.message.includes('429')) {
-        alert("Rate limit exceeded - Gemini is busy");
-      } else if (error instanceof Error && error.message.includes('Insufficient credits')) {
-        alert(error.message);
-      } else {
-        alert("Gemini is busy");
+      // Handle specific errors without showing duplicate alerts
+      if (error instanceof Error) {
+        if (error.message === 'INSUFFICIENT_CREDITS') {
+          // Don't show another alert - already shown above
+          throw error;
+        } else if (error.message.includes('403')) {
+          this.showAlert("API key invalid or quota exceeded");
+        } else if (error.message.includes('429')) {
+          this.showAlert("Rate limit exceeded - Gemini is busy");
+        } else {
+          this.showAlert("Gemini is busy - please try again");
+        }
       }
       
       throw new Error(error instanceof Error ? error.message : 'Failed to get response from AI');
@@ -270,22 +286,22 @@ export class GeminiAgent {
   // Update usage stats and deduct credits (for paid tier)
   private updateUsageStatsAndDeductCredits(usageMetadata?: GeminiUsageMetadata): number {
     if (!usageMetadata) return 0;
+    // TODO update this later
+    // const pricing = this.getCurrentPricing();
+    let cost = 0.05;
     
-    const pricing = this.getCurrentPricing();
-    let cost = 0;
+    // if (usageMetadata.promptTokenCount) {
+    //   GeminiAgent.MYSTATICS.totalInputTokens += usageMetadata.promptTokenCount;
+    //   cost += usageMetadata.promptTokenCount * pricing.input;
+    // }
     
-    if (usageMetadata.promptTokenCount) {
-      GeminiAgent.MYSTATICS.totalInputTokens += usageMetadata.promptTokenCount;
-      cost += usageMetadata.promptTokenCount * pricing.input;
-    }
-    
-    if (usageMetadata.candidatesTokenCount) {
-      GeminiAgent.MYSTATICS.totalOutputTokens += usageMetadata.candidatesTokenCount;
-      cost += usageMetadata.candidatesTokenCount * pricing.output;
-    }
+    // if (usageMetadata.candidatesTokenCount) {
+    //   GeminiAgent.MYSTATICS.totalOutputTokens += usageMetadata.candidatesTokenCount;
+    //   cost += usageMetadata.candidatesTokenCount * pricing.output;
+    // }
 
     // Deduct the cost from credits
-    GeminiAgent.MYSTATICS.credits = Math.max(0, GeminiAgent.MYSTATICS.credits - cost);
+    GeminiAgent.MYSTATICS.credits = Math.max(0, GeminiAgent.MYSTATICS.credits - 0.05);
     
     return cost;
   }
@@ -365,6 +381,18 @@ export class GeminiAgent {
       estimatedCost: totalTokens * this.getCurrentPricing().input,
       tokensToSend: totalTokens,
       historySavings: fullHistoryTokens - compressedTokens
+    };
+  }
+
+  // Helper method to check if credits are sufficient before making a request
+  canMakeRequest(message: string): { canProceed: boolean; reason?: string; estimatedCost: number } {
+    const estimatedCost = this.estimateInputCost(message);
+    const requestCheck = this.shouldAllowRequest(estimatedCost);
+    
+    return {
+      canProceed: requestCheck.allowed,
+      reason: requestCheck.reason,
+      estimatedCost
     };
   }
 }

@@ -707,7 +707,6 @@ export const getContractColumnDefs = (columns) => {
       onCellValueChanged: (params) => {
         const { data, context } = params;
         const { contractsState, selectedContract } = context;
-        console.log({ data });
         const updatedContract = produce(contractsState, (draft) => {
           const contract = draft.contracts.find(
             (c) => c.id === selectedContract.id,
@@ -719,7 +718,6 @@ export const getContractColumnDefs = (columns) => {
             }
           }
         });
-        console.log({ updatedContract });
         params.context.onContractChange(updatedContract);
       },
     };

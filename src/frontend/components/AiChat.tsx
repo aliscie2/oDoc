@@ -8,9 +8,12 @@ import {
   IconButton,
   useTheme,
   useMediaQuery,
-  Divider
+  Divider,
+  Alert,
+  Button
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import AiCreditsCircle from './ContractTable/AiCreditsCircle';
 
 
@@ -19,6 +22,7 @@ export interface Message {
   content: string;
   sender: 'user' | 'assistant';
   timestamp: Date;
+  status?: 'sent' | 'failed' | 'sending';
 }
 
 interface AiChatProps {
@@ -27,7 +31,7 @@ interface AiChatProps {
   infoMessage?: string;
   loading?: boolean;
   currentAICredits: number;
-  onSendMessage: (message: string) => void;
+  onSendMessage: (message: string) => Promise<void> | void;
   onBuyCredit: (value: number) => void;
 }
 
@@ -56,16 +60,122 @@ const AiChat: React.FC<AiChatProps> = ({
     setMessages(initialMessages);
   }, [initialMessages]);
 
-  const handleSendMessage = () => {
-    if (!inputMessage.trim()) return;
-    onSendMessage(inputMessage);
-    setInputMessage('');
+  const handleSendMessage = async (messageContent?: string) => {
+    const content = messageContent || inputMessage;
+    if (!content.trim()) return;
+
+    const newMessage: Message = {
+      id: Date.now().toString(),
+      content,
+      sender: 'user',
+      timestamp: new Date(),
+      status: 'sending'
+    };
+
+    // Add message with sending status
+    setMessages(prev => [...prev, newMessage]);
+    
+    // Clear input only if sending new message (not retry)
+    if (!messageContent) {
+      setInputMessage('');
+    }
+
+    try {
+      await onSendMessage(content);
+      // Update message status to sent
+      setMessages(prev => 
+        prev.map(msg => 
+          msg.id === newMessage.id 
+            ? { ...msg, status: 'sent' }
+            : msg
+        )
+      );
+    } catch (error) {
+      // Update message status to failed
+      setMessages(prev => 
+        prev.map(msg => 
+          msg.id === newMessage.id 
+            ? { ...msg, status: 'failed' }
+            : msg
+        )
+      );
+    }
+  };
+
+  const handleRetryMessage = async (messageContent: string, messageId: string) => {
+    // Update message status to sending
+    setMessages(prev => 
+      prev.map(msg => 
+        msg.id === messageId 
+          ? { ...msg, status: 'sending' }
+          : msg
+      )
+    );
+
+    try {
+      await onSendMessage(messageContent);
+      // Update message status to sent
+      setMessages(prev => 
+        prev.map(msg => 
+          msg.id === messageId 
+            ? { ...msg, status: 'sent' }
+            : msg
+        )
+      );
+    } catch (error) {
+      // Update message status back to failed
+      setMessages(prev => 
+        prev.map(msg => 
+          msg.id === messageId 
+            ? { ...msg, status: 'failed' }
+            : msg
+        )
+      );
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
+    }
+  };
+
+  const renderMessageStatus = (message: Message) => {
+    if (message.sender !== 'user') return null;
+
+    switch (message.status) {
+      case 'sending':
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+            <CircularProgress size={12} />
+            <Typography variant="caption" color="text.secondary">
+              Sending...
+            </Typography>
+          </Box>
+        );
+      case 'failed':
+        return (
+          <Alert 
+            severity="error" 
+            sx={{ mt: 1, py: 0.5 }}
+            action={
+              <Button
+                size="small"
+                startIcon={<RefreshIcon />}
+                onClick={() => handleRetryMessage(message.content, message.id)}
+                sx={{ minWidth: 'auto' }}
+              >
+                Retry
+              </Button>
+            }
+          >
+            Failed to send message
+          </Alert>
+        );
+      case 'sent':
+      default:
+        return null;
     }
   };
 
@@ -143,11 +253,16 @@ const AiChat: React.FC<AiChatProps> = ({
                       whiteSpace: 'pre-wrap',
                       wordBreak: 'break-word',
                       lineHeight: 1.6,
-                      color: theme.palette.text.primary
+                      color: theme.palette.text.primary,
+                      opacity: message.status === 'failed' ? 0.7 : 1
                     }}
                   >
                     {message.content}
                   </Typography>
+                  
+                  {/* Message Status */}
+                  {renderMessageStatus(message)}
+                  
                   {index < messages.length - 1 && (
                     <Divider sx={{ mt: 2, opacity: 0.3 }} />
                   )}
@@ -227,7 +342,7 @@ const AiChat: React.FC<AiChatProps> = ({
               }}
             />
             <IconButton
-              onClick={handleSendMessage}
+              onClick={() => handleSendMessage()}
               disabled={loading || !inputMessage.trim()}
               sx={{
                 bgcolor: theme.palette.primary.main,

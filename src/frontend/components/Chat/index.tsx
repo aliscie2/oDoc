@@ -203,7 +203,6 @@ const ChatList = memo(
 
     const getOtherUser = (chat) => {
       if (chat.name !== "private_chat") return null;
-      // console.log({ chat, all_friends, currentUserId });
       return all_friends.find(
         (f) =>
           chat.admins.map((a) => a.id)?.includes(f.id) &&

@@ -18,6 +18,8 @@ import {
   Paper,
   Avatar,
   Zoom,
+  useMediaQuery,
+  Stack,
 } from '@mui/material';
 import {
   Work,
@@ -46,6 +48,7 @@ interface UserTypeCardProps {
   steps: StepData[];
   isHovered: boolean;
   onHover: (type: 'freelancer' | 'business' | null) => void;
+  isMobile: boolean;
 }
 
 const UserTypeCard: React.FC<UserTypeCardProps> = ({
@@ -55,37 +58,41 @@ const UserTypeCard: React.FC<UserTypeCardProps> = ({
   steps,
   isHovered,
   onHover,
+  isMobile,
 }) => {
   const theme = useTheme();
   const [activeStep, setActiveStep] = useState(0);
 
   useEffect(() => {
-    if (isHovered) {
+    if (isHovered && !isMobile) {
       const timer = setInterval(() => {
         setActiveStep((prev) => (prev + 1) % steps.length);
       }, 2000);
       return () => clearInterval(timer);
     }
-  }, [isHovered, steps.length]);
+  }, [isHovered, steps.length, isMobile]);
 
   const cardColor = type === 'freelancer' ? theme.palette.primary : theme.palette.secondary;
 
   return (
     <Card
       elevation={isHovered ? 12 : 4}
-      onMouseEnter={() => onHover(type)}
-      onMouseLeave={() => onHover(null)}
+      onMouseEnter={() => !isMobile && onHover(type)}
+      onMouseLeave={() => !isMobile && onHover(null)}
+      onClick={() => isMobile && onHover(isHovered ? null : type)}
       sx={{
-        height: isHovered ? 600 : 400,
+        height: isMobile ? 'auto' : (isHovered ? 600 : 400),
+        minHeight: isMobile ? 300 : 'auto',
         transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
         cursor: 'pointer',
         background: isHovered
           ? `linear-gradient(135deg, ${alpha(cardColor.main, 0.1)} 0%, ${alpha(cardColor.light, 0.05)} 100%)`
-          : 'background.paper',
+          : theme.palette.background.paper,
         border: isHovered ? `2px solid ${cardColor.main}` : '1px solid',
         borderColor: isHovered ? cardColor.main : alpha(theme.palette.divider, 0.2),
         position: 'relative',
         overflow: 'hidden',
+        mb: isMobile ? 2 : 0,
         '&::before': {
           content: '""',
           position: 'absolute',
@@ -100,33 +107,45 @@ const UserTypeCard: React.FC<UserTypeCardProps> = ({
         },
       }}
     >
-      <CardContent sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <CardContent 
+        sx={{ 
+          p: isMobile ? 2 : 3, 
+          height: '100%', 
+          display: 'flex', 
+          flexDirection: 'column' 
+        }}
+      >
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
           <Avatar
             sx={{
               bgcolor: cardColor.main,
               mr: 2,
-              width: 56,
-              height: 56,
+              width: isMobile ? 48 : 56,
+              height: isMobile ? 48 : 56,
               transition: 'all 0.3s ease',
               transform: isHovered ? 'scale(1.1)' : 'scale(1)',
             }}
           >
             {type === 'freelancer' ? <Work /> : <Business />}
           </Avatar>
-          <Typography variant="h5" fontWeight="bold" color={cardColor.main}>
+          <Typography 
+            variant={isMobile ? "h6" : "h5"} 
+            fontWeight="bold" 
+            color={cardColor.main}
+            sx={{ lineHeight: 1.2 }}
+          >
             {title}
           </Typography>
         </Box>
 
-        <Box sx={{ mb: 3 }}>
+        <Stack spacing={isMobile ? 1 : 1.5} sx={{ mb: 3 }}>
           {features.map((feature, index) => (
             <Zoom
               key={feature}
               in={true}
               style={{ transitionDelay: isHovered ? `${index * 100}ms` : '0ms' }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
+              <Box>
                 <Chip
                   icon={
                     index === 0 ? <Security /> :
@@ -136,72 +155,111 @@ const UserTypeCard: React.FC<UserTypeCardProps> = ({
                   }
                   label={feature}
                   variant="outlined"
-                  size="small"
+                  size={isMobile ? "small" : "medium"}
                   sx={{
                     color: cardColor.main,
                     borderColor: cardColor.main,
-                    '& .MuiChip-icon': { color: cardColor.main },
+                    height: 'auto',
+                    '& .MuiChip-label': {
+                      whiteSpace: 'normal',
+                      lineHeight: 1.4,
+                      py: 1,
+                      px: 1,
+                    },
+                    '& .MuiChip-icon': { 
+                      color: cardColor.main,
+                      fontSize: isMobile ? 16 : 20,
+                    },
+                    width: '100%',
+                    justifyContent: 'flex-start',
                   }}
                 />
               </Box>
             </Zoom>
           ))}
-        </Box>
+        </Stack>
 
         <Fade in={isHovered} timeout={600}>
           <Box sx={{ flex: 1 }}>
             {isHovered && (
-              <>
-                <Typography variant="h6" gutterBottom color={cardColor.main} fontWeight="bold">
+              <Box>
+                <Typography 
+                  variant={isMobile ? "subtitle1" : "h6"} 
+                  gutterBottom 
+                  color={cardColor.main} 
+                  fontWeight="bold"
+                  sx={{ mb: 2 }}
+                >
                   Getting Started:
                 </Typography>
-                <Stepper activeStep={activeStep} orientation="vertical">
+                <Stepper 
+                  activeStep={activeStep} 
+                  orientation="vertical"
+                  sx={{
+                    '& .MuiStepConnector-line': {
+                      borderColor: alpha(cardColor.main, 0.3),
+                    },
+                  }}
+                >
                   {steps.map((step, index) => (
                     <Step key={step.label}>
                       <StepLabel
                         StepIconComponent={() => (
                           <Avatar
                             sx={{
-                              bgcolor: index <= activeStep ? cardColor.main : 'grey.300',
-                              width: 32,
-                              height: 32,
+                              bgcolor: index <= activeStep ? cardColor.main : alpha(theme.palette.grey[400], 0.5),
+                              width: isMobile ? 28 : 32,
+                              height: isMobile ? 28 : 32,
                               transition: 'all 0.3s ease',
                             }}
                           >
-                            {React.cloneElement(step.icon, { sx: { fontSize: 16 } })}
+                            {React.cloneElement(step.icon, { sx: { fontSize: isMobile ? 14 : 16 } })}
                           </Avatar>
                         )}
                       >
-                        <Typography fontWeight="medium" color={cardColor.main}>
+                        <Typography 
+                          fontWeight="medium" 
+                          color={cardColor.main}
+                          variant={isMobile ? "body2" : "body1"}
+                        >
                           {step.label}
                         </Typography>
                       </StepLabel>
                       <StepContent>
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography 
+                          variant={isMobile ? "caption" : "body2"} 
+                          color={theme.palette.text.secondary}
+                          sx={{ lineHeight: 1.4 }}
+                        >
                           {step.description}
                         </Typography>
                       </StepContent>
                     </Step>
                   ))}
                 </Stepper>
-              </>
+              </Box>
             )}
           </Box>
         </Fade>
 
         <Fade in={!isHovered} timeout={300}>
-          <Box>
+          <Box sx={{ mt: 'auto' }}>
             {!isHovered && (
               <Button
                 variant="contained"
                 fullWidth
-                size="large"
+                size={isMobile ? "medium" : "large"}
                 sx={{
-                  mt: 'auto',
                   bgcolor: cardColor.main,
-                  '&:hover': { bgcolor: cardColor.dark },
+                  color: theme.palette.getContrastText(cardColor.main),
+                  '&:hover': { 
+                    bgcolor: cardColor.dark,
+                  },
                   borderRadius: 2,
-                  py: 1.5,
+                  py: isMobile ? 1 : 1.5,
+                  fontWeight: 'bold',
+                  textTransform: 'none',
+                  fontSize: isMobile ? '0.875rem' : '1rem',
                 }}
               >
                 Get Started
@@ -217,6 +275,8 @@ const UserTypeCard: React.FC<UserTypeCardProps> = ({
 const LandingPage: React.FC = () => {
   const [hoveredSection, setHoveredSection] = useState<'freelancer' | 'business' | null>(null);
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
 
   const freelancerSteps: StepData[] = [
     {
@@ -260,11 +320,17 @@ const LandingPage: React.FC = () => {
   ];
 
   return (
-    <Box sx={{ minHeight: '100vh', py: 8 }}>
+    <Box 
+      sx={{ 
+        minHeight: '100vh', 
+        py: isSmall ? 4 : isMobile ? 6 : 8,
+        backgroundColor: theme.palette.background.default,
+      }}
+    >
       <Container maxWidth="lg">
-        <Box sx={{ textAlign: 'center', mb: 8 }}>
+        <Box sx={{ textAlign: 'center', mb: isSmall ? 4 : isMobile ? 6 : 8 }}>
           <Typography
-            variant="h2"
+            variant={isSmall ? "h3" : isMobile ? "h2" : "h1"}
             fontWeight="bold"
             gutterBottom
             sx={{
@@ -273,19 +339,36 @@ const LandingPage: React.FC = () => {
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               mb: 2,
+              fontSize: isSmall ? '2.5rem' : isMobile ? '3rem' : '4rem',
             }}
           >
             oDoc
           </Typography>
-          <Typography variant="h5" color="text.secondary" gutterBottom>
+          <Typography 
+            variant={isSmall ? "h6" : isMobile ? "h5" : "h4"} 
+            color={theme.palette.text.secondary} 
+            gutterBottom
+            sx={{ 
+              fontWeight: 500,
+              mb: 2,
+            }}
+          >
             Easy to use. Trustless contracts. Automated payments.
           </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 600, mx: 'auto' }}>
+          <Typography 
+            variant={isSmall ? "body2" : "body1"} 
+            color={theme.palette.text.secondary} 
+            sx={{ 
+              maxWidth: isSmall ? 300 : isMobile ? 500 : 600, 
+              mx: 'auto',
+              lineHeight: 1.6,
+            }}
+          >
             The future of freelancing with blockchain security and AI-powered matching
           </Typography>
         </Box>
 
-        <Grid container spacing={4} justifyContent="center">
+        <Grid container spacing={isMobile ? 2 : 4} justifyContent="center">
           <Grid item xs={12} md={6}>
             <UserTypeCard
               type="freelancer"
@@ -298,6 +381,7 @@ const LandingPage: React.FC = () => {
               steps={freelancerSteps}
               isHovered={hoveredSection === 'freelancer'}
               onHover={setHoveredSection}
+              isMobile={isMobile}
             />
           </Grid>
           <Grid item xs={12} md={6}>
@@ -312,11 +396,10 @@ const LandingPage: React.FC = () => {
               steps={businessSteps}
               isHovered={hoveredSection === 'business'}
               onHover={setHoveredSection}
+              isMobile={isMobile}
             />
           </Grid>
         </Grid>
-
-        
       </Container>
     </Box>
   );

@@ -31,7 +31,6 @@ const FriendshipButton: React.FC<FriendshipButtonProps> = ({ user }) => {
     setIsLoading(true);
     try {
       const result = await action();
-      console.log({ result });
       if (result && "Err" in result) {
         enqueueSnackbar(result.Err, { variant: "error" });
         return;
@@ -48,9 +47,9 @@ const FriendshipButton: React.FC<FriendshipButtonProps> = ({ user }) => {
   const handleSendRequest = () =>
     handleAction(
       async () => {
-        console.log({ user, profile });
+
         const res = await backendActor.send_friend_request(user.id);
-        console.log({ res });
+
         return res;
       },
       () => {

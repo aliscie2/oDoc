@@ -384,14 +384,14 @@ export const idlFactory = ({ IDL }) => {
     'score' : IDL.Float32,
     'job_id' : IDL.Text,
     'cover_letter' : IDL.Text,
-    'date_updated' : IDL.Float32,
+    'date_updated' : IDL.Float64,
     'is_connected' : IDL.Bool,
   });
   const Category = IDL.Variant({ 'Job' : IDL.Null, 'Talent' : IDL.Null });
   const Job = IDL.Record({
     'id' : IDL.Text,
     'active' : IDL.Bool,
-    'date_created' : IDL.Float32,
+    'date_created' : IDL.Float64,
     'contacts' : IDL.Vec(IDL.Text),
     'trust_note' : IDL.Text,
     'education' : IDL.Vec(IDL.Text),
@@ -406,7 +406,7 @@ export const idlFactory = ({ IDL }) => {
     'matches' : IDL.Vec(Match),
     'job_titles' : IDL.Vec(IDL.Text),
     'category' : Category,
-    'date_updated' : IDL.Float32,
+    'date_updated' : IDL.Float64,
     'proficiency_level' : IDL.Text,
     'certifications' : IDL.Vec(IDL.Text),
     'required_match_score' : IDL.Float32,

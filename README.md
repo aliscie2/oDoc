@@ -6,6 +6,11 @@
 2. add this to dfx.json
 
    ```json
+   "ic_siwe_provider": {
+      "type": "custom",
+      "candid": "https://github.com/kristoferlund/ic-siwe/releases/download/v0.1.1/ic_siwe_provider.did",
+      "wasm": "https://github.com/kristoferlund/ic-siwe/releases/download/v0.1.1/ic_siwe_provider.wasm.gz"
+    },
    "internet_identity": {
    "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
    "remote": {

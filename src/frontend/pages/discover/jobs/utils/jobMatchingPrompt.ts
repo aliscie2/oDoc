@@ -14,8 +14,8 @@ Act as a job matching engine. and HR expert, investigate list of jobs/talents an
 {
   matches: [
         {
-        job_id: string, // the id of which one from the list, note you have two ojbect a list and json, take scan the list and comapre it to the json and put an id from the list here.
-        missmatching_skills: [""], // skills, requirement, education, found in job with category : {"Job":null} but not found in user profile with category :{"Talent":null},
+        job_id: string, // id of a candidate, Note: do not take id from Current
+        missmatching_skills: string[], // Items in Job but missing in Talent. That is, missmatching_skills = { skill ∈ Job | skill ∉ Talent }. Note: it should not be vice versa (in other words ignore skills found in Talent but missing in Jobs), note in job it look like categroy :{"Talent":null} | {"Job":null}
         score: number, // out of 10 // how git fit is the profile category :{"Talent":null}, relative to job with category : {"Job":null}?
         cover_letter: string, // Write your honist opnoin about why is the job with id of job_id is a good or bad match. Mention only the matching skills, history, education certicate etc.. and ignore other things.
         }

@@ -1,424 +1,351 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { 
-  Box, 
-  Typography, 
-  CircularProgress, 
-  Card, 
-  CardContent, 
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  Chip,
-  LinearProgress,
-  useTheme,
-  useMediaQuery,
-  IconButton,
-  Divider
+  Box, Typography, CircularProgress, Card, CardContent, Dialog,
+  DialogTitle, DialogContent, DialogActions, Button, Chip, LinearProgress,
+  useTheme, IconButton, Divider, Alert
 } from '@mui/material';
-import { Visibility, Star, Email } from '@mui/icons-material';
-import { Job } from '$/declarations/backend/backend.did';
+import { Visibility, Star, Email, Warning } from '@mui/icons-material';
+import { Job, Match } from '$/declarations/backend/backend.did';
 import ConnectButton from './ConnectButton';
 import { useBackendContext } from '@/contexts/BackendContext';
 import JobDetails from './JobDetails';
 import { JOB_MATCHING_PROMPT } from './utils/jobMatchingPrompt';
 import { processResponseJobs } from './utils/processResponseJobs';
-import { convertColumnTypes } from 'ag-grid-community/dist/types/src/columns/columnUtils';
-
-
-// Helper function to determine the category for job matching
-const determineLookingForCategory = (currentJob: Job | undefined) => {
-  let key = Object.keys(currentJob?.category || {})[0];
-  if (key == "Job") {
-    return { "Talent": null }
-  } else {
-    return { "Job": null }
-  }
-};
 
 const JobSearchComponent: React.FC = () => {
   const { backendActor } = useBackendContext();
   const dispatch = useDispatch();
   const { currentJobId, jobs, matchingJobs } = useSelector((state: any) => state.jobState);
-  const currentJob = jobs.find((job: Job) => job.id === currentJobId);
-  const skills = currentJob?.skills || [];
+  const { geminiAgent } = useSelector((state: any) => state.AIState);
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
-  // State management
   const [loading, setLoading] = useState(false);
   const [openDialogId, setOpenDialogId] = useState<string | null>(null);
-  const { geminiAgent } = useSelector((state: any) => state.AIState);
-  console.log({geminiAgent})
- 
+  const [error, setError] = useState<string | null>(null);
 
-  const fetchNewMatches = async () => {
-    const lookingForCategory = determineLookingForCategory(currentJob);
-    const matchingJobs: Array<Job> = await backendActor.get_matches(
-      currentJobId,
-      skills,
-      lookingForCategory
-    );
-    return matchingJobs;
-  }
+  // Memoized current job and validation
+  const currentJob = useMemo(() => 
+    jobs?.find((job: Job) => job.id === currentJobId), 
+    [jobs, currentJobId]
+  );
+  
+  const isValidSetup = useMemo(() => 
+    currentJobId && currentJob && backendActor && geminiAgent,
+    [currentJobId, currentJob, backendActor, geminiAgent]
+  );
 
-  // Process matches with AI and dispatch results
-  const processAndDispatchMatches = async (newMatches) => {
-    try {
-      const messageToSend = `
-        ${JOB_MATCHING_PROMPT}
-        candidates: ${JSON.stringify(newMatches)}
-        Current: ${JSON.stringify(currentJob)}
-      `;
-      
-      const response = await geminiAgent.sendMessage(messageToSend);
-      const parsed = response && processResponseJobs(response).extractedData;
-      
-      if (parsed?.matches) {
-        return parsed.matches.map((match: any) => ({
-          job_id: match.job_id,
-          score: match.score,
-          missmatching_skills: match.missmatching_skills,
-          date_updated: 0,
-          is_connected: false,
-          user_id: '',
-          cover_letter:match.cover_letter,
-        }));
-      }
-    } catch (err) {
-      console.error('AI processing failed:', err);
-      dispatch({
-        type: "UPDATE_MATCHING_JOBS",
-        matchingJobs: newMatches,
-        matches: [],
-      });
+  // Memoized sorted matches with comprehensive edge case handling
+  const { jobMatches, sortedMatches, debugInfo } = useMemo(() => {
+    if (!currentJob?.matches) {
+      return { jobMatches: [], sortedMatches: [], debugInfo: { matches: 0, jobs: 0, found: 0 } };
     }
-  }
 
-  useEffect(() => {
-    if (!geminiAgent) {
-      return;
-    }
-    (async () => {
-      setLoading(true);
-      const matchingJobs = await fetchNewMatches();
-      if (matchingJobs.length > 0) {
-        let matches = await processAndDispatchMatches(matchingJobs);
-        
-        if (matches && matches.length > 0) {
-          dispatch({
-            type: "UPDATE_MATCHING_JOBS",
-            matchingJobs,
-            matches
-          });
-        }
+    const matches = currentJob.matches.filter(Boolean); // Remove null/undefined matches
+    const validMatches = matches
+      .map(match => ({
+        job: matchingJobs?.find((j: Job) => j?.id === match?.job_id),
+        match
+      }))
+      .filter(({ job, match }) => job && match?.job_id !== currentJobId) // Exclude self-matches
+      .sort((a, b) => (b.match?.score || 0) - (a.match?.score || 0));
+
+    return {
+      jobMatches: matches,
+      sortedMatches: validMatches,
+      debugInfo: {
+        matches: matches.length,
+        jobs: matchingJobs?.length || 0,
+        found: validMatches.length
       }
-      setLoading(false);
-    })()
-  }, [currentJobId, backendActor, geminiAgent]);
+    };
+  }, [currentJob, matchingJobs, currentJobId]);
 
-  // UI Event Handlers
-  const handleOpenDialog = useCallback((jobId: string) => {
-    setOpenDialogId(jobId);
+  // Utilities
+  const getLookingForCategory = useCallback((job: Job) => {
+    const categoryKey = Object.keys(job?.category || {})[0];
+    return categoryKey === "Job" ? { "Talent": null } : { "Job": null };
   }, []);
 
-  const handleCloseDialog = useCallback(() => {
-    setOpenDialogId(null);
-  }, []);
-
-  const truncateTitle = useCallback((title: string) => {
-    if (!title) return '';
+  const truncateTitle = useCallback((title: string, maxWords = 5) => {
+    if (!title) return 'Untitled';
     const words = title.split(' ');
-    return words.slice(0, 5).join(' ') + (words.length > 5 ? '...' : '');
+    return words.slice(0, maxWords).join(' ') + (words.length > maxWords ? '...' : '');
   }, []);
 
-  const getScoreColor = (score: number) => {
+  const getScoreColor = useCallback((score: number) => {
     if (score >= 80) return 'success';
     if (score >= 60) return 'warning';
     return 'error';
-  };
+  }, []);
 
-  // Loading State
+  // Main matching logic
+  const findMatches = useCallback(async () => {
+    if (!isValidSetup) return;
+    
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // Fetch matches from backend
+      const newMatchingJobs = await backendActor.get_matches(
+        currentJobId,
+        currentJob.skills || [],
+        getLookingForCategory(currentJob)
+      );
+
+      console.log('newMatchingJobs', {
+        matchingJobs,
+        currentJob,
+        newMatchingJobs,
+        currentJobId,
+        skills: currentJob.skills,
+        cat: getLookingForCategory(currentJob)
+      });
+
+      if (!newMatchingJobs?.length) {
+        setLoading(false);
+        return;
+      }
+
+      // Process with AI
+      let processedMatches;
+      try {
+        const aiResponse = await geminiAgent.sendMessage(`
+          ${JOB_MATCHING_PROMPT}
+          candidates: ${JSON.stringify(newMatchingJobs)},
+          Current: ${JSON.stringify(currentJob)}
+        `);
+        
+        const parsed = processResponseJobs(aiResponse)?.extractedData;
+        processedMatches = parsed?.matches?.map((match: any) => ({
+          job_id: match.job_id,
+          score: Math.max(0, Math.min(10, match.score || 0)), // Clamp score 0-10
+          missmatching_skills: match.missmatching_skills || [],
+          date_updated: Date.now() * 1e6,
+          is_connected: false,
+          user_id: '',
+          cover_letter: match.cover_letter || '',
+        })) || [];
+      } catch (aiError) {
+        alert('AI processing failed, using basic scoring:', aiError);
+        processedMatches = newMatchingJobs.map((job: Job) => ({
+          job_id: job.id,
+          score: 5, // Default neutral score
+          missmatching_skills: [],
+          date_updated: Date.now() * 1e6,
+          is_connected: false,
+          user_id: '',
+          cover_letter: '',
+        }));
+      }
+
+      // Filter out self-matches
+      const validMatches = processedMatches.filter(m => m.job_id !== currentJobId);
+
+      if (validMatches.length > 0) {
+        dispatch({
+          type: "UPDATE_MATCHING_JOBS",
+          matchingJobs: newMatchingJobs,
+          matches: validMatches
+        });
+      }
+    } catch (err) {
+      console.log('Error finding matches:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load matches');
+    } finally {
+      setLoading(false);
+    }
+  }, [isValidSetup, currentJobId, currentJob, backendActor, geminiAgent, getLookingForCategory, dispatch]);
+  const [isGemeniCalled, setisCalled] = useState(false);
+
+  useEffect(() => {
+    if (!isGemeniCalled&&geminiAgent.remainingCredits()>0) {
+      findMatches();
+      setisCalled(true)
+    }
+    
+  }, [findMatches]);
+
+  // Event handlers
+  const handleOpenDialog = useCallback((jobId: string) => setOpenDialogId(jobId), []);
+  const handleCloseDialog = useCallback(() => setOpenDialogId(null), []);
+  const handleRemoveMatch = useCallback((jobId: string) => {
+    dispatch({ type: "DELETE_MATCH", id: jobId });
+  }, [dispatch]);
+
+  // Render helpers
+  const renderMatchCard = useCallback(({ job, match }: { job: Job; match: Match }) => (
+    <Card 
+      key={job.id}
+      sx={{ 
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+        '&:hover': { 
+          transform: 'translateY(-2px)',
+          boxShadow: theme.shadows[4]
+        }
+      }}
+      onClick={() => handleOpenDialog(job.id)}
+    >
+      <CardContent sx={{ p: 3 }}>
+        {/* Header */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 2 }}>
+          <Typography variant="h6" sx={{ flex: 1, mr: 2 }}>
+            {truncateTitle(job.job_titles?.[0])}
+          </Typography>
+          <Chip 
+            label={match.score ? `${Math.round(match.score * 10)}%` : 'New'}
+            color={match.score ? getScoreColor(match.score * 10) : 'default'}
+            size="small"
+            icon={match.score ? <Star fontSize="small" /> : undefined}
+          />
+        </Box>
+
+        {/* Score bar */}
+        {match.score > 0 && (
+          <LinearProgress 
+            variant="determinate" 
+            value={match.score * 10} 
+            color={getScoreColor(match.score * 10)}
+            sx={{ height: 4, borderRadius: 2, mb: 2 }}
+          />
+        )}
+
+        {/* Contact */}
+        {job.emails?.[0] && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, color: 'text.secondary' }}>
+            <Email fontSize="small" />
+            <Typography variant="body2">{job.emails[0]}</Typography>
+          </Box>
+        )}
+
+        {/* Missing skills */}
+        {match.missmatching_skills?.length > 0 && (
+          <Box>
+            <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+              Missing skills:
+            </Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+              {match.missmatching_skills.slice(0, 3).map((skill, i) => (
+                <Chip key={i} label={skill} size="small" color="warning" variant="outlined" />
+              ))}
+              {match.missmatching_skills.length > 3 && (
+                <Chip 
+                  label={`+${match.missmatching_skills.length - 3}`}
+                  size="small" 
+                  color="warning" 
+                  variant="outlined" 
+                />
+              )}
+            </Box>
+          </Box>
+        )}
+      </CardContent>
+
+      <Divider />
+      
+      <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <ConnectButton jobId={job.id} />
+        <IconButton size="small" color="primary">
+          <Visibility fontSize="small" />
+        </IconButton>
+      </Box>
+    </Card>
+  ), [theme, truncateTitle, getScoreColor, handleOpenDialog]);
+
+  // Loading state
   if (loading) {
     return (
-      <Box sx={{ 
-        display: 'flex', 
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: 200,
-        gap: 2
-      }}>
-        <CircularProgress size={40} />
-        <Typography color="text.secondary">
-          {!geminiAgent ? 'Initializing AI agent...' : 'Finding matches...'}
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 8, gap: 2 }}>
+        <CircularProgress />
+        <Typography color="text.secondary">Finding your perfect matches...</Typography>
+      </Box>
+    );
+  }
+
+  // No job selected
+  if (!currentJobId || !currentJob) {
+    return (
+      <Box sx={{ textAlign: 'center', py: 8 }}>
+        <Typography variant="h6" color="text.secondary">
+          Select a job to view matches
         </Typography>
       </Box>
     );
   }
 
-
-  // No current job selected
-  if (!currentJob) {
+  // Error state
+  if (error) {
     return (
-      <Box sx={{ 
-        p: 4, 
-        textAlign: 'center',
-        color: 'text.secondary',
-        bgcolor: theme.palette.background.paper,
-        borderRadius: 2,
-        border: `1px solid ${theme.palette.divider}`
-      }}>
-        <Typography variant="h6">Please select a job to view matches</Typography>
-      </Box>
+      <Alert severity="error" sx={{ mb: 3 }}>
+        <Typography variant="subtitle2">Failed to load matches</Typography>
+        <Typography variant="body2">{error}</Typography>
+        <Button size="small" onClick={findMatches} sx={{ mt: 1 }}>
+          Retry
+        </Button>
+      </Alert>
     );
   }
-
-  // Prepare sorted matches for display
-  const sortedMatches = currentJob.matches
-    .map(match => ({
-      job: matchingJobs.find((j: Job) => j.id === match.job_id),
-      match
-    }))
-    .sort((a, b) => (b.match?.score || 0) - (a.match?.score || 0));
-
+  // TODO sometimes sortedMatches.map is not working without this console.log it give it some time to re-render.
+  console.log({sortedMatches});
   return (
-    <Box sx={{ mt: 4 }}>
+    <Box sx={{ py: 2 }}>
       {/* Header */}
-      <Box sx={{ 
-        mb: 4, 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
-        gap: 2
-      }}>
-        <Typography variant="h4" sx={{ fontWeight: 300, color: theme.palette.text.primary }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+        <Typography variant="h4" sx={{ fontWeight: 300 }}>
           Job Matches
         </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Chip 
-            label={`${currentJob.matches.length} matches`} 
-            color="primary" 
-            variant="outlined"
-          />
-          {!geminiAgent && (
-            <Chip 
-              label="AI scoring pending..." 
-              color="warning" 
-              size="small"
-              variant="outlined"
-            />
-          )}
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Chip label={`${debugInfo.found} matches`} color="primary" />
+          {!geminiAgent && <Chip label="AI loading..." color="warning" size="small" />}
         </Box>
       </Box>
 
+      {/* Matches */}
       {sortedMatches.length === 0 ? (
-        <Box sx={{ 
-          p: 6, 
-          textAlign: 'center',
-          bgcolor: theme.palette.background.paper,
-          borderRadius: 3,
-          border: `1px solid ${theme.palette.divider}`
-        }}>
-          <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
-            No matching jobs found
+        <Box sx={{ textAlign: 'center', py: 8 }}>
+          <Warning sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+          <Typography variant="h6" color="text.secondary" gutterBottom>
+            {jobMatches.length > 0 ? 'Matches found but jobs missing' : 'No matches found'}
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Try adjusting your job criteria or check back later
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            {jobMatches.length > 0 
+              ? `${jobMatches.length} matches exist but job details are missing from store`
+              : 'Try adjusting your job criteria or check back later'
+            }
           </Typography>
+          <Button variant="outlined" onClick={findMatches}>
+            Refresh Matches
+          </Button>
         </Box>
       ) : (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          {sortedMatches.map(({ job, match }) => {
-            if (!job) {
-              return (
-                <Card 
-                  key={match.job_id}
-                  onClick={() => dispatch({ type: "DELETE_MATCH", id: match.job_id })}
-                  sx={{ 
-                    cursor: 'pointer',
-                    bgcolor: theme.palette.error.light + '20',
-                    border: `1px solid ${theme.palette.error.main}`,
-                    borderRadius: 2
-                  }}
-                >
-                  <CardContent sx={{ textAlign: 'center', py: 2 }}>
-                    <Typography color="error">Job deleted - Click to remove</Typography>
-                  </CardContent>
-                </Card>
-              );
-            }
-
-            return (
-              <Card 
-                key={job.id}
-                sx={{ 
-                  cursor: 'pointer',
-                  borderRadius: 3,
-                  border: `1px solid ${theme.palette.divider}`,
-                  transition: 'all 0.2s ease-in-out',
-                  '&:hover': { 
-                    boxShadow: theme.shadows[8],
-                    transform: 'translateY(-4px)',
-                    borderColor: theme.palette.primary.main
-                  }
-                }}
-                onClick={() => handleOpenDialog(job.id)}
-              >
-                <CardContent sx={{ p: 3 }}>
-                  {/* Header with score */}
-                  <Box sx={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    alignItems: 'flex-start',
-                    mb: 2
-                  }}>
-                    <Typography variant="h6" sx={{ 
-                      flex: 1, 
-                      fontWeight: 500,
-                      mr: 2
-                    }}>
-                      {job?.job_titles && truncateTitle(job.job_titles[0])}
-                    </Typography>
-                    
-                    {match?.score ? (
-                      <Chip 
-                        label={`${match.score*10}%`}
-                        color={getScoreColor(match.score*10)}
-                        size="small"
-                        icon={<Star fontSize="small" />}
-                      />
-                    ) : (
-                      <Chip 
-                        label="Calculating..."
-                        color="default"
-                        size="small"
-                        variant="outlined"
-                      />
-                    )}
-                  </Box>
-
-                  {/* Score bar */}
-                  {match?.score && (
-                    <Box sx={{ mb: 2 }}>
-                      <LinearProgress 
-                        variant="determinate" 
-                        value={match.score*10} 
-                        color={getScoreColor(match.score*10)}
-                        sx={{ 
-                          height: 6, 
-                          borderRadius: 3,
-                          bgcolor: theme.palette.grey[200]
-                        }}
-                      />
-                    </Box>
-                  )}
-
-                  {/* Contact info */}
-                  {job.emails?.[0] && (
-                    <Box sx={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      gap: 1, 
-                      mb: 2,
-                      color: theme.palette.text.secondary
-                    }}>
-                      <Email fontSize="small" />
-                      <Typography variant="body2">
-                        {job.emails[0]}
-                      </Typography>
-                    </Box>
-                  )}
-                  
-                  {/* Missing skills */}
-                  {match?.missmatching_skills?.length > 0 && (
-                    <Box sx={{ mt: 2 }}>
-                      <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
-                        Missing skills:
-                      </Typography>
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                        {match.missmatching_skills.slice(0, 3).map((skill, index) => (
-                          <Chip 
-                            key={index}
-                            label={skill} 
-                            size="small" 
-                            color="warning"
-                            variant="outlined"
-                          />
-                        ))}
-                        {match.missmatching_skills.length > 3 && (
-                          <Chip 
-                            label={`+${match.missmatching_skills.length - 3} more`}
-                            size="small"
-                            color="warning"
-                            variant="outlined"
-                          />
-                        )}
-                      </Box>
-                    </Box>
-                  )}
-                </CardContent>
-
-                <Divider />
-                
-                <Box sx={{ 
-                  p: 2, 
-                  display: 'flex', 
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}>
-                  <ConnectButton jobId={job.id} />
-                  <IconButton 
-                    size="small"
-                    sx={{ color: theme.palette.text.secondary }}
-                  >
-                    <Visibility fontSize="small" />
-                  </IconButton>
-                </Box>
-              </Card>
-            );
-          })}
+        <Box sx={{ display: 'grid', gap: 3 }}>
+          {sortedMatches.map(renderMatchCard)}
         </Box>
       )}
-      
-      {/* Job Details Dialog */}
-      {matchingJobs.map((job: Job) => (
+
+      {/* Job Details Dialogs */}
+      {sortedMatches.map(({ job }) => (
         <Dialog
           key={job.id}
           open={openDialogId === job.id}
           onClose={handleCloseDialog}
           maxWidth="md"
           fullWidth
-          PaperProps={{
-            sx: {
-              borderRadius: 3,
-              maxHeight: '80vh'
-            }
-          }}
+          PaperProps={{ sx: { borderRadius: 2 } }}
         >
-          <DialogTitle sx={{ 
-            borderBottom: `1px solid ${theme.palette.divider}`,
-            pb: 2
-          }}>
-            <Typography variant="h6" sx={{ fontWeight: 500 }}>
-              Job Details
-            </Typography>
-          </DialogTitle>
+          <DialogTitle>Job Details</DialogTitle>
           <DialogContent sx={{ p: 0 }}>
-            <JobDetails job={job} />
+            <JobDetails 
+              job={{
+                ...job, 
+                cover_letter: currentJob.matches?.find(m => m.job_id === job.id)?.cover_letter
+              }} 
+            />
           </DialogContent>
-          <DialogActions sx={{ 
-            p: 3, 
-            borderTop: `1px solid ${theme.palette.divider}`
-          }}>
-            <Button 
-              onClick={handleCloseDialog}
-              variant="contained"
-              sx={{ borderRadius: 2 }}
-            >
+          <DialogActions>
+            <Button onClick={handleCloseDialog} variant="contained">
               Close
             </Button>
           </DialogActions>

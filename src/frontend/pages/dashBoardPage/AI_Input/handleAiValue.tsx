@@ -23,7 +23,6 @@ const handleAIValue = async ({
   dispatch,
   profile,
 }) => {
-  console.log({ currentCalendar });
   try {
     const contextData = {
       messages: currentMessages,

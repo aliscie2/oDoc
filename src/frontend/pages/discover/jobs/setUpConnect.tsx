@@ -48,7 +48,6 @@ const GmailConnection = () => {
   const { calendar } = useSelector((state: any) => state.calendarState);
   const { backendActor } = useBackendContext();
   const dispatch = useDispatch();
-  console.log({profile, calendar, backendActor})
   
   // Main menu states
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);

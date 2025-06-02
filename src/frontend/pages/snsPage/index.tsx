@@ -317,7 +317,6 @@ const SNSVoting: React.FC = () => {
       try {
         if (backendActor) {
           const odocBalance = await getckUsdcBalance(ckUSDCActor, canisterId);
-          console.log({ odocBalance });
           setBalance(Number(odocBalance) / 1000000);
         }
 

@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import sanitizeHtml from "sanitize-html";
 import sendEmail from "../discover/jobs/utils/sendEmail";
+import { useBackendContext } from "@/contexts/BackendContext";
 
 const EmailComposer = () => {
+  const { backendActor } = useBackendContext();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [htmlContent, setHtmlContent] = useState("");
   const [subject, setSubject] = useState("");
@@ -20,7 +22,8 @@ const EmailComposer = () => {
           img: ["src", "alt"],
         },
       });
-      let response =  await sendEmail(subject,sanitizedHtml, ['alihushamsci@yahoo.com',"alihushamsci@icloud.com", "weplutus.1@gmail.com"])
+      let email_list: string[] = await backendActor.get_emails() || [];
+      let response =  await sendEmail(subject,sanitizedHtml, email_list)
 
 
       if (response.status === 200) {

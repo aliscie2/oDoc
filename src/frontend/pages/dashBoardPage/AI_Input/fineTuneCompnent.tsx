@@ -51,7 +51,6 @@ const getTheme = (mode: "light" | "dark") =>
 const JsonEditor: React.FC<JsonEditorProps> = () => {
   const dispatch = useDispatch();
   const { training_data } = useSelector((state: any) => state.calendarState);
-  console.log({ training_data });
   const [error, setError] = useState<string | null>(null);
   const theme = useTheme();
 

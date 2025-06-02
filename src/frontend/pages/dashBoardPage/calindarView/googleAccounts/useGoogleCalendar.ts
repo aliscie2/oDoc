@@ -298,7 +298,6 @@ export const useGoogleCalendar = () => {
   }, []);
 
   const executeGoogleAction = async (action) => {
-    console.log({isConnected, action});
       if (!isConnected) return false;
       
       try {

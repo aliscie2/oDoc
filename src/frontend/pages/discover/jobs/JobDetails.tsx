@@ -19,6 +19,9 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import PauseCircleIcon from '@mui/icons-material/PauseCircle';
 import PersonIcon from '@mui/icons-material/Person';
+import DescriptionIcon from '@mui/icons-material/Description';
+import EmailIcon from '@mui/icons-material/Email';
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import { Link } from 'react-router-dom';
 import { formatRelativeTime } from '@/utils/time';
 import { useSelector } from 'react-redux';
@@ -45,7 +48,10 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job }) => {
             key !== 'date_updated' &&
             key !== 'user_id' &&
             key !== 'active' &&
-            key !== 'job_titles' &&
+            
+            key !== 'description' &&
+            key !== 'cover_letter' &&
+            key !== 'trust_note' &&
             job[key as keyof Job] !== undefined
         );
 
@@ -54,7 +60,8 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job }) => {
         const value = job[key as keyof Job];
         return Array.isArray(value) && 
                key !== 'matches' && 
-               key !== 'job_titles' &&
+               
+               key !== 'emails' &&
                value.length > 0;
     });
 
@@ -158,8 +165,114 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job }) => {
                     <Typography variant="body2" color="text.secondary">
                         Updated: {formatRelativeTime(job.date_updated)}
                     </Typography>
+                    
                 </Stack>
             </Box>
+
+            {/* Description Section */}
+            {job.description && (
+                <Card sx={{ 
+                    mb: 3, 
+                    borderRadius: 2,
+                    boxShadow: 1,
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    color: 'white'
+                }}>
+                    <CardContent sx={{ p: 3 }}>
+                        <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
+                            <DescriptionIcon />
+                            <Typography 
+                                variant="h5" 
+                                sx={{ 
+                                    fontWeight: 700
+                                }}
+                            >
+                                Description
+                            </Typography>
+                        </Stack>
+                        <Typography 
+                            variant="body1" 
+                            sx={{ 
+                                lineHeight: 1.7,
+                                fontSize: '1.1rem',
+                                whiteSpace: 'pre-wrap'
+                            }}
+                        >
+                            {job.description}
+                        </Typography>
+                    </CardContent>
+                </Card>
+            )}
+
+            {/* Cover Letter Section */}
+            {job.cover_letter && (
+                <Card sx={{ 
+                    mb: 3, 
+                    borderRadius: 2,
+                    boxShadow: 1,
+                    background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                    color: 'white'
+                }}>
+                    <CardContent sx={{ p: 3 }}>
+                        <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
+                            <EmailIcon />
+                            <Typography 
+                                variant="h5" 
+                                sx={{ 
+                                    fontWeight: 700
+                                }}
+                            >
+                                Cover Letter
+                            </Typography>
+                        </Stack>
+                        <Typography 
+                            variant="body1" 
+                            sx={{ 
+                                lineHeight: 1.7,
+                                fontSize: '1.1rem',
+                                whiteSpace: 'pre-wrap'
+                            }}
+                        >
+                            {job.cover_letter}
+                        </Typography>
+                    </CardContent>
+                </Card>
+            )}
+
+            {/* Trust Note Section */}
+            {job.trust_note && (
+                <Card sx={{ 
+                    mb: 3, 
+                    borderRadius: 2,
+                    boxShadow: 1,
+                    background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
+                    color: 'white'
+                }}>
+                    <CardContent sx={{ p: 3 }}>
+                        <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
+                            <VerifiedUserIcon />
+                            <Typography 
+                                variant="h5" 
+                                sx={{ 
+                                    fontWeight: 700
+                                }}
+                            >
+                                Trust Note
+                            </Typography>
+                        </Stack>
+                        <Typography 
+                            variant="body1" 
+                            sx={{ 
+                                lineHeight: 1.7,
+                                fontSize: '1.1rem',
+                                whiteSpace: 'pre-wrap'
+                            }}
+                        >
+                            {job.trust_note}
+                        </Typography>
+                    </CardContent>
+                </Card>
+            )}
 
             {/* Key Metrics Grid */}
             {basicInfoFields.length > 0 && (
@@ -182,6 +295,48 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job }) => {
                             Job Details
                         </Typography>
                         <Grid container spacing={3}>
+                            {/* Display emails first if they exist */}
+                            {job.emails && job.emails.length > 0 && (
+                                <Grid item xs={12}>
+                                    <Box sx={{ 
+                                        p: 2,
+                                        borderRadius: 2,
+                                        border: 1,
+                                        borderColor: 'divider',
+                                        minHeight: 80,
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        justifyContent: 'center'
+                                    }}>
+                                        <Typography 
+                                            variant="body2" 
+                                            color="text.secondary"
+                                            sx={{ 
+                                                fontWeight: 500,
+                                                mb: 1
+                                            }}
+                                        >
+                                            Emails
+                                        </Typography>
+                                        <Stack spacing={0.5}>
+                                            {job.emails.map((email, index) => (
+                                                <Typography 
+                                                    key={index}
+                                                    variant="h6" 
+                                                    sx={{ 
+                                                        fontWeight: 700,
+                                                        wordBreak: 'break-word',
+                                                        color: 'primary.main'
+                                                    }}
+                                                >
+                                                    {email}
+                                                </Typography>
+                                            ))}
+                                        </Stack>
+                                    </Box>
+                                </Grid>
+                            )}
+                            
                             {basicInfoFields.map((key) => {
                                 const value = job[key as keyof Job];
                                 if (!value) return null;

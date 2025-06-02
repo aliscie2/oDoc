@@ -23,7 +23,6 @@ const ConversationInput = () => {
       // e.preventDefault();
       if (value.trim()) {
         setIsThinking(true);
-        console.log({ handleAIValue: calendar });
         let actions = await handleAIValue({
           input: value.trim(),
           currentCalendar: calendar,

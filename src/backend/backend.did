@@ -262,7 +262,7 @@ type InitialData = record {
 type Job = record {
   id : text;
   active : bool;
-  date_created : float32;
+  date_created : float64;
   contacts : vec text;
   trust_note : text;
   education : vec text;
@@ -277,7 +277,7 @@ type Job = record {
   matches : vec Match;
   job_titles : vec text;
   category : Category;
-  date_updated : float32;
+  date_updated : float64;
   proficiency_level : text;
   certifications : vec text;
   required_match_score : float32;
@@ -299,7 +299,7 @@ type Match = record {
   score : float32;
   job_id : text;
   cover_letter : text;
-  date_updated : float32;
+  date_updated : float64;
   is_connected : bool;
 };
 type Message = record {

@@ -386,7 +386,6 @@ const CalendarManagement: React.FC = () => {
   } = useAvailabilityMenu();
 
   const handleUpdateAvailability = (updatedAvailability: Availability) => {
-    console.log({ updatedAvailability });
     dispatch({
       type: isCreating ? "ADD_AVAILABILITY" : "UPDATE_AVAILABILITY",
       availability: updatedAvailability,

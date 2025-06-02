@@ -120,13 +120,13 @@ const App: React.FC = () => {
             let res = await backendActor.get_my_calendar();
             let aiCredits = await backendActor.get_ai_credits();
             if (aiCredits.Err == "User does not exist"){
-              let aiFreeDrop = await backendActor.drop_free_credits();
+              let _ = await backendActor.drop_free_credits();
               dispatch({
                 type: "INIT_AI_CREDITS",
                 credits: 1,
                 isFree: true,
               })
-            } else if (aiCredits.Ok){
+            } else if (!aiCredits.Err){
               let isFree = await backendActor.is_ai_free_tier();
               dispatch({
                 type: "INIT_AI_CREDITS",

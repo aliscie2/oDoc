@@ -18,14 +18,13 @@ pub struct  GetJobs {
 
 #[query]
 fn get_my_jobs() -> GetJobs {
-
-
     let mut jobs = Job::get_my_jobs();
     let mut matching_jobs = Vec::new();
     
     for job in jobs.iter() {
         job.matches.iter()
             .filter_map(|m| Job::get(&m.job_id))
+            .filter(|job| job.active)  // Filter out inactive jobs
             .for_each(|job| matching_jobs.push(job));
         // let category = match job.category { Category::Talent => Category::Job, _ => Category::Talent };
         // let matching_jobs = Job::get_matches(job.skills.clone(), category);
@@ -43,24 +42,31 @@ fn get_my_jobs() -> GetJobs {
 #[query]
 fn get_matches(current_job_id:String, skills: Vec<String>, category: Category) -> Vec<Job> {
     let curr = Job::get(&current_job_id);
-    let machig_jobs: Vec<Job> = Job::get_matches(skills, category);
+    let matching_jobs: Vec<Job> = Job::get_matches(skills, category);
 
     if curr.is_none() {
-        return machig_jobs.into_iter()
+        return matching_jobs.into_iter()
         .take(10)
-        .collect();;
+        .collect();
     }
     
     let curr = curr.unwrap();
-    let mut filtered_jobs = machig_jobs.iter()
-       .filter(|job| {
-           !curr.matches.iter().any(|m| 
-               m.job_id == job.id  
-               && job.date_updated >= m.date_updated
-           )
-       })
-       .cloned()
-       .collect::<Vec<Job>>();
+    let mut filtered_jobs: Vec<Job> = matching_jobs.into_iter()
+        .filter(|job| {
+            // Check if this job ID exists in matches
+            if let Some(match_record) = curr.matches.iter().find(|m| m.job_id == job.id) {
+                // false
+                // If job ID is in matches, keep if either:
+                // 1. The job was updated after the match, OR
+                // 2. The current job was updated after the match
+                // otherwise remove it
+                job.date_updated > match_record.date_updated || curr.date_updated > match_record.date_updated
+            } else {
+                // If job ID is not in matches, keep it
+                true
+            }
+        })
+        .collect();
 
     if filtered_jobs.len() > 10 {
         filtered_jobs = filtered_jobs[..10].to_vec();

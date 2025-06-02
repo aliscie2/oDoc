@@ -81,17 +81,6 @@ function applyFieldUpdates(job: Job, updates: Array<{field: string; values: stri
 }
 
 
-function mergeMatches(existing: Match[], newMatches: Match[]): Match[] {
-    return [
-        ...existing.filter(em => !newMatches.some(nm => nm.job_id === em.job_id)),
-        ...newMatches.map(match => ({
-            ...match,
-            date_updated: 0,
-            is_connected: match.is_connected || false
-        }))
-    ];
-}
-
 export function jobReducer(state: JobState = initialState, action: JobAction): JobState {
     
 
@@ -118,23 +107,20 @@ export function jobReducer(state: JobState = initialState, action: JobAction): J
 
                 }
             case "UPDATE_FIELDS":
-                let category: any = [];
+                let category: any = {};
+                category[action.category] = null;
                 let jobUpdate: JobUpdate ={
                     id: state.currentJobId,
                     active: [],
                     matches: [],
                     updates: [],
-                    category,
+                    category:[category],
                     required_match_score: [action.required_match_score]
                 }
 
                 if (!state.currentJobId) {
                     
-                    let c: string = action.category =="Job"? "Job" : "Talent";
-                    category[c] = null;
-                    if (!action.category){
-                        category = []   
-                    }
+            
                     const newJob = applyFieldUpdates(generateDummyJob(), action.updates, action.category);
                     jobUpdate.id = newJob.id
                     jobUpdate.active = [true]
@@ -167,6 +153,7 @@ export function jobReducer(state: JobState = initialState, action: JobAction): J
                     };
                 }
                 jobUpdate.active = [true]
+                updatedJob2.active = true
                 jobUpdate.updates = action.updates
                 return {
                     ...state,

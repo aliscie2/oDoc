@@ -70,7 +70,7 @@ export const useCalendarSave = (): UseCalendarSaveReturn => {
     try {
       let res = await backendActor.get_calendar(calendar.id);
       res = res[0];
-      console.log({x:res,y:calendar.id});
+
 
         res.events = res.events.map((event) => EventTimezone(event));
         res.availabilities = res.availabilities.map((event) => AvailabilityTimezone(event));

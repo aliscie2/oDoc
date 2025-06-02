@@ -1,13 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Card,
-  CardContent,
-  Grow,
-  Typography,
-  useTheme,
-  styled
-} from '@mui/material';
 import snsimage from '@/assets/infograph/SNS.png';
 import analyticsImage from '@/assets/infograph/analytics.png';
 import autoReleaseImage from '@/assets/infograph/autoRlease.png';
@@ -26,19 +17,11 @@ interface Element {
   glowColor: string;
 }
 
-const AnimatedBox = styled(Box)({
-  transition: 'all 0.4s ease',
-  '&:hover': {
-    transform: 'scale(1.3)',
-    zIndex: 100
-  }
-});
-
 const ODOCInfographic: React.FC = () => {
-  const theme = useTheme();
   const [hoveredElement, setHoveredElement] = useState<number | null>(null);
   const [pulseActive, setPulseActive] = useState(false);
   const [coreActive, setCoreActive] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   const elements: Element[] = [
     {
@@ -91,7 +74,6 @@ const ODOCInfographic: React.FC = () => {
       title: "Origyn Identity Verification",
       description: "Authenticate users using on-chain identity tech",
       icon: <img src={identityImage} width="50px" style={{ filter: 'drop-shadow(0 0 8px rgba(76, 154, 255, 0.8))' }} />,
-      
       angle: 180,
       color: "from-indigo-500 to-blue-400",
       glowColor: "rgba(76, 154, 255, 0.8)"
@@ -99,6 +81,13 @@ const ODOCInfographic: React.FC = () => {
   ];
 
   useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
     const coreInterval = setInterval(() => {
       setCoreActive(prev => !prev);
     }, 2000);
@@ -110,6 +99,7 @@ const ODOCInfographic: React.FC = () => {
     return () => {
       clearInterval(coreInterval);
       clearInterval(pulseInterval);
+      window.removeEventListener('resize', checkMobile);
     };
   }, []);
 
@@ -121,58 +111,232 @@ const ODOCInfographic: React.FC = () => {
     };
   };
 
-  // Calculate adjusted position to prevent overflow
   const getAdjustedCardPosition = (angle: number, radius: number) => {
     const basePosition = getElementPosition(angle, radius);
-    const cardWidth = 280;
-    const cardHeight = 200;
+    const cardWidth = isMobile ? 260 : 280;
+    const cardHeight = isMobile ? 180 : 200;
     const padding = 20;
     
-    // Get viewport dimensions (assuming container is full viewport)
-    const viewportWidth = window.innerWidth || 1536;
-    const viewportHeight = window.innerHeight || 1536;
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
     const centerX = viewportWidth / 2;
     const centerY = viewportHeight / 2;
     
-    // Calculate actual position relative to viewport
     let actualX = centerX + basePosition.x;
     let actualY = centerY + basePosition.y;
     
-    // Adjust X position if card would overflow
     if (actualX + cardWidth/2 + padding > viewportWidth) {
       actualX = viewportWidth - cardWidth/2 - padding;
     } else if (actualX - cardWidth/2 - padding < 0) {
       actualX = cardWidth/2 + padding;
     }
     
-    // Adjust Y position if card would overflow
     if (actualY + cardHeight/2 + padding > viewportHeight) {
       actualY = viewportHeight - cardHeight/2 - padding;
     } else if (actualY - cardHeight/2 - padding < 0) {
       actualY = cardHeight/2 + padding;
     }
     
-    // Convert back to relative position
     return {
       x: actualX - centerX,
       y: actualY - centerY
     };
   };
 
+  // Mobile layout: vertical stack
+  if (isMobile) {
+    return (
+      <div style={{
+        width: '100%',
+        minHeight: '100vh',
+        background: 'radial-gradient(circle at center, #0a0a0a 0%, #000000 50%, #0a0a23 100%)',
+        padding: '20px',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        {/* Background Effects */}
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          opacity: 0.3,
+          background: 'radial-gradient(circle at 30% 70%, rgba(0, 255, 255, 0.1) 0%, transparent 50%), radial-gradient(circle at 70% 30%, rgba(255, 0, 255, 0.1) 0%, transparent 50%)',
+        }} />
+        
+        {/* Floating Particles */}
+        {Array.from({ length: 10 }).map((_, i) => (
+          <div key={i} style={{
+            position: 'absolute',
+            width: '2px',
+            height: '2px',
+            background: i % 3 === 0 ? '#00ffff' : i % 3 === 1 ? '#ff00ff' : '#ffff00',
+            borderRadius: '50%',
+            left: `${10 + (i * 80) % 90}%`,
+            top: `${5 + (i * 60) % 90}%`,
+            opacity: 0.6,
+            animation: `float ${2 + (i % 4)}s ease-in-out infinite`,
+            animationDelay: `${i * 0.2}s`
+          }} />
+        ))}
+
+        {/* Mobile Layout */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '20px',
+          paddingTop: '40px',
+          paddingBottom: '40px'
+        }}>
+          {/* Central Core */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '120px',
+            height: '120px',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(26, 26, 26, 0.95) 0%, rgba(10, 10, 10, 0.9) 100%)',
+            border: '2px solid rgba(0, 255, 255, 0.8)',
+            boxShadow: '0 0 30px rgba(0, 255, 255, 0.8)',
+            marginBottom: '20px',
+            animation: coreActive ? 'corePulse 2s ease-in-out infinite' : 'none'
+          }}>
+            <img 
+              src={odocIcon} 
+              alt="ODOC Logo" 
+              style={{ 
+                width: '120px',
+                filter: `drop-shadow(0 0 8px rgba(0, 255, 255, 0.8)) ${coreActive ? 'brightness(1.2)' : 'brightness(1)'}`,
+                transition: 'all 0.3s ease'
+              }} 
+            />
+          </div>
+
+          {/* Mobile Cards */}
+          {elements.map((element, index) => (
+            <div key={element.id} style={{
+              width: '100%',
+              maxWidth: '340px',
+              marginBottom: '16px',
+              animation: `slideInUp 0.6s ease-out ${index * 0.1}s both`
+            }}>
+              <div style={{
+                background: 'linear-gradient(135deg, rgba(26, 26, 26, 0.95), rgba(45, 45, 45, 0.9))',
+                borderRadius: '16px',
+                border: `2px solid ${element.glowColor}`,
+                boxShadow: `0 0 20px ${element.glowColor}`,
+                backdropFilter: 'blur(20px)',
+                padding: '20px',
+                position: 'relative',
+                overflow: 'hidden',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={() => setHoveredElement(element.id)}
+              onMouseLeave={() => setHoveredElement(null)}
+              onClick={() => setHoveredElement(hoveredElement === element.id ? null : element.id)}
+              >
+                {/* Card Glow Effect */}
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '2px',
+                  background: `linear-gradient(90deg, transparent, ${element.glowColor}, transparent)`,
+                  animation: 'shimmer 2s ease-in-out infinite'
+                }} />
+                
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '16px'
+                }}>
+                  <div style={{
+                    width: '60px',
+                    height: '60px',
+                    borderRadius: '50%',
+                    background: `radial-gradient(circle, ${element.glowColor}20, transparent)`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    border: `1px solid ${element.glowColor}`,
+                    flexShrink: 0
+                  }}>
+                    {element.icon}
+                  </div>
+                  
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{ 
+                      color: element.glowColor,
+                      fontWeight: 'bold',
+                      margin: '0 0 8px 0',
+                      fontSize: '1.1rem',
+                      textShadow: `0 0 10px ${element.glowColor}`
+                    }}>
+                      {element.title}
+                    </h3>
+                    <p style={{ 
+                      color: 'rgba(255, 255, 255, 0.8)',
+                      fontSize: '0.9rem',
+                      lineHeight: 1.4,
+                      margin: 0
+                    }}>
+                      {element.description}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <style>{`
+          @keyframes slideInUp {
+            from { 
+              opacity: 0; 
+              transform: translateY(30px); 
+            }
+            to { 
+              opacity: 1; 
+              transform: translateY(0); 
+            }
+          }
+          
+          @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(180deg); }
+          }
+          
+          @keyframes corePulse {
+            0%, 100% { box-shadow: 0 0 30px rgba(0, 255, 255, 0.8); }
+            50% { box-shadow: 0 0 50px rgba(0, 255, 255, 1); }
+          }
+          
+          @keyframes shimmer {
+            0%, 100% { transform: translateX(-100%); }
+            50% { transform: translateX(100%); }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  // Desktop layout: original orbital design
   return (
-    <Box sx={{
+    <div style={{
       width: '100%',
       height: '100vh',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      p: 4,
+      padding: '16px',
       overflow: 'hidden',
       background: 'radial-gradient(circle at center, #0a0a0a 0%, #000000 50%, #0a0a23 100%)',
       position: 'relative'
     }}>
       {/* Sci-Fi Background Effects */}
-      <Box sx={{
+      <div style={{
         position: 'absolute',
         inset: 0,
         opacity: 0.3,
@@ -180,7 +344,7 @@ const ODOCInfographic: React.FC = () => {
       }} />
       
       {/* Animated Grid */}
-      <Box sx={{
+      <div style={{
         position: 'absolute',
         inset: 0,
         opacity: 0.15,
@@ -191,11 +355,11 @@ const ODOCInfographic: React.FC = () => {
 
       {/* Floating Particles */}
       {Array.from({ length: 20 }).map((_, i) => (
-        <Box key={i} sx={{
+        <div key={i} style={{
           position: 'absolute',
           width: '2px',
           height: '2px',
-          bgcolor: i % 3 === 0 ? '#00ffff' : i % 3 === 1 ? '#ff00ff' : '#ffff00',
+          background: i % 3 === 0 ? '#00ffff' : i % 3 === 1 ? '#ff00ff' : '#ffff00',
           borderRadius: '50%',
           left: `${10 + (i * 80) % 90}%`,
           top: `${5 + (i * 60) % 90}%`,
@@ -205,124 +369,95 @@ const ODOCInfographic: React.FC = () => {
         }} />
       ))}
 
-      <Box sx={{
+      <div style={{
         position: 'relative',
         width: '100%',
-        maxWidth: '1536px',
+        maxWidth: '1200px',
         height: '100%',
-        maxHeight: '1536px'
+        maxHeight: '1200px'
       }}>
-        {/* Central Core - Enhanced */}
-        <Box sx={{
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  zIndex: 10,
-  cursor: 'pointer'
-}}
-onMouseEnter={() => setCoreActive(true)}
-onMouseLeave={() => setCoreActive(false)}>
-     
-           
-
-          {/* Core Container */}
-          <Box sx={{
-  }}>
-             <img 
-      src={odocIcon} 
-      alt="ODOC Logo" 
-      style={{ 
-        width: '200px',
-        filter: `drop-shadow(0 0 8px rgba(0, 255, 255, 0.8)) ${coreActive ? 'brightness(1.2)' : 'brightness(1)'}`,
-        transition: 'all 0.3s ease'
-      }} 
-    />
-          </Box>
-
-        
-        </Box>
+        {/* Central Core */}
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 10,
+          cursor: 'pointer'
+        }}
+        onMouseEnter={() => setCoreActive(true)}
+        onMouseLeave={() => setCoreActive(false)}>
+          <img 
+              src={odocIcon} 
+              alt="ODOC Logo" 
+              style={{ 
+                width: window.innerWidth < 1024 ? '150px' : '200px',
+                filter: `drop-shadow(0 0 8px rgba(0, 255, 255, 0.8)) ${coreActive ? 'brightness(1.2)' : 'brightness(1)'}`,
+                transition: 'all 0.3s ease'
+              }} 
+            />
+        </div>
 
         {/* Connection Lines and Orbital Elements */}
         {elements.map((element) => {
-          const position = getElementPosition(element.angle, 300);
-          const adjustedPosition = getAdjustedCardPosition(element.angle, 300);
+          const radius = window.innerWidth < 1024 ? 250 : 300;
+          const position = getElementPosition(element.angle, radius);
+          const adjustedPosition = getAdjustedCardPosition(element.angle, radius);
           const isHovered = hoveredElement === element.id;
           
           return (
             <React.Fragment key={element.id}>
-              {/* Enhanced Energy Pipes with hover area */}
-              <Box 
-                sx={{
+              {/* Energy Pipes */}
+              <div 
+                style={{
                   position: 'absolute',
                   top: '50%',
                   left: '50%',
                   transformOrigin: 'left center',
-                  height: '16px',
-                  width: '300px',
+                  height: '12px',
+                  width: `${radius}px`,
                   transform: `rotate(${element.angle}deg)`,
                   overflow: 'hidden',
-                  borderRadius: '8px',
+                  borderRadius: '6px',
                   background: 'linear-gradient(90deg, #1a1a1a, #2a2a2a, #1a1a1a)',
                   border: '1px solid rgba(255, 255, 255, 0.1)',
                   boxShadow: isHovered ? `0 0 20px ${element.glowColor}` : 'none',
                   cursor: 'pointer',
                   zIndex: 5,
-                  '&::before': {
-                    content: '""',
-                    position: 'absolute',
-                    top: '2px',
-                    left: 0,
-                    right: 0,
-                    bottom: '2px',
-                    background: `linear-gradient(90deg, transparent, ${element.glowColor}, ${element.glowColor}, transparent)`,
-                    borderRadius: '6px',
-                    animation: 'energyFlow 2.5s ease-in-out infinite',
-                    animationDelay: `${element.id * 0.4}s`,
-                    opacity: isHovered ? 1 : 0.6,
-                    filter: 'blur(1px)'
-                  },
-                  '&::after': {
-                    content: '""',
-                    position: 'absolute',
-                    top: '6px',
-                    left: 0,
-                    right: 0,
-                    bottom: '6px',
-                    background: `linear-gradient(90deg, transparent, white, transparent)`,
-                    borderRadius: '2px',
-                    animation: 'coreFlow 1.8s linear infinite',
-                    animationDelay: `${element.id * 0.3}s`,
-                    opacity: isHovered ? 0.8 : 0.4
-                  }
+                  transition: 'all 0.3s ease'
                 }}
                 onMouseEnter={() => setHoveredElement(element.id)}
                 onMouseLeave={() => setHoveredElement(null)}
-              />
-
-              {/* Smoke Effects */}
-              {isHovered && (
-                <>
-                  {Array.from({ length: 8 }).map((_, i) => (
-                    <Box key={i} sx={{
-                      position: 'absolute',
-                      top: '50%',
-                      left: '50%',
-                      width: '3px',
-                      height: '3px',
-                      borderRadius: '50%',
-                      bgcolor: element.glowColor.replace('0.8', '0.6'),
-                      transform: `rotate(${element.angle}deg) translateX(${120 + i * 20}px) rotate(-${element.angle}deg) translateY(${Math.sin(Date.now() * 0.01 + i) * 8}px)`,
-                      animation: `smoke ${1.5 + i * 0.1}s ease-out infinite`,
-                      animationDelay: `${i * 0.1}s`,
-                      filter: 'blur(1px)'
-                    }} />
-                  ))}
-                </>
-              )}
+              >
+                <div style={{
+                  position: 'absolute',
+                  top: '1px',
+                  left: 0,
+                  right: 0,
+                  bottom: '1px',
+                  background: `linear-gradient(90deg, transparent, ${element.glowColor}, ${element.glowColor}, transparent)`,
+                  borderRadius: '4px',
+                  animation: 'energyFlow 2.5s ease-in-out infinite',
+                  animationDelay: `${element.id * 0.4}s`,
+                  opacity: isHovered ? 1 : 0.6,
+                  filter: 'blur(1px)'
+                }} />
+                <div style={{
+                  position: 'absolute',
+                  top: '4px',
+                  left: 0,
+                  right: 0,
+                  bottom: '4px',
+                  background: `linear-gradient(90deg, transparent, white, transparent)`,
+                  borderRadius: '1px',
+                  animation: 'coreFlow 1.8s linear infinite',
+                  animationDelay: `${element.id * 0.3}s`,
+                  opacity: isHovered ? 0.8 : 0.4
+                }} />
+              </div>
               
-              {/* Enhanced Orbital Elements */}
-              <Box sx={{
+              {/* Orbital Elements */}
+              <div style={{
                 position: 'absolute',
                 top: '50%',
                 left: '50%',
@@ -330,143 +465,117 @@ onMouseLeave={() => setCoreActive(false)}>
                 transition: 'transform 0.4s ease',
                 zIndex: isHovered ? 200 : 20
               }}>
-                <Grow in={true} timeout={800}>
-                  <AnimatedBox 
-                    onMouseEnter={() => setHoveredElement(element.id)}
-                    onMouseLeave={() => setHoveredElement(null)}
-                    sx={{
-                      transform: isHovered ? 'scale(1)' : 'scale(1)', // Override the default hover transform
-                      '&:hover': {
-                        transform: 'scale(1)', // Prevent additional scaling
-                        zIndex: 200
-                      }
-                    }}
-                  >
-                    {/* Element Glow */}
-                    <Box sx={{
-                      position: 'absolute',
-                      inset: '-20px',
-                      borderRadius: '50%',
-                      background: `radial-gradient(circle, ${element.glowColor} 0%, transparent 70%)`,
-                      opacity: isHovered ? 0.8 : 0.3,
-                      filter: 'blur(15px)',
-                      transition: 'all 0.4s ease',
-                      transform: isHovered ? 'scale(1.5)' : 'scale(1)'
-                    }} />
+                <div 
+                  onMouseEnter={() => setHoveredElement(element.id)}
+                  onMouseLeave={() => setHoveredElement(null)}
+                  style={{
+                    transition: 'all 0.4s ease',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {/* Element Glow */}
+                  <div style={{
+                    position: 'absolute',
+                    inset: '-20px',
+                    borderRadius: '50%',
+                    background: `radial-gradient(circle, ${element.glowColor} 0%, transparent 70%)`,
+                    opacity: isHovered ? 0.8 : 0.3,
+                    filter: 'blur(15px)',
+                    transition: 'all 0.4s ease',
+                    transform: isHovered ? 'scale(1.5)' : 'scale(1)'
+                  }} />
 
-                    {/* Show only icon when not hovered */}
-                    {!isHovered ? (
-                      <Box sx={{
-                        width: '80px',
-                        height: '80px',
+                  {!isHovered ? (
+                    <div style={{
+                      width: window.innerWidth < 1024 ? '70px' : '80px',
+                      height: window.innerWidth < 1024 ? '70px' : '80px',
+                      borderRadius: '50%',
+                      background: 'radial-gradient(circle, rgba(26, 26, 26, 0.95) 0%, rgba(10, 10, 10, 0.9) 100%)',
+                      border: `2px solid ${element.glowColor}`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backdropFilter: 'blur(10px)',
+                      transition: 'all 0.4s ease',
+                      cursor: 'pointer',
+                      boxShadow: `0 0 20px ${element.glowColor}`
+                    }}>
+                      {element.icon}
+                    </div>
+                  ) : (
+                    <div style={{
+                      width: window.innerWidth < 1024 ? '260px' : '280px',
+                      height: window.innerWidth < 1024 ? '180px' : '200px',
+                      background: 'linear-gradient(135deg, rgba(26, 26, 26, 0.95), rgba(45, 45, 45, 0.9))',
+                      borderRadius: '16px',
+                      border: `2px solid ${element.glowColor}`,
+                      boxShadow: `0 0 40px ${element.glowColor}, inset 0 0 20px rgba(255, 255, 255, 0.1)`,
+                      backdropFilter: 'blur(20px)',
+                      transition: 'all 0.4s ease',
+                      overflow: 'hidden',
+                      position: 'relative',
+                      padding: '20px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      textAlign: 'center'
+                    }}>
+                      <div style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: '2px',
+                        background: `linear-gradient(90deg, transparent, ${element.glowColor}, transparent)`,
+                        animation: 'shimmer 2s ease-in-out infinite'
+                      }} />
+                      
+                      <div style={{
+                        width: '60px',
+                        height: '60px',
+                        marginBottom: '12px',
                         borderRadius: '50%',
-                        background: 'radial-gradient(circle, rgba(26, 26, 26, 0.95) 0%, rgba(10, 10, 10, 0.9) 100%)',
-                        border: `2px solid ${element.glowColor}`,
+                        background: `radial-gradient(circle, ${element.glowColor}20, transparent)`,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        backdropFilter: 'blur(10px)',
-                        transition: 'all 0.4s ease',
-                        cursor: 'pointer',
-                        boxShadow: `0 0 20px ${element.glowColor}`
+                        border: `1px solid ${element.glowColor}`,
+                        animation: 'iconPulse 2s ease-in-out infinite'
                       }}>
                         {element.icon}
-                      </Box>
-                    ) : (
-                      /* Show expanded card when hovered */
-                      <Card sx={{
-                        width: '280px',
-                        height: '200px',  
-                        background: 'linear-gradient(135deg, rgba(26, 26, 26, 0.95), rgba(45, 45, 45, 0.9))',
-                        borderRadius: '16px',
-                        border: `2px solid ${element.glowColor}`,
-                        boxShadow: `0 0 40px ${element.glowColor}, inset 0 0 20px rgba(255, 255, 255, 0.1)`,
-                        backdropFilter: 'blur(20px)',
-                        transition: 'all 0.4s ease',
-                        overflow: 'hidden',
-                        position: 'relative'
+                      </div>
+                      <h3 style={{ 
+                        color: element.glowColor,
+                        fontWeight: 'bold',
+                        margin: '0 0 8px 0',
+                        fontSize: window.innerWidth < 1024 ? '1rem' : '1.1rem',
+                        textShadow: `0 0 10px ${element.glowColor}`
                       }}>
-                        {/* Card Glow Effect */}
-                        <Box sx={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          height: '2px',
-                          background: `linear-gradient(90deg, transparent, ${element.glowColor}, transparent)`,
-                          animation: 'shimmer 2s ease-in-out infinite'
-                        }} />
-                        
-                        <CardContent sx={{ 
-                          textAlign: 'center', 
-                          p: 3,
-                          height: '100%',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          justifyContent: 'center'
-                        }}>
-                          <Box sx={{
-                            width: '70px',
-                            height: '70px',
-                            mx: 'auto',
-                            mb: 2,
-                            borderRadius: '50%',
-                            background: `radial-gradient(circle, ${element.glowColor}20, transparent)`,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            border: `1px solid ${element.glowColor}`,
-                            animation: 'iconPulse 2s ease-in-out infinite'
-                          }}>
-                            {element.icon}
-                          </Box>
-                          <Typography variant="h6" sx={{ 
-                            color: element.glowColor,
-                            fontWeight: 'bold',
-                            mb: 1,
-                            textShadow: `0 0 10px ${element.glowColor}`
-                          }}>
-                            {element.title}
-                          </Typography>
-                          <Typography variant="body2" sx={{ 
-                            color: 'rgba(255, 255, 255, 0.8)',
-                            fontSize: '0.9rem',
-                            lineHeight: 1.4
-                          }}>
-                            {element.description}
-                          </Typography>
-                        </CardContent>
-                      </Card>
-                    )}
-                  </AnimatedBox>
-                </Grow>
-              </Box>
+                        {element.title}
+                      </h3>
+                      <p style={{ 
+                        color: 'rgba(255, 255, 255, 0.8)',
+                        fontSize: '0.85rem',
+                        lineHeight: 1.4,
+                        margin: 0
+                      }}>
+                        {element.description}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </React.Fragment>
           );
         })}
-      </Box>
+      </div>
 
       {/* Keyframe Animations */}
       <style>{`
-      @keyframes simplePulse {
-      0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
-      50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
-        }
-
-
-        @keyframes spin {
-          from { transform: translate(-50%, -50%) rotate(0deg); }
-          to { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-        
         @keyframes corePulse {
-          0%, 100% { filter: drop-shadow(0 0 12px rgba(0, 255, 255, 0.8)) brightness(1); }
-          50% { filter: drop-shadow(0 0 20px rgba(0, 255, 255, 1)) brightness(1.4); }
-        }
-        
-        @keyframes energyPulse {
-          0% { transform: scale(1); opacity: 1; }
-          100% { transform: scale(1.5); opacity: 0; }
+          0%, 100% { box-shadow: 0 0 40px rgba(0, 255, 255, 0.8); }
+          50% { box-shadow: 0 0 60px rgba(0, 255, 255, 1); }
         }
         
         @keyframes energyFlow {
@@ -487,11 +596,6 @@ onMouseLeave={() => setCoreActive(false)}>
           50% { transform: translateY(-15px) rotate(180deg); }
         }
         
-        @keyframes smoke {
-          0% { transform: translateY(0) scale(1); opacity: 0.8; }
-          100% { transform: translateY(-40px) scale(0); opacity: 0; }
-        }
-        
         @keyframes shimmer {
           0%, 100% { transform: translateX(-100%); }
           50% { transform: translateX(100%); }
@@ -507,7 +611,7 @@ onMouseLeave={() => setCoreActive(false)}>
           50% { opacity: 0.25; }
         }
       `}</style>
-    </Box>
+    </div>
   );
 };
 

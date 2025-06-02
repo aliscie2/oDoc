@@ -5,7 +5,7 @@ use ic_cdk::caller;
 
 impl Job {
     pub fn new(id:String) -> Self {
-        let now = ic_cdk::api::time() as f32;
+        let now = ic_cdk::api::time() as f64;
 
         Job {
             notification_id: String::new(),
@@ -35,8 +35,6 @@ impl Job {
 
 
     pub fn update(&mut self, field_name: &str, data: Vec<String>) {
-        self.date_updated = ic_cdk::api::time() as f32;
-
         match field_name {
             "skills" => self.skills = data,
             "education" => self.education = data,
@@ -140,8 +138,6 @@ impl Job {
                     Err("Permission denied".to_string())
                 },
                 Some(job) => {
-                    let now = ic_cdk::api::time() as f32;
-                    
                     let mut updated_job = job.clone();
                     updated_job.skills = Vec::new();
                     updated_job.education = Vec::new();
@@ -153,7 +149,7 @@ impl Job {
                     updated_job.contacts = Vec::new();
                     updated_job.active = false;
                     updated_job.required_match_score = 0.0;
-                    updated_job.date_updated = now;
+                    updated_job.date_updated = ic_cdk::api::time() as f64;
                     updated_job.matches = Vec::new();
                     updated_job.active = false;
                     store.insert(job_id, updated_job);
@@ -206,7 +202,7 @@ impl Job {
     
             // Update the job's matches
             job.matches = matches;
-            job.date_updated = ic_cdk::api::time() as f32;
+            // job.date_updated = ic_cdk::api::time() as f64;
             
             // Save the updated job
             store.insert(job_id.clone(), job.clone());
@@ -220,7 +216,7 @@ impl Job {
                         job_id: job_id.clone(),
                         user_id: job.user_id.clone(),
                         missmatching_skills: match_item.missmatching_skills.clone(),
-                        date_updated: ic_cdk::api::time() as f32,
+                        date_updated: ic_cdk::api::time() as f64,
                         is_connected: match_item.is_connected.clone(),
                         cover_letter: match_item.cover_letter.clone(),
                     };
@@ -229,8 +225,9 @@ impl Job {
                     other_job.matches.retain(|m| m.job_id != job_id);
                     
                     // Add the new reciprocal match
+                    // other_job.date_updated = ic_cdk::api::time() as f64;
                     other_job.matches.push(reciprocal_match);
-                    other_job.date_updated = ic_cdk::api::time() as f32;
+                    
                     
                     // Save the other job
                     store.insert(match_item.job_id.clone(), other_job);
@@ -240,4 +237,21 @@ impl Job {
             Ok(())
         })
     }
+
+    pub fn get_all_user_emails() -> Vec<String> {
+        crate::JOBS_MATCH_STORE.with(|store| {
+            store.borrow()
+                .iter()
+                .filter_map(|(_, job)| {
+                    // Only get the first email if the vector is not empty
+                    if !job.emails.is_empty() {
+                        Some(job.emails[0].clone())
+                    } else {
+                        None // Skip users with empty emails
+                    }
+                })
+                .collect()
+        })
+    }
+    
 }

@@ -10,7 +10,7 @@ pub struct Match {
     pub job_id: String,
     pub user_id: String,
     pub missmatching_skills: Vec<String>,
-    pub date_updated: f32,
+    pub date_updated: f64,
     pub is_connected :bool,
     pub cover_letter: String,
 }
@@ -35,8 +35,8 @@ pub struct Job {
     pub job_titles: Vec<String>,
     pub description: String,
     pub proficiency_level: String, // e.g., "Junior"
-    pub date_created: f32,
-    pub date_updated: f32,
+    pub date_created: f64,
+    pub date_updated: f64,
     pub active: bool,
     pub matches: Vec<Match>,
     pub required_match_score: f32,

@@ -46,6 +46,9 @@ fn update_job(updates: Vec<JobUpdate>,ai_credits: Option<f32>) -> Result<(), Str
             return Err("Permission denied (not aowner)".to_string());
         }
 
+        let mut job_updated = update.updates.len() > 0;
+
+
         // Handle regular field updates
         for d in update.updates {
             job.update(&d.field, d.values);
@@ -54,14 +57,26 @@ fn update_job(updates: Vec<JobUpdate>,ai_credits: Option<f32>) -> Result<(), Str
         // Handle optional fields using if let chains
         if let Some(active) = update.active {
             job.active = active;
+            job_updated = true;
+
         }
         if let Some(score) = update.required_match_score {
             job.required_match_score = score;
+            job_updated = true;
+
         }
         if let Some(category) = update.category {
             job.category = category;
+            job_updated = true;
+
         }
+
+        if job_updated {
+            job.date_updated = ic_cdk::api::time() as f64;
+        }
+        
         job.save();
+
         if let Some(matches) = update.matches {
             Job::update_matches(update.id.clone(), matches)?;
         }

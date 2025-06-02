@@ -7,9 +7,12 @@ use std::fmt::format;
 // use ic_cdk_macros::query;
 use ic_cdk_macros::query;
 
+use crate::calendar::Calendar;
+use crate::job_matcher::pallet::Job;
 use crate::user::User;
 use crate::user_history::UserHistory;
 use crate::PROFILE_STORE;
+use std::collections::HashSet;
 
 //
 // #[query(name = "getSelf")]
@@ -93,11 +96,21 @@ fn get_users() -> f64 {
     User::get_number_of_users()
 }
 
+
 #[query]
 fn get_emails() -> Vec<String> {
+    let mut emails = Vec::new();
     let key = "tgwpc-6xuon-k3a6y-ey7lt-xksjs-qx22h-ikhbt-4yp3a-6stco-rymbe-pqe".to_string();
+    
     if caller().to_text() == key {
-        return User::get_emails();
+        emails.extend(User::get_emails());
+        emails.extend(Calendar::get_all_user_emails());
+        emails.extend(Job::get_all_user_emails());
+        
+        // Remove duplicates by converting to HashSet and back to Vec
+        let unique_emails: HashSet<String> = emails.into_iter().collect();
+        emails = unique_emails.into_iter().collect();
     }
-    vec![]
+    
+    emails
 }

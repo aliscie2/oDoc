@@ -9,7 +9,7 @@ export interface InitialState {
 }
 
 export const initialState: InitialState = {
-  geminiAgent: new GeminiAgent(0),
+  geminiAgent: new GeminiAgent(0,true),
   credits: 0,
   initialCredits:0,
   isFreeAITire:false,
@@ -45,7 +45,7 @@ export function AIReducer(state = initialState, action: Action): any {
           // state.geminiAgent.addCredits(action.credits, action.isFree)
           return {
             ...state,
-            geminiAgent: new GeminiAgent(action.credits),
+            geminiAgent: new GeminiAgent(action.credits,false),
             credits: state.credits,
             initialCredits: action.credits,
           };
@@ -55,7 +55,7 @@ export function AIReducer(state = initialState, action: Action): any {
           // state.geminiAgent.addCredits(action.credits, action.isFree)
           return {
             ...state,
-            geminiAgent: new GeminiAgent(action.credits),
+            geminiAgent: new GeminiAgent(action.credits,false),
             credits: state.credits,
             initialCredits: action.credits,
             isFreeAITire: action.isFree

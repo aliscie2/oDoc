@@ -29,6 +29,7 @@ import PlatformProgress from "./platformProgress";
 import SplitIntro from "./splitIntro";
 import OdocStrecture from "./oDocStrecture";
 import TrustBehaviorSystem from "./insetnivesSystem";
+import AIJobMatcherSection from "./aiJobMatcherIntro";
 
 export default function LandingPage(props) {
   // Add video reference and scroll progress
@@ -43,13 +44,14 @@ export default function LandingPage(props) {
     maxZoom: 1.3 // Adjust this value to control maximum zoom level
   });
 
-  const { isDarkMode } = useSelector((state: any) => state.uiState);
+  // const { isDarkMode } = useSelector((state: any) => state.uiState);
   
   // Always use dark video, but adjust opacity for light mode
-  const videoOpacity = isDarkMode ? 0.8 : 0.6;
+  // const videoOpacity = isDarkMode ? 0.8 : 0.6;
 
   const sections = [
     { id: 'odoc-structure', title: 'ODOC Structure' },
+    { id: 'ai-job-matcher', title: 'AI Job Matcher' },
     { id: 'why', title: 'Why ODOC' },
     { id: 'trust-behavior', title: 'Trust & Behavior' },
     { id: 'split-intro', title: 'Split Intro' },
@@ -139,6 +141,9 @@ export default function LandingPage(props) {
      
       <Section id="odoc-structure" sx={{ position: "relative", zIndex: 1 }} transparent={true}>
         <OdocStrecture/>
+      </Section>
+      <Section id="ai-job-matcher" sx={{ position: "relative", zIndex: 1 }} transparent={true}>
+        <AIJobMatcherSection />
       </Section>
       <Section id="why"  sx={{ position: "relative", zIndex: 1 }} transparent={true} >
         <WhyOdoc />

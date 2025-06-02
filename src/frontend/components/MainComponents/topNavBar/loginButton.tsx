@@ -8,7 +8,8 @@ import {
   MenuItem,
   ListItemText,
   ListItemIcon,
-  Box
+  Box,
+  Tooltip
 } from "@mui/material";
 import { 
   Person2 as Person2Icon,
@@ -58,6 +59,10 @@ const LoginButton: React.FC<LoginButtonProps> = ({
       width: 24,
       height: 24,
       marginRight: 1
+    },
+    disabledMenuItem: {
+      opacity: 0.5,
+      cursor: 'not-allowed'
     }
   };
 
@@ -75,10 +80,8 @@ const LoginButton: React.FC<LoginButtonProps> = ({
   };
 
   const handleMetaMaskLogin = async () => {
-    if (openConnectModal) {
-      await loginWithEth();
-      handleClose();
-    }
+    // Disabled - do nothing
+    return;
   };
 
   if (isFetching) {
@@ -108,16 +111,21 @@ const LoginButton: React.FC<LoginButtonProps> = ({
             </ListItemIcon>
             <ListItemText>Internet Identity</ListItemText>
           </MenuItem>
-          <MenuItem onClick={handleMetaMaskLogin}>
-            <ListItemIcon>
-              <img 
-                src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Ethereum-icon-purple.svg/langfr-250px-Ethereum-icon-purple.svg.png" 
-                alt="Ethereum" 
-                style={styles.menuIcon} 
-              />
-            </ListItemIcon>
-            <ListItemText>Ethereum</ListItemText>
-          </MenuItem>
+          <Tooltip title="This feature coming soon" placement="left">
+            <MenuItem 
+              disabled
+              sx={styles.disabledMenuItem}
+            >
+              <ListItemIcon>
+                <img 
+                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Ethereum-icon-purple.svg/langfr-250px-Ethereum-icon-purple.svg.png" 
+                  alt="Ethereum" 
+                  style={styles.menuIcon} 
+                />
+              </ListItemIcon>
+              <ListItemText>Ethereum</ListItemText>
+            </MenuItem>
+          </Tooltip>
         </Menu>
       </>
     );
@@ -150,16 +158,21 @@ const LoginButton: React.FC<LoginButtonProps> = ({
           </ListItemIcon>
           <ListItemText>Internet Identity</ListItemText>
         </MenuItem>
-        <MenuItem onClick={handleMetaMaskLogin}>
-          <ListItemIcon>
-            <img 
-              src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Ethereum-icon-purple.svg/langfr-250px-Ethereum-icon-purple.svg.png" 
-              alt="Ethereum" 
-              style={styles.menuIcon} 
-            />
-          </ListItemIcon>
-          <ListItemText>Ethereum</ListItemText>
-        </MenuItem>
+        <Tooltip title="This feature coming soon" placement="left">
+          <MenuItem 
+            disabled
+            sx={styles.disabledMenuItem}
+          >
+            <ListItemIcon>
+              <img 
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Ethereum-icon-purple.svg/langfr-250px-Ethereum-icon-purple.svg.png" 
+                alt="Ethereum" 
+                style={styles.menuIcon} 
+              />
+            </ListItemIcon>
+            <ListItemText>Ethereum</ListItemText>
+          </MenuItem>
+        </Tooltip>
       </Menu>
     </>
   );
