@@ -44,9 +44,12 @@
 <hr/>
 
 <h1 align="center">Odoc</h1>
+
 <h3 align="center">SAVES YOUR TIME</h3>
 
-<img align="left" src="https://i.ibb.co/xzJXxWK/logo2.png" style="width:100%">
+
+![logo3](https://github.com/user-attachments/assets/95276987-0f7e-4702-b767-66c08f546a89)
+
 Odoc
 
 This app is Notion.so clone, roam research clone and obsidian clone. The main purpose of this app is not to just clone
