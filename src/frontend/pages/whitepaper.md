@@ -1,75 +1,83 @@
-# ODOC
+# oDoc
 - Decentralized & open source Trustless contracts, tasks, and payment Management on ICP
 - **Name** the word odoc stand for open documents
 - **Version:** beta | **Date:** 2025-02-07
 - **Duration:** 4 months  
-- **Intro Link:** [Twitter Announcement](https://x.com/alihushamsci/status/1885269718392590342)  
+- **Intro Link:** [Twitter Announcement](https://x.com/alihushamsci/status/1885269718392590342)
+- **Ofocial tweeter**: [odoc_ic](https://x.com/odoc_ic)
+
+---
+### Abstract
+
+oDoc is a crypto Agreement platform that eliminates intermediaries in professional collaboration through AI-powered smart contracts on ICP blockchain. The platform serves freelancers, clients, business owners, startups, large companies, and lawyers with unified project matching, automated payments, and dispute resolution.
+
+Traditional platforms force users across multiple tools—Slack, Jira, Upwork, PayPal, PandaDoc—creating inefficiency, high fees, trust issues, and wasted time on logistics instead of building.
+
+oDoc solves this with AI contract automation and ICP blockchain efficiency, providing limitless collaboration without middlemen across all business scales.
 
 ---
 
-### Abstract  
-odoc revolutionizes freelance collaboration and project management by leveraging the Internet Computer Protocol (ICP). Tailored for freelancers, project managers, product managers, and remote teams, the platform eliminates intermediaries by integrating task coordination, escrow payments, contract automation, and transparent pricing into one decentralized ecosystem. Built on ICP’s trustless architecture, odoc ensures secure, censorship-resistant workflows while rewarding productivity and penalizing inefficiencies. Teams save time and money with direct, global payments, milestone tracking, and enterprise-grade security—all without middlemen.
+### Problem Statement
+
+Current project management splits workflows across disconnected platforms, forcing manual coordination between tasks, contracts, and payments. Freelancers risk non-payment, businesses pay excessive fees, and teams waste time on administrative overhead instead of productive work.
 
 ---
 
-### Introduction  
-Freelancers and project-driven teams face fragmented tools, delayed payments, and costly intermediaries in traditional task and payment management systems. odoc addresses these pain points by decentralizing workflows on the ICP blockchain. From automated escrow for freelancers to real-time progress tracking for project managers, odoc unifies contracts, tasks, and payments in a trustless environment. This white paper details how odoc empowers product managers to allocate resources, freelancers to secure payments, and teams to collaborate seamlessly—all while reducing costs and eliminating third-party dependencies.
+### Solution Overview
+
+oDoc streamline the work on one single page where users can set thier documents, promises and release them.
+**Core Modules:**
+1. **SNS** - ODOC DAO
+2. **Orygin** - Biometric Identity verfication
+3. **AI Job Matcher** - Skill-requirement matching via Ollama Qwen3 + Mistral 7B
+4. **AI Auto Release** - Auto release payment when task is done, stake promise fund on dispute
+5. **Crypto Agreement** - Smart contract legal framework by ICP
+6. **AI Analytics** - Performance tracking and optimization with actitons suggtions 
+7. **Karma Score** - Reputation-based trust system
+
+**Anti-Manipulation:**
+- Max 50$ promises if Karma score <2
+- Dispute staking (7 days to 3 months)
+- Commission-based Karma to prevent Sybil attacks  
+- AI override for clear dispute resolution
+
+The platform automates the complete workflow from project discovery to payment settlement while preventing fraud through reputation mechanics and financial commitments.
+
+
+# Tech Strecute   
+## SNS
+## Origyn
+## AI Job matcher
+## AI auto release
+## Karama
+## AI analytics
+1. For example, in chat you say to your friend "Let's meet tomorrow 9 AM" The AI suggest to add that to your google calendar. and it add it autoamtilcy. Other example, if you made 3 cancilations it suggest to interview people caefully.
+
+ 
 
 ---
 
-### Problem Statement  
-Current project management tools lack integrated payment solutions, forcing teams to juggle multiple platforms for task delegation, contract enforcement, and payroll. Freelancers risk non-payment, project managers struggle with inefficient workflows, and businesses incur high fees for escrow or cross-border transactions. Centralized systems also expose sensitive financial data and enable platform censorship. odoc solves these issues by decentralizing task execution, automating milestone-based payments via smart contracts, and providing a unified workspace where teams manage deadlines, budgets, and deliverables without intermediaries.
+# Karma
+Karama or reputation ODoc’s trust framework combines quantitative metrics and community validation to ensure fairness, accountability, and growth. Below is a hybrid structure for clarity:  
 
 ---
+Karama score 
+0 to 2.5 new user, or punched user 
+limtations
+can't make or resive prmoise bigger then 50$
+Long stake time from 1 to 3 months
 
-### Solution Overview  
-odoc streamlines freelance and project management through ICP-based canisters that automate contracts, escrow, and payments. Project managers create tasks with predefined budgets and milestones, while freelancers submit work for on-chain validation. Payments are released automatically upon approval, with disputes resolved through decentralized governance. Product managers leverage tokenized incentives to align team goals, and all transactions are recorded immutably, eliminating billing disputes. The platform’s multi-token system rewards timely delivery and penalizes delays, while its escrow module ensures freelancers are paid fairly without relying on third-party platforms. Security is enforced through ICP’s consensus layer, reducing reliance on traditional encryption.
+2.5 to 3.5
+shorter staking time
+...
 
----
+3.5 to 4
+...
+4+
 
-# Technology Architecture  
-**Platform:** Internet Computer Protocol (ICP)  
 
-#### Components  
-- **Decentralized Identity:** Empowers users to manage their digital identities autonomously without relying on centralized authorities.  
-- **Smart Contract Canisters:** Host backend logic for content management, order processing, payment handling, and governance, ensuring transparent and verifiable operations.  
-- **Decentralized Storage:** Ensures data integrity and resilience by distributing user data across a robust network of nodes.  
-- **Peer-to-Peer Communication:** Facilitates direct interactions among users via ICP’s trustless protocols, eliminating the need for traditional centralized servers.  
-- **Order and Payment Management:** Provides an effortless system for managing tasks, contracts, and payments. Teams can oversee orders and financial commitments in a trustless environment without conventional encryption, relying instead on immutable ledger entries and transparent smart contract validations.  
-
-#### Security  
-Rather than using conventional encryption, odoc leverages the inherent security of ICP's decentralized consensus and immutable ledger entries. Trustless smart contract canisters ensure that all transactions and data modifications are transparent and verifiable, eliminating the need for traditional encryption techniques.
-
----
-
-# Tokenomics  
-**Token Name:** ODOC  
-
-#### Utility  
-The ODOC token is the platform’s native currency used for transactions, incentivizing user engagement, and enabling participation in governance decisions. It forms the backbone of odoc's multi-token ecosystem, aligning the interests of users, developers, and stakeholders.  
-
-#### Distribution  
-Tokens will be fairly distributed among early adopters, contributors, and strategic partners, with reserves allocated for ongoing development and community rewards.  
-
-#### Economic Model  
-The token model is engineered to balance supply and demand, encouraging active participation and sustainable growth. It integrates multiple token types to reflect financial and social engagements accurately:  
-
-##### Interaction Tokens  
-- **Sender Tokens:**  
-  Earned when initiating a payment, these tokens are subject to burning in cases of refunds or unmet escrow conditions. Higher payment amounts trigger a proportional burn to ensure accountability.  
-- **Receiver Tokens:**  
-  Granted upon receiving payments, these tokens serve as a reputation or "stock" marker. In cases of disputes or cancellations, tokens are deducted to maintain fairness.  
-- **Social Talk Tokens:**  
-  Accrued through positive social interactions—such as posting content, receiving likes, and gaining views—these tokens are burnt when content receives negative feedback, ensuring a quality-driven social ecosystem.  
-
-**Consensus Mechanism:** All token gains and burns are executed via a consensus-based system, ensuring that adjustments are community-validated in a manner similar to peer-reviewed scientific publishing or collaborative platforms like Wikipedia.  
-
----
-
-# Reputation  
-ODoc’s trust framework combines quantitative metrics and community validation to ensure fairness, accountability, and growth. Below is a hybrid structure for clarity:  
-
----
+## User have to pay to increatse thier karama score
+Why: to prevent syble attack.
 
 ## Quick Reference Table  
 
@@ -137,11 +145,12 @@ ODoc’s trust framework combines quantitative metrics and community validation 
 
 ---
 
-# Governance  
-**Model:** Decentralized Autonomous Organization (DAO)  
-**Mechanism:** Token holders have proportional voting rights, enabling them to influence key decisions such as protocol upgrades, feature development, and content moderation policies. This democratic governance model guarantees that the platform evolves according to community needs.  
-**Transparency:** Every governance decision is recorded on-chain, ensuring complete transparency and accountability throughout the decision-making process.  
-
+# AI Job matcher  
+- prevent user from seeking matches with score less then 70%
+- algorthim
+  - mismatch_list = skill in Job but not in Talent, Note if skills in Talent but not in job is ignored
+  - sort matches by mismatch list
+  - show top 10
 ---
 
 # Roadmap  
@@ -155,7 +164,7 @@ ODoc’s trust framework combines quantitative metrics and community validation 
 - View contract permissions configuration  
 - Prepare for SNS integration:  
   - Develop whitepaper  
-  - Deploy Cycles ledger canister  
+  - Deploy Cycles ledger canister  (!IMPORTANT)
   - Implement sns-js library (or interact with SNS using agent and actor) [Note: decided]  
   - Establish Cycles management strategy:  
     - Provide each user with 1 free TC  
@@ -171,6 +180,8 @@ ODoc’s trust framework combines quantitative metrics and community validation 
   - Implement voting on new updates  
 
 #### Milestone 2 (40 Days)  
+- Migrate from Gemeni AI to Olama 
+- Use AI light white in brwoser
 - Develop Advanced Text Editor:  
   - Implement table functionality  
   - Enable live sharing  
@@ -225,7 +236,8 @@ ODoc’s trust framework combines quantitative metrics and community validation 
   - Ensure data integrity during migrations (adding/renaming/removing fields)  
 
 #### Milestone 3 (30 Days)  
-- Implement Identity Verification:  
+- AI Auto release 
+- Implement Orygin Identity Verification:  
   - Require users to verify identity via passport chip for a green profile flag  
 - Develop Tokens Collection Mechanism:  
   - Allow users to collect tokens (tokens cannot be purchased)  
