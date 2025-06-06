@@ -31,25 +31,12 @@ function Pages() {
   const { profile, profile_history, wallet, friends } = useSelector(
     (state: any) => state.filesState,
   );
-  const { login, logout, backendActor } = useBackendContext();
-  const { isLoggedIn, isRegistered } = useSelector(
+  const { login } = useBackendContext();
+  const { isLoggedIn } = useSelector(
     (state: any) => state.uiState,
   );
   
-  // isLoggedIn null not call backend yet
-  // isLoggedIn false called backedn but got not authenitcated
-  // isLoggedIn true called backend and got authenticated
-
-  
-    if (window.location.pathname!='/'&& isLoggedIn == true && !isRegistered) {
-      // alert("Please register first.")
-      navigate('/')
-    }
- 
   const MainPage = () => {
-    if (isLoggedIn!=null && isRegistered!=null && isLoggedIn == true && !isRegistered) {
-      return <RegistrationForm />;
-    }
 
     
     if (isLoggedIn) {

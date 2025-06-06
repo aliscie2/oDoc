@@ -7,12 +7,13 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { Add } from "@mui/icons-material";
+import { Add, WindowOutlined } from "@mui/icons-material";
 import { useSnackbar } from "notistack";
 import { useBackendContext } from "../../contexts/BackendContext";
 import { RegisterUser } from "../../../declarations/backend/backend.did";
 import LoaderButton from "../MuiComponents/LoaderButton";
 import compressImage from "@/DataProcessing/compressImage";
+import { useLocation } from "react-router-dom";
 
 
 // Utility function to convert File to Uint8Array
@@ -114,9 +115,21 @@ const RegistrationForm: React.FC = () => {
       setLoading(false);
     }
   };
-
+  
+  const location = useLocation()
+  
   return (
     <Box sx={{ maxWidth: 400, mx: "auto", p: 3 }}>
+      <Typography
+      key={location.pathname} 
+      hidden={location.pathname=='/'}
+      color='warning'
+        variant="h5" 
+        align="center" 
+        sx={{ mb: 1, fontWeight: 300 }}
+      >
+        Please, register first.
+      </Typography>
       <Typography 
         variant="h5" 
         align="center" 

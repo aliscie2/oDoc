@@ -20,6 +20,7 @@ import getckUsdcBalance from "./utils/getBalance";
 import { AvailabilityTimezone, EventTimezone } from "./pages/dashBoardPage/calindarView/serializers";
 import { RootState } from "./redux/reducers";
 import { re } from "mathjs";
+import RegistrationForm from "./components/MainComponents/RegistrationForm";
 
 // Create a styled component for the main content
 const MainContent = styled(Box)(({ theme }) => ({
@@ -61,9 +62,7 @@ const App: React.FC = () => {
   const { backendActor, ckUSDCActor } = useBackendContext();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const theme = useTheme();
-  
-  
-  // Track previous login state to detect changes
+
 
 
   useEffect(() => {
@@ -309,7 +308,7 @@ const App: React.FC = () => {
         <DndProvider backend={HTML5Backend}>
           <NavBar>
             <PageContainer>
-              <Pages />
+              {isRegistered ==false?<RegistrationForm />:<Pages />}
             </PageContainer>
           </NavBar>
         </DndProvider>
