@@ -220,13 +220,7 @@ const GmailConnection = () => {
     try {
       const code = generateVerificationCode();
       setGeneratedCode(code);
-      let res = await sendEmail("Email Verification Code",`
-        <div>
-          <h2>Email Verification</h2>
-          <p>Your verification code is: <strong>${code}</strong></p>
-          <p>This code will expire in 10 minutes.</p>
-          </div>
-        `,[emailInput])
+      let res = await sendEmail("Email Verification Code",`Your verification code is: ${code}`,[emailInput])
 
       
       setShowVerification(true);

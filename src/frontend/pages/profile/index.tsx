@@ -15,18 +15,15 @@ import {
 } from "@mui/material";
 import { Edit } from "@mui/icons-material";
 import Friends from "./friends";
-import { useDispatch, useSelector } from "react-redux";
-import { useSnackbar } from "notistack";
-import { useBackendContext } from "../../contexts/BackendContext";
-import { RegisterUser } from "../../../declarations/backend/backend.did";
+import { useSelector } from "react-redux";
+
 import UserAvatarMenu from "../../components/MainComponents/UserAvatarMenu";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+
 import { formatRelativeTime } from "../../utils/time";
 import EditProfile from "./editeProfile";
 import CopyButton from "../../components/MuiComponents/copyButton";
 import EmailComposer from "./sendEmail";
-import GoogleSignInButton from "./addGmail";
+
 
 const ProfilePage = ({ profile, history, friends, friendButton }) => {
   const { isDarkMode } = useSelector((state: any) => state.uiState);
@@ -34,33 +31,13 @@ const ProfilePage = ({ profile, history, friends, friendButton }) => {
 
   const [isEditing, setIsEditing] = useState(false);
 
-  const [formValues, setFormValues] = useState({
-    name: "",
-    description: "",
-    email: "",
-  });
-
-  // useEffect(() => {
-  //   if (profile) {
-  //     setFormValues({
-  //       name: profile.name,
-  //       description: profile.description || "",
-  //       email: profile.email || "",
-  //     });
-  //   }
-  // }, [profile]);
 
   const canEdit = currentUser?.id === profile?.id;
 
-  // const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-  //   const { name, value } = event.target;
-  //   setFormValues((prev) => ({ ...prev, [name]: value }));
-  // };
 
-  // Handle completely missing props with default empty objects
   const safeProfile = profile || {};
   const safeHistory = history || {};
-  // const safeFriends = friends || [];
+
   const {
     id = "",
     name = "Anonymous",
@@ -190,21 +167,11 @@ const ProfilePage = ({ profile, history, friends, friendButton }) => {
     },
   };
 
-  // Function to safely convert photo to base64
-  const getPhotoSrc = (photoData) => {
-    try {
-      return photoData && Object.keys(photoData).length > 0
-        ? `data:image/jpeg;base64,${Buffer.from(photoData).toString("base64")}`
-        : "";
-    } catch (e) {
-      console.error("Error converting photo:", e);
-      return "";
-    }
-  };
+ 
   let founderOfOdoc =
     "tgwpc-6xuon-k3a6y-ey7lt-xksjs-qx22h-ikhbt-4yp3a-6stco-rymbe-pqe";
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container key={JSON.stringify(profile)} maxWidth="lg" sx={{ py: 4 }}>
       {currentUser?.id == founderOfOdoc && <EmailComposer />}
       {/*<GoogleSignInButton />*/}
       {/* User Header */}
@@ -216,11 +183,11 @@ const ProfilePage = ({ profile, history, friends, friendButton }) => {
             alignItems="flex-start"
           >
             <Box display="flex" alignItems="flex-start" gap={3}>
-              <UserAvatarMenu
+              {profile&&!isEditing&&<UserAvatarMenu
                 hide={["Profile"]}
                 sx={{ width: 96, height: 96 }}
                 user={profile}
-              />
+              />}
 
               <Box>
                 {isEditing ? (
@@ -246,7 +213,7 @@ const ProfilePage = ({ profile, history, friends, friendButton }) => {
                     {friendButton}
                     <CopyButton
                       title="Copy Profile Link"
-                      value={`${window.location.href}/user?id=${profile?.id}`}
+                      value={`${window.location.host}/user?id=${profile?.id}`}
                     />
                   </>
                 )}

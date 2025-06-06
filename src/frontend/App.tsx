@@ -18,6 +18,8 @@ import { DndProvider } from "react-dnd";
 import { canisterId } from "../declarations/backend";
 import getckUsdcBalance from "./utils/getBalance";
 import { AvailabilityTimezone, EventTimezone } from "./pages/dashBoardPage/calindarView/serializers";
+import { RootState } from "./redux/reducers";
+import { re } from "mathjs";
 
 // Create a styled component for the main content
 const MainContent = styled(Box)(({ theme }) => ({
@@ -50,14 +52,16 @@ const LoadingContainer = styled(Box)(({ theme }) => ({
 }));
 
 const App: React.FC = () => {
+  const { isLoggedIn,isRegistered } = useSelector(
+    (state: any) => state.uiState,
+  );
+  const { isFetching } = useSelector((state: RootState) => state.uiState);
   const dispatch = useDispatch();
   const { profile } = useSelector((state: any) => state.filesState);
   const { backendActor, ckUSDCActor } = useBackendContext();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const theme = useTheme();
   
-  // Extract isLoggedIn directly to ensure we get the primitive value
-  const isLoggedIn = useSelector((state: any) => state.uiState.isLoggedIn);
   
   // Track previous login state to detect changes
 
@@ -66,18 +70,12 @@ const App: React.FC = () => {
 
     const fetchInitialData = async () => {
 
-      if (!isLoggedIn || !backendActor) {
-        return;
-      }
-
+     
       
       try {
-        
         dispatch({type:"IS_FETCHING", isFetching: true });
   
         const res = await backendActor.get_initial_data();
-        // console.log({res})
-  
         const workspaces = await backendActor.get_work_spaces();
         if ("Err" in res && res.Err == "Anonymous user.") {
           dispatch( { isRegistered: false, type:"IS_REGISTERED" });
@@ -105,9 +103,12 @@ const App: React.FC = () => {
       });
     };
   
-    fetchInitialData();
+    if (isLoggedIn && backendActor&& !isFetching) {
+      fetchInitialData();
+    }
 
-  }, [isLoggedIn,backendActor]);
+
+  }, [backendActor]); // Do not use isLoggedIn here, because it is alreay change backendActor when isLoggedIn chancged.
 
 
   // after setup
@@ -134,7 +135,6 @@ const App: React.FC = () => {
                 isFree: isFree.Ok || true,
               })
             }
-            // console.log({ res });
             res.events = res.events.map((event) => EventTimezone(event));
             res.availabilities = res.availabilities.map((event) =>
               AvailabilityTimezone(event),

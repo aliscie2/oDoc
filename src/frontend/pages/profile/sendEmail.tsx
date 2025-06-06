@@ -10,27 +10,36 @@ const EmailComposer = () => {
   const [subject, setSubject] = useState("");
   const [isSending, setIsSending] = useState(false);
 
+  const sanitizeConfig = {
+    allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img"]),
+    allowedAttributes: {
+      ...sanitizeHtml.defaults.allowedAttributes,
+      a: ["href", "target"],
+      img: ["src", "alt"],
+    },
+  };
+
   const handleSendEmail = async () => {
+    if (!subject.trim() || !htmlContent.trim()) {
+      alert("Subject and content are required");
+      return;
+    }
+
     try {
       setIsSending(true);
-
-      const sanitizedHtml = sanitizeHtml(htmlContent, {
-        allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img"]),
-        allowedAttributes: {
-          ...sanitizeHtml.defaults.allowedAttributes,
-          a: ["href", "target"],
-          img: ["src", "alt"],
-        },
-      });
-      let email_list: string[] = await backendActor.get_emails() || [];
-      let response =  await sendEmail(subject,sanitizedHtml, email_list)
-
-
-      if (response.status === 200) {
-        setIsDialogOpen(false);
-        setHtmlContent("");
-        setSubject("");
-      }
+      const sanitizedHtml = sanitizeHtml(htmlContent, sanitizeConfig);
+      const email_list = await backendActor.get_emails() || [];
+      
+      email_list.forEach(async (email)=>{
+        const response = await sendEmail(subject, sanitizedHtml, email);
+        if (response.status !== 200){
+          console.log({response})
+        }
+      })
+    
+      setIsDialogOpen(false);
+      setHtmlContent("");
+      setSubject("");
     } catch (error) {
       console.error("Error sending email:", error);
       alert("Error sending email: " + error.text);
@@ -39,129 +48,127 @@ const EmailComposer = () => {
     }
   };
 
+  const closeDialog = () => {
+    setIsDialogOpen(false);
+    setHtmlContent("");
+    setSubject("");
+  };
+
   return (
-    <div>
-      <button
-        onClick={() => setIsDialogOpen(true)}
-        style={{
-          padding: "10px 20px",
-          backgroundColor: "#007bff",
-          color: "white",
-          border: "none",
-          borderRadius: "4px",
-          cursor: "pointer",
-        }}
-      >
+    <>
+      <button onClick={() => setIsDialogOpen(true)}>
         Compose Email
       </button>
 
       {isDialogOpen && (
-        <div
-          style={{
-            position: "fixed",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            backgroundColor: "white",
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          backgroundColor: "rgba(0,0,0,0.5)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1000,
+        }}>
+          <div style={{
+            backgroundColor: "inherit",
             padding: "20px",
             borderRadius: "8px",
-            boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-            zIndex: 1000,
-            width: "80%",
+            width: "90%",
             maxWidth: "800px",
-          }}
-        >
-          <div style={{ marginBottom: "10px" }}>
+            maxHeight: "90vh",
+            overflow: "auto",
+            border: "1px solid currentColor",
+          }}>
             <input
               type="text"
-              placeholder="Subject"
+              placeholder="Subject *"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
+              required
+              style={{
+                width: "100%",
+                padding: "8px",
+                marginBottom: "15px",
+                border: "1px solid currentColor",
+                borderRadius: "4px",
+                backgroundColor: "inherit",
+                color: "inherit",
+              }}
             />
-          </div>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "20px",
-            }}
-          >
-            <div>
-              <h4>HTML Editor</h4>
-              <textarea
-                value={htmlContent}
-                onChange={(e) => setHtmlContent(e.target.value)}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
+              <div>
+                <h4>HTML Editor</h4>
+                <textarea
+                  value={htmlContent}
+                  onChange={(e) => setHtmlContent(e.target.value)}
+                  required
+                  placeholder="Enter HTML content here... *"
+                  style={{
+                    width: "100%",
+                    height: "300px",
+                    padding: "10px",
+                    fontFamily: "monospace",
+                    border: "1px solid currentColor",
+                    borderRadius: "4px",
+                    backgroundColor: "inherit",
+                    color: "inherit",
+                    resize: "vertical",
+                  }}
+                />
+              </div>
+
+              <div>
+                <h4>Preview</h4>
+                <div
+                  style={{
+                    border: "1px solid currentColor",
+                    padding: "10px",
+                    height: "300px",
+                    overflow: "auto",
+                    backgroundColor: "inherit",
+                  }}
+                  dangerouslySetInnerHTML={{
+                    __html: sanitizeHtml(htmlContent, sanitizeConfig)
+                  }}
+                />
+              </div>
+            </div>
+
+            <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
+              <button
+                onClick={handleSendEmail}
+                disabled={isSending || !subject.trim() || !htmlContent.trim()}
                 style={{
-                  width: "100%",
-                  height: "300px",
-                  padding: "10px",
-                  fontFamily: "monospace",
-                  border: "1px solid #ccc",
+                  padding: "10px 20px",
+                  border: "1px solid currentColor",
                   borderRadius: "4px",
+                  backgroundColor: "inherit",
+                  color: "inherit",
+                  cursor: isSending || !subject.trim() || !htmlContent.trim() ? "not-allowed" : "pointer",
                 }}
-                placeholder="Enter HTML content here..."
-              />
-            </div>
-
-            <div>
-              <h4>Preview</h4>
-              <div
+              >
+                {isSending ? "Sending..." : "Send Email"}
+              </button>
+              <button
+                onClick={closeDialog}
                 style={{
-                  border: "1px solid #ccc",
-                  padding: "10px",
-                  height: "300px",
-                  overflow: "auto",
+                  padding: "10px 20px",
+                  border: "1px solid currentColor",
+                  borderRadius: "4px",
+                  backgroundColor: "inherit",
+                  color: "inherit",
+                  cursor: "pointer",
                 }}
-                dangerouslySetInnerHTML={{
-                  __html: sanitizeHtml(htmlContent, {
-                    allowedTags: sanitizeHtml.defaults.allowedTags.concat([
-                      "img",
-                    ]),
-                    allowedAttributes: {
-                      ...sanitizeHtml.defaults.allowedAttributes,
-                      a: ["href", "target"],
-                      img: ["src", "alt"],
-                    },
-                  }),
-                }}
-              />
+              >
+                Cancel
+              </button>
             </div>
-          </div>
-
-          <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
-            <button
-              onClick={handleSendEmail}
-              disabled={isSending}
-              style={{
-                padding: "10px 20px",
-                backgroundColor: isSending ? "#6c757d" : "#28a745",
-                color: "white",
-                border: "none",
-                borderRadius: "4px",
-                cursor: isSending ? "not-allowed" : "pointer",
-              }}
-            >
-              {isSending ? "Sending..." : "Send Email"}
-            </button>
-            <button
-              onClick={() => setIsDialogOpen(false)}
-              style={{
-                padding: "10px 20px",
-                backgroundColor: "#dc3545",
-                color: "white",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-              }}
-            >
-              Cancel
-            </button>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 

@@ -24,6 +24,7 @@ import { Rating } from "../../../declarations/backend/backend.did";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/reducers";
 import { randomString } from "../../DataProcessing/dataSamples";
+import { convertToBlobLink } from "@/DataProcessing/imageToVec";
 
 interface UserAvatarMenuProps {
   user: {
@@ -210,22 +211,10 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
       setComment("");
     }
   };
-
-  const getPhotoSrc = (photoData?: Uint8Array) => {
-    try {
-      return photoData && photoData.length > 0
-        ? `data:image/jpeg;base64,${Buffer.from(photoData).toString("base64")}`
-        : "";
-    } catch (e) {
-      console.error("Error converting photo:", e);
-      return "";
-    }
-  };
-
   return (
     <>
       <IconButton disabled={user.id === profile?.id} onClick={handleClick}>
-        <Avatar src={getPhotoSrc(user?.photo)} alt={user.name} sx={sx}>
+        <Avatar src={convertToBlobLink(user.photo)} alt={user.name} sx={sx}>
           {user.name?.charAt(0) || "A"}
         </Avatar>
       </IconButton>

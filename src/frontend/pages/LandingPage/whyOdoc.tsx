@@ -29,7 +29,6 @@ import {
   ExpandLess,
   Star,
 } from '@mui/icons-material';
-import { useSelector } from 'react-redux';
 
 interface BenefitData {
   id: string;
@@ -124,7 +123,8 @@ const ODocInfographic: React.FC<ODocInfographicProps> = ({
   showStats = true,
   onCtaClick
 }) => {
-  const { isDarkMode } = useSelector((state: any) => state.uiState);
+  // Fix: Remove Redux dependency and use local state for dark mode
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [expandedMobileCard, setExpandedMobileCard] = useState<string | null>(null);
   
@@ -132,13 +132,15 @@ const ODocInfographic: React.FC<ODocInfographicProps> = ({
   const isMobile = useMediaQuery(muiTheme.breakpoints.down('md'));
   const isTablet = useMediaQuery(muiTheme.breakpoints.between('md', 'lg'));
 
+  // Fix: Detect dark mode from theme
+  useEffect(() => {
+    setIsDarkMode(muiTheme.palette.mode === 'dark');
+  }, [muiTheme.palette.mode]);
+
   // Sort benefits based on user type priority
   const sortedBenefits = [...benefitsData].sort((a, b) => 
     a.priority[userType] - b.priority[userType]
   );
-
-
-
 
   const handleMobileCardClick = (cardId: string) => {
     if (isMobile) {

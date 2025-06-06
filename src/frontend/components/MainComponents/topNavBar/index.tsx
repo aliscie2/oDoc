@@ -97,12 +97,6 @@ export default function TopNavBar() {
   const { chats } = useSelector((state: RootState) => state.chatsState);
 
   useEffect(() => {
-    if (isLoggedIn) {
-      dispatch({ type: "LOGIN" });
-    }
-  }, [isLoggedIn, dispatch]);
-
-  useEffect(() => {
     const fetchData = async () => {
       if (isLoggedIn && backendActor) {
         const [notificationRes, chatsList] = await Promise.all([

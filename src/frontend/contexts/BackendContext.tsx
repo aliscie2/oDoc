@@ -268,7 +268,7 @@ export const BackendProvider: React.FC<BackendProviderProps> = ({ children }) =>
       setAuthClient(client);
       const { actor, agent, principal, identity } = await handleAgent(client, siweIdentity);
       const ckUSDCActor = await getLedgerActor(agent);
-      
+      console.log("ckUSDCActor:");
       setState(prevState => ({
         ...prevState,
         ckUSDCActor,
@@ -288,7 +288,7 @@ export const BackendProvider: React.FC<BackendProviderProps> = ({ children }) =>
     initializeAuthClient().catch((error) => {
       console.log("Failed to initialize auth client:", error);
     });
-  }, [isLoggedIn, dispatch, siweIdentity]);
+  }, [isLoggedIn]);
 
   // Add effect to handle session changes
   useEffect(() => {

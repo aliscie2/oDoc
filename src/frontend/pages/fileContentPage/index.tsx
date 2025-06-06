@@ -137,15 +137,12 @@ function FileContentPage() {
   }, 250);
 
   if (inited && files.length === 0) {
-    return <span>404 Not Found</span>;
+    return <span>404 content Not Found</span>;
   }
   if (files.length === 0 && isLoggedIn) {
     return <CircularProgress />;
   }
-  if (!currentFile) {
-    return <span>404 Not Found</span>;
-  }
-
+  
   const editable =
     currentFile.author === profile.id ||
     Object.keys(currentFile.permission)[0] === "CanUpdate" ||

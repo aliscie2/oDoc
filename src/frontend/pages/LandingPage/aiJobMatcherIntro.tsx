@@ -81,10 +81,12 @@ const AIJobMatcherSection = () => {
       ref={sectionRef}
       sx={{
         position: 'relative',
-        py: { xs: 8, md: 12 },
+        py: { xs: 6, md: 12 },
+        px: { xs: 2, sm: 3, md: 0 },
         background: 'inherit',
         color: 'inherit',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        minHeight: { xs: 'auto', md: '100vh' }
       }}
     >
       {/* Background Pattern */}
@@ -106,7 +108,7 @@ const AIJobMatcherSection = () => {
       />
       
       <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-        <Grid container spacing={4} alignItems="center">
+        <Grid container spacing={{ xs: 3, md: 4 }} alignItems="center">
           {/* Main Content */}
           <Grid item xs={12} md={6}>
             <Fade in={isVisible} timeout={1000}>
@@ -123,7 +125,7 @@ const AIJobMatcherSection = () => {
                   component="h1"
                   sx={{
                     fontWeight: 700,
-                    fontSize: { xs: '2.5rem', md: '3.5rem' },
+                    fontSize: { xs: '2rem', sm: '2.5rem', md: '3.5rem' },
                     lineHeight: 1.2,
                     mb: 2,
                     background: 'linear-gradient(135deg, currentColor 0%, rgba(59, 130, 246, 0.8) 100%)',
@@ -142,7 +144,8 @@ const AIJobMatcherSection = () => {
                 <Typography
                   variant="h5"
                   sx={{
-                    mb: 3,
+                    mb: 2,
+                    fontSize: { xs: '1.2rem', md: '1.5rem' },
                     fontWeight: 400,
                     opacity: isVisible ? 0.9 : 0,
                     lineHeight: 1.4,
@@ -150,36 +153,45 @@ const AIJobMatcherSection = () => {
                     transition: 'all 1s ease-out 0.4s'
                   }}
                 >
-                  Stop searching for Talents or Jobs, let AI do it for you, 
-                  
+                  Stop searching for Talents or Jobs, let AI do it for you
                 </Typography>
+
                 <Typography
-                  variant="h5"
+                  variant="h6"
                   sx={{
-                    mb: 3,
+                    mb: 1,
+                    fontSize: { xs: '1rem', md: '1.25rem' },
                     fontWeight: 400,
                     opacity: isVisible ? 0.9 : 0,
                     lineHeight: 1.4,
                     transform: isVisible ? 'translateX(0)' : 'translateX(-80px)',
-                    transition: 'all 1s ease-out 0.4s'
+                    transition: 'all 1s ease-out 0.5s'
                   }}
                 >
                   1. Login now.
                 </Typography>
+
                 <Typography
-                to={`/discover`}
-                component={Link}
-                  variant="h5"
+                  component={Link}
+                  to={`/discover`}
+                  variant="h6"
                   sx={{
                     mb: 3,
+                    fontSize: { xs: '1rem', md: '1.25rem' },
                     fontWeight: 400,
                     opacity: isVisible ? 0.9 : 0,
                     lineHeight: 1.4,
                     transform: isVisible ? 'translateX(0)' : 'translateX(-80px)',
-                    transition: 'all 1s ease-out 0.4s'
+                    transition: 'all 1s ease-out 0.6s',
+                    textDecoration: 'underline',
+                    display: 'block',
+                    color: 'inherit',
+                    '&:hover': {
+                      opacity: 0.7
+                    }
                   }}
                 >
-                    2. Then go to the discover page.
+                  2. Then go to the discover page.
                 </Typography>
                 
                 {/* Value Proposition */}
@@ -187,11 +199,11 @@ const AIJobMatcherSection = () => {
                   variant="body1"
                   sx={{
                     mb: 4,
-                    fontSize: '1.1rem',
+                    fontSize: { xs: '0.95rem', md: '1.1rem' },
                     lineHeight: 1.6,
                     opacity: isVisible ? 0.8 : 0,
                     transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
-                    transition: 'all 1s ease-out 0.6s'
+                    transition: 'all 1s ease-out 0.7s'
                   }}
                 >
                   Join thousands who've ditched job boards for intelligent matching. 
@@ -206,6 +218,7 @@ const AIJobMatcherSection = () => {
                       <Box 
                         sx={{ 
                           textAlign: 'center',
+                          p: { xs: 1, md: 0 },
                           transform: isVisible ? 'scale(1) translateY(0)' : 'scale(0.8) translateY(40px)',
                           opacity: isVisible ? 1 : 0,
                           transition: `all 0.6s ease-out ${0.8 + index * 0.2}s`
@@ -217,7 +230,15 @@ const AIJobMatcherSection = () => {
                         <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5 }}>
                           {feature.title}
                         </Typography>
-                        <Typography variant="caption" sx={{ opacity: 0.7 }}>
+                        <Typography 
+                          variant="caption" 
+                          sx={{ 
+                            opacity: 0.7,
+                            fontSize: { xs: '0.7rem', md: '0.75rem' },
+                            display: 'block',
+                            lineHeight: 1.3
+                          }}
+                        >
                           {feature.description}
                         </Typography>
                       </Box>
@@ -225,11 +246,11 @@ const AIJobMatcherSection = () => {
                   ))}
                 </Grid>
 
-
                 {/* Trust Indicators */}
                 <Box 
                   sx={{ 
                     display: 'flex', 
+                    flexDirection: { xs: 'column', sm: 'row' },
                     flexWrap: 'wrap', 
                     gap: 1, 
                     alignItems: 'center', 
@@ -245,19 +266,28 @@ const AIJobMatcherSection = () => {
                     icon={<TrendingUp />}
                     label="10,000+ Successful Matches"
                     size="small"
-                    sx={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}
+                    sx={{ 
+                      backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                      fontSize: { xs: '0.7rem', md: '0.8125rem' }
+                    }}
                   />
                   <Chip
                     icon={<Notifications />}
                     label="Real-time Alerts"
                     size="small"
-                    sx={{ backgroundColor: 'rgba(59, 130, 246, 0.1)' }}
+                    sx={{ 
+                      backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                      fontSize: { xs: '0.7rem', md: '0.8125rem' }
+                    }}
                   />
                   <Chip
                     icon={<Work />}
                     label="All Industries"
                     size="small"
-                    sx={{ backgroundColor: 'rgba(147, 51, 234, 0.1)' }}
+                    sx={{ 
+                      backgroundColor: 'rgba(147, 51, 234, 0.1)',
+                      fontSize: { xs: '0.7rem', md: '0.8125rem' }
+                    }}
                   />
                 </Box>
               </Box>
@@ -269,6 +299,7 @@ const AIJobMatcherSection = () => {
             <Box 
               sx={{ 
                 pl: { md: 4 },
+                mt: { xs: 4, md: 0 },
                 transform: isVisible ? 'translateX(0)' : 'translateX(100px)',
                 opacity: isVisible ? 1 : 0,
                 transition: 'all 1s ease-out 0.5s'
@@ -286,7 +317,7 @@ const AIJobMatcherSection = () => {
                   transition: 'all 0.8s ease-out 0.8s'
                 }}
               >
-                <CardContent>
+                <CardContent sx={{ p: { xs: 2, md: 3 } }}>
                   <Grid container spacing={3} textAlign="center">
                     <Grid item xs={4}>
                       <Typography 
@@ -294,13 +325,19 @@ const AIJobMatcherSection = () => {
                         sx={{ 
                           fontWeight: 700, 
                           color: 'primary.main',
+                          fontSize: { xs: '1.8rem', md: '2.125rem' },
                           transform: isVisible ? 'scale(1)' : 'scale(0)',
                           transition: 'all 0.6s ease-out 1.2s'
                         }}
                       >
                         94%
                       </Typography>
-                      <Typography variant="caption">Match Success</Typography>
+                      <Typography 
+                        variant="caption"
+                        sx={{ fontSize: { xs: '0.65rem', md: '0.75rem' } }}
+                      >
+                        Match Success
+                      </Typography>
                     </Grid>
                     <Grid item xs={4}>
                       <Typography 
@@ -308,13 +345,19 @@ const AIJobMatcherSection = () => {
                         sx={{ 
                           fontWeight: 700, 
                           color: 'success.main',
+                          fontSize: { xs: '1.8rem', md: '2.125rem' },
                           transform: isVisible ? 'scale(1)' : 'scale(0)',
                           transition: 'all 0.6s ease-out 1.4s'
                         }}
                       >
                         3.2x
                       </Typography>
-                      <Typography variant="caption">Faster Hiring</Typography>
+                      <Typography 
+                        variant="caption"
+                        sx={{ fontSize: { xs: '0.65rem', md: '0.75rem' } }}
+                      >
+                        Faster Hiring
+                      </Typography>
                     </Grid>
                     <Grid item xs={4}>
                       <Typography 
@@ -322,13 +365,19 @@ const AIJobMatcherSection = () => {
                         sx={{ 
                           fontWeight: 700, 
                           color: 'warning.main',
+                          fontSize: { xs: '1.8rem', md: '2.125rem' },
                           transform: isVisible ? 'scale(1)' : 'scale(0)',
                           transition: 'all 0.6s ease-out 1.6s'
                         }}
                       >
                         5min
                       </Typography>
-                      <Typography variant="caption">Setup Time</Typography>
+                      <Typography 
+                        variant="caption"
+                        sx={{ fontSize: { xs: '0.65rem', md: '0.75rem' } }}
+                      >
+                        Setup Time
+                      </Typography>
                     </Grid>
                   </Grid>
                 </CardContent>
@@ -350,14 +399,31 @@ const AIJobMatcherSection = () => {
                     transition: 'all 0.8s ease-out 1.2s'
                   }}
                 >
-                  <CardContent sx={{ p: 3 }}>
+                  <CardContent sx={{ p: { xs: 2, md: 3 } }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <Psychology sx={{ mr: 2, color: 'primary.main', fontSize: 32 }} />
-                      <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                      <Psychology sx={{ 
+                        mr: 2, 
+                        color: 'primary.main', 
+                        fontSize: { xs: 28, md: 32 }
+                      }} />
+                      <Typography 
+                        variant="h6" 
+                        sx={{ 
+                          fontWeight: 600,
+                          fontSize: { xs: '1rem', md: '1.25rem' }
+                        }}
+                      >
                         Smart AI Matching
                       </Typography>
                     </Box>
-                    <Typography variant="body2" sx={{ opacity: 0.9, lineHeight: 1.6 }}>
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        opacity: 0.9, 
+                        lineHeight: 1.6,
+                        fontSize: { xs: '0.8rem', md: '0.875rem' }
+                      }}
+                    >
                       Our advanced AI analyzes your skills, preferences, and career goals to find opportunities that truly match your aspirations.
                     </Typography>
                   </CardContent>
@@ -377,14 +443,31 @@ const AIJobMatcherSection = () => {
                     transition: 'all 0.8s ease-out 1.4s'
                   }}
                 >
-                  <CardContent sx={{ p: 3 }}>
+                  <CardContent sx={{ p: { xs: 2, md: 3 } }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <Notifications sx={{ mr: 2, color: 'success.main', fontSize: 32 }} />
-                      <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                      <Notifications sx={{ 
+                        mr: 2, 
+                        color: 'success.main', 
+                        fontSize: { xs: 28, md: 32 }
+                      }} />
+                      <Typography 
+                        variant="h6" 
+                        sx={{ 
+                          fontWeight: 600,
+                          fontSize: { xs: '1rem', md: '1.25rem' }
+                        }}
+                      >
                         Instant Notifications
                       </Typography>
                     </Box>
-                    <Typography variant="body2" sx={{ opacity: 0.9, lineHeight: 1.6 }}>
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        opacity: 0.9, 
+                        lineHeight: 1.6,
+                        fontSize: { xs: '0.8rem', md: '0.875rem' }
+                      }}
+                    >
                       Never miss a perfect opportunity. Get real-time alerts delivered straight to your inbox when ideal matches become available.
                     </Typography>
                   </CardContent>

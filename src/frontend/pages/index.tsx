@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
 import React from "react";
 import LandingPage from "./LandingPage";
 import FileContentPage from "./fileContentPage";
@@ -21,8 +21,13 @@ import AffiliateRedirect from "./affiliateRedirect";
 import RegistrationForm from "../components/MainComponents/RegistrationForm";
 import ContractPage from "./profile/ContractPage";
 import Scheduler from "./dashBoardPage/calindarView";
+import { useNavigate, Link, Navigate } from 'react-router-dom';
 
 function Pages() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+
   const { profile, profile_history, wallet, friends } = useSelector(
     (state: any) => state.filesState,
   );
@@ -30,12 +35,23 @@ function Pages() {
   const { isLoggedIn, isRegistered } = useSelector(
     (state: any) => state.uiState,
   );
+  
+  // isLoggedIn null not call backend yet
+  // isLoggedIn false called backedn but got not authenitcated
+  // isLoggedIn true called backend and got authenticated
 
-  if (isLoggedIn && !isRegistered) {
-    return <RegistrationForm />;
-  }
-
+  
+    if (window.location.pathname!='/'&& isLoggedIn == true && !isRegistered) {
+      // alert("Please register first.")
+      navigate('/')
+    }
+ 
   const MainPage = () => {
+    if (isLoggedIn!=null && isRegistered!=null && isLoggedIn == true && !isRegistered) {
+      return <RegistrationForm />;
+    }
+
+    
     if (isLoggedIn) {
       return <ProductManagerDashboard />;
     }

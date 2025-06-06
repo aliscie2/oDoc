@@ -304,7 +304,7 @@ export function filesReducer(
     case "UPDATE_PROFILE":
       return {
         ...state,
-        profile: { ...state.profile, ...action.profile, photo: [[]] },
+        profile: { ...state.profile, ...action.profile },
       };
     // TODO firndRecuer
 

@@ -63,13 +63,13 @@ export interface InitialState {
 
 // Initial State
 export const initialState: InitialState = {
-  isRegistered: true,
+  isRegistered: null,
   count: 0,
   isNavOpen: false,
   searchTool: false,
   isDarkMode: Boolean(localStorage.getItem("isDarkMode") === "true"),
   searchValue: "",
-  isLoggedIn: false,
+  isLoggedIn: null,
   isFetching: false,
 };
 

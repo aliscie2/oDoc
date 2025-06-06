@@ -1,29 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { styled, keyframes } from '@mui/material/styles';
 import { Box, Tooltip, tooltipClasses, TooltipProps } from '@mui/material';
+import { Person } from '@mui/icons-material';
 import ODOCTokenImage from "@/assets/ODOCTOKEN.png";
 
-const sparkle = keyframes`
-  0% { transform: scale(0) rotate(0deg); opacity: 0; }
-  50% { transform: scale(1) rotate(180deg); opacity: 1; }
-  100% { transform: scale(0) rotate(360deg); opacity: 0; }
-`;
-
 const appear = keyframes`
-  0% { transform: scale(1) rotate(0deg); opacity: 1; }
-  30% { transform: scale(0.5) rotate(-5deg); opacity: 0.3; }
-  60% { transform: scale(0.8) rotate(2deg); opacity: 0.7; }
-  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
 `;
 
-// Add a new animation for the circle growth
 const growCircle = keyframes`
   0% { clip-path: polygon(50% 0%, 50% 0%, 50% 0%, 50% 0%, 50% 0%); }
   100% { clip-path: var(--final-clip-path); }
 `;
 
-const TrustCircle = styled(Box)(({ theme, score }) => {
-  // Determine the final clip path based on score
+const TrustCircle = styled(Box)(({ score }) => {
   const finalClipPath = score === 5 ? 'circle(50%)' : 
                         score >= 4 ? 'polygon(50% 0%, 100% 0%, 100% 100%, 50% 100%, 50% 0)' :
                         score >= 3 ? 'polygon(50% 0%, 100% 0%, 100% 75%, 50% 75%, 50% 0)' :
@@ -32,260 +23,283 @@ const TrustCircle = styled(Box)(({ theme, score }) => {
   
   return {
     position: 'relative',
-    width: 32,
-    height: 32,
+    width: 34,
+    height: 34,
     borderRadius: '50%',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    cursor: 'pointer',
     '--final-clip-path': finalClipPath,
+    
+    '&:hover': { transform: 'scale(1.05)' },
+    
     '&::before': {
       content: '""',
       position: 'absolute',
-      width: 'calc(100% + 8px)',
-      height: 'calc(100% + 8px)',
+      width: 'calc(100% + 6px)',
+      height: 'calc(100% + 6px)',
       borderRadius: '50%',
       border: `2px solid ${getTrustColor(score)}`,
       boxShadow: `0 0 8px ${getTrustColor(score)}`,
-      animation: `${appear} 1.2s cubic-bezier(0.34, 1.56, 0.64, 1), ${growCircle} 1.5s ease-out forwards`,
+      animation: `${appear} 1s ease, ${growCircle} 1.2s ease forwards`,
       clipPath: 'var(--final-clip-path)',
-      animationFillMode: 'forwards',
     },
   };
 });
 
-const AvatarImage = styled('img')({
-  width: 24,
-  height: 24,
+const Avatar = styled(Box)({
+  width: 26,
+  height: 26,
   borderRadius: '50%',
+  overflow: 'hidden',
+  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  backdropFilter: 'blur(8px)',
+  border: '1px solid rgba(255, 255, 255, 0.2)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+});
+
+const AvatarImage = styled('img')({
+  width: '100%',
+  height: '100%',
   objectFit: 'cover',
 });
 
-// Custom styled tooltip with premium look
-const StyledTooltip = styled(({ className, ...props }: TooltipProps) => (
-  <Tooltip {...props} classes={{ popper: className }} />
-))(({ theme }) => ({
-  [`& .${tooltipClasses.tooltip}`]: {
-    backgroundColor: 'rgba(33, 33, 33, 0.95)',
-    color: '#ffffff',
-    boxShadow: '0 8px 20px rgba(0, 0, 0, 0.15)',
-    borderRadius: 12,
-    padding: theme.spacing(2.5),
-    maxWidth: 280,
-    fontSize: '0.95rem',
-    backdropFilter: 'blur(8px)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-  },
-  [`& .${tooltipClasses.arrow}`]: {
-    color: 'rgba(33, 33, 33, 0.95)',
-  },
-}));
-
-// Enhanced tooltip content component with reward information
-const TooltipContent = styled(Box)({
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 12,
-  padding: '4px 0',
-});
-
-const HeaderRow = styled(Box)({
+const FallbackAvatar = styled(Box)(({ score }) => ({
+  width: '100%',
+  height: '100%',
   display: 'flex',
   alignItems: 'center',
-  gap: 12,
-  marginBottom: 8,
-});
-
-const RewardInfo = styled(Box)({
-  marginTop: 8,
-  padding: '8px 12px',
-  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  borderRadius: 8,
-  fontSize: '0.85rem',
-});
-
-const RewardRow = styled(Box)(({ theme, active }: { theme?: any, active?: boolean }) => ({
-  display: 'flex',
-  justifyContent: 'space-between',
-  padding: '4px 0',
-  color: active ? '#4CAF50' : 'inherit',
-  fontWeight: active ? 'bold' : 'normal',
+  justifyContent: 'center',
+  background: `linear-gradient(135deg, ${getTrustColor(score)}20, ${getTrustColor(score)}40)`,
+  color: getTrustColor(score),
+  fontSize: '0.75rem',
+  fontWeight: 'bold',
 }));
 
-const TokenIcon = styled('img')({
-  width: 28,
-  height: 28,
-  filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))',
-});
+const StyledTooltip = styled(({ className, ...props }: TooltipProps) => (
+  <Tooltip {...props} classes={{ popper: className }} />
+))(() => ({
+  [`& .${tooltipClasses.tooltip}`]: {
+    backgroundColor: 'rgba(15, 15, 25, 0.98)',
+    color: '#ffffff',
+    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+    borderRadius: 16,
+    padding: '20px',
+    maxWidth: 280,
+    fontSize: '0.9rem',
+    backdropFilter: 'blur(20px)',
+    background: 'linear-gradient(135deg, rgba(15, 15, 25, 0.98) 0%, rgba(25, 25, 40, 0.95) 100%)',
+  },
+  [`& .${tooltipClasses.arrow}`]: {
+    color: 'rgba(15, 15, 25, 0.98)',
+  },
+}));
 
 const getTrustColor = (score: number) => {
-  if (score >= 4.5) return '#4CAF50'; // Green for high trust
-  if (score >= 4) return '#8BC34A'; // Light green
-  if (score >= 3.5) return '#FFC107'; // Yellow
-  if (score >= 3) return '#FF9800'; // Orange
-  return '#F44336'; // Red for low trust
+  if (score >= 4.5) return '#4CAF50';
+  if (score >= 4) return '#8BC34A';
+  if (score >= 3.5) return '#FFC107';
+  if (score >= 3) return '#FF9800';
+  return '#F44336';
+};
+
+const getRewardTier = (score: number) => {
+  if (score >= 4.5) return { percentage: 0.2, level: 'Platinum', icon: '💎', emoji: '👑' };
+  if (score >= 4) return { percentage: 0.15, level: 'Gold', icon: '🏆', emoji: '⭐' };
+  if (score >= 3.5) return { percentage: 0.1, level: 'Silver', icon: '🥈', emoji: '🌟' };
+  if (score >= 3) return { percentage: 0.05, level: 'Bronze', icon: '🥉', emoji: '⚡' };
+  return { percentage: 0, level: 'Starter', icon: '🌱', emoji: '🎯' };
+};
+
+const generateInitials = (email = '', name = '') => {
+  if (name) return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  if (email) {
+    const parts = email.split('@')[0].split(/[._-]/);
+    return parts.length >= 2 ? (parts[0][0] + parts[1][0]).toUpperCase() : email[0].toUpperCase();
+  }
+  return 'U';
 };
 
 interface EnhancedUserAvatarProps {
   actions_rate: number;
-  photo: string;
+  photo?: string;
+  email?: string;
+  name?: string;
   style?: React.CSSProperties;
 }
 
 const EnhancedUserAvatar: React.FC<EnhancedUserAvatarProps> = ({
   actions_rate,
   photo,
+  email,
+  name,
   style,
 }) => {
-  const [imgSrc, setImgSrc] = useState(photo);
-  const [imgError, setImgError] = useState(false);
+  const [imgError, setImgError] = useState(!photo);
   const [animatedScore, setAnimatedScore] = useState(0);
   
-  // Handle image source changes
   useEffect(() => {
-    if (photo) {
-      setImgSrc(photo);
-      setImgError(false);
-    }
-  }, [photo]);
-  
-  // Animate the score from 0 to the actual value
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setAnimatedScore(actions_rate);
-    }, 300); // Small delay before starting animation
-    
+    const timer = setTimeout(() => setAnimatedScore(actions_rate), 300);
     return () => clearTimeout(timer);
   }, [actions_rate]);
   
-  // Determine which reward tier the user qualifies for
-  const getRewardTier = (score: number) => {
-    if (score >= 4.5) return { percentage: 0.2, level: 4 };
-    if (score >= 4) return { percentage: 0.15, level: 3 };
-    if (score >= 3.5) return { percentage: 0.1, level: 2 };
-    if (score >= 3) return { percentage: 0.05, level: 1 };
-    return { percentage: 0, level: 0 };
-  };
+  useEffect(() => {
+    setImgError(!photo);
+  }, [photo]);
   
-  const { percentage: userRewardPercentage, level: userLevel } = getRewardTier(actions_rate);
+  const { percentage, level, icon, emoji } = getRewardTier(actions_rate);
+  const initials = generateInitials(email, name);
   
-  // Get level name
-  const getLevelName = (level: number) => {
-    switch(level) {
-      case 4: return "Platinum";
-      case 3: return "Gold";
-      case 2: return "Silver";
-      case 1: return "Bronze";
-      default: return "None";
+  const levels = [
+    { threshold: 0, color: '#F44336', label: 'Starter', icon: '🌱' },
+    { threshold: 2, color: '#FF5722', label: 'Beginner', icon: '🔥' },
+    { threshold: 3, color: '#FFC107', label: 'Bronze', icon: '🥉' },
+    { threshold: 3.5, color: '#8BC34A', label: 'Silver', icon: '🥈' },
+    { threshold: 4, color: '#4CAF50', label: 'Gold', icon: '🏆' },
+    { threshold: 4.5, color: '#2E7D32', label: 'Platinum', icon: '💎' }
+  ];
+
+  const getCurrentLevelIndex = (score) => {
+    for (let i = levels.length - 1; i >= 0; i--) {
+      if (score >= levels[i].threshold) return i;
     }
+    return 0;
   };
-  
-  const handleImageError = () => {
-    if (!imgError) {
-      setImgSrc('/default-avatar.png');
-      setImgError(true);
-    }
-  };
+
+  const currentLevelIndex = getCurrentLevelIndex(actions_rate);
+
+  const tooltipContent = (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, textAlign: 'center' }}>
+      {/* Header with level icon */}
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ fontSize: '2rem' }}>{icon}</Box>
+        <Box sx={{ 
+          fontSize: '1.1rem',
+          fontWeight: 'bold',
+          background: `linear-gradient(45deg, ${getTrustColor(actions_rate)}, ${getTrustColor(actions_rate)}80)`,
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          textTransform: 'uppercase',
+          letterSpacing: '1px'
+        }}>
+          {level} TIER
+        </Box>
+      </Box>
+      
+      {/* Karma Score */}
+      <Box sx={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        gap: 1,
+        padding: '8px 16px',
+        borderRadius: '12px',
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        border: `1px solid ${getTrustColor(actions_rate)}40`
+      }}>
+        <span style={{ opacity: 0.8 }}>Karma Score</span>
+        <Box sx={{ 
+          fontWeight: 'bold', 
+          fontSize: '1.1rem',
+          color: getTrustColor(actions_rate)
+        }}>
+          {actions_rate.toFixed(1)}
+        </Box>
+      </Box>
+
+      {/* Level Progress Chart */}
+      <Box sx={{ 
+        padding: '12px',
+        backgroundColor: 'rgba(255,255,255,0.03)',
+        borderRadius: '12px',
+        border: '1px solid rgba(255,255,255,0.08)'
+      }}>
+        <Box sx={{ fontSize: '0.8rem', opacity: 0.8, mb: 1 }}>Progress</Box>
+        <Box sx={{ display: 'flex', gap: '2px', height: '20px', mb: 1 }}>
+          {levels.map((lvl, index) => (
+            <Box
+              key={index}
+              sx={{
+                flex: 1,
+                backgroundColor: index <= currentLevelIndex ? lvl.color : 'rgba(255,255,255,0.1)',
+                opacity: index <= currentLevelIndex ? 1 : 0.3,
+                borderRadius: '2px',
+                position: 'relative',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  opacity: 1,
+                  transform: 'scaleY(1.2)'
+                }
+              }}
+            />
+          ))}
+        </Box>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', opacity: 0.6 }}>
+          <span>0</span>
+          <span>2</span>
+          <span>3</span>
+          <span>3.5</span>
+          <span>4</span>
+          <span>4.5+</span>
+        </Box>
+      </Box>
+      
+      {/* Rewards */}
+      <Box sx={{ 
+        padding: '12px',
+        backgroundColor: 'rgba(255,255,255,0.03)',
+        borderRadius: '12px',
+        border: '1px solid rgba(255,255,255,0.08)'
+      }}>
+        {percentage > 0 ? (
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            gap: 1,
+            color: '#4CAF50', 
+            fontWeight: '600'
+          }}>
+            <span>{emoji}</span>
+            <span>+{percentage}% ODOC Rewards</span>
+          </Box>
+        ) : (
+          <Box sx={{ opacity: 0.7, fontSize: '0.85rem' }}>
+            🎯 Reach 3.0 to unlock rewards
+          </Box>
+        )}
+      </Box>
+      
+      {/* Progress hint */}
+      <Box sx={{ 
+        fontSize: '0.75rem', 
+        opacity: 0.6,
+        fontStyle: 'italic'
+      }}>
+        Level up with more transactions
+      </Box>
+    </Box>
+  );
   
   return (
-    <StyledTooltip
-      title={
-        <TooltipContent>
-          <HeaderRow>
-            <TokenIcon src={ODOCTokenImage} alt="ODOC Token" />
-            <span>ODOC Token Rewards</span>
-          </HeaderRow>
-          
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span>Your current trust score:</span> 
-            <Box component="span" sx={{ 
-              fontWeight: 'bold', 
-              backgroundColor: getTrustColor(actions_rate),
-              color: '#fff',
-              padding: '2px 8px',
-              borderRadius: '4px'
-            }}>
-              {actions_rate.toFixed(1)}
-            </Box>
-          </Box>
-          
-          <Box sx={{ 
-            fontStyle: 'italic',
-            fontSize: '0.85rem',
-            textAlign: 'center',
-            padding: '4px 8px',
-            color: 'rgba(255, 255, 255, 0.8)'
-          }}>
-            More transactions sent or received, the more your trust score increases.
-          </Box>
-          
-          <Box sx={{ 
-            fontWeight: 'bold', 
-            textAlign: 'center',
-            padding: '8px',
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            borderRadius: '8px',
-            marginTop: '4px'
-          }}>
-            Current Level: {getLevelName(userLevel)}
-          </Box>
-          
-          <RewardInfo>
-            {userLevel > 0 && (
-              <RewardRow active={true}>
-                <span>Your current reward:</span>
-                <span>{userRewardPercentage}% ODOC tokens</span>
-              </RewardRow>
-            )}
-            
-            {userLevel < 4 && (
-              <>
-                <Box sx={{ marginTop: '8px', marginBottom: '4px', opacity: 0.8 }}>
-                  Next levels to unlock:
-                </Box>
-                {userLevel < 2 && (
-                  <RewardRow>
-                    <span>Trust score 3.5+ (Silver)</span>
-                    <span>0.1% ODOC tokens</span>
-                  </RewardRow>
-                )}
-                {userLevel < 3 && (
-                  <RewardRow>
-                    <span>Trust score 4+ (Gold)</span>
-                    <span>0.15% ODOC tokens</span>
-                  </RewardRow>
-                )}
-                {userLevel < 4 && (
-                  <RewardRow>
-                    <span>Trust score 4.5+ (Platinum)</span>
-                    <span>0.2% ODOC tokens</span>
-                  </RewardRow>
-                )}
-              </>
-            )}
-          </RewardInfo>
-          
-          {userRewardPercentage > 0 ? (
-            <Box sx={{ fontWeight: 'bold', color: '#4CAF50', textAlign: 'center' }}>
-              You're earning {userRewardPercentage}% ODOC tokens!
-            </Box>
+    <StyledTooltip title={tooltipContent} arrow placement="bottom">
+      <TrustCircle score={animatedScore} style={style}>
+        <Avatar>
+          {!imgError && photo ? (
+            <AvatarImage 
+              src={photo} 
+              alt="Avatar"
+              onError={() => setImgError(true)}
+            />
           ) : (
-            <Box sx={{ textAlign: 'center' }}>
-              Reach trust score 3.0 to start earning ODOC tokens
-            </Box>
+            <FallbackAvatar score={actions_rate}>
+              {initials !== 'U' ? initials : <Person sx={{ fontSize: 16 }} />}
+            </FallbackAvatar>
           )}
-        </TooltipContent>
-      }
-      arrow
-      placement="bottom"
-    >
-      <TrustCircle score={animatedScore}>
-        <AvatarImage 
-          src={imgSrc} 
-          alt="User Avatar" 
-          style={style}
-          onError={handleImageError}
-        />
+        </Avatar>
       </TrustCircle>
     </StyledTooltip>
   );
