@@ -10,9 +10,17 @@ import { custom_contract } from "../../DataProcessing/dataSamples";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { DndProvider } from "react-dnd";
 
+interface EditorChange {
+  type: 'insert' | 'delete' | 'update';
+  position: number;
+  content?: any;
+  length?: number;
+  id?: string;
+}
+
 interface Props {
   handleOnInsertComponent?: any;
-  onChange?: any;
+  onChange?: (changes: EditorChange[]) => void;
   searchValue?: string;
   editorKey?: any;
   content: any[];
@@ -66,22 +74,35 @@ function EditorComponent(props: Props) {
   );
 
   const handleInputChange = React.useCallback(
-    (changes: any) => {
-      props.onChange?.(changes);
+    (changes: EditorChange[]) => {
+      if (props.onChange) {
+        // Process and forward only the changed parts with proper typing
+        const processedChanges = changes.map(change => ({
+          type: change.type,
+          position: change.position,
+          content: change.content,
+          length: change.length,
+          id: change.id || `${Date.now()}-${Math.random()}`
+        }));
+        props.onChange(processedChanges);
+      }
     },
     [props.onChange],
   );
 
   return (
-    <OdocEditor
-      id={String(props.editorKey || "")}
-      readOnly={props.readOnly}
-      initialValue={props.content}
-      onChange={handleInputChange}
-      extraPlugins={extraPlugins}
-      onInsertComponent={handleOnInsertComponent}
-      userMentions={mentions}
-    />
+    <DndProvider backend={HTML5Backend}>
+      <OdocEditor
+        id={String(props.editorKey || "")}
+        readOnly={props.readOnly}
+        initialValue={props.content}
+        onChange={handleInputChange}
+        extraPlugins={extraPlugins}
+        onInsertComponent={handleOnInsertComponent}
+        userMentions={mentions}
+        trackChanges={true}
+      />
+    </DndProvider>
   );
 }
 

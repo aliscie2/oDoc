@@ -120,54 +120,55 @@ function FileContentPage() {
     handleDispatchChange(title);
   };
 
-  const onChange = debounce((changes: any) => {
+  const onChange = debounce((changes: EditorChange[]) => {
     if (!currentFile) return;
 
     const prevContent = files_content[currentFile.id] || [];
-    const newContent = changes;
-
-    // Compare and dispatch granular updates
-    if (Array.isArray(newContent)) {
-      // Handle additions
-      const addedItems = newContent.filter(
-        (item) => !prevContent.some((prev: any) => prev.id === item.id)
-      );
-      addedItems.forEach((item) => {
-        dispatch(
-          handleRedux("ADD_CONTENT_ITEM", {
-            id: currentFile.id,
-            content: item,
-          })
-        );
-      });
-
-      // Handle updates
-      const updatedItems = newContent.filter((item) =>
-        prevContent.some((prev: any) => prev.id === item.id && JSON.stringify(prev) !== JSON.stringify(item))
-      );
-      updatedItems.forEach((item) => {
-        dispatch(
-          handleRedux("UPDATE_CONTENT_ITEM", {
-            id: currentFile.id,
-            content: item,
-          })
-        );
-      });
-
-      // Handle deletions
-      const deletedItems = prevContent.filter(
-        (prev: any) => !newContent.some((item) => item.id === prev.id)
-      );
-      deletedItems.forEach((item: any) => {
-        dispatch(
-          handleRedux("DELETE_CONTENT_ITEM", {
-            id: currentFile.id,
-            contentId: item.id,
-          })
-        );
-      });
-    }
-  }, 250);
+    
+    // Process each change individually
+    changes.forEach(change => {
+      switch (change.type) {
+        case 'insert':
+          dispatch(
+            handleRedux("ADD_CONTENT_ITEM", {
+              id: currentFile.id,
+              content: {
+                id: change.id,
+                type: 'insert',
+                position: change.position,
+                content: change.content
+              }
+            })
+          );
+          break;
+          
+        case 'update':
+          dispatch(
+            handleRedux("UPDATE_CONTENT_ITEM", {
+              id: currentFile.id,
+              content: {
+                id: change.id,
+                type: 'update',
+                position: change.position,
+                content: change.content
+              }
+            })
+          );
+          break;
+          
+        case 'delete':
+          if (change.id) {
+            dispatch(
+              handleRedux("DELETE_CONTENT_ITEM", {
+                id: currentFile.id,
+                contentId: change.id
+              })
+            );
+          }
+          break;
+      }
+    });
+  }, 100); // Reduced debounce time for more responsive updates
 
   if (inited && files.length === 0) {
     return <span>404 Not Found</span>;

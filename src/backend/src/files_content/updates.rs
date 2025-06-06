@@ -64,11 +64,13 @@ fn multi_updates(
 ) -> Result<String, String> {
     let mut messages = "".to_string();
 
-    for file in files.clone() {
+    // Only process changed files
+    for file in files {
         file.save()?;
     }
 
-    for changed_contract in changed_contracts.clone() {
+    // Process only changed contracts
+    for changed_contract in changed_contracts {
         if let StoredContract::CustomContract(mut custom_contract) = changed_contract.contract {
             let res = custom_contract.save();
             if let Err(errors) = res {
@@ -80,11 +82,12 @@ fn multi_updates(
         }
     }
 
-    // Update FILE_CONTENTS
+    // Update only changed content
     for changed_content in changed_contents {
         ContentNode::update_file_contents(changed_content.file_id, changed_content.content_tree);
     }
 
+    // Process file indexing changes
     for indexing in files_indexing {
         if let Some(parent) = indexing.parent {
             let cild_m = FileNode::rearrange_child(parent, indexing.id, indexing.new_index);
