@@ -9,27 +9,23 @@ import {
   Typography,
   Tooltip,
 } from "@mui/material";
-import CheckCircle from "@mui/icons-material/CheckCircle";
-import Schedule from "@mui/icons-material/Schedule";
+
+
 import { features, roadMap } from "./data";
-import SocialButton from "./socialButton";
 import WhyOdoc from "./whyOdoc";
 import Section from "./section";
 import Intro from "./intro";
 import GettingStarted from "../videoTutorial";
 import SecuritySection from "./securitySection";
 import { useScroll } from "framer-motion";
-// Import the videos
-// import handshakeVideo from "@/assets/handShakeDark.mp4";
-// Removed light video import
-import { useSelector } from "react-redux";
-// Import our custom hook
+
 import useScrollingEffect from "../../hooks/useScrollingEffect";
 import PlatformProgress from "./platformProgress";
 import SplitIntro from "./splitIntro";
 import OdocStrecture from "./oDocStrecture";
 import TrustBehaviorSystem from "./insetnivesSystem";
 import AIJobMatcherSection from "./aiJobMatcherIntro";
+import PageFooter from "./socialButton";
 
 export default function LandingPage(props) {
   // Add video reference and scroll progress
@@ -50,14 +46,15 @@ export default function LandingPage(props) {
   // const videoOpacity = isDarkMode ? 0.8 : 0.6;
 
   const sections = [
-    { id: 'odoc-structure', title: 'ODOC Structure' },
+    
     { id: 'ai-job-matcher', title: 'AI Job Matcher' },
+    { id: 'getting-started', title: 'Getting Started' },
+    { id: 'odoc-structure', title: 'ODOC Structure' },
     { id: 'why', title: 'Why ODOC' },
     { id: 'trust-behavior', title: 'Trust & Behavior' },
     { id: 'split-intro', title: 'Split Intro' },
     { id: 'main-intro', title: 'Introduction' },
-    { id: 'social', title: 'Social' },
-    { id: 'getting-started', title: 'Getting Started' },
+    
     { id: 'security', title: 'Security' },
     { id: 'features', title: 'Features' },
     { id: 'progress', title: 'Progress' },
@@ -139,11 +136,19 @@ export default function LandingPage(props) {
         ))}
       </Box>
      
-      <Section id="odoc-structure" sx={{ position: "relative", zIndex: 1 }} transparent={true}>
-        <OdocStrecture/>
-      </Section>
+      
       <Section id="ai-job-matcher" sx={{ position: "relative", zIndex: 1 }} transparent={true}>
         <AIJobMatcherSection />
+      </Section>
+
+
+      <Section id="getting-started" transparent={true}>
+        <GettingStarted/>
+      </Section>
+
+
+      <Section id="odoc-structure" sx={{ position: "relative", zIndex: 1 }} transparent={true}>
+        <OdocStrecture/>
       </Section>
       <Section id="why"  sx={{ position: "relative", zIndex: 1 }} transparent={true} >
         <WhyOdoc />
@@ -158,13 +163,7 @@ export default function LandingPage(props) {
       <Section id="main-intro" sx={{ position: "relative", zIndex: 1 }} transparent={true}>
         <Intro />
       </Section>
-    
-      <Section id="social" transparent={true}>
-        <SocialButton />
-      </Section>
-      <Section id="getting-started" transparent={true}>
-        <GettingStarted/>
-      </Section>
+  
       
       <Section id="security" transparent={true}>
         <SecuritySection />
@@ -260,6 +259,9 @@ export default function LandingPage(props) {
           </Container>
         </Section>
       )}
+
+
+      <PageFooter />
     </Box>
   );
 }

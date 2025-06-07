@@ -94,7 +94,7 @@ const RegistrationForm: React.FC = () => {
       const input: RegisterUser = {
         name: formValues.username ? [formValues.username] : [],
         description: formValues.bio ? [formValues.bio] : [],
-        photo: photoBytes ? [Array.from(photoBytes)] : [],
+        photo: photoBytes ? [Array.from(photoBytes)] : [[]],
         email: formValues.email ? [formValues.email] : [],
       };
 

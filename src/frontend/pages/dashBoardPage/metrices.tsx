@@ -76,7 +76,7 @@ const MetricCard = ({ icon, label, value }) => {
 const UserInfoHeader = ({ userData }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-
+  
   return (
     <Paper
       sx={{

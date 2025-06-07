@@ -31,11 +31,14 @@ import {
 } from "@mui/icons-material";
 import ChatWindow from "./chatWindow";
 import { useBackendContext } from "../../contexts/BackendContext";
-import { useSelector } from "react-redux";
-import formatTimestamp from "../../utils/time";
+import { useDispatch, useSelector } from "react-redux";
+
 import { Chat, Message } from "../../../declarations/backend/backend.did";
 import { Principal } from "@dfinity/principal";
 import { randomString } from "../../DataProcessing/dataSamples";
+import { convertToBlobLink } from "@/DataProcessing/imageToVec";
+import oDocLogo from '@/public/logo.png';
+
 
 // Memoized form components
 const GroupNameField = memo(({ value, onChange }) => (
@@ -213,8 +216,8 @@ const ChatList = memo(
     return (
       <List sx={{ padding: 0, width: "100%" }}>
         {chatsWithUnread.map((chat) => {
+          let isOdoc = chat.messages[0].sender.toText()=="tgwpc-6xuon-k3a6y-ey7lt-xksjs-qx22h-ikhbt-4yp3a-6stco-rymbe-pqe";
           const otherUser = getOtherUser(chat);
-
           return (
             <ListItem
               key={chat.id}
@@ -228,7 +231,7 @@ const ChatList = memo(
             >
               <ListItemAvatar>
                 {chat.name === "private_chat" ? (
-                  <Avatar src={otherUser?.avatar}>
+                  <Avatar src={isOdoc?oDocLogo:convertToBlobLink(otherUser?.photo)}>
                     {otherUser?.name?.charAt(0)}
                   </Avatar>
                 ) : (
@@ -243,9 +246,10 @@ const ChatList = memo(
                     sx={{ display: "flex", justifyContent: "space-between" }}
                   >
                     <Typography variant="subtitle2">
-                      {chat.name === "private_chat"
+                      {isOdoc? "oDoc":chat.name === "private_chat"
                         ? otherUser?.name || "Unknown User"
                         : chat.name}
+                      
                     </Typography>
                     {chat.unread > 0 && (
                       <Badge badgeContent={chat.unread} color="error" />
@@ -271,13 +275,16 @@ const ChatList = memo(
   },
 );
 
-const ChatNotifications = ({ chats: initialChats }: { chats: Chat[] }) => {
+const ChatNotifications = () => {
+
+  const dispatch = useDispatch();
+  const { chats } = useSelector((state: RootState) => state.chatsState);
   const [openChats, setOpenChats] = useState(
     new Map<string, { x: number; y: number }>(),
   );
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [createGroupOpen, setCreateGroupOpen] = useState(false);
-  const [chats, setChats] = useState<Chat[]>(initialChats || []);
+  // const [chats, setChats] = useState<Chat[]>(initialChats || []);
 
   const { backendActor } = useBackendContext();
   const { profile, currentWorkspace } = useSelector(
@@ -354,28 +361,23 @@ const ChatNotifications = ({ chats: initialChats }: { chats: Chat[] }) => {
           return !isSeen;
         });
 
-        // Update local state immediately
-        setChats((prevChats) =>
-          prevChats.map((prevChat) => {
-            if (prevChat.id !== chat.id) return prevChat;
 
-            // Update all messages' seen status for this chat
-            const updatedMessages = prevChat.messages.map((msg) => ({
-              ...msg,
-              seen_by: msg.seen_by.some(
-                (user) => user.toString() === profile?.id,
-              )
-                ? msg.seen_by
-                : [...msg.seen_by, Principal.fromText(profile?.id)],
-            }));
+        const updatedMessages = chat.messages.map((msg) => ({
+          ...msg,
+          seen_by: msg.seen_by.some(
+            (user) => user.toString() === profile?.id,
+          )
+            ? msg.seen_by
+            : [...msg.seen_by, Principal.fromText(profile?.id)],
+        }));
 
-            return {
-              ...prevChat,
-              messages: updatedMessages,
-              unread: 0, // Add unread property and set to 0
-            };
-          }),
-        );
+        const updatedChat = {
+          ...chat,
+          messages: updatedMessages,
+          unread: 0, // Add unread property and set to 0
+        };
+
+        dispatch({type: "UPDATE_CHAT", chat: updatedChat});
 
         // Call backend if there are unseen messages
 
@@ -432,7 +434,8 @@ const ChatNotifications = ({ chats: initialChats }: { chats: Chat[] }) => {
         const result = await backendActor.make_new_chat_room(newChat);
         if ("Ok" in result) {
           // Add new chat to local state
-          setChats((prevChats) => [...prevChats, newChat]);
+          // setChats((prevChats) => [...prevChats, newChat]);
+          dispatch({type:"SET_CHATS", chats:[...prevChats, newChat]})
           // Open the new chat window
           handleOpenChat(newChat);
         } else {
@@ -469,13 +472,8 @@ const ChatNotifications = ({ chats: initialChats }: { chats: Chat[] }) => {
         // console.log("Message sent:", { res });
 
         // Update local state
-        setChats((prevChats) =>
-          prevChats.map((chat) =>
-            chat.id === chatId
-              ? { ...chat, messages: [...chat.messages, newMessage] }
-              : chat,
-          ),
-        );
+        dispatch({type:"UPDATE_CHAT", chat: { ...chat, messages: [...chat.messages, newMessage] }  })
+      
       } catch (error) {
         console.error("Error sending message:", error);
       }

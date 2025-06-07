@@ -81,7 +81,7 @@ const NotificationsButton = () => {
             <Typography
               sx={{ opacity: 1 }}
               color="primary"
-              to={`user/?id=${content.FriendRequest.friend.sender.id}`}
+              to={`/user/?id=${content.FriendRequest.friend.sender.id}`}
               component={Link}
             >
               {" "}

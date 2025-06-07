@@ -1,7 +1,9 @@
 import React from "react";
 import YouTubeIcon from "@mui/icons-material/YouTube";
 import InstagramIcon from "@mui/icons-material/Instagram";
-import { IconButton, SvgIcon, Typography, Box } from "@mui/material";
+import GitHubIcon from "@mui/icons-material/GitHub";
+import TwitterIcon from "@mui/icons-material/Twitter";
+import { IconButton, SvgIcon, Typography, Box, Container, Divider } from "@mui/material";
 import { useSelector } from "react-redux";
 
 const XIcon = (props) => (
@@ -16,10 +18,16 @@ const DiscordIcon = (props) => (
   </SvgIcon>
 );
 
-const SocialButton = () => {
+const PageFooter = () => {
   const { isDarkMode } = useSelector((state) => state.uiState);
 
   const socialLinks = [
+    {
+      name: "GitHub",
+      url: "https://github.com/aliscie2/oDoc",
+      icon: GitHubIcon,
+      color: isDarkMode ? "#24292e" : "#1f2328",
+    },
     {
       name: "X",
       url: "https://x.com/odoc_ic",
@@ -50,67 +58,146 @@ const SocialButton = () => {
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
+  const handleContactClick = () => {
+    window.open("https://x.com/odoc_ic", "_blank", "noopener,noreferrer");
+  };
+
   return (
     <Box
+      component="footer"
       sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 3,
-        py: 4,
+        bgcolor: isDarkMode ? "#1a1a1a" : "#f8f9fa",
+        borderTop: `1px solid ${isDarkMode ? "#333" : "#e9ecef"}`,
+        mt: "auto",
+        py: 6,
       }}
     >
-      <Typography
-        variant="h2"
-        sx={{ fontSize: "2.5rem", fontWeight: "bold", mb: 1.5 }}
-      >
-        Stay in Touch
-      </Typography>
-
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          flexWrap: "wrap",
-          gap: 3,
-        }}
-      >
-        {socialLinks.map((social) => {
-          const Icon = social.icon;
-          return (
-            <IconButton
-              key={social.name}
-              onClick={() => handleClick(social.url)}
-              aria-label={`Visit our ${social.name}`}
+      <Container maxWidth="lg">
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 4,
+          }}
+        >
+          {/* Brand/Logo Section */}
+          <Box sx={{ textAlign: "center" }}>
+            <Typography
+              variant="h4"
               sx={{
-                width: 48,
-                height: 48,
-                background: social.color,
-                transition: "all 0.3s ease-in-out",
+                fontSize: "2rem",
+                fontWeight: "bold",
+                mb: 1,
+                color: isDarkMode ? "#fff" : "#212529",
+              }}
+            >
+              oDoc
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{
+                color: isDarkMode ? "#adb5bd" : "#6c757d",
+                maxWidth: 400,
+                mx: "auto",
+              }}
+            >
+              Connect with us and stay updated on our latest projects and updates
+            </Typography>
+          </Box>
+
+          {/* Social Links */}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              flexWrap: "wrap",
+              gap: 3,
+            }}
+          >
+            {socialLinks.map((social) => {
+              const Icon = social.icon;
+              return (
+                <IconButton
+                  key={social.name}
+                  onClick={() => handleClick(social.url)}
+                  aria-label={`Visit our ${social.name}`}
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    background: social.color,
+                    transition: "all 0.3s ease-in-out",
+                    "&:hover": {
+                      background: social.color,
+                      transform: "scale(1.1)",
+                      boxShadow: isDarkMode
+                        ? "0 4px 12px rgba(0,0,0,0.3)"
+                        : "0 4px 12px rgba(0,0,0,0.15)",
+                      "& .MuiSvgIcon-root": {
+                        transform: "rotate(12deg)",
+                      },
+                    },
+                    "& .MuiSvgIcon-root": {
+                      color: "#fff",
+                      transition: "transform 0.3s ease-in-out",
+                      fontSize: social.name === "X" ? 20 : 24,
+                    },
+                  }}
+                >
+                  <Icon />
+                </IconButton>
+              );
+            })}
+          </Box>
+
+          {/* Contact Section */}
+          <Box sx={{ textAlign: "center" }}>
+            <Typography
+              variant="body2"
+              sx={{
+                color: isDarkMode ? "#adb5bd" : "#6c757d",
+                mb: 1,
+              }}
+            >
+              Have questions or want to get in touch?
+            </Typography>
+            <Typography
+              variant="body2"
+              onClick={handleContactClick}
+              sx={{
+                color: isDarkMode ? "#4fc3f7" : "#0d6efd",
+                cursor: "pointer",
+                textDecoration: "underline",
                 "&:hover": {
-                  background: social.color,
-                  transform: "scale(1.1)",
-                  boxShadow: isDarkMode
-                    ? "0 4px 12px rgba(0,0,0,0.3)"
-                    : "0 4px 12px rgba(0,0,0,0.15)",
-                  "& .MuiSvgIcon-root": {
-                    transform: "rotate(12deg)",
-                  },
-                },
-                "& .MuiSvgIcon-root": {
-                  color: "#fff",
-                  transition: "transform 0.3s ease-in-out",
-                  fontSize: social.name === "X" ? 20 : 24,
+                  color: isDarkMode ? "#29b6f6" : "#0a58ca",
                 },
               }}
             >
-              <Icon />
-            </IconButton>
-          );
-        })}
-      </Box>
+              Contact us on Twitter
+            </Typography>
+          </Box>
+
+          <Divider
+            sx={{
+              width: "100%",
+              bgcolor: isDarkMode ? "#333" : "#dee2e6",
+            }}
+          />
+
+          {/* Copyright */}
+          <Typography
+            variant="body2"
+            sx={{
+              color: isDarkMode ? "#6c757d" : "#868e96",
+              textAlign: "center",
+            }}
+          >
+            © {new Date().getFullYear()} oDoc. All rights reserved.
+          </Typography>
+        </Box>
+      </Container>
     </Box>
   );
 };
 
-export default SocialButton;
+export default PageFooter;

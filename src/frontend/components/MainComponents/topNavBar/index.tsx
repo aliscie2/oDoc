@@ -53,6 +53,10 @@ import { RootState } from "../../../redux/reducers";
 import getStyles from "./styles";
 import EnhancedUserAvatar from './EnhancedUserAvatar';
 export default function TopNavBar() {
+
+  const [isInitated, setInitated] = useState(false)
+
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -94,23 +98,26 @@ export default function TopNavBar() {
     (state: RootState) => state.filesState,
   );
 
-  const { chats } = useSelector((state: RootState) => state.chatsState);
 
+  
   useEffect(() => {
+    
     const fetchData = async () => {
-      if (isLoggedIn && backendActor) {
-        const [notificationRes, chatsList] = await Promise.all([
-          backendActor.get_user_notifications(),
-          backendActor.get_my_chats(),
-        ]);
-
+      
+        let notificationRes = await backendActor.get_user_notifications();
+        let chatsList = await  backendActor.get_my_chats();
+        console.log({chatsList,notificationRes})
         dispatch(handleRedux("UPDATE_NOT_LIST", { new_list: notificationRes }));
         dispatch(handleRedux("SET_CHATS", { chats: chatsList }));
-      }
-    };
+        
 
-    fetchData();
-  }, [isLoggedIn, backendActor, dispatch]);
+    };
+    if (backendActor && isInitated ==false ) {
+    fetchData()
+    setInitated(true)
+    }
+    
+  }, [profile, backendActor]);
 
   const handleMobileMenuToggle = (
     event: React.MouseEvent<HTMLElement> | null,
@@ -154,7 +161,7 @@ export default function TopNavBar() {
           <BottomNavigationAction
             label="Chat"
             icon={
-              <ChatsComponent key={chats.length} chats={chats} isMobile={true} />
+              <ChatsComponent isMobile={true} />
             }
           />
           <BottomNavigationAction
@@ -179,7 +186,7 @@ export default function TopNavBar() {
     return (
       <>
         <NotificationsButton />
-        <ChatsComponent key={chats.length} chats={chats} />
+        <ChatsComponent />
         <WorkspaceManager />
         <BasicMenu options={menuOptions}>
           <EnhancedUserAvatar

@@ -176,7 +176,7 @@ const ChatWindow = memo(({
         {isDragEnabled && <DragIndicator sx={{ mr: 1 }} />}
         <Typography
           component={Link}
-          to={`user?id=${chat.members.find(m => String(m) !== profile?.id)}`}
+          to={`/user?id=${chat.members.find(m => String(m) !== profile?.id)}`}
           variant="subtitle2"
           sx={{ 
             flex: 1, 
@@ -228,7 +228,7 @@ const ChatWindow = memo(({
             >
               <Typography
                 component={Link}
-                to={`user?id=${message.sender.toString()}`}
+                to={`/user?id=${message.sender.toString()}`}
                 variant="caption"
                 sx={{
                   fontWeight: 600,
