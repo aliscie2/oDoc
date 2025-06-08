@@ -298,14 +298,6 @@ export const idlFactory = ({ IDL }) => {
     'events' : IDL.Vec(Event),
     'availabilities' : IDL.Vec(Availability),
   });
-  const Message = IDL.Record({
-    'id' : IDL.Text,
-    'date' : IDL.Nat64,
-    'sender' : IDL.Principal,
-    'seen_by' : IDL.Vec(IDL.Principal),
-    'message' : IDL.Text,
-    'chat_id' : IDL.Text,
-  });
   const ContractPermissionType = IDL.Variant({
     'Add' : IDL.Principal,
     'Edit' : IDL.Principal,
@@ -425,6 +417,14 @@ export const idlFactory = ({ IDL }) => {
     'level' : LogLevel,
     'message' : IDL.Text,
     'timestamp' : IDL.Nat64,
+  });
+  const Message = IDL.Record({
+    'id' : IDL.Text,
+    'date' : IDL.Nat64,
+    'sender' : IDL.Principal,
+    'seen_by' : IDL.Vec(IDL.Principal),
+    'message' : IDL.Text,
+    'chat_id' : IDL.Text,
   });
   const FEChat = IDL.Record({
     'id' : IDL.Text,
@@ -669,7 +669,6 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Opt(Calendar)],
         ['query'],
       ),
-    'get_chats_notifications' : IDL.Func([], [IDL.Vec(Message)], ['query']),
     'get_contract' : IDL.Func([IDL.Text, IDL.Text], [Result_9], ['query']),
     'get_emails' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
     'get_file' : IDL.Func([IDL.Text], [IDL.Opt(FileNode)], ['query']),
@@ -698,7 +697,7 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'get_my_calendar' : IDL.Func([], [Calendar], ['query']),
-    'get_my_chats' : IDL.Func([], [IDL.Vec(FEChat)], ['query']),
+    'get_my_chats' : IDL.Func([IDL.Nat64], [IDL.Vec(FEChat)], ['query']),
     'get_my_jobs' : IDL.Func([], [GetJobs], ['query']),
     'get_owners' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
     'get_post' : IDL.Func([IDL.Text], [Result_11], ['query']),
@@ -716,7 +715,11 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'get_user' : IDL.Func([IDL.Text], [Result], ['query']),
-    'get_user_notifications' : IDL.Func([], [IDL.Vec(Notification)], ['query']),
+    'get_user_notifications' : IDL.Func(
+        [IDL.Nat64],
+        [IDL.Vec(Notification)],
+        ['query'],
+      ),
     'get_user_profile' : IDL.Func([IDL.Principal], [Result_15], ['query']),
     'get_users' : IDL.Func([], [IDL.Float64], ['query']),
     'get_work_spaces' : IDL.Func([], [IDL.Vec(WorkSpace)], ['query']),
@@ -727,6 +730,11 @@ export const idlFactory = ({ IDL }) => {
       ),
     'is_ai_free_tier' : IDL.Func([], [Result_16], ['query']),
     'load_more_events' : IDL.Func([IDL.Int32], [IDL.Vec(Event)], ['query']),
+    'load_more_messages' : IDL.Func(
+        [IDL.Text, IDL.Nat64],
+        [IDL.Vec(Message)],
+        ['query'],
+      ),
     'make_new_chat_room' : IDL.Func([Chat], [Result_1], []),
     'message_is_seen' : IDL.Func([Message], [Result_3], []),
     'move_file' : IDL.Func([IDL.Text, IDL.Opt(IDL.Text)], [Result_17], []),

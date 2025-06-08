@@ -22,11 +22,26 @@ pub struct FEChat {
 }
 
 #[query]
-fn get_my_chats() -> Vec<FEChat> {
+fn get_my_chats(chats_length: usize) -> Vec<FEChat> {
+    const PAGE_SIZE: usize = 15;
+    
     let chats: Vec<Chat> = Chat::get_my_chats();
+    
+    // If client already has all available chats, return empty
+    if chats_length >= chats.len() {
+        return Vec::new();
+    }
+    
+    // Calculate how many chats to return
+    let start_index = chats_length;
+    let end_index = std::cmp::min(start_index + PAGE_SIZE, chats.len());
+    
+    // Get the slice starting from current length
+    let page_chats = &chats[start_index..end_index];
+    
     let mut fe_chats: Vec<FEChat> = Vec::new();
 
-    for chat in chats {
+    for chat in page_chats {
         let creator_user = match User::get_user_from_principal(chat.creator) {
             Some(user) => user,
             None => continue, // Skip this chat if user is not found
@@ -47,13 +62,13 @@ fn get_my_chats() -> Vec<FEChat> {
             .collect();
 
         let fe_chat = FEChat {
-            id: chat.id,
-            name: chat.name,
+            id: chat.id.clone(),
+            name: chat.name.clone(),
             admins: admins_fe,
-            members: chat.members,
-            messages: chat.messages,
+            members: chat.members.clone(),
+            messages: chat.messages.clone(),
             creator: creator_fe_user,
-            workspaces: chat.workspaces,
+            workspaces: chat.workspaces.clone(),
         };
 
         fe_chats.push(fe_chat);
@@ -63,6 +78,12 @@ fn get_my_chats() -> Vec<FEChat> {
 }
 
 #[query]
-fn get_chats_notifications() -> Vec<Message> {
-    Chat::get_notifications()
+fn load_more_messages(chat_id: String, messages_length: usize) -> Vec<Message> {
+    Chat::load_more_messages(chat_id, messages_length)
 }
+
+
+// #[query]
+// fn get_chats_notifications() -> Vec<Message> {
+//     Chat::get_notifications()
+// }

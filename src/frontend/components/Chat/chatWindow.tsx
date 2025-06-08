@@ -37,8 +37,16 @@ const ChatWindow = memo(({
   const [isSending, setIsSending] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  
+  // Infinite scroll states
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMoreMessages, setHasMoreMessages] = useState(true);
+  const [isScrolledToBottom, setIsScrolledToBottom] = useState(true);
+  
   const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
   const saveSuccessTimeout = useRef(null);
+  const previousScrollHeight = useRef(0);
 
   const isDragEnabled = position && onPositionChange;
 
@@ -47,10 +55,71 @@ const ChatWindow = memo(({
   }, [position]);
 
   const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, []);
+    if (isScrolledToBottom) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [isScrolledToBottom]);
 
-  useEffect(() => scrollToBottom(), [chat.messages, scrollToBottom]);
+  useEffect(() => {
+    scrollToBottom();
+  }, [chat.messages, scrollToBottom]);
+
+  // Handle scroll to detect when user scrolls up
+  const handleScroll = useCallback(async () => {
+    const container = messagesContainerRef.current;
+    if (!container || isLoadingMore || !hasMoreMessages) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = container;
+    
+    // Check if user is at the bottom
+    const isAtBottom = scrollHeight - scrollTop <= clientHeight + 5;
+    setIsScrolledToBottom(isAtBottom);
+
+    // Check if user scrolled to the top (load more messages)
+    if (scrollTop === 0) {
+      setIsLoadingMore(true);
+      previousScrollHeight.current = scrollHeight;
+
+      try {
+        const olderMessages = await backendActor.load_more_messages(
+          chat.id, 
+          chat.messages.length
+        );
+
+        if (olderMessages.length === 0) {
+          setHasMoreMessages(false);
+        } else {
+          // Since backend returns messages in reverse order (latest first),
+          // we need to reverse them to get chronological order for prepending
+          const chronologicalMessages = [...olderMessages].reverse();
+          
+          dispatch(handleRedux("UPDATE_CHAT", { 
+            chat: { 
+              ...chat, 
+              messages: [...chronologicalMessages, ...chat.messages] 
+            } 
+          }));
+        }
+      } catch (error) {
+        console.error("Error loading more messages:", error);
+      } finally {
+        setIsLoadingMore(false);
+      }
+    }
+  }, [backendActor, chat, dispatch, isLoadingMore, hasMoreMessages]);
+
+  // Maintain scroll position after loading more messages
+  useEffect(() => {
+    if (isLoadingMore) return;
+    
+    const container = messagesContainerRef.current;
+    if (container && previousScrollHeight.current > 0) {
+      const newScrollHeight = container.scrollHeight;
+      const scrollDifference = newScrollHeight - previousScrollHeight.current;
+      container.scrollTop = scrollDifference;
+      previousScrollHeight.current = 0;
+    }
+  }, [chat.messages, isLoadingMore]);
 
   const renderSenderName = (sender) => {
     const senderStr = sender instanceof Principal ? sender.toString() : sender?.toString();
@@ -74,7 +143,8 @@ const ChatWindow = memo(({
       setIsSending(true);
       await onSendMessage(chat.id, newMessage);
       setNewMessage("");
-      scrollToBottom();
+      setIsScrolledToBottom(true); // Ensure we scroll to bottom after sending
+      setTimeout(scrollToBottom, 100); // Delay to ensure message is rendered
     } catch (error) {
       console.error("Error sending message:", error);
     } finally {
@@ -207,8 +277,35 @@ const ChatWindow = memo(({
 
   const messagesContent = !isMinimized && !isSettingsView && (
     <>
-      <Box sx={{ flex: 1, overflow: "auto", p: 2 }}>
-        {chat.messages.map(message => {
+      <Box 
+        ref={messagesContainerRef}
+        onScroll={handleScroll}
+        sx={{ 
+          flex: 1, 
+          overflow: "auto", 
+          p: 2,
+          display: "flex",
+          flexDirection: "column"
+        }}
+      >
+        {/* Loading indicator at the top */}
+        {isLoadingMore && (
+          <Box sx={{ display: "flex", justifyContent: "center", p: 2 }}>
+            <CircularProgress size={24} />
+          </Box>
+        )}
+        
+        {/* No more messages indicator */}
+        {!hasMoreMessages && chat.messages.length > 0 && (
+          <Box sx={{ display: "flex", justifyContent: "center", p: 2 }}>
+            <Typography variant="caption" color="text.secondary">
+              No more messages available
+            </Typography>
+          </Box>
+        )}
+
+        {/* Messages - reverse to show latest at bottom */}
+        {[...chat.messages].reverse().map(message => {
           const isOwn = isCurrentUser(message.sender);
           return (
             <Paper

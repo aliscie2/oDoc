@@ -48,6 +48,13 @@ export function chatsReducer(
         chats: action.chats,
       };
     }
+
+    case "EXTEND_CHATS": {
+      return {
+        ...state,
+        chats: [...state.chats,...action.chats],
+      };
+    }
     case UPDATE_CHAT: {
       const { chat } = action;
 
@@ -185,12 +192,12 @@ export function chatsReducer(
       };
     }
 
-    case ADD_CHATS_NOTIFICATIONS: {
-      return {
-        ...state,
-        chats_notifications: [...state.chats_notifications, action.message],
-      };
-    }
+    // case ADD_CHATS_NOTIFICATIONS: {
+    //   return {
+    //     ...state,
+    //     chats_notifications: [...state.chats_notifications, action.message],
+    //   };
+    // }
 
     default:
       return state;

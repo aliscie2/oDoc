@@ -117,6 +117,20 @@ const App: React.FC = () => {
       (async () => {
         try {
           if (profile) {
+// get notifications
+            let notificationRes = await backendActor.get_user_notifications(0);
+              let chatsList = await  backendActor.get_my_chats(0);
+
+              dispatch({
+                type:"UPDATE_NOT_LIST",
+                new_list:notificationRes,
+              })
+              dispatch({
+                type:"SET_CHATS",
+                chats: chatsList
+              })
+// get calendar
+              
             let res = await backendActor.get_my_calendar();
             let aiCredits = await backendActor.get_ai_credits();
             if (aiCredits.Err == "User does not exist"){
@@ -199,6 +213,8 @@ const App: React.FC = () => {
       throw error;
     }
   }, [backendActor]);
+
+
 
   // Main deposit flow
   useEffect(() => {

@@ -9,7 +9,6 @@ import {
   CardContent,
   Chip,
   Fade,
-  Slide,
   useTheme,
   useMediaQuery,
 } from '@mui/material';
@@ -20,9 +19,11 @@ import {
   ArrowForward,
   Work,
   Psychology,
-  Notifications
+  Notifications,
+  Explore
 } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
+
 
 const AIJobMatcherSection = () => {
   const theme = useTheme();
@@ -144,7 +145,7 @@ const AIJobMatcherSection = () => {
                 <Typography
                   variant="h5"
                   sx={{
-                    mb: 2,
+                    mb: 4,
                     fontSize: { xs: '1.2rem', md: '1.5rem' },
                     fontWeight: 400,
                     opacity: isVisible ? 0.9 : 0,
@@ -153,46 +154,53 @@ const AIJobMatcherSection = () => {
                     transition: 'all 1s ease-out 0.4s'
                   }}
                 >
-                  Stop searching for Talents or Jobs, let AI do it for you
+                  Stop searching for Talents or Jobs, let AI do it.
                 </Typography>
 
-                <Typography
-                  variant="h6"
-                  sx={{
-                    mb: 1,
-                    fontSize: { xs: '1rem', md: '1.25rem' },
-                    fontWeight: 400,
-                    opacity: isVisible ? 0.9 : 0,
-                    lineHeight: 1.4,
-                    transform: isVisible ? 'translateX(0)' : 'translateX(-80px)',
-                    transition: 'all 1s ease-out 0.5s'
+                {/* Call to Action Buttons */}
+                <Box 
+                  sx={{ 
+                    display: 'flex',
+                    flexDirection: { xs: 'column', sm: 'row' },
+                    gap: 2,
+                    mb: 4,
+                    transform: isVisible ? 'translateY(0)' : 'translateY(40px)',
+                    opacity: isVisible ? 1 : 0,
+                    transition: 'all 1s ease-out 0.6s'
                   }}
-                >
-                  1. Login now.
-                </Typography>
-
-                <Typography
-                  component={Link}
-                  to={`/discover`}
-                  variant="h6"
-                  sx={{
-                    mb: 3,
-                    fontSize: { xs: '1rem', md: '1.25rem' },
-                    fontWeight: 400,
-                    opacity: isVisible ? 0.9 : 0,
-                    lineHeight: 1.4,
-                    transform: isVisible ? 'translateX(0)' : 'translateX(-80px)',
-                    transition: 'all 1s ease-out 0.6s',
-                    textDecoration: 'underline',
-                    display: 'block',
-                    color: 'inherit',
-                    '&:hover': {
-                      opacity: 0.7
-                    }
-                  }}
-                >
-                  2. Then go to the discover page.
-                </Typography>
+                >                  
+                  <Button
+                    component={Link}
+                    to="/discover"
+                    variant="outlined"
+                    size="large"
+                    startIcon={<Explore />}
+                    endIcon={<ArrowForward />}
+                    sx={{
+                      py: { xs: 1.5, md: 2 },
+                      px: { xs: 3, md: 4 },
+                      fontSize: { xs: '1rem', md: '1.1rem' },
+                      fontWeight: 600,
+                      borderRadius: 3,
+                      borderWidth: 2,
+                      borderColor: 'rgba(16, 185, 129, 0.6)',
+                      color: 'inherit',
+                      textTransform: 'none',
+                      minWidth: { xs: '100%', sm: 'auto' },
+                      background: 'rgba(16, 185, 129, 0.1)',
+                      backdropFilter: 'blur(10px)',
+                      '&:hover': {
+                        borderColor: '#10b981',
+                        background: 'rgba(16, 185, 129, 0.2)',
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 4px 15px rgba(16, 185, 129, 0.2)'
+                      },
+                      transition: 'all 0.3s ease'
+                    }}
+                  >
+                    Try it now.
+                  </Button>
+                </Box>
                 
                 {/* Value Proposition */}
                 <Typography

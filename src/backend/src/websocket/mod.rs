@@ -2,6 +2,7 @@ pub mod handlers;
 mod notification;
 
 use crate::NOTIFICATIONS;
+use candid::Principal;
 pub use handlers::*;
 use ic_cdk::caller;
 use ic_cdk_macros::query;
@@ -66,10 +67,31 @@ fn ws_get_messages(args: CanisterWsGetMessagesArguments) -> CanisterWsGetMessage
     ic_websocket_cdk::ws_get_messages(args)
 }
 
+
 #[query]
-fn get_user_notifications() -> Vec<Notification> {
-    Notification::get_list(&caller())
+fn get_user_notifications(notifications_length: usize) -> Vec<Notification> {
+    const PAGE_SIZE: usize = 15;
+    
+    // If user is anonymous return empty list
+    if caller() == Principal::anonymous() {
+        return vec![];
+    }
+    
+    let notifications: Vec<Notification> = Notification::get_list(&caller());
+    
+    // If client already has all available notifications, return empty
+    if notifications_length >= notifications.len() {
+        return Vec::new();
+    }
+    
+    // Calculate how many notifications to return
+    let start_index = notifications_length;
+    let end_index = std::cmp::min(start_index + PAGE_SIZE, notifications.len());
+    
+    // Get the slice starting from current length
+    notifications[start_index..end_index].to_vec()
 }
+
 
 #[update]
 fn see_notifications(ids: Vec<String>) -> Result<String, String> {

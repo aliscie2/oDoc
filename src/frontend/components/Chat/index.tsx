@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useMemo, useState } from "react";
+import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
 import {
   Autocomplete,
   Avatar,
@@ -22,12 +22,14 @@ import {
   Select,
   TextField,
   Typography,
+  CircularProgress,
 } from "@mui/material";
 
 import {
   Add as AddIcon,
   Chat as ChatIcon,
   Group as GroupIcon,
+  ExpandMore as ExpandMoreIcon,
 } from "@mui/icons-material";
 import ChatWindow from "./chatWindow";
 import { useBackendContext } from "../../contexts/BackendContext";
@@ -39,8 +41,7 @@ import { randomString } from "../../DataProcessing/dataSamples";
 import { convertToBlobLink } from "@/DataProcessing/imageToVec";
 import oDocLogo from '@/public/logo.png';
 
-
-// Memoized form components
+// Memoized form components (unchanged)
 const GroupNameField = memo(({ value, onChange }) => (
   <TextField
     label="Group Name"
@@ -98,7 +99,7 @@ export const WorkspaceSelect = memo(({ value, onChange, workspaces }) => (
   />
 ));
 
-// Memoized Create Group Dialog
+// Memoized Create Group Dialog (unchanged)
 const CreateGroupDialog = memo(
   ({ open, onClose, onSubmit, initialData, users, workspaces }) => {
     const [formData, setFormData] = useState(initialData);
@@ -173,12 +174,19 @@ const ChatList = memo(
     chats,
     onChatClick,
     currentUserId,
+    onLoadMore,
+    showLoadMore,
+    isLoadingMore,
   }: {
     chats: Chat[];
     onChatClick: (chat: Chat) => void;
     currentUserId: string;
+    onLoadMore: () => void;
+    showLoadMore: boolean;
+    isLoadingMore: boolean;
   }) => {
     const { currentWorkspace } = useSelector((state: any) => state.filesState);
+    
     // Calculate unread count for each chat if not already present
     const chatsWithUnread = chats
       .filter(chat => 
@@ -202,7 +210,7 @@ const ChatList = memo(
       };
     });
 
-    const { all_friends, workspaces } = useSelector((state: any) => state.filesState);
+    const { all_friends, workspaces,profile } = useSelector((state: any) => state.filesState);
 
     const getOtherUser = (chat) => {
       if (chat.name !== "private_chat") return null;
@@ -214,69 +222,97 @@ const ChatList = memo(
     };
 
     return (
-      <List sx={{ padding: 0, width: "100%" }}>
-        {chatsWithUnread.map((chat) => {
-          let isOdoc = chat.messages[0].sender.toText()=="tgwpc-6xuon-k3a6y-ey7lt-xksjs-qx22h-ikhbt-4yp3a-6stco-rymbe-pqe";
-          const otherUser = getOtherUser(chat);
-          return (
-            <ListItem
-              key={chat.id}
-              onClick={() => onChatClick(chat)}
-              button
-              sx={{
-                borderBottom: 1,
-                borderColor: "divider",
-                "&:hover": { backgroundColor: "action.hover" },
-              }}
-            >
-              <ListItemAvatar>
-                {chat.name === "private_chat" ? (
-                  <Avatar src={isOdoc?oDocLogo:convertToBlobLink(otherUser?.photo)}>
-                    {otherUser?.name?.charAt(0)}
-                  </Avatar>
-                ) : (
-                  <Avatar>
-                    <GroupIcon />
-                  </Avatar>
-                )}
-              </ListItemAvatar>
-              <ListItemText
-                primary={
-                  <Box
-                    sx={{ display: "flex", justifyContent: "space-between" }}
-                  >
-                    <Typography variant="subtitle2">
-                      {isOdoc? "oDoc":chat.name === "private_chat"
-                        ? otherUser?.name || "Unknown User"
-                        : chat.name}
-                      
-                    </Typography>
-                    {chat.unread > 0 && (
-                      <Badge badgeContent={chat.unread} color="error" />
-                    )}
-                  </Box>
-                }
-                secondary={
-                  <>
-                    {chat.messages[chat.messages.length - 1]?.message || "No messages"}
-                    {currentWorkspace.name === "default" && chat.workspaces.length > 0 && (
-                      <Typography component="span" sx={{ ml: 1, color: 'text.secondary' }}>
-                        [{workspaces.filter(w => chat.workspaces.includes(w.id)).map(w => w.name).join(', ')}]
+      <Box sx={{ width: "100%" }}>
+        <List sx={{ padding: 0, width: "100%" }}>
+          {chatsWithUnread.map((chat) => {
+            
+            let isOdoc = chat.members.find(m => m.toText() !== profile?.id) =="tgwpc-6xuon-k3a6y-ey7lt-xksjs-qx22h-ikhbt-4yp3a-6stco-rymbe-pqe";
+            const otherUser = getOtherUser(chat);
+            return (
+              <ListItem
+                key={chat.id}
+                onClick={() => onChatClick(chat)}
+                button
+                sx={{
+                  borderBottom: 1,
+                  borderColor: "divider",
+                  "&:hover": { backgroundColor: "action.hover" },
+                }}
+              >
+                <ListItemAvatar>
+                  {chat.name === "private_chat" ? (
+                    <Avatar src={isOdoc?oDocLogo:convertToBlobLink(otherUser?.photo)}>
+                      {otherUser?.name?.charAt(0)}
+                    </Avatar>
+                  ) : (
+                    <Avatar>
+                      <GroupIcon />
+                    </Avatar>
+                  )}
+                </ListItemAvatar>
+                <ListItemText
+                  primary={
+                    <Box
+                      sx={{ display: "flex", justifyContent: "space-between" }}
+                    >
+                      <Typography variant="subtitle2">
+                        {isOdoc? "oDoc":chat.name === "private_chat"
+                          ? otherUser?.name || "Unknown User"
+                          : chat.name}
+                        
                       </Typography>
-                    )}
-                  </>
-                }
-              />
-            </ListItem>
-          );
-        })}
-      </List>
+                      {chat.unread > 0 && (
+                        <Badge badgeContent={chat.unread} color="error" />
+                      )}
+                    </Box>
+                  }
+                  secondary={
+                    <>
+                      {chat.messages[0]?.message || "No messages"}
+                      {currentWorkspace.name === "default" && chat.workspaces.length > 0 && (
+                        <Typography component="span" sx={{ ml: 1, color: 'text.secondary' }}>
+                          [{workspaces.filter(w => chat.workspaces.includes(w.id)).map(w => w.name).join(', ')}]
+                        </Typography>
+                      )}
+                    </>
+                  }
+                />
+              </ListItem>
+            );
+          })}
+        </List>
+        
+        {/* Load More Button */}
+        {showLoadMore && (
+          <MenuItem 
+            onClick={onLoadMore} 
+            disabled={isLoadingMore}
+            sx={{ 
+              justifyContent: "center", 
+              borderTop: 1,
+              borderColor: "divider",
+              py: 1.5
+            }}
+          >
+            {isLoadingMore ? (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <CircularProgress size={16} />
+                <Typography variant="body2">Loading...</Typography>
+              </Box>
+            ) : (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <ExpandMoreIcon />
+                <Typography variant="body2">Load More</Typography>
+              </Box>
+            )}
+          </MenuItem>
+        )}
+      </Box>
     );
   },
 );
 
 const ChatNotifications = () => {
-
   const dispatch = useDispatch();
   const { chats } = useSelector((state: RootState) => state.chatsState);
   const [openChats, setOpenChats] = useState(
@@ -284,7 +320,15 @@ const ChatNotifications = () => {
   );
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [createGroupOpen, setCreateGroupOpen] = useState(false);
-  // const [chats, setChats] = useState<Chat[]>(initialChats || []);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMoreChats, setHasMoreChats] = useState(false);
+  
+  useEffect(()=>{
+    if (hasMoreChats!=chats.length > 14){
+      setHasMoreChats(chats.length > 14);
+    }
+    
+  },[chats.length])
 
   const { backendActor } = useBackendContext();
   const { profile, currentWorkspace } = useSelector(
@@ -305,6 +349,29 @@ const ChatNotifications = () => {
       return total + unseenInChat;
     }, 0);
   }, [chats, profile?.id]);
+
+  const handleLoadMore = useCallback(async () => {
+    if (!backendActor || isLoadingMore) return;
+
+    setIsLoadingMore(true);
+    try {
+
+      let chatsList = await backendActor.get_my_chats(chats.length);
+      
+      if (chatsList.length === 0) {
+        setHasMoreChats(false);
+      } else {
+        dispatch({
+          type: "SET_CHATS",
+          chats: [...chats, ...chatsList]
+        });
+      }
+    } catch (error) {
+      console.error("Error loading more chats:", error);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [backendActor, chats, isLoadingMore, dispatch]);
 
   const handleOpenChat = useCallback((chat: Chat) => {
     setOpenChats((prev) => {
@@ -361,7 +428,6 @@ const ChatNotifications = () => {
           return !isSeen;
         });
 
-
         const updatedMessages = chat.messages.map((msg) => ({
           ...msg,
           seen_by: msg.seen_by.some(
@@ -380,7 +446,6 @@ const ChatNotifications = () => {
         dispatch({type: "UPDATE_CHAT", chat: updatedChat});
 
         // Call backend if there are unseen messages
-
         handleOpenChat(chat);
         handleClose();
 
@@ -402,7 +467,7 @@ const ChatNotifications = () => {
         handleClose();
       }
     },
-    [profile?.id, backendActor, handleOpenChat, handleClose],
+    [profile?.id, backendActor, handleOpenChat, handleClose, dispatch],
   );
 
   const handleCreateGroup = useCallback(
@@ -434,8 +499,7 @@ const ChatNotifications = () => {
         const result = await backendActor.make_new_chat_room(newChat);
         if ("Ok" in result) {
           // Add new chat to local state
-          // setChats((prevChats) => [...prevChats, newChat]);
-          dispatch({type:"SET_CHATS", chats:[...prevChats, newChat]})
+          dispatch({type:"SET_CHATS", chats:[newChat, ...chats]})
           // Open the new chat window
           handleOpenChat(newChat);
         } else {
@@ -447,7 +511,7 @@ const ChatNotifications = () => {
 
       setCreateGroupOpen(false);
     },
-    [backendActor, profile?.id, handleOpenChat],
+    [backendActor, profile?.id, handleOpenChat, chats, dispatch],
   );
 
   const handleSendMessage = useCallback(
@@ -472,13 +536,13 @@ const ChatNotifications = () => {
         // console.log("Message sent:", { res });
 
         // Update local state
-        dispatch({type:"UPDATE_CHAT", chat: { ...chat, messages: [...chat.messages, newMessage] }  })
+        dispatch({type:"UPDATE_CHAT", chat: { ...chat, messages: [newMessage,...chat.messages] }  })
       
       } catch (error) {
         console.error("Error sending message:", error);
       }
     },
-    [profile, backendActor, chats],
+    [profile, backendActor, chats, dispatch],
   );
 
   const open = anchorEl && Boolean(anchorEl);
@@ -528,6 +592,9 @@ const ChatNotifications = () => {
           chats={chats}
           onChatClick={handleChatClick}
           currentUserId={profile?.id}
+          onLoadMore={handleLoadMore}
+          showLoadMore={hasMoreChats}
+          isLoadingMore={isLoadingMore}
         />
       </Menu>
 
@@ -558,7 +625,6 @@ const ChatNotifications = () => {
           name: "",
           members: [],
           admins: [],
-          // workspace: currentWorkspace ? [currentWorkspace] : [],
           workspace: currentWorkspace.name !== "default"? [currentWorkspace.id] : []
         }}
         users={all_friends}

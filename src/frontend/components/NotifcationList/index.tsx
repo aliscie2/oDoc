@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useBackendContext } from "../../contexts/BackendContext";
 import { Link } from "react-router-dom";
@@ -15,14 +15,12 @@ import {
   Typography,
 } from "@mui/material";
 import NotificationsIcon from "@mui/icons-material/Notifications";
+import ChecklistIcon from "@mui/icons-material/Checklist";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { formatRelativeTime } from "../../utils/time";
 import StyledNotificationItem from "./notiicationitem";
 import PaymentDialog from "./paymentDialog";
 import { RootState } from "../../redux/reducers";
-import ChecklistIcon from "@mui/icons-material/Checklist";
-// Styled components
-
-// Payment Dialog Component
 
 const NotificationsButton = () => {
   const { notifications } = useSelector(
@@ -31,8 +29,20 @@ const NotificationsButton = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [loadingNotifications, setLoadingNotifications] = useState(new Set());
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMoreNotifications, setHasMoreNotifications] = useState(false);
+  const [isMarkingAllRead, setIsMarkingAllRead] = useState(false);
+
+
+  useEffect(()=>{
+    if (hasMoreNotifications!=notifications.length > 14){
+      setHasMoreNotifications(notifications.length > 14);
+    }
+  },[notifications.length])
+  
   const open = Boolean(anchorEl);
   const { backendActor } = useBackendContext();
+  const dispatch = useDispatch();
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -40,6 +50,29 @@ const NotificationsButton = () => {
 
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleLoadMore = async () => {
+    if (!backendActor || isLoadingMore) return;
+
+    setIsLoadingMore(true);
+    try {
+
+      let notificationRes = await backendActor.get_user_notifications(notifications.length);
+      
+      if (notificationRes.length === 0) {
+        setHasMoreNotifications(false);
+      } else {
+        dispatch({
+          type: "UPDATE_NOT_LIST",
+          new_list: [...notifications, ...notificationRes],
+        });
+      }
+    } catch (error) {
+      console.error("Error loading more notifications:", error);
+    } finally {
+      setIsLoadingMore(false);
+    }
   };
 
   const handleNotificationClick = async (notification) => {
@@ -123,11 +156,7 @@ const NotificationsButton = () => {
   const isPaymentNotification = (notification) => {
     return "CPaymentContract" in notification.content;
   };
-  const dispatch = useDispatch();
 
-  const [isMarkingAllRead, setIsMarkingAllRead] = useState(false);
-
-  // Update the handleMarkAllAsRead function
   const handleMarkAllAsRead = async () => {
     const unreadNotifications = notifications.filter((n) => !n.is_seen);
     const unreadNotificationIds = unreadNotifications.map((n) => n.id);
@@ -207,57 +236,85 @@ const NotificationsButton = () => {
             </Typography>
           </MenuItem>
         ) : (
-          <List sx={{ padding: 0 }}>
-            {notifications.map((notification) => (
-              <Box key={notification.id} sx={{ position: "relative" }}>
-                <StyledNotificationItem
-                  onClick={() => handleNotificationClick(notification)}
-                  button
-                  isread={notification.is_seen.toString()}
-                  ispayment={isPaymentNotification(notification).toString()}
-                  disabled={loadingNotifications.has(notification.id)}
-                >
-                  <ListItemText
-                    primary={
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 1,
-                          color: isPaymentNotification(notification)
-                            ? "primary.main"
-                            : "inherit",
-                        }}
-                      >
-                        <Typography
-                          variant="body2"
+          <Box>
+            <List sx={{ padding: 0 }}>
+              {notifications.map((notification) => (
+                <Box key={notification.id} sx={{ position: "relative" }}>
+                  <StyledNotificationItem
+                    onClick={() => handleNotificationClick(notification)}
+                    button
+                    isread={notification.is_seen.toString()}
+                    ispayment={isPaymentNotification(notification).toString()}
+                    disabled={loadingNotifications.has(notification.id)}
+                  >
+                    <ListItemText
+                      primary={
+                        <Box
                           sx={{
-                            fontWeight: notification.is_seen
-                              ? "normal"
-                              : "bold",
-                            opacity: notification.is_seen ? 0.7 : 1,
-                            color: notification.is_seen
-                              ? "text.secondary"
-                              : "text.primary",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                            color: isPaymentNotification(notification)
+                              ? "primary.main"
+                              : "inherit",
                           }}
                         >
-                          {getNotificationMessage(notification.content)}
-                        </Typography>
-                        {loadingNotifications.has(notification.id) && (
-                          <CircularProgress size={16} />
-                        )}
-                      </Box>
-                    }
-                    secondary={formatRelativeTime(notification.time)}
-                    secondaryTypographyProps={{
-                      variant: "caption",
-                      sx: { opacity: notification.is_seen ? 0.7 : 1 },
-                    }}
-                  />
-                </StyledNotificationItem>
-              </Box>
-            ))}
-          </List>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              fontWeight: notification.is_seen
+                                ? "normal"
+                                : "bold",
+                              opacity: notification.is_seen ? 0.7 : 1,
+                              color: notification.is_seen
+                                ? "text.secondary"
+                                : "text.primary",
+                            }}
+                          >
+                            {getNotificationMessage(notification.content)}
+                          </Typography>
+                          {loadingNotifications.has(notification.id) && (
+                            <CircularProgress size={16} />
+                          )}
+                        </Box>
+                      }
+                      secondary={formatRelativeTime(notification.time)}
+                      secondaryTypographyProps={{
+                        variant: "caption",
+                        sx: { opacity: notification.is_seen ? 0.7 : 1 },
+                      }}
+                    />
+                  </StyledNotificationItem>
+                </Box>
+              ))}
+            </List>
+            
+            {/* Load More Button */}
+            {hasMoreNotifications && (
+              <MenuItem 
+                onClick={handleLoadMore} 
+                disabled={isLoadingMore}
+                sx={{ 
+                  justifyContent: "center", 
+                  borderTop: 1,
+                  borderColor: "divider",
+                  py: 1.5
+                }}
+              >
+                {isLoadingMore ? (
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <CircularProgress size={16} />
+                    <Typography variant="body2">Loading...</Typography>
+                  </Box>
+                ) : (
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <ExpandMoreIcon />
+                    <Typography variant="body2">Load More</Typography>
+                  </Box>
+                )}
+              </MenuItem>
+            )}
+          </Box>
         )}
       </Menu>
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { 
   Button, 
@@ -8,20 +8,16 @@ import {
   MenuItem,
   ListItemText,
   ListItemIcon,
-  Box,
   Tooltip
 } from "@mui/material";
 import { 
   Person2 as Person2Icon,
   KeyboardArrowDown as KeyboardArrowDownIcon,
-  PropaneSharp
 } from "@mui/icons-material";
 import { RootState } from "../../../redux/reducers";
 import { useBackendContext } from "../../../contexts/BackendContext";
 import DfnIcon from "@/assets/dfn.svg";
-import { useConnectModal } from '@rainbow-me/rainbowkit';
-import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useAccount } from 'wagmi';
+
 
 interface LoginButtonProps {
   isMobile?: boolean;
@@ -30,16 +26,13 @@ interface LoginButtonProps {
 
 const LoginButton: React.FC<LoginButtonProps> = (props) => {
   const {isMobile = false,sx = {}} = props;
-  const dispatch = useDispatch();
-  const { login, loginWithEth } = useBackendContext();
-  const { isFetching, isLoggedIn } = useSelector((state: RootState) => state.uiState);
-  const { openConnectModal } = useConnectModal();
-  const { isConnected } = useAccount();
+  const { login } = useBackendContext();
+  const { isFetching } = useSelector((state: RootState) => state.uiState);
+  
   
   // For dropdown menu
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
-  const [prevConnected, setPrevConnected] = useState(false);
 
 
   const styles = {

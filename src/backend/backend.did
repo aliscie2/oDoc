@@ -561,7 +561,6 @@ service : () -> {
   get_all_files_content : () -> (vec record { text; vec ContentNode }) query;
   get_calendar : (text) -> (opt Calendar) query;
   get_calendar_by_author : (text) -> (opt Calendar) query;
-  get_chats_notifications : () -> (vec Message) query;
   get_contract : (text, text) -> (Result_9) query;
   get_emails : () -> (vec text) query;
   get_file : (text) -> (opt FileNode) query;
@@ -577,7 +576,7 @@ service : () -> {
       vec record { text; vec ContentNode },
     ) query;
   get_my_calendar : () -> (Calendar) query;
-  get_my_chats : () -> (vec FEChat) query;
+  get_my_chats : (nat64) -> (vec FEChat) query;
   get_my_jobs : () -> (GetJobs) query;
   get_owners : () -> (vec principal) query;
   get_post : (text) -> (Result_11) query;
@@ -587,13 +586,14 @@ service : () -> {
   get_sns_status : () -> (Result_14) query;
   get_swaps : () -> (vec record { principal; principal }) query;
   get_user : (text) -> (Result) query;
-  get_user_notifications : () -> (vec Notification) query;
+  get_user_notifications : (nat64) -> (vec Notification) query;
   get_user_profile : (principal) -> (Result_15) query;
   get_users : () -> (float64) query;
   get_work_spaces : () -> (vec WorkSpace) query;
   internal_transaction : (float64, text, ExchangeType) -> (Result_3);
   is_ai_free_tier : () -> (Result_16) query;
   load_more_events : (int32) -> (vec Event) query;
+  load_more_messages : (text, nat64) -> (vec Message) query;
   make_new_chat_room : (Chat) -> (Result_1);
   message_is_seen : (Message) -> (Result_3);
   move_file : (text, opt text) -> (Result_17);

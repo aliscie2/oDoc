@@ -11,6 +11,8 @@ import JobSelector from '@/pages/discover/jobs/JobSelector';
 import JobSearchComponent from './JobSearchComponent';
 
 import { useBackendContext } from '@/contexts/BackendContext';
+import LoginButton from '@/components/MainComponents/topNavBar/loginButton';
+import { Login } from '@mui/icons-material';
 
 interface Message {
   id: string;
@@ -139,8 +141,14 @@ const JobsPage: React.FC = () => {
   const { profile  } = useSelector(
     (state: any) => state.filesState,
   );
+  
   if (!profile) {
-    return <div>Please login.</div>;
+    return <>
+    Please make suer to login first
+    <LoginButton 
+    startIcon={<Login />}
+                 />
+                 </>;
   }
 
   const onBuyCredit = async (value)=>{

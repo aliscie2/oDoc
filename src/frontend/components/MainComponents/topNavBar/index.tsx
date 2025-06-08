@@ -54,9 +54,6 @@ import getStyles from "./styles";
 import EnhancedUserAvatar from './EnhancedUserAvatar';
 export default function TopNavBar() {
 
-  const [isInitated, setInitated] = useState(false)
-
-
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -98,26 +95,6 @@ export default function TopNavBar() {
     (state: RootState) => state.filesState,
   );
 
-
-  
-  useEffect(() => {
-    
-    const fetchData = async () => {
-      
-        let notificationRes = await backendActor.get_user_notifications();
-        let chatsList = await  backendActor.get_my_chats();
-        console.log({chatsList,notificationRes})
-        dispatch(handleRedux("UPDATE_NOT_LIST", { new_list: notificationRes }));
-        dispatch(handleRedux("SET_CHATS", { chats: chatsList }));
-        
-
-    };
-    if (backendActor && isInitated ==false ) {
-    fetchData()
-    setInitated(true)
-    }
-    
-  }, [profile, backendActor]);
 
   const handleMobileMenuToggle = (
     event: React.MouseEvent<HTMLElement> | null,

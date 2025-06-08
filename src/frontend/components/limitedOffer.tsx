@@ -1,422 +1,241 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
-// Remove the Gift import
 import {
+  Alert,
   Box,
-  Button,
   Typography,
   IconButton,
-  Paper,
+  Link,
   Slide,
-  styled,
-  LinearProgress,
-  CircularProgress, // Add this import
+  Fade,
+  useTheme,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { useBackendContext } from "../contexts/BackendContext";
-// Add import for the ODOCTOKEN image
 import ODOCTokenImage from "@/assets/ODOCTOKEN.png";
 
-// Styled Components
-const GradientPaper = styled(Paper)(({ theme }) => ({
-  background: "linear-gradient(135deg, #8B4513 0%, #CD7F32 50%, #8B4513 100%)", // Dark bronze gradient
-  color: "#FFF", // White text for contrast
-  padding: 0,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  maxWidth: "960px",
-  width: "100%",
-  margin: theme.spacing(1),
-  borderRadius: theme.spacing(2),
-  border: "3px solid #CD7F32", // Bronze border
-  boxShadow: `
-    0 0 10px rgba(205, 127, 50, 0.8),
-    inset 0 0 20px rgba(0, 0, 0, 0.3)
-  `, // Metallic effect with inner shadow
-  backdropFilter: "blur(8px)",
-  overflow: 'visible',
-}));
-
-const ProgressBar = styled(LinearProgress)(({ theme }) => ({
-  position: 'absolute',
-  bottom: 0,
-  left: theme.spacing(4),
-  right: theme.spacing(4),
-  height: '2px',
-  marginBottom: theme.spacing(1),
-  backgroundColor: 'rgba(255, 255, 255, 0.2)', // Lighter background for contrast
-  borderRadius: theme.spacing(0.5),
-  '& .MuiLinearProgress-bar': {
-    backgroundColor: 'rgba(255, 255, 255, 0.7)', // Lighter progress bar
-    borderRadius: theme.spacing(0.5),
-  },
-}));
-
-const IconWrapper = styled(Box)(({ theme }) => ({
-  background: "rgba(255, 255, 255, 0.2)",
-  padding: theme.spacing(1.5),
-  borderRadius: theme.spacing(1),
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  marginRight: theme.spacing(3),
-  [theme.breakpoints.down("sm")]: {
-    display: "none",
-  },
-}));
-
-const DigitContainer = styled(Box)(({ theme }) => ({
-  position: "relative",
-  height: "1.5em",
-  width: "0.8em",
-  overflow: "hidden",
-  display: "inline-block",
-  backgroundColor: "rgba(0, 0, 0, 0.2)",
-  borderRadius: "4px",
-  margin: "0 1px",
-}));
-
-const NumberStrip = styled(Box)({
-  position: "absolute",
-  width: "100%",
-  transition: "transform 300ms ease-in-out",
-});
-
-const DigitBox = styled(Box)({
-  height: "1.5em",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  fontFamily: "monospace",
-  fontWeight: "bold",
-  color: "white",
-});
-
-
-
-// Error Boundary Component
-class ErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  { hasError: boolean }
-> {
-  constructor(props: { children: React.ReactNode }) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError(error: any) {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Error in PromoNotification:', error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return null; // Silently fail if there's an error
-    }
-
-    return this.props.children;
-  }
-}
-
-// Digit Component
-const Digit = ({ value }: { value: number }) => {
-  const numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-  const itemHeight = 24;
-  const offset = -value * itemHeight;
-
-  return (
-    <DigitContainer>
-      <NumberStrip style={{ transform: `translateY(${offset}px)` }}>
-        {numbers.map((num) => (
-          <DigitBox key={num}>{num}</DigitBox>
-        ))}
-      </NumberStrip>
-    </DigitContainer>
-  );
-};
-
-// CountUp Component
-const CountUp = ({ endValue = 0 }: { endValue: number }) => {
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    const duration = 2000;
-    const steps = 25;
-    const interval = duration / steps;
-
-    const timer = setInterval(() => {
-      setCount((prev) => {
-        if (prev >= endValue) {
-          clearInterval(timer);
-          return endValue;
-        }
-        const increment = Math.max(1, Math.ceil((endValue - prev) / 8));
-        return Math.min(prev + increment, endValue);
-      });
-    }, interval);
-
-    return () => clearInterval(timer);
-  }, [endValue]);
-
-  const digits = count.toString().padStart(3, "0").split("").map(Number);
-
-  return (
-    <Box component="span" sx={{ display: "inline-flex", alignItems: "center", mx: 0.5 }}>
-      {digits.map((digit, index) => (
-        <Digit key={index} value={digit} />
-      ))}
-    </Box>
-  );
-};
-
-// Main Component
 const PromoNotification: React.FC = () => {
   const [isVisible, setIsVisible] = useState<boolean>(true);
   const [userCount, setUserCount] = useState<number>(0);
-  const [startCounter, setStartCounter] = useState<boolean>(false);
-  const [progress, setProgress] = useState<number>(100);
-  const [isHovering, setIsHovering] = useState<boolean>(false);
-  const [snsStatus, setSnsStatus] = useState<{
-    number_users: number;
-    active_users: number;
-  } | null>(null);
-  const [isBackendConnected, setIsBackendConnected] = useState<boolean>(false); // Add this state
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const startTimeRef = useRef<number>(0);
-  const remainingTimeRef = useRef<number>(15000);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const { isLoggedIn } = useSelector((state: any) => state.uiState);
   const navigate = useNavigate();
   const location = useLocation();
   const isOfferPage = location.pathname === "/offer";
   const { backendActor } = useBackendContext();
+  const theme = useTheme();
 
+  // Auto-dismiss after 15 seconds
+  useEffect(() => {
+    if (!isLoggedIn && isVisible) {
+      const timer = setTimeout(() => setIsVisible(false), 15000);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoggedIn, isVisible]);
+
+  // Fetch user data
   useEffect(() => {
     const fetchData = async () => {
       if (backendActor) {
         try {
-          // Fetch user count
-          const users = await backendActor?.get_users();
-          setUserCount(Number(users));
-          
-          // Fetch SNS status
-          const res = await backendActor.get_sns_status();
-          if ("Ok" in res) {
-            setSnsStatus(res.Ok);
+          const snsStatus = await backendActor.get_sns_status();
+          if ("Ok" in snsStatus) {
+            setUserCount(snsStatus.Ok.active_users);
           }
-          setIsBackendConnected(true); // Set backend connected flag
-          setStartCounter(true); // Only start counter when backend is connected
         } catch (error) {
           console.error("Error fetching data:", error);
-          setIsBackendConnected(false);
+        } finally {
+          setIsLoading(false);
         }
-      } else {
-        setIsBackendConnected(false);
       }
     };
-
     fetchData();
   }, [backendActor]);
 
-  useEffect(() => {
-    if (isLoggedIn) {
-      setIsVisible(false);
-      return;
-    }
+  // Don't show if logged in
+  if (isLoggedIn) return null;
 
-    const startTimer = () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-
-      startTimeRef.current = Date.now();
-
-      timerRef.current = setInterval(() => {
-        const elapsed = Date.now() - startTimeRef.current;
-        const remaining = remainingTimeRef.current - elapsed;
-        const newProgress = (remaining / 15000) * 100;
-
-        if (remaining <= 0) {
-          setIsVisible(false);
-          if (timerRef.current) {
-            clearInterval(timerRef.current);
-          }
-        } else {
-          setProgress(Math.max(0, newProgress));
-        }
-      }, 100);
-    };
-
-    if (!isHovering && isVisible) {
-      startTimer();
-    }
-
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-    };
-  }, [isLoggedIn, isHovering, isVisible]);
-
-  const handleMouseEnter = () => {
-    setIsHovering(true);
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-      // Calculate exact remaining time
-      const elapsed = Date.now() - startTimeRef.current;
-      remainingTimeRef.current = Math.max(0, remainingTimeRef.current - elapsed);
-    }
-  };
-
-  const handleMouseLeave = () => {
-    setIsHovering(false);
-    if (!timerRef.current && isVisible) {
-      startTimeRef.current = Date.now();
-      timerRef.current = setInterval(() => {
-        const elapsed = Date.now() - startTimeRef.current;
-        const remaining = remainingTimeRef.current - elapsed;
-        const newProgress = (remaining / 15000) * 100;
-
-        if (remaining <= 0) {
-          setIsVisible(false);
-          if (timerRef.current) {
-            clearInterval(timerRef.current);
-          }
-        } else {
-          setProgress(Math.max(0, newProgress));
-        }
-      }, 100);
-    }
-  };
-
-  const handleClick = () => {
+  const handleClaimReward = () => {
     navigate("/offer");
     setIsVisible(false);
   };
 
+  // Enhanced background for better contrast
+  const getNotificationBackground = () => {
+    if (theme.palette.mode === 'dark') {
+      return {
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        backdropFilter: 'blur(12px)',
+        border: '1px solid rgba(255, 255, 255, 0.2)',
+      };
+    }
+    return {
+      backgroundColor: theme.palette.background.paper,
+      backdropFilter: 'blur(8px)',
+      border: '1px solid',
+      borderColor: theme.palette.divider,
+    };
+  };
+
+  const getArrowColors = () => {
+    if (theme.palette.mode === 'dark') {
+      return {
+        borderColor: 'rgba(255, 255, 255, 0.2)',
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+      };
+    }
+    return {
+      borderColor: theme.palette.divider,
+      backgroundColor: theme.palette.background.paper,
+    };
+  };
+
+  const arrowColors = getArrowColors();
 
   return (
-    <ErrorBoundary>
-      <Box
-        sx={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 9999,
-          display: "flex",
-          justifyContent: "center",
-          mt: 4, // Increased from 2 to 4 (32px)
-          pt: 2, // Added additional padding-top
-        }}
-      >
-        <Slide direction="down" in={isVisible} mountOnEnter unmountOnExit>
-          <GradientPaper
-            elevation={4}
-            onMouseEnter={isBackendConnected ? handleMouseEnter : undefined}
-            onMouseLeave={isBackendConnected ? handleMouseLeave : undefined}
-            sx={{ 
-              position: 'relative',
-              height: '120px', // Increased height
-              maxWidth: '800px', // Decreased from 960px
+    <Box
+      sx={{
+        position: "fixed",
+        top: 16,
+        left: 16,
+        right: 16,
+        zIndex: 9999,
+        display: "flex",
+        justifyContent: "center",
+      }}
+    >
+      <Slide direction="down" in={isVisible} mountOnEnter unmountOnExit>
+        <Box sx={{ position: "relative", display: "flex", alignItems: "center" }}>
+          {/* Large ODOC Token - positioned outside */}
+          <Box
+            sx={{
+              position: "absolute",
+              left: -60,
+              zIndex: 1,
+              width: 120,
+              height: 120,
             }}
           >
-            <Box sx={{ 
-              display: "flex", 
-              alignItems: "center", 
-              position: 'relative',
-              width: '100%',
-              height: '100%'
-            }}>
-              <Box sx={{
-                position: 'absolute',
-                left: '-100px', // Extend beyond container edge
-                zIndex: 1,
-                width: '200px',
-                height: '200px',
-                borderRadius: '50%', // Circular clipping
-                overflow: 'hidden', // Hide parts outside circle
-              }}>
-                <img 
-                  src={ODOCTokenImage} 
-                  alt="ODOC Token" 
-                  width="200px"
-                  height="200px"
-                  style={{
-                    display: 'block',
-                    objectFit: 'cover', // Ensure image fills circle
-                    width: '100%',
-                    height: '100%'
-                  }}
-                />
-              </Box>
-              <Box sx={{ 
-                ml: '120px', // Reduced from 300px to account for new positioning
-                width: 'calc(100% - 120px)' // Adjusted to match
-              }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: "bold", mb: 0.5 }}>
-                  Earn tokens for your activity at odoc
-                  {isBackendConnected ? (
-                    <Typography component="span" sx={{ fontWeight: "bold", display: "inline-block" }}>
-                      {startCounter ? 
-                        <CountUp endValue={snsStatus?.active_users || 0} /> : 
-                        <CircularProgress size={16} color="inherit" sx={{ ml: 1 }} />} current active users
-                    </Typography>
-                  ) : (
-                    <CircularProgress size={16} color="inherit" sx={{ ml: 1 }} />
-                  )}
-                </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                 
-                  {!isOfferPage && (
-                    <>
-                      <Button
-                        sx={{
-                          color: "white",
-                          textDecoration: "underline",
-                          textTransform: "none",
-                          padding: "0 4px",
-                          minWidth: "auto",
-                          "&:hover": {
-                            backgroundColor: "transparent",
-                            opacity: 0.8,
-                          },
-                        }}
-                        onClick={handleClick}
-                      >
-                        Claim your reward
-                      </Button>
-                    </>
-                  )}
-                </Typography>
-              </Box>
-            </Box>
-            <IconButton
-              size="small"
-              onClick={() => setIsVisible(false)}
-              sx={{
-                color: "white",
-                "&:hover": {
-                  backgroundColor: "rgba(255, 255, 255, 0.2)",
-                },
+            <img
+              src={ODOCTokenImage}
+              alt="ODOC Token"
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.3))",
               }}
-            >
-              <CloseIcon />
-            </IconButton>
-            <ProgressBar
-              variant="determinate"
-              value={progress}
             />
-          </GradientPaper>
-        </Slide>
-      </Box>
-    </ErrorBoundary>
+          </Box>
+
+          <Alert
+            severity="info"
+            sx={{
+              maxWidth: 600,
+              width: "100%",
+              ml: 8,
+              ...getNotificationBackground(),
+              boxShadow: theme.palette.mode === 'dark' 
+                ? '0 8px 32px rgba(0, 0, 0, 0.5)' 
+                : theme.shadows[2],
+              position: "relative",
+              '& .MuiAlert-icon': {
+                display: 'none',
+              },
+              // Speech bubble arrow pointing to the coin
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                left: -10,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: 0,
+                height: 0,
+                borderTop: '10px solid transparent',
+                borderBottom: '10px solid transparent',
+                borderRight: '10px solid',
+                borderRightColor: arrowColors.borderColor,
+              },
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                left: -9,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: 0,
+                height: 0,
+                borderTop: '10px solid transparent',
+                borderBottom: '10px solid transparent',
+                borderRight: '10px solid',
+                borderRightColor: arrowColors.backgroundColor,
+              },
+            }}
+            action={
+              <IconButton
+                size="small"
+                onClick={() => setIsVisible(false)}
+                sx={{ 
+                  color: "text.secondary",
+                  '&:hover': {
+                    backgroundColor: theme.palette.mode === 'dark' 
+                      ? 'rgba(255, 255, 255, 0.1)' 
+                      : 'rgba(0, 0, 0, 0.04)',
+                  },
+                }}
+              >
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            }
+          >
+            <Box sx={{ pl: 2 }}>
+              <Typography 
+                variant="subtitle2" 
+                sx={{ 
+                  fontWeight: 600, 
+                  mb: 0.5,
+                  color: "text.primary"
+                }}
+              >
+                Earn tokens for your activity
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                <Fade in={!isLoading}>
+                  <span>
+                    {isLoading ? "Loading..." : `${userCount}/100 active users`}
+                  </span>
+                </Fade>
+                {!isOfferPage && (
+                  <>
+                    {" • "}
+                    <Link
+                      component="button"
+                      variant="body2"
+                      onClick={handleClaimReward}
+                      sx={{
+                        textDecoration: "underline",
+                        cursor: "pointer",
+                        border: "none",
+                        background: "none",
+                        padding: 0,
+                        color: "primary.main",
+                        fontWeight: 500,
+                        "&:hover": {
+                          color: "primary.dark",
+                        },
+                      }}
+                    >
+                      Claim your reward
+                    </Link>
+                  </>
+                )}
+              </Typography>
+            </Box>
+          </Alert>
+        </Box>
+      </Slide>
+    </Box>
   );
 };
 

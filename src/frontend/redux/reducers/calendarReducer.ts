@@ -4,8 +4,8 @@ import {
   CalendarActions,
   Event,
 } from "$/declarations/backend/backend.did";
-import { boolean } from "mathjs";
-import { bob } from "wagmi/chains";
+
+
 
 const calendar_actions: CalendarActions = {
   delete_availabilities: [],
