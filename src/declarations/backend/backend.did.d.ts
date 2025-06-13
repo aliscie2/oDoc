@@ -45,6 +45,10 @@ export interface Approve {
   'expires_at' : [] | [bigint],
   'spender' : Index_Account,
 }
+export interface AssistantMessage {
+  'content' : [] | [string],
+  'tool_calls' : Array<ToolCall>,
+}
 export interface Availability {
   'id' : string,
   'title' : [] | [string],
@@ -133,6 +137,12 @@ export interface Chat {
   'workspaces' : Array<string>,
   'admins' : Array<Principal>,
 }
+export type ChatMessage = {
+    'tool' : { 'content' : string, 'tool_call_id' : string }
+  } |
+  { 'user' : { 'content' : string } } |
+  { 'assistant' : AssistantMessage } |
+  { 'system' : { 'content' : string } };
 export interface ClientKey {
   'client_principal' : Principal,
   'client_nonce' : bigint,
@@ -261,6 +271,10 @@ export interface Friend {
   'receiver' : User,
 }
 export interface FriendRequestNotification { 'friend' : Friend }
+export interface FunctionCall {
+  'name' : string,
+  'arguments' : Array<ToolCallArgument>,
+}
 export interface GetErrorLogsArgs {
   'start' : [] | [bigint],
   'length' : [] | [bigint],
@@ -519,6 +533,8 @@ export type ShareFilePermission = { 'CanComment' : null } |
 export type StoredContract = { 'CustomContract' : CustomContract };
 export interface Table { 'rows' : Array<Row>, 'columns' : Array<Column> }
 export interface TimeSlot { 'end_time' : bigint, 'start_time' : bigint }
+export interface ToolCall { 'id' : string, 'function' : FunctionCall }
+export interface ToolCallArgument { 'value' : string, 'name' : string }
 export interface Transaction {
   'burn' : [] | [Burn],
   'kind' : string,
@@ -595,6 +611,8 @@ export interface _SERVICE {
   'add_google_calendar_id' : ActorMethod<[string, Array<string>], Result_1>,
   'add_owner' : ActorMethod<[AddOwnerArgs], Result_2>,
   'add_swap' : ActorMethod<[AddSwapArgs], Result_2>,
+  'ai_chat' : ActorMethod<[Array<ChatMessage>], string>,
+  'ai_rompt' : ActorMethod<[string], string>,
   'approve_high_promise' : ActorMethod<[CPayment], Result_3>,
   'buy_ai_credits' : ActorMethod<[number], Result_3>,
   'cancel_friend_request' : ActorMethod<[string], Result>,

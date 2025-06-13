@@ -73,12 +73,26 @@ fn get_initial_data() -> Result<InitialData, String> {
 
     let contracts: HashMap<ContractId, StoredContract> =
         Contract::get_all_contracts().unwrap_or(HashMap::new());
-
+    let mut profile =profile.unwrap();
+    if profile.photo.len()>500000 {
+        profile.photo = Vec::new()
+    };
+    let mut friends: Vec< Friend> = Friend::get_list(caller());
+    
+    let friends: Vec< Friend> = friends.into_iter().map(|mut friend| {
+        if friend.sender.photo.len()>500000 {
+            friend.sender.photo = Vec::new()
+        };
+        if friend.receiver.photo.len()>500000 {
+            friend.receiver.photo = Vec::new()
+        };
+        friend
+    }).collect();
     let initial_data = InitialData {
-        Profile: profile.unwrap(),
+        Profile: profile,
         FilesContents: Some(files_contents),
         Files: files,
-        Friends: Friend::get_list(caller()),
+        Friends: friends,
         Contracts: contracts,
         Wallet: Wallet::get(caller()),
     };

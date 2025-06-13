@@ -18,16 +18,14 @@ import {
   Tabs,
   Tab,
 } from "@mui/material";
-import CreatePost from "./createPost";
-import ViewPostComponent from "./viewPost";
+
 import { useSelector } from "react-redux";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
+
 import { RootState } from "../../redux/reducers";
-import LoadMorePosts from "./LoadMorePosts";
+
 import Posts from "./posts";
 import Jobs from "./jobs";
-import GmailConnection from "./jobs/setUpConnect";
+
 
 
 const SidebarCard = ({ title, children }) => (
@@ -44,7 +42,7 @@ const SidebarCard = ({ title, children }) => (
 const FeedWrapper = styled("div")(({ theme, isNavOpen }) => ({
   minHeight: "100vh",
   width: "100%",
-  padding: theme.spacing(4),
+  padding: theme.spacing(0),
   overflowX: "hidden",
   position: "relative",
   zIndex: 1,
@@ -266,7 +264,7 @@ const SocialFeed = () => {
         </MainContainer>
         <Sidebar items={sidebarContent.right} position="right" />
       </FeedWrapper>
-      <GmailConnection/>
+
     </ThemeProvider>
   );
 };

@@ -7,7 +7,6 @@ import {
   CircularProgress, 
   IconButton,
   useTheme,
-  useMediaQuery,
   Divider,
   Alert,
   Button
@@ -15,7 +14,6 @@ import {
 import SendIcon from '@mui/icons-material/Send';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import AiCreditsCircle from './ContractTable/AiCreditsCircle';
-
 
 export interface Message {
   id: string;
@@ -48,7 +46,6 @@ const AiChat: React.FC<AiChatProps> = ({
   const [inputMessage, setInputMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // Scroll to bottom whenever messages change
   useEffect(() => {
@@ -147,7 +144,13 @@ const AiChat: React.FC<AiChatProps> = ({
     switch (message.status) {
       case 'sending':
         return (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 1, 
+            mt: 1,
+            flexWrap: 'wrap'
+          }}>
             <CircularProgress size={12} />
             <Typography variant="caption" color="text.secondary">
               Sending...
@@ -158,13 +161,22 @@ const AiChat: React.FC<AiChatProps> = ({
         return (
           <Alert 
             severity="error" 
-            sx={{ mt: 1, py: 0.5 }}
+            sx={{ 
+              mt: 1, 
+              py: 0.5,
+              '& .MuiAlert-message': {
+                width: '100%'
+              }
+            }}
             action={
               <Button
                 size="small"
                 startIcon={<RefreshIcon />}
                 onClick={() => handleRetryMessage(message.content, message.id)}
-                sx={{ minWidth: 'auto' }}
+                sx={{ 
+                  minWidth: 'auto',
+                  flexShrink: 0
+                }}
               >
                 Retry
               </Button>
@@ -181,25 +193,30 @@ const AiChat: React.FC<AiChatProps> = ({
 
   return (
     <Box sx={{ 
-      maxWidth: 800, 
+      maxWidth: { xs: '100%', sm: 600, md: 800 },
       mx: 'auto', 
-      p: isMobile ? 2 : 3,
-      height: '100vh',
+      p: { xs: 1, sm: 2, md: 3 },
+      height: { xs: '100vh', sm: 'auto' },
+      minHeight: { xs: '100vh', sm: '600px' },
       display: 'flex',
       flexDirection: 'column'
     }}>
       {/* Header */}
-      {title && <Typography 
-        variant="h4" 
-        sx={{ 
-          mb: 3,
-          fontWeight: 300,
-          color: theme.palette.text.primary,
-          textAlign: 'center'
-        }}
-      >
-        {title}
-      </Typography>}
+      {title && (
+        <Typography 
+          variant="h4" 
+          sx={{ 
+            mb: { xs: 2, sm: 3 },
+            fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' },
+            fontWeight: 300,
+            color: theme.palette.text.primary,
+            textAlign: 'center',
+            px: { xs: 1, sm: 0 }
+          }}
+        >
+          {title}
+        </Typography>
+      )}
 
       {/* Messages Container */}
       <Paper 
@@ -210,16 +227,17 @@ const AiChat: React.FC<AiChatProps> = ({
           flexDirection: 'column',
           bgcolor: 'transparent',
           border: `1px solid ${theme.palette.divider}`,
-          borderRadius: 3,
-          overflow: 'hidden'
+          borderRadius: { xs: 2, sm: 3 },
+          overflow: 'hidden',
+          minHeight: { xs: 'auto', sm: '400px' }
         }}
       >
         {/* Messages Area */}
         <Box sx={{ 
           flex: 1,
           overflowY: 'auto', 
-          p: 3,
-          minHeight: 400
+          p: { xs: 1.5, sm: 2, md: 3 },
+          minHeight: { xs: '300px', sm: '400px' }
         }}>
           {messages.length === 0 ? (
             <Box sx={{ 
@@ -227,14 +245,23 @@ const AiChat: React.FC<AiChatProps> = ({
               alignItems: 'center', 
               justifyContent: 'center',
               height: '100%',
-              color: theme.palette.text.secondary
+              color: theme.palette.text.secondary,
+              textAlign: 'center',
+              px: { xs: 2, sm: 0 }
             }}>
-              <Typography variant="body1">{infoMessage}</Typography>
+              <Typography 
+                variant="body1"
+                sx={{
+                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                }}
+              >
+                {infoMessage}
+              </Typography>
             </Box>
           ) : (
             <>
               {messages.map((message, index) => (
-                <Box key={message.id} sx={{ mb: 3 }}>
+                <Box key={message.id} sx={{ mb: { xs: 2, sm: 3 } }}>
                   <Typography 
                     variant="caption" 
                     sx={{ 
@@ -242,7 +269,8 @@ const AiChat: React.FC<AiChatProps> = ({
                       mb: 1,
                       display: 'block',
                       textTransform: 'uppercase',
-                      letterSpacing: 0.5
+                      letterSpacing: 0.5,
+                      fontSize: { xs: '0.6875rem', sm: '0.75rem' }
                     }}
                   >
                     {message.sender === 'user' ? 'You' : 'Assistant'}
@@ -254,7 +282,8 @@ const AiChat: React.FC<AiChatProps> = ({
                       wordBreak: 'break-word',
                       lineHeight: 1.6,
                       color: theme.palette.text.primary,
-                      opacity: message.status === 'failed' ? 0.7 : 1
+                      opacity: message.status === 'failed' ? 0.7 : 1,
+                      fontSize: { xs: '0.875rem', sm: '1rem' }
                     }}
                   >
                     {message.content}
@@ -273,14 +302,16 @@ const AiChat: React.FC<AiChatProps> = ({
                   display: 'flex', 
                   alignItems: 'center',
                   gap: 2,
-                  mb: 3
+                  mb: { xs: 2, sm: 3 },
+                  flexWrap: 'wrap'
                 }}>
                   <Typography 
                     variant="caption" 
                     sx={{ 
                       color: theme.palette.text.secondary,
                       textTransform: 'uppercase',
-                      letterSpacing: 0.5
+                      letterSpacing: 0.5,
+                      fontSize: { xs: '0.6875rem', sm: '0.75rem' }
                     }}
                   >
                     Assistant
@@ -295,75 +326,93 @@ const AiChat: React.FC<AiChatProps> = ({
 
         {/* Input Area */}
         <Box sx={{ 
-          p: 3, 
+          p: { xs: 1.5, sm: 2, md: 3 },
           pt: 0,
           borderTop: `1px solid ${theme.palette.divider}`
         }}>
           <Box sx={{ 
             display: 'flex', 
-            gap: 2,
-            alignItems: 'flex-end'
+            gap: { xs: 1, sm: 2 },
+            alignItems: 'flex-end',
+            flexDirection: { xs: 'column', sm: 'row' }
           }}>
-            {/* AI Credits Circle */}
-            <AiCreditsCircle
-              currentAICredits={currentAICredits}
-              onBuyCredit={onBuyCredit}
-            />
+            {/* AI Credits Circle - Full width on mobile */}
+            <Box sx={{ 
+              alignSelf: { xs: 'stretch', sm: 'auto' },
+              mb: { xs: 1, sm: 0 }
+            }}>
+              <AiCreditsCircle
+                currentAICredits={currentAICredits}
+                onBuyCredit={onBuyCredit}
+              />
+            </Box>
             
-            <TextField
-              fullWidth
-              multiline
-              maxRows={4}
-              placeholder="Type your message..."
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              disabled={loading}
-              variant="outlined"
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: 2,
-                  bgcolor: theme.palette.background.paper,
-                  '& fieldset': {
-                    border: 'none',
-                  },
-                  '&:hover': {
-                    bgcolor: theme.palette.action.hover,
-                  },
-                  '&.Mui-focused': {
+            {/* Input and Send Button Container */}
+            <Box sx={{
+              display: 'flex',
+              gap: { xs: 1, sm: 2 },
+              alignItems: 'flex-end',
+              width: '100%',
+              flex: 1
+            }}>
+              <TextField
+                fullWidth
+                multiline
+                maxRows={4}
+                placeholder="Type your message..."
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                disabled={loading}
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
                     bgcolor: theme.palette.background.paper,
-                    boxShadow: `0 0 0 2px ${theme.palette.primary.main}40`,
+                    fontSize: { xs: '0.875rem', sm: '1rem' },
+                    '& fieldset': {
+                      border: 'none',
+                    },
+                    '&:hover': {
+                      bgcolor: theme.palette.action.hover,
+                    },
+                    '&.Mui-focused': {
+                      bgcolor: theme.palette.background.paper,
+                      boxShadow: `0 0 0 2px ${theme.palette.primary.main}40`,
+                    }
+                  },
+                  '& .MuiInputBase-input': {
+                    fontSize: { xs: '0.875rem', sm: '1rem' },
+                    lineHeight: 1.5,
+                    padding: { xs: '8px 12px', sm: '12px 16px' }
                   }
-                },
-                '& .MuiInputBase-input': {
-                  fontSize: '1rem',
-                  lineHeight: 1.5
-                }
-              }}
-            />
-            <IconButton
-              onClick={() => handleSendMessage()}
-              disabled={loading || !inputMessage.trim()}
-              sx={{
-                bgcolor: theme.palette.primary.main,
-                color: 'white',
-                width: 48,
-                height: 48,
-                '&:hover': {
-                  bgcolor: theme.palette.primary.dark,
-                },
-                '&.Mui-disabled': {
-                  bgcolor: theme.palette.action.disabledBackground,
-                  color: theme.palette.action.disabled
-                }
-              }}
-            >
-              {loading ? (
-                <CircularProgress size={20} color="inherit" />
-              ) : (
-                <SendIcon />
-              )}
-            </IconButton>
+                }}
+              />
+              <IconButton
+                onClick={() => handleSendMessage()}
+                disabled={loading || !inputMessage.trim()}
+                sx={{
+                  bgcolor: theme.palette.primary.main,
+                  color: 'white',
+                  width: { xs: 40, sm: 48 },
+                  height: { xs: 40, sm: 48 },
+                  flexShrink: 0,
+                  '&:hover': {
+                    bgcolor: theme.palette.primary.dark,
+                  },
+                  '&.Mui-disabled': {
+                    bgcolor: theme.palette.action.disabledBackground,
+                    color: theme.palette.action.disabled
+                  }
+                }}
+              >
+                {loading ? (
+                  <CircularProgress size={20} color="inherit" />
+                ) : (
+                  <SendIcon sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }} />
+                )}
+              </IconButton>
+            </Box>
           </Box>
         </Box>
       </Paper>

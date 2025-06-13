@@ -295,7 +295,9 @@ const SaveButtons: React.FC<SaveButtonsProps> = ({ items }) => {
   };
 
   const buttonProps = getButtonProps();
-
+  if (!hasChanges){
+    return <></>
+  }
   return (
     <>
       <FloatingTooltip 
@@ -327,7 +329,7 @@ const SaveButtons: React.FC<SaveButtonsProps> = ({ items }) => {
               },
             }}
           >
-            Save Changes
+            Save
           </LoadingButton>
         </AnimatedButtonWrapper>
       </FloatingTooltip>

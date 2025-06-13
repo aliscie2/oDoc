@@ -42,7 +42,6 @@ import NotificationsButton from "../../NotifcationList";
 import MultiSaveButton from "../../Actions/MultiSave";
 import ChatsComponent from "../../Chat";
 import WorkspaceManager from "../Workspaces";
-import UserAvatar from "../UserAvatar";
 import LoginButton from "./loginButton";
 
 import { handleRedux } from "../../../redux/store/handleRedux";
@@ -52,8 +51,8 @@ import { Z_INDEX_TOP_NAVBAR } from "../../../constants/zIndex";
 import { RootState } from "../../../redux/reducers";
 import getStyles from "./styles";
 import EnhancedUserAvatar from './EnhancedUserAvatar';
-export default function TopNavBar() {
 
+export default function TopNavBar() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -95,7 +94,6 @@ export default function TopNavBar() {
     (state: RootState) => state.filesState,
   );
 
-
   const handleMobileMenuToggle = (
     event: React.MouseEvent<HTMLElement> | null,
   ) => {
@@ -117,6 +115,11 @@ export default function TopNavBar() {
   };
   
   const menuOptions = [
+    { 
+      content: isDarkMode ? "Light Mode" : "Dark Mode", 
+      icon: isDarkMode ? <LightModeIcon /> : <DarkModeIcon />, 
+      onClick: () => dispatch(handleRedux("TOGGLE_DARK"))
+    },
     { content: "Profile", to: "/profile", icon: <Person2Icon /> },
     { content: "Contracts", to: "/contracts", icon: <GavelIcon /> },
     { content: "Wallet", to: "/wallet", icon: <AccountBalanceWalletIcon /> },
@@ -152,10 +155,7 @@ export default function TopNavBar() {
             }
             onClick={handleMobileMenuToggle}
           />
-          <BottomNavigationAction
-            label="Save"
-            icon={<MultiSaveButton />}
-          />
+          <MultiSaveButton />
         </>
       );
     }
@@ -200,11 +200,6 @@ export default function TopNavBar() {
             label="Menu"
             icon={isNavOpen ? <MenuOpenIcon /> : <MenuIcon />}
             onClick={() => dispatch(handleRedux("TOGGLE_NAV"))}
-          />
-          <BottomNavigationAction
-            label="Theme"
-            icon={isDarkMode ? <LightModeIcon /> : <DarkModeIcon />}
-            onClick={() => dispatch(handleRedux("TOGGLE_DARK"))}
           />
           
           {isLoggedIn ? renderActionButtons() : <LoginButton isMobile={true} />}
@@ -288,14 +283,6 @@ export default function TopNavBar() {
       </Box>
 
       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-        <IconButton
-          color="inherit"
-          onClick={() => dispatch(handleRedux("TOGGLE_DARK"))}
-          sx={styles.iconButton}
-        >
-          {isDarkMode ? <LightModeIcon /> : <DarkModeIcon />}
-        </IconButton>
-        
         {isLoggedIn ? renderActionButtons() : <LoginButton sx={styles.loginButton} />}
       </Box>
     </Toolbar>

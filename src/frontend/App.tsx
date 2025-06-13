@@ -19,7 +19,7 @@ import { canisterId } from "../declarations/backend";
 import getckUsdcBalance from "./utils/getBalance";
 import { AvailabilityTimezone, EventTimezone } from "./pages/dashBoardPage/calindarView/serializers";
 import { RootState } from "./redux/reducers";
-import { re } from "mathjs";
+
 import RegistrationForm from "./components/MainComponents/RegistrationForm";
 
 // Create a styled component for the main content

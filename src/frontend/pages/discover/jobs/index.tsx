@@ -13,6 +13,7 @@ import JobSearchComponent from './JobSearchComponent';
 import { useBackendContext } from '@/contexts/BackendContext';
 import LoginButton from '@/components/MainComponents/topNavBar/loginButton';
 import { Login } from '@mui/icons-material';
+import SetupBanner from './setUpConnect';
 
 interface Message {
   id: string;
@@ -163,7 +164,7 @@ const JobsPage: React.FC = () => {
     }
   }
   return (
-    <Box className="jobs-page-container" sx={{ padding: 3, maxWidth: '1200px', margin: '0 auto' }}>
+    <Box className="jobs-page-container" sx={{ padding: 0, margin: '0 auto' }}>
       <JobSelector />
       <AiChat
         key={geminiAgent}
@@ -177,7 +178,7 @@ const JobsPage: React.FC = () => {
         onSendMessage={handleSendMessage}
       />
       {isProfileDone || matchingJobs.lenght > 0  || currentJobRef?.current?.skills.length > 0 && <JobSearchComponent />}
-
+    <SetupBanner/>
     </Box>
   );
 };

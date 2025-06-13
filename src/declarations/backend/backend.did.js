@@ -28,6 +28,25 @@ export const idlFactory = ({ IDL }) => {
     'token1' : IDL.Principal,
     'pool_canister' : IDL.Principal,
   });
+  const ToolCallArgument = IDL.Record({
+    'value' : IDL.Text,
+    'name' : IDL.Text,
+  });
+  const FunctionCall = IDL.Record({
+    'name' : IDL.Text,
+    'arguments' : IDL.Vec(ToolCallArgument),
+  });
+  const ToolCall = IDL.Record({ 'id' : IDL.Text, 'function' : FunctionCall });
+  const AssistantMessage = IDL.Record({
+    'content' : IDL.Opt(IDL.Text),
+    'tool_calls' : IDL.Vec(ToolCall),
+  });
+  const ChatMessage = IDL.Variant({
+    'tool' : IDL.Record({ 'content' : IDL.Text, 'tool_call_id' : IDL.Text }),
+    'user' : IDL.Record({ 'content' : IDL.Text }),
+    'assistant' : AssistantMessage,
+    'system' : IDL.Record({ 'content' : IDL.Text }),
+  });
   const PaymentStatus = IDL.Variant({
     'None' : IDL.Null,
     'RequestCancellation' : IDL.Null,
@@ -639,6 +658,8 @@ export const idlFactory = ({ IDL }) => {
       ),
     'add_owner' : IDL.Func([AddOwnerArgs], [Result_2], []),
     'add_swap' : IDL.Func([AddSwapArgs], [Result_2], []),
+    'ai_chat' : IDL.Func([IDL.Vec(ChatMessage)], [IDL.Text], []),
+    'ai_rompt' : IDL.Func([IDL.Text], [IDL.Text], []),
     'approve_high_promise' : IDL.Func([CPayment], [Result_3], []),
     'buy_ai_credits' : IDL.Func([IDL.Float64], [Result_3], []),
     'cancel_friend_request' : IDL.Func([IDL.Text], [Result], []),

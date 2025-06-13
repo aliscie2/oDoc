@@ -38,7 +38,7 @@ const CreateFile: React.FC = () => {
     dispatch(handleRedux("ADD_FILE", { new_file }));
     dispatch(handleRedux("ADD_CONTENT", { id, content: fileContentSample }));
     closeSnackbar();
-    enqueueSnackbar("New file is created!", { variant: "success" });
+    // enqueueSnackbar("New file is created!", { variant: "success" });
   };
   let title= "Create a new document";
   if (files.length === 0) {

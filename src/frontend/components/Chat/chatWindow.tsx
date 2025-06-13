@@ -505,7 +505,7 @@ const ChatWindow = memo(({
         zIndex: 1300,
         borderRadius: 3,
         overflow: "hidden",
-        boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+        boxShadow: "0 8px 0px rgba(0,0,0,0.12)",
       }}
     >
       {content}

@@ -40,7 +40,7 @@ function Pages() {
 
     
     if (isLoggedIn) {
-      return <ProductManagerDashboard />;
+      return <Discover />;
     }
 
     return <LandingPage isLoggedIn={isLoggedIn} login={login} />;
