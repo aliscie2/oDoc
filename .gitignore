@@ -38,3 +38,4 @@ yarn.lock
 
 *storybook.log
 .aider*
+.specstory*
