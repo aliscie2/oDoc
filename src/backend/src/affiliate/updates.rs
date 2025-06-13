@@ -14,6 +14,7 @@ use crate::AFFILIATE;
 use crate::discover::time_diff;
 use crate::user_history::UserHistory;
 use crate::websocket::Notification;
+use crate::user::state::{UserState, get_current_user_state, save_current_user_state};
 
 // Only have this one update function as the public API
 #[update]
@@ -33,7 +34,14 @@ fn get_or_create_affiliate(id: &String) -> Result<Affiliate, String> {
     return Ok(affiliate.unwrap());
 }
 
+// How to track cycles consumed
 fn check_and_update_users(affiliate: &mut Affiliate) -> Result<(), String> {
+    // Get the current user's state
+    let mut user_state = get_current_user_state();
+    
+    // Start cycle tracking for this operation
+    user_state.record_cycles("check_and_update_users");
+    
     let mut total_new_payments = 0.0;
     let mut updates_needed = false;
 
@@ -54,6 +62,9 @@ fn check_and_update_users(affiliate: &mut Affiliate) -> Result<(), String> {
         affiliate.update_trusted_users()?;
         affiliate.save()
     }
+
+    // Save the updated user state with cycle consumption data
+    save_current_user_state(user_state);
 
     Ok(())
 }

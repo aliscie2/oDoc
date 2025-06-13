@@ -60,4 +60,32 @@ impl UserState {
     pub fn get_cycles_by_operation(&self, operation: &str) -> Option<u128> {
         self.cycles_ledger.get(operation).copied()
     }
+}
+
+// Global functions to manage user states
+pub fn get_user_state(principal: &str) -> UserState {
+    crate::USER_STATES.with(|states| {
+        states
+            .borrow()
+            .get(principal)
+            .unwrap_or_else(|| UserState::new())
+    })
+}
+
+pub fn save_user_state(principal: &str, state: UserState) {
+    crate::USER_STATES.with(|states| {
+        states
+            .borrow_mut()
+            .insert(principal.to_string(), state);
+    });
+}
+
+pub fn get_current_user_state() -> UserState {
+    let principal = caller().to_string();
+    get_user_state(&principal)
+}
+
+pub fn save_current_user_state(state: UserState) {
+    let principal = caller().to_string();
+    save_user_state(&principal, state);
 } 

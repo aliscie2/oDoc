@@ -235,6 +235,13 @@ thread_local! {
             MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(17))),
         )
     );
+    
+    // Storage for user state 
+    static USER_STATES: RefCell<StableBTreeMap<String, UserState, Memory>> = RefCell::new(
+        StableBTreeMap::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(18))),
+        )
+    );
 }
 
 pub static COUNTER: AtomicU64 = AtomicU64::new(0);
