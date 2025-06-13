@@ -71,6 +71,13 @@ impl UserState {
         *self.cycles_ledger.entry(operation.to_string()).or_insert(0) += cycles_consumed;
     }
 
+    // For testing purposes
+    #[cfg(test)]
+    pub fn record_cycles_mock(&mut self, operation: &str, cycles: u128) {
+        self.cycles_consumed += cycles;
+        *self.cycles_ledger.entry(operation.to_string()).or_insert(0) += cycles;
+    }
+
     pub fn get_total_cycles_consumed(&self) -> u128 {
         self.cycles_consumed
     }
@@ -106,4 +113,48 @@ pub fn get_current_user_state() -> UserState {
 pub fn save_current_user_state(state: UserState) {
     let principal = caller().to_string();
     save_user_state(&principal, state);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // Helper function to create a test user state
+    fn create_test_user_state() -> UserState {
+        UserState {
+            is_transfering: false,
+            ai_credits: 100.0,
+            subscription: Subscription {
+                tier: "premium".to_string(),
+                start_date: 1234567890,
+                end_date: 1234567890 + 30 * 24 * 60 * 60, // 30 days later
+            },
+            is_ai_free_tier: false,
+            cycles_consumed: 0,
+            cycles_ledger: HashMap::new(),
+        }
+    }
+
+    #[test]
+    fn test_user_state_creation() {
+        let state = UserState::new();
+        assert_eq!(state.is_transfering, false);
+        assert_eq!(state.ai_credits, 0.0);
+        assert_eq!(state.subscription.tier, "free");
+        assert_eq!(state.is_ai_free_tier, true);
+        assert_eq!(state.cycles_consumed, 0);
+        assert!(state.cycles_ledger.is_empty());
+    }
+
+    #[test]
+    fn test_cycle_tracking() {
+        let mut state = create_test_user_state();
+        
+        // Use mock function instead of real canister_balance128
+        state.record_cycles_mock("test_operation", 1000);
+        
+        // Verify cycles were recorded
+        assert_eq!(state.cycles_consumed, 1000);
+        assert_eq!(state.cycles_ledger.get("test_operation"), Some(&1000));
+    }
 } 
