@@ -1,6 +1,9 @@
 use candid::{CandidType, Deserialize};
 use ic_cdk::api::{caller, canister_balance128};
 use std::collections::HashMap;
+use ic_stable_structures::{storable::Bound, Storable};
+use std::borrow::Cow;
+use candid::{Encode, Decode};
 
 #[derive(Clone, Debug, Default, CandidType, Deserialize)]
 pub struct Subscription {
@@ -17,6 +20,21 @@ pub struct UserState {
     pub is_ai_free_tier: bool,
     pub cycles_consumed: u128,  // Track total cycles consumed by the user
     pub cycles_ledger: HashMap<String, u128>,  // Track cycles consumed per operation
+}
+
+impl Storable for UserState {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        if let Ok(bytes) = Encode!(self) {
+            return Cow::Owned(bytes);
+        }
+        Cow::Borrowed(&[])
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        Decode!(bytes.as_ref(), Self).unwrap()
+    }
+
+    const BOUND: Bound = Bound::Unbounded;
 }
 
 impl UserState {
@@ -63,7 +81,7 @@ impl UserState {
 }
 
 // Global functions to manage user states
-pub fn get_user_state(principal: &str) -> UserState {
+pub fn get_user_state(principal: &String) -> UserState {
     crate::USER_STATES.with(|states| {
         states
             .borrow()
@@ -72,7 +90,7 @@ pub fn get_user_state(principal: &str) -> UserState {
     })
 }
 
-pub fn save_user_state(principal: &str, state: UserState) {
+pub fn save_user_state(principal: &String, state: UserState) {
     crate::USER_STATES.with(|states| {
         states
             .borrow_mut()
