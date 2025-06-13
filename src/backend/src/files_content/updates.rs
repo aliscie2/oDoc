@@ -7,7 +7,7 @@ use ic_cdk_macros::update;
 use crate::files::FileNode;
 use crate::files_content::ContentNode;
 use crate::storage_schema::{ContentId, ContentTree, ContractId, FileId};
-use crate::StoredContract;
+use crate::{CColumn, CPayment, CRow, StoredContract};
 use crate::{ShareFile, FILE_CONTENTS, USER_FILES};
 // #[update]
 // fn content_updates(file_id: FileId, content_parent_id: Option<ContentId>, new_text: String) -> Result<String, String> {
@@ -43,11 +43,38 @@ pub struct FileIndexing {
     pub parent: Option<FileId>,
 }
 
+
+#[derive(Clone, Debug, Deserialize, CandidType)]
+pub struct TableUpdates {
+    pub id: String,
+    pub name: String,
+    pub columns: Vec<CColumn>,
+    pub rows: Vec<CRow>,
+    
+    pub delete_rows: Vec<String>,
+    pub delete_columns: Vec<String>,
+}
+
+
+
+#[derive(Clone, Debug, Deserialize, CandidType)]
+pub struct ContractUpdates {
+    pub id: String,
+    pub promises: Vec<CPayment>,
+    pub delete_promises: Vec<String>,
+
+    pub tables: Vec<TableUpdates>,
+    pub delete_tables: Vec<String>,
+
+}
+
+
 #[update]
 fn multi_updates(
     files: Vec<FileNode>,
     content_trees: Vec<HashMap<FileId, ContentTree>>,
-    contracts: Vec<StoredContract>,
+    // contracts: Vec<StoredContract>,
+    contracts: Vec<ContractUpdates>,
     files_indexing: Vec<FileIndexing>,
 ) -> Result<String, String> {
     let mut messages = "".to_string();
@@ -56,17 +83,17 @@ fn multi_updates(
         file.save()?;
     }
 
-    for contract in contracts.clone() {
-        if let StoredContract::CustomContract(mut custom_contract) = contract {
-            let res = custom_contract.save();
-            if let Err(errors) = res {
-                for err in errors {
-                    let formatted_err = format!("Error: {} ", err.message);
-                    messages.push_str(&formatted_err);
-                }
-            }
-        }
-    }
+    // for contract in contracts.clone() {
+    //     if let StoredContract::CustomContract(mut custom_contract) = contract {
+    //         let res = custom_contract.save();
+    //         if let Err(errors) = res {
+    //             for err in errors {
+    //                 let formatted_err = format!("Error: {} ", err.message);
+    //                 messages.push_str(&formatted_err);
+    //             }
+    //         }
+    //     }
+    // }
 
     // Update FILE_CONTENTS
     for update in content_trees {

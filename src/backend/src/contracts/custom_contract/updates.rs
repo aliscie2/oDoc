@@ -49,7 +49,7 @@ fn confirmed_c_payment(promise: CPayment) -> Result<(), String> {
             })
             .collect::<Result<Vec<_>, String>>()?;
 
-        contract.pure_save()?;
+        contract.save()?;
         Ok(())
     } else {
         Err("Contract not found".to_string())
@@ -89,7 +89,7 @@ fn confirmed_cancellation(c_payment: CPayment) -> Result<(), String> {
             })
             .collect();
 
-        contract.pure_save()?;
+        contract.save()?;
         Ok(())
     } else {
         Err("Contract not found".to_string())
@@ -127,7 +127,7 @@ fn approve_high_promise(c_payment: CPayment) -> Result<(), String> {
             })
             .collect();
 
-        contract.pure_save()?;
+        contract.save()?;
         Ok(())
     } else {
         Err("Contract not found".to_string())
@@ -163,7 +163,7 @@ fn object_on_cancel(c_payment: CPayment, reason: String) -> Result<(), String> {
             })
             .collect();
 
-        contract.pure_save()?;
+        contract.save()?;
         Ok(())
     } else {
         Err("Contract not found".to_string())

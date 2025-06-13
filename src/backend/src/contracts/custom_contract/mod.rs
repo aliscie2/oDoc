@@ -1,4 +1,4 @@
-mod permissions;
+
 mod queries;
 mod tests;
 mod types;

@@ -428,7 +428,7 @@ impl CustomContract {
 
         Ok(())
     }
-    pub fn pure_save(&self) -> Result<Self, String> {
+    pub fn save(&self) -> Result<Self, String> {
         CONTRACTS_STORE.with(|contracts_store| {
             let mut caller_contracts = contracts_store.borrow_mut();
             let mut new_map = StoredContractVec {
@@ -469,130 +469,130 @@ impl CustomContract {
     // TODO for the save if there is error message just return the error
     //  TODO in the frontend for better user expernce make the  UI handle the persmisions so users don't see many errors and wait for save to return
     //
-    pub fn save(&mut self) -> Result<Self, Vec<ContractError>> {
-        let mut contract_errors: Vec<ContractError> = vec![];
-        if let Some(old_contract) = Self::get(&self.id, &self.creator) {
-            self.date_created = old_contract.date_created.clone();
-            self.date_updated = ic_cdk::api::time() as f64;
-            self.creator = old_contract.creator.clone(); // no need for this cuz Self::get() already check for this
-                                                         // self.payments = old_contract.clone().update_payments(self.payments.clone());
-            self.payments = old_contract.payments.clone();
+    // pub fn save(&mut self) -> Result<Self, Vec<ContractError>> {
+    //     let mut contract_errors: Vec<ContractError> = vec![];
+    //     if let Some(old_contract) = Self::get(&self.id, &self.creator) {
+    //         self.date_created = old_contract.date_created.clone();
+    //         self.date_updated = ic_cdk::api::time() as f64;
+    //         self.creator = old_contract.creator.clone(); // no need for this cuz Self::get() already check for this
+    //                                                      // self.payments = old_contract.clone().update_payments(self.payments.clone());
+    //         self.payments = old_contract.payments.clone();
 
-            let contracts: Vec<CContract> = self
-                .contracts
-                .iter_mut()
-                .map(|contract| contract.update(&mut contract_errors, &old_contract))
-                .collect();
+    //         let contracts: Vec<CContract> = self
+    //             .contracts
+    //             .iter_mut()
+    //             .map(|contract| contract.update(&mut contract_errors, &old_contract))
+    //             .collect();
 
-            // for contract in old_contract.contracts {
-            //     let old_contract = self.contracts.clone().get_c_contract(&contract.id, &contract.creator);
-            //     if old_contract.is_none() {
-            //         // case delete contract
-            //     }
-            // }
-            self.contracts = contracts;
+    //         // for contract in old_contract.contracts {
+    //         //     let old_contract = self.contracts.clone().get_c_contract(&contract.id, &contract.creator);
+    //         //     if old_contract.is_none() {
+    //         //         // case delete contract
+    //         //     }
+    //         // }
+    //         self.contracts = contracts;
 
-            // rerun odl promos if payment.status == PaymentStatus::Canceled. else promise
-            self.promises = self
-                .promises
-                .clone()
-                .iter()
-                .map(|promise| {
-                    self.clone().update_promise(
-                        &mut contract_errors,
-                        promise.clone(),
-                        old_contract.clone(),
-                    )
-                })
-                .collect();
+    //         // rerun odl promos if payment.status == PaymentStatus::Canceled. else promise
+    //         self.promises = self
+    //             .promises
+    //             .clone()
+    //             .iter()
+    //             .map(|promise| {
+    //                 self.clone().update_promise(
+    //                     &mut contract_errors,
+    //                     promise.clone(),
+    //                     old_contract.clone(),
+    //                 )
+    //             })
+    //             .collect();
 
-            // prevent delete if Confirmed
-            for old_promise in old_contract.promises {
-                if old_promise.status == PaymentStatus::Confirmed
-                    && !self.promises.iter().any(|p| p.id == old_promise.id)
-                {
-                    let message: String = "You can't delete confirmed payment".to_string();
-                    contract_errors.push(ContractError { message });
-                    self.promises.push(old_promise.clone());
+    //         // prevent delete if Confirmed
+    //         for old_promise in old_contract.promises {
+    //             if old_promise.status == PaymentStatus::Confirmed
+    //                 && !self.promises.iter().any(|p| p.id == old_promise.id)
+    //             {
+    //                 let message: String = "You can't delete confirmed payment".to_string();
+    //                 contract_errors.push(ContractError { message });
+    //                 self.promises.push(old_promise.clone());
 
-                    // For deleted promises
-                    if !self.promises.iter().any(|p| p.id == old_promise.id.clone()) {
-                        let mut user_history = UserHistory::get(caller());
-                        user_history.confirm_cancellation(old_promise.clone());
-                        user_history.save()
-                    }
-                }
-            }
-        } else {
-            self.date_created = ic_cdk::api::time() as f64;
-            self.payments = vec![];
-            self.creator = caller().to_string();
-        }
+    //                 // For deleted promises
+    //                 if !self.promises.iter().any(|p| p.id == old_promise.id.clone()) {
+    //                     let mut user_history = UserHistory::get(caller());
+    //                     user_history.confirm_cancellation(old_promise.clone());
+    //                     user_history.save()
+    //                 }
+    //             }
+    //         }
+    //     } else {
+    //         self.date_created = ic_cdk::api::time() as f64;
+    //         self.payments = vec![];
+    //         self.creator = caller().to_string();
+    //     }
 
-        // ------- handle formulas security ------- \\
-        // for formula in self.formulas.clone() {
-        //     let old_formula: Option<&Formula> = self
-        //         .formulas
-        //         .iter()
-        //         .find(|f| f.column_id == formula.column_id);
-        //     if let Some(old_formula) = old_formula {
-        //         if &formula != old_formula {
-        //             if let Execute::TransferUsdt(payment) = formula.execute {
-        //                 if caller() != payment.sender {
-        //                     let message =
-        //                         "You can't save a formula for other people as senders".to_string();
-        //                     contract_errors.push(ContractError { message });
-        //                     self.formulas.retain(|f| f.column_id != formula.column_id);
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-        //
-        // // ---------------- handle promise ----------------\\
-        for mut payment in self.promises.clone() {
-            // let receiver_wallet = Wallet::get(payment.reciver.clone());
-            let wallet = Wallet::get(payment.sender);
-            if payment.status == PaymentStatus::Released && payment.sender == caller() {
-                let res = payment.clone().pay();
-                if let Err(message) = res {
-                    contract_errors.push(ContractError { message });
-                    self.promises.retain(|p| p.id != payment.id);
-                } else if let Ok(payment) = res {
-                    self.promises.retain(|p| p.id != payment.id);
-                    self.payments.push(payment.clone());
-                }
-            } else {
-                if let Err(message) = wallet.check_dept(payment.amount.clone()) {
-                    contract_errors.push(ContractError { message });
-                    self.promises.retain(|p| p.id != payment.id);
-                }
-                UserHistory::get(caller()).payment_action(payment.clone());
-                payment.contract_id = self.id.clone();
-                notify_about_promise(payment, PaymentAction::Promise);
-            }
-            // else if payment.status == PaymentStatus::ApproveHighPromise {
-            //     if let Err(message) = wallet.add_dept(payment.amount.clone(), payment.id.clone()) {
-            //         contract_errors.push(ContractError { message });
-            //         self.promises.retain(|p| p.id != payment.id);
-            //     } else {
-            //         // TODO remove dept when cancel +  conform cancellation
-            //         // For now it seams fine to keep dept if not canceled
-            //         // remove dept only when cancel
-            //         UserHistory::get(caller()).payment_action(payment.clone());
-            //         payment.contract_id = self.id.clone();
-            //         notify_about_promise(payment, PaymentAction::Promise);
-            //     }
-            // }
-        }
+    //     // ------- handle formulas security ------- \\
+    //     // for formula in self.formulas.clone() {
+    //     //     let old_formula: Option<&Formula> = self
+    //     //         .formulas
+    //     //         .iter()
+    //     //         .find(|f| f.column_id == formula.column_id);
+    //     //     if let Some(old_formula) = old_formula {
+    //     //         if &formula != old_formula {
+    //     //             if let Execute::TransferUsdt(payment) = formula.execute {
+    //     //                 if caller() != payment.sender {
+    //     //                     let message =
+    //     //                         "You can't save a formula for other people as senders".to_string();
+    //     //                     contract_errors.push(ContractError { message });
+    //     //                     self.formulas.retain(|f| f.column_id != formula.column_id);
+    //     //                 }
+    //     //             }
+    //     //         }
+    //     //     }
+    //     // }
+    //     //
+    //     // // ---------------- handle promise ----------------\\
+    //     for mut payment in self.promises.clone() {
+    //         // let receiver_wallet = Wallet::get(payment.reciver.clone());
+    //         let wallet = Wallet::get(payment.sender);
+    //         if payment.status == PaymentStatus::Released && payment.sender == caller() {
+    //             let res = payment.clone().pay();
+    //             if let Err(message) = res {
+    //                 contract_errors.push(ContractError { message });
+    //                 self.promises.retain(|p| p.id != payment.id);
+    //             } else if let Ok(payment) = res {
+    //                 self.promises.retain(|p| p.id != payment.id);
+    //                 self.payments.push(payment.clone());
+    //             }
+    //         } else {
+    //             if let Err(message) = wallet.check_dept(payment.amount.clone()) {
+    //                 contract_errors.push(ContractError { message });
+    //                 self.promises.retain(|p| p.id != payment.id);
+    //             }
+    //             UserHistory::get(caller()).payment_action(payment.clone());
+    //             payment.contract_id = self.id.clone();
+    //             notify_about_promise(payment, PaymentAction::Promise);
+    //         }
+    //         // else if payment.status == PaymentStatus::ApproveHighPromise {
+    //         //     if let Err(message) = wallet.add_dept(payment.amount.clone(), payment.id.clone()) {
+    //         //         contract_errors.push(ContractError { message });
+    //         //         self.promises.retain(|p| p.id != payment.id);
+    //         //     } else {
+    //         //         // TODO remove dept when cancel +  conform cancellation
+    //         //         // For now it seams fine to keep dept if not canceled
+    //         //         // remove dept only when cancel
+    //         //         UserHistory::get(caller()).payment_action(payment.clone());
+    //         //         payment.contract_id = self.id.clone();
+    //         //         notify_about_promise(payment, PaymentAction::Promise);
+    //         //     }
+    //         // }
+    //     }
 
-        // self.execute_formulas();
-        self.pure_save().expect("TODO: panic message at pure_save");
-        if !contract_errors.is_empty() {
-            return Err(contract_errors);
-        }
-        Ok(self.clone())
-    }
+    //     // self.execute_formulas();
+    //     self.pure_save().expect("TODO: panic message at pure_save");
+    //     if !contract_errors.is_empty() {
+    //         return Err(contract_errors);
+    //     }
+    //     Ok(self.clone())
+    // }
 
     //  ----------------------------------------------- Promise CRUD permissions -----------------------------------------------\\
     // pub fn delete_promise_permission(
