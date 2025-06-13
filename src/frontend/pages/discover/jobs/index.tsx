@@ -165,6 +165,10 @@ const JobsPage: React.FC = () => {
   }
   return (
     <Box className="jobs-page-container" sx={{ padding: 0, margin: '0 auto' }}>
+
+      <SetupBanner/>
+
+
       <JobSelector />
       <AiChat
         key={geminiAgent}
@@ -178,7 +182,7 @@ const JobsPage: React.FC = () => {
         onSendMessage={handleSendMessage}
       />
       {isProfileDone || matchingJobs.lenght > 0  || currentJobRef?.current?.skills.length > 0 && <JobSearchComponent />}
-    <SetupBanner/>
+    
     </Box>
   );
 };
