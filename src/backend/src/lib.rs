@@ -65,6 +65,7 @@ mod timer;
 mod user_history;
 mod websocket;
 mod workspaces;
+mod user_state;
 
 use calendar::*;
 
