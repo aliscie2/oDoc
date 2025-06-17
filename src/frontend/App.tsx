@@ -317,9 +317,9 @@ const App: React.FC = () => {
   return (
     <BrowserRouter>
       <MainContent>
-        <BetaWarning />
+      
         <SearchPopper />
-        <PromoNotification />
+        
         <TopNavBar />
         <DndProvider backend={HTML5Backend}>
           <NavBar>

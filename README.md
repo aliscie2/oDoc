@@ -185,3 +185,27 @@ our canisters
 backend: https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.icp0.io/?id=lrcwp-yiaaa-aaaal-acwdq-cai
 frontend: https://lwdq3-vqaaa-aaaal-acwda-cai.icp0.io/
 Local fake eth addresses : "0xEBbfA18c99FF8526A6C32e9eDF41ED48b6F10Cdd"
+
+# testing frontend 
+
+  `yarn playwright test`
+    Runs the end-to-end tests.
+
+  `yarn playwright test --ui`
+    Starts the interactive UI mode.
+
+  `yarn playwright test --project=chromium`
+    Runs the tests only on Desktop Chrome.
+
+  yarn playwright test example
+    Runs the tests in a specific file.
+
+  yarn playwright test --debug
+    Runs the tests in debug mode.
+
+  yarn playwright codegen
+    Auto generate tests with Codegen.
+
+We suggest that you begin by typing:
+
+    yarn playwright test
