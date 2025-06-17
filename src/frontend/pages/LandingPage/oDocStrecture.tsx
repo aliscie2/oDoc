@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import snsimage from '@/assets/infograph/SNS.png';
-import analyticsImage from '@/assets/infograph/analytics.png';
-import autoReleaseImage from '@/assets/infograph/autoRlease.png';
-import jobMatcherImage from '@/assets/infograph/jobMatcher.png';
-import karmaImage from '@/assets/infograph/karma.png';
-import identityImage from '@/assets/infograph/identityVerfication.png';
+
 import odocIcon from '@/assets/infograph/odocIcon.png';
+import { odocStrecutre } from './landingPageData';
 
 interface Element {
   id: number;
@@ -20,77 +16,10 @@ interface Element {
 const ODOCInfographic: React.FC = () => {
   const [hoveredElement, setHoveredElement] = useState<number | null>(null);
   const [coreActive, setCoreActive] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
 
-  const elements: Element[] = [
-    {
-      id: 1,
-      title: "AI Job Matcher",
-      description: "Match-based system finds opportunities instantly, or get alerted later.",
-      icon: <img src={jobMatcherImage} width="50px" style={{ filter: 'drop-shadow(0 0 8px rgba(0, 212, 255, 0.8))' }} />,
-      angle: 228,
-      color: "from-blue-500 to-cyan-400",
-      glowColor: "rgba(0, 212, 255, 0.8)"
-    },
-    {
-      id: 2,
-      title: "AI Auto-Release",
-      description: "Conditions met? Payment flows automatically",
-      icon: <img src={autoReleaseImage} width="60px" style={{ filter: 'drop-shadow(0 0 8px rgba(255, 149, 0, 0.8))' }} />,
-      angle: 40.5,
-      color: "from-yellow-500 to-orange-400",
-      glowColor: "rgba(255, 149, 0, 0.8)"
-    },
-    {
-      id: 3,
-      title: "AI Analytics",
-      description: "Data-driven suggestions for team and tasks",
-      icon: <img src={analyticsImage} width="50px" style={{ filter: 'drop-shadow(0 0 8px rgba(0, 255, 136, 0.8))' }} />,
-      angle: 143,
-      color: "from-green-500 to-emerald-400",
-      glowColor: "rgba(0, 255, 136, 0.8)"
-    },
-    {
-      id: 4,
-      title: "Trust/Karma Score",
-      description: "Transparent behavior builds or breaks your score",
-      icon: <img src={karmaImage} width="50px" style={{ filter: 'drop-shadow(0 0 8px rgba(184, 76, 255, 0.8))' }} />,
-      angle: 312,
-      color: "from-purple-500 to-violet-400",
-      glowColor: "rgba(184, 76, 255, 0.8)"
-    },
-    {
-      id: 5,
-      title: "SNS DAO",
-      description: "Decentralized governance layer for collaboration",
-      icon: <img src={snsimage} width="50px" style={{ filter: 'drop-shadow(0 0 8px rgba(255, 76, 139, 0.8))' }} />,
-      angle: 0,
-      color: "from-pink-500 to-rose-400",
-      glowColor: "rgba(255, 76, 139, 0.8)"
-    },
-    {
-      id: 6,
-      title: "Origyn Identity Verification",
-      description: "Authenticate users using on-chain identity tech",
-      icon: <img src={identityImage} width="50px" style={{ filter: 'drop-shadow(0 0 8px rgba(76, 154, 255, 0.8))' }} />,
-      angle: 180,
-      color: "from-indigo-500 to-blue-400",
-      glowColor: "rgba(76, 154, 255, 0.8)"
-    }
-  ];
 
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
 
-    const coreInterval = setInterval(() => setCoreActive(prev => !prev), 2000);
 
-    return () => {
-      clearInterval(coreInterval);
-      window.removeEventListener('resize', checkMobile);
-    };
-  }, []);
 
   const getElementPosition = (angle: number, radius: number) => {
     const radian = (angle * Math.PI) / 180;
@@ -102,7 +31,7 @@ const ODOCInfographic: React.FC = () => {
 
   const getAdjustedCardPosition = (angle: number, radius: number) => {
     const basePosition = getElementPosition(angle, radius);
-    const cardWidth = isMobile ? 260 : 280;
+    const cardWidth = 280;
     const cardHeight = 200;
     const padding = 20;
     
@@ -131,144 +60,6 @@ const ODOCInfographic: React.FC = () => {
       y: actualY - centerY
     };
   };
-
-  // Mobile layout
-  if (isMobile) {
-    return (
-      <div style={{
-        width: '100%',
-        minHeight: '100vh',
-        background: 'radial-gradient(circle at center, #0a0a0a 0%, #000000 50%, #0a0a23 100%)',
-        padding: '20px',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          opacity: 0.3,
-          background: 'radial-gradient(circle at 30% 70%, rgba(0, 255, 255, 0.1) 0%, transparent 50%), radial-gradient(circle at 70% 30%, rgba(255, 0, 255, 0.1) 0%, transparent 50%)',
-        }} />
-        
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '20px',
-          paddingTop: '40px'
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '120px',
-            height: '120px',
-            borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(26, 26, 26, 0.95) 0%, rgba(10, 10, 10, 0.9) 100%)',
-            border: '2px solid rgba(0, 255, 255, 0.8)',
-            boxShadow: '0 0 30px rgba(0, 255, 255, 0.8)',
-            marginBottom: '20px'
-          }}>
-            <img 
-              src={odocIcon} 
-              alt="ODOC Logo" 
-              style={{ 
-                width: '120px',
-                filter: `drop-shadow(0 0 8px rgba(0, 255, 255, 0.8)) brightness(${coreActive ? '1.2' : '1'})`,
-                transition: 'all 0.3s ease',
-                animation: 'shineGlow 2s ease-in-out infinite'
-              }} 
-            />
-          </div>
-
-          {elements.map((element, index) => (
-            <div key={element.id} style={{
-              width: '100%',
-              maxWidth: '340px',
-              marginBottom: '16px'
-            }}>
-              <div style={{
-                background: 'linear-gradient(135deg, rgba(26, 26, 26, 0.95), rgba(45, 45, 45, 0.9))',
-                borderRadius: '16px',
-                border: `2px solid ${element.glowColor}`,
-                boxShadow: `0 0 20px ${element.glowColor}`,
-                backdropFilter: 'blur(20px)',
-                padding: '20px',
-                position: 'relative',
-                overflow: 'hidden'
-              }}>
-                <div style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: '2px',
-                  background: `linear-gradient(90deg, transparent, ${element.glowColor}, transparent)`,
-                  animation: 'shimmer 2s ease-in-out infinite'
-                }} />
-                
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '16px'
-                }}>
-                  <div style={{
-                    width: '60px',
-                    height: '60px',
-                    borderRadius: '50%',
-                    background: `radial-gradient(circle, ${element.glowColor}20, transparent)`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    border: `1px solid ${element.glowColor}`
-                  }}>
-                    {element.icon}
-                  </div>
-                  
-                  <div style={{ flex: 1 }}>
-                    <h3 style={{ 
-                      color: element.glowColor,
-                      fontWeight: 'bold',
-                      margin: '0 0 8px 0',
-                      fontSize: '1.1rem',
-                      textShadow: `0 0 10px ${element.glowColor}`
-                    }}>
-                      {element.title}
-                    </h3>
-                    <p style={{ 
-                      color: 'rgba(255, 255, 255, 0.8)',
-                      fontSize: '0.9rem',
-                      lineHeight: 1.4,
-                      margin: 0
-                    }}>
-                      {element.description}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <style>{`
-          @keyframes shineGlow {
-            0%, 100% { filter: drop-shadow(0 0 8px rgba(0, 255, 255, 0.8)) brightness(1); }
-            50% { filter: drop-shadow(0 0 20px rgba(0, 255, 255, 1)) brightness(1.3); }
-          }
-          
-          @keyframes expandCard {
-          0% { transform: scale(0.8); opacity: 0.8; }
-          100% { transform: scale(1); opacity: 1; }
-        }
-        
-        @keyframes shimmer {
-            0%, 100% { transform: translateX(-100%); }
-            50% { transform: translateX(100%); }
-          }
-        `}</style>
-      </div>
-    );
-  }
 
   // Desktop layout
   return (
@@ -317,7 +108,7 @@ const ODOCInfographic: React.FC = () => {
           />
         </div>
 
-        {elements.map((element) => {
+        {odocStrecutre.map((element) => {
           const radius = window.innerWidth < 1024 ? 250 : 300;
           const position = getElementPosition(element.angle, radius);
           const adjustedPosition = getAdjustedCardPosition(element.angle, radius);

@@ -10,7 +10,6 @@ import {
   Chip,
   Fade,
   useTheme,
-  useMediaQuery,
 } from '@mui/material';
 import {
   TrendingUp,
@@ -23,11 +22,11 @@ import {
   Explore
 } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
+import { jobMatcherFeatures } from './landingPageData';
 
 
 const AIJobMatcherSection = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const sectionRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
   const [hasAnimated, setHasAnimated] = useState(false);
@@ -59,35 +58,18 @@ const AIJobMatcherSection = () => {
     };
   }, []);
 
-  const features = [
-    {
-      icon: <Psychology color="primary" />,
-      title: "AI Learning",
-      description: "Learns your preferences and career goals"
-    },
-    {
-      icon: <Speed color="primary" />,
-      title: "Instant Alerts",
-      description: "Get notified the moment perfect matches appear"
-    },
-    {
-      icon: <Stars color="primary" />,
-      title: "Quality Matches",
-      description: "Only relevant, high-quality opportunities"
-    }
-  ];
+  
 
   return (
     <Box
       ref={sectionRef}
       sx={{
         position: 'relative',
-        py: { xs: 6, md: 12 },
-        px: { xs: 2, sm: 3, md: 0 },
+        py: 12,
         background: 'inherit',
         color: 'inherit',
         overflow: 'hidden',
-        minHeight: { xs: 'auto', md: '100vh' }
+        minHeight: '100vh'
       }}
     >
       {/* Background Pattern */}
@@ -109,9 +91,9 @@ const AIJobMatcherSection = () => {
       />
       
       <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-        <Grid container spacing={{ xs: 3, md: 4 }} alignItems="center">
+        <Grid container spacing={4} alignItems="center">
           {/* Main Content */}
-          <Grid item xs={12} md={6}>
+          <Grid item xs={6}>
             <Fade in={isVisible} timeout={1000}>
               <Box
                 sx={{
@@ -126,7 +108,7 @@ const AIJobMatcherSection = () => {
                   component="h1"
                   sx={{
                     fontWeight: 700,
-                    fontSize: { xs: '2rem', sm: '2.5rem', md: '3.5rem' },
+                    fontSize: '3.5rem',
                     lineHeight: 1.2,
                     mb: 2,
                     background: 'linear-gradient(135deg, currentColor 0%, rgba(59, 130, 246, 0.8) 100%)',
@@ -146,7 +128,7 @@ const AIJobMatcherSection = () => {
                   variant="h5"
                   sx={{
                     mb: 4,
-                    fontSize: { xs: '1.2rem', md: '1.5rem' },
+                    fontSize: '1.5rem',
                     fontWeight: 400,
                     opacity: isVisible ? 0.9 : 0,
                     lineHeight: 1.4,
@@ -161,7 +143,6 @@ const AIJobMatcherSection = () => {
                 <Box 
                   sx={{ 
                     display: 'flex',
-                    flexDirection: { xs: 'column', sm: 'row' },
                     gap: 2,
                     mb: 4,
                     transform: isVisible ? 'translateY(0)' : 'translateY(40px)',
@@ -177,16 +158,15 @@ const AIJobMatcherSection = () => {
                     startIcon={<Explore />}
                     endIcon={<ArrowForward />}
                     sx={{
-                      py: { xs: 1.5, md: 2 },
-                      px: { xs: 3, md: 4 },
-                      fontSize: { xs: '1rem', md: '1.1rem' },
+                      py: 2,
+                      px: 4,
+                      fontSize: '1.1rem',
                       fontWeight: 600,
                       borderRadius: 3,
                       borderWidth: 2,
                       borderColor: 'rgba(16, 185, 129, 0.6)',
                       color: 'inherit',
                       textTransform: 'none',
-                      minWidth: { xs: '100%', sm: 'auto' },
                       background: 'rgba(16, 185, 129, 0.1)',
                       backdropFilter: 'blur(10px)',
                       '&:hover': {
@@ -207,7 +187,7 @@ const AIJobMatcherSection = () => {
                   variant="body1"
                   sx={{
                     mb: 4,
-                    fontSize: { xs: '0.95rem', md: '1.1rem' },
+                    fontSize: '1.1rem',
                     lineHeight: 1.6,
                     opacity: isVisible ? 0.8 : 0,
                     transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
@@ -221,12 +201,11 @@ const AIJobMatcherSection = () => {
 
                 {/* Features */}
                 <Grid container spacing={2} sx={{ mb: 4 }}>
-                  {features.map((feature, index) => (
-                    <Grid item xs={12} sm={4} key={index}>
+                  {jobMatcherFeatures.map((feature, index) => (
+                    <Grid item xs={4} key={index}>
                       <Box 
                         sx={{ 
                           textAlign: 'center',
-                          p: { xs: 1, md: 0 },
                           transform: isVisible ? 'scale(1) translateY(0)' : 'scale(0.8) translateY(40px)',
                           opacity: isVisible ? 1 : 0,
                           transition: `all 0.6s ease-out ${0.8 + index * 0.2}s`
@@ -242,7 +221,7 @@ const AIJobMatcherSection = () => {
                           variant="caption" 
                           sx={{ 
                             opacity: 0.7,
-                            fontSize: { xs: '0.7rem', md: '0.75rem' },
+                            fontSize: '0.75rem',
                             display: 'block',
                             lineHeight: 1.3
                           }}
@@ -258,7 +237,6 @@ const AIJobMatcherSection = () => {
                 <Box 
                   sx={{ 
                     display: 'flex', 
-                    flexDirection: { xs: 'column', sm: 'row' },
                     flexWrap: 'wrap', 
                     gap: 1, 
                     alignItems: 'center', 
@@ -276,7 +254,7 @@ const AIJobMatcherSection = () => {
                     size="small"
                     sx={{ 
                       backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                      fontSize: { xs: '0.7rem', md: '0.8125rem' }
+                      fontSize: '0.8125rem'
                     }}
                   />
                   <Chip
@@ -285,7 +263,7 @@ const AIJobMatcherSection = () => {
                     size="small"
                     sx={{ 
                       backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                      fontSize: { xs: '0.7rem', md: '0.8125rem' }
+                      fontSize: '0.8125rem'
                     }}
                   />
                   <Chip
@@ -294,7 +272,7 @@ const AIJobMatcherSection = () => {
                     size="small"
                     sx={{ 
                       backgroundColor: 'rgba(147, 51, 234, 0.1)',
-                      fontSize: { xs: '0.7rem', md: '0.8125rem' }
+                      fontSize: '0.8125rem'
                     }}
                   />
                 </Box>
@@ -303,11 +281,10 @@ const AIJobMatcherSection = () => {
           </Grid>
 
           {/* Visual Elements */}
-          <Grid item xs={12} md={6}>
+          <Grid item xs={6}>
             <Box 
               sx={{ 
-                pl: { md: 4 },
-                mt: { xs: 4, md: 0 },
+                pl: 4,
                 transform: isVisible ? 'translateX(0)' : 'translateX(100px)',
                 opacity: isVisible ? 1 : 0,
                 transition: 'all 1s ease-out 0.5s'
@@ -325,7 +302,7 @@ const AIJobMatcherSection = () => {
                   transition: 'all 0.8s ease-out 0.8s'
                 }}
               >
-                <CardContent sx={{ p: { xs: 2, md: 3 } }}>
+                <CardContent sx={{ p: 3 }}>
                   <Grid container spacing={3} textAlign="center">
                     <Grid item xs={4}>
                       <Typography 
@@ -333,7 +310,7 @@ const AIJobMatcherSection = () => {
                         sx={{ 
                           fontWeight: 700, 
                           color: 'primary.main',
-                          fontSize: { xs: '1.8rem', md: '2.125rem' },
+                          fontSize: '2.125rem',
                           transform: isVisible ? 'scale(1)' : 'scale(0)',
                           transition: 'all 0.6s ease-out 1.2s'
                         }}
@@ -342,7 +319,7 @@ const AIJobMatcherSection = () => {
                       </Typography>
                       <Typography 
                         variant="caption"
-                        sx={{ fontSize: { xs: '0.65rem', md: '0.75rem' } }}
+                        sx={{ fontSize: '0.75rem' }}
                       >
                         Match Success
                       </Typography>
@@ -353,7 +330,7 @@ const AIJobMatcherSection = () => {
                         sx={{ 
                           fontWeight: 700, 
                           color: 'success.main',
-                          fontSize: { xs: '1.8rem', md: '2.125rem' },
+                          fontSize: '2.125rem',
                           transform: isVisible ? 'scale(1)' : 'scale(0)',
                           transition: 'all 0.6s ease-out 1.4s'
                         }}
@@ -362,7 +339,7 @@ const AIJobMatcherSection = () => {
                       </Typography>
                       <Typography 
                         variant="caption"
-                        sx={{ fontSize: { xs: '0.65rem', md: '0.75rem' } }}
+                        sx={{ fontSize: '0.75rem' }}
                       >
                         Faster Hiring
                       </Typography>
@@ -373,7 +350,7 @@ const AIJobMatcherSection = () => {
                         sx={{ 
                           fontWeight: 700, 
                           color: 'warning.main',
-                          fontSize: { xs: '1.8rem', md: '2.125rem' },
+                          fontSize: '2.125rem',
                           transform: isVisible ? 'scale(1)' : 'scale(0)',
                           transition: 'all 0.6s ease-out 1.6s'
                         }}
@@ -382,7 +359,7 @@ const AIJobMatcherSection = () => {
                       </Typography>
                       <Typography 
                         variant="caption"
-                        sx={{ fontSize: { xs: '0.65rem', md: '0.75rem' } }}
+                        sx={{ fontSize: '0.75rem' }}
                       >
                         Setup Time
                       </Typography>
@@ -407,18 +384,18 @@ const AIJobMatcherSection = () => {
                     transition: 'all 0.8s ease-out 1.2s'
                   }}
                 >
-                  <CardContent sx={{ p: { xs: 2, md: 3 } }}>
+                  <CardContent sx={{ p: 3 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                       <Psychology sx={{ 
                         mr: 2, 
                         color: 'primary.main', 
-                        fontSize: { xs: 28, md: 32 }
+                        fontSize: 32
                       }} />
                       <Typography 
                         variant="h6" 
                         sx={{ 
                           fontWeight: 600,
-                          fontSize: { xs: '1rem', md: '1.25rem' }
+                          fontSize: '1.25rem'
                         }}
                       >
                         Smart AI Matching
@@ -429,7 +406,7 @@ const AIJobMatcherSection = () => {
                       sx={{ 
                         opacity: 0.9, 
                         lineHeight: 1.6,
-                        fontSize: { xs: '0.8rem', md: '0.875rem' }
+                        fontSize: '0.875rem'
                       }}
                     >
                       Our advanced AI analyzes your skills, preferences, and career goals to find opportunities that truly match your aspirations.
@@ -451,18 +428,18 @@ const AIJobMatcherSection = () => {
                     transition: 'all 0.8s ease-out 1.4s'
                   }}
                 >
-                  <CardContent sx={{ p: { xs: 2, md: 3 } }}>
+                  <CardContent sx={{ p: 3 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                       <Notifications sx={{ 
                         mr: 2, 
                         color: 'success.main', 
-                        fontSize: { xs: 28, md: 32 }
+                        fontSize: 32
                       }} />
                       <Typography 
                         variant="h6" 
                         sx={{ 
                           fontWeight: 600,
-                          fontSize: { xs: '1rem', md: '1.25rem' }
+                          fontSize: '1.25rem'
                         }}
                       >
                         Instant Notifications
@@ -473,7 +450,7 @@ const AIJobMatcherSection = () => {
                       sx={{ 
                         opacity: 0.9, 
                         lineHeight: 1.6,
-                        fontSize: { xs: '0.8rem', md: '0.875rem' }
+                        fontSize: '0.875rem'
                       }}
                     >
                       Never miss a perfect opportunity. Get real-time alerts delivered straight to your inbox when ideal matches become available.

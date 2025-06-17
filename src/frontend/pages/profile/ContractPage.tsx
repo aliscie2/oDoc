@@ -15,10 +15,13 @@ function ContractPage() {
   }
   const dispatch = useDispatch();
   const onContractChange = (contract: CustomContract) => {
-    dispatch({
-      type: "UPDATE_CONTRACT",
-      contract,
-    });
+    if (contract.CustomContract) {
+      if (contract.CustomContract.promises.some(p => p.id === promise.id)) {
+        dispatch(handleRedux("UPDATE_PROMISE", { promise: contract }));
+      } else {
+        dispatch(handleRedux("ADD_PROMISE", { promise: contract }));
+      }
+    }
   };
   return (
     <CustomContractComponent

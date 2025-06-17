@@ -32,7 +32,7 @@ function Pages() {
   const { profile, profile_history, wallet, friends } = useSelector(
     (state: any) => state.filesState,
   );
-  const { login } = useBackendContext();
+  
   const { isLoggedIn } = useSelector(
     (state: any) => state.uiState,
   );
@@ -44,7 +44,7 @@ function Pages() {
       return <Discover />;
     }
 
-    return <LandingPage isLoggedIn={isLoggedIn} login={login} />;
+    return <LandingPage />;
   };
   return (
     <Routes>
@@ -53,7 +53,7 @@ function Pages() {
       <Route path="/dashboard" element={<Dashboard />} />
       <Route
         path="/about"
-        element={<LandingPage isLoggedIn={isLoggedIn} login={login} />}
+        element={<LandingPage />}
       />
       <Route path="/discover" element={<Discover />} />
       <Route path="/wallet" element={<Web3WalletUI wallet={wallet} />} />
@@ -75,7 +75,7 @@ function Pages() {
       <Route path="/contracts/*" element={<ContractsHistory />} />
       <Route
         path="/offer"
-        element={<OfferPage isLoggedIn={isLoggedIn} login={login} />}
+        element={<OfferPage />}
       />
 
       <Route path="/subscriptions" element={<SubscriptionPlans />} />

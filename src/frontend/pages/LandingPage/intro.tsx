@@ -7,8 +7,6 @@ import {
   CardContent,
   Chip,
   Fade,
-  useTheme,
-  useMediaQuery,
   Container,
 } from "@mui/material";
 import {
@@ -26,15 +24,12 @@ import { useSelector } from "react-redux";
 import Link from "@mui/material/Link";
 import logo from "../../public/logo.png";
 import GetStartedButton from "./getStartedButton";
+import { introFeatures, trustIndicators } from './landingPageData';
 
 const MotionBox = motion(Box);
 const MotionTypography = motion(Typography);
 
 export default function Intro() {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
-  const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
   const sectionRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
   
@@ -44,13 +39,10 @@ export default function Intro() {
   const { isNavOpen, isDarkMode, isFetching, isLoggedIn, searchTool } =
     useSelector((state: RootState) => state.uiState);
 
-  // Create a ref for the container element
   const ref = React.useRef(null);
-  
-  // Check if the element is in view
   const isInView = useInView(ref, {
     once: false,
-    amount: isMobile ? 0.1 : 0.2,
+    amount: 0.2,
   });
 
   useEffect(() => {
@@ -63,8 +55,8 @@ export default function Intro() {
         }
       },
       {
-        threshold: isMobile ? 0.1 : 0.2,
-        rootMargin: isMobile ? '-30px 0px -30px 0px' : '-50px 0px -50px 0px'
+        threshold: 0.2,
+        rootMargin: '-50px 0px -50px 0px'
       }
     );
 
@@ -77,16 +69,15 @@ export default function Intro() {
         observer.unobserve(sectionRef.current);
       }
     };
-  }, [isMobile]);
+  }, []);
 
-  // Progressive animation variants based on screen size
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        duration: isMobile ? 0.4 : 0.6,
-        staggerChildren: isMobile ? 0.1 : 0.2,
+        duration: 0.6,
+        staggerChildren: 0.2,
       },
     },
   };
@@ -94,61 +85,21 @@ export default function Intro() {
   const itemVariants = {
     hidden: { 
       opacity: 0, 
-      y: isMobile ? 10 : 20,
-      x: isMobile ? 0 : -20
+      y: 20,
+      x: -20
     },
     visible: {
       opacity: 1,
       y: 0,
       x: 0,
       transition: {
-        duration: isMobile ? 0.4 : 0.6,
+        duration: 0.6,
         ease: "easeOut",
       },
     },
   };
 
-  const features = [
-    {
-      icon: <Speed sx={{ color: '#3b82f6', fontSize: isMobile ? 28 : 32 }} />,
-      title: "Save Time",
-      description: "Streamline contracts, tasks, and payments in one platform"
-    },
-    {
-      icon: <AccountBalance sx={{ color: '#10b981', fontSize: isMobile ? 28 : 32 }} />,
-      title: "No Middlemen", 
-      description: "Direct crypto payments, zero commissions"
-    },
-    {
-      icon: <Security sx={{ color: '#8b5cf6', fontSize: isMobile ? 28 : 32 }} />,
-      title: "Blockchain Security",
-      description: "Enterprise-level protection with encryption"
-    }
-  ];
-
-  const trustIndicators = [
-    {
-      icon: <TrendingUp sx={{ fontSize: isMobile ? 16 : 18 }} />,
-      label: "Crypto-Native",
-      color: "rgba(16, 185, 129, 0.1)"
-    },
-    {
-      icon: <Code sx={{ fontSize: isMobile ? 16 : 18 }} />,
-      label: "Open Source",
-      color: "rgba(59, 130, 246, 0.1)",
-      link: "https://github.com/aliscie2/oDoc"
-    },
-    {
-      icon: <Hub sx={{ fontSize: isMobile ? 16 : 18 }} />,
-      label: "Decentralized",
-      color: "rgba(147, 51, 234, 0.1)"
-    },
-    {
-      icon: <Public sx={{ fontSize: isMobile ? 16 : 18 }} />,
-      label: "Global",
-      color: "rgba(239, 68, 68, 0.1)"
-    }
-  ];
+  
 
   return (
     <Box
@@ -156,25 +107,15 @@ export default function Intro() {
       sx={{
         position: "relative",
         width: "100%",
-        minHeight: { 
-          xs: '100vh', 
-          sm: '95vh', 
-          md: '90vh',
-          lg: '100vh' 
-        },
-        maxHeight: { 
-          xs: 'none', 
-          md: '100vh' 
-        },
+        minHeight: '100vh',
         overflow: "hidden",
         display: 'flex',
         alignItems: 'center',
         background: 'inherit',
         color: 'inherit',
-        py: { xs: 2, sm: 3, md: 0 }
       }}
     >
-      {/* Progressive Background Pattern */}
+      {/* Background Pattern */}
       <Box
         sx={{
           position: 'absolute',
@@ -182,9 +123,7 @@ export default function Intro() {
           left: 0,
           right: 0,
           bottom: 0,
-          background: isMobile ? `
-            radial-gradient(circle at 50% 20%, rgba(59, 130, 246, 0.05) 0%, transparent 50%)
-          ` : `
+          background: `
             radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
             radial-gradient(circle at 80% 70%, rgba(16, 185, 129, 0.08) 0%, transparent 50%)
           `,
@@ -199,8 +138,8 @@ export default function Intro() {
         sx={{ 
           position: 'relative', 
           zIndex: 1, 
-          py: { xs: 2, sm: 3, md: 4, lg: 6 },
-          px: { xs: 2, sm: 3 }
+          py: 6,
+          px: 3
         }}
       >
         <MotionBox
@@ -211,22 +150,21 @@ export default function Intro() {
         >
           <Grid 
             container 
-            spacing={{ xs: 3, sm: 4, md: 4 }} 
+            spacing={4} 
             alignItems="center" 
             sx={{ 
-              minHeight: { xs: 'auto', md: '80vh' },
-              flexDirection: { xs: 'column', md: 'row' }
+              minHeight: '80vh'
             }}
           >
             {/* Main Content */}
-            <Grid item xs={12} md={6} sx={{ order: { xs: 1, md: 1 } }}>
-              <Fade in={isVisible} timeout={isMobile ? 800 : 1000}>
+            <Grid item xs={6}>
+              <Fade in={isVisible} timeout={1000}>
                 <Box
                   sx={{
-                    transform: isVisible ? 'translateY(0)' : `translateY(${isMobile ? '30px' : '50px'})`,
+                    transform: isVisible ? 'translateY(0)' : 'translateY(50px)',
                     opacity: isVisible ? 1 : 0,
                     transition: 'all 0.8s ease-out',
-                    textAlign: { xs: 'center', md: 'left' }
+                    textAlign: 'left'
                   }}
                 >
                   {/* Logo and Brand */}
@@ -235,8 +173,8 @@ export default function Intro() {
                     sx={{
                       display: "flex",
                       alignItems: "center",
-                      justifyContent: { xs: 'center', md: 'flex-start' },
-                      mb: { xs: 2, md: 3 },
+                      justifyContent: 'flex-start',
+                      mb: 3,
                     }}
                   >
                     <motion.img
@@ -251,8 +189,8 @@ export default function Intro() {
                         }
                       }}
                       style={{
-                        width: isMobile ? "50px" : "60px",
-                        height: isMobile ? "50px" : "60px",
+                        width: "60px",
+                        height: "60px",
                         borderRadius: "12px",
                         marginRight: "1rem",
                       }}
@@ -261,12 +199,7 @@ export default function Intro() {
                       variant="h1"
                       variants={itemVariants}
                       sx={{
-                        fontSize: { 
-                          xs: "2rem", 
-                          sm: "2.5rem", 
-                          md: "3rem",
-                          lg: "3.5rem" 
-                        },
+                        fontSize: "3.5rem",
                         fontWeight: 700,
                         background: "linear-gradient(135deg, #3b82f6 0%, #10b981 100%)",
                         WebkitBackgroundClip: "text",
@@ -284,27 +217,17 @@ export default function Intro() {
                     component="h1"
                     sx={{
                       fontWeight: 700,
-                      fontSize: { 
-                        xs: '1.5rem', 
-                        sm: '1.8rem',
-                        md: '2.2rem',
-                        lg: '2.5rem' 
-                      },
+                      fontSize: '2.5rem',
                       lineHeight: 1.2,
-                      mb: { xs: 1.5, md: 2 },
+                      mb: 2,
                       color: isDarkMode ? '#ffffff' : '#1a1a1a',
-                      transform: isVisible ? 'translateX(0)' : `translateX(${isMobile ? '0' : '-100px'})`,
+                      transform: isVisible ? 'translateX(0)' : 'translateX(-100px)',
                       opacity: isVisible ? 1 : 0,
                       transition: 'all 1s ease-out 0.2s'
                     }}
                   >
                     <Box component="span" sx={{ 
-                      fontSize: { 
-                        xs: '1.2rem', 
-                        sm: '1.4rem',
-                        md: '1.6rem',
-                        lg: '1.8rem' 
-                      },
+                      fontSize: '1.8rem',
                       display: 'block',
                       mb: 0.5
                     }}>
@@ -313,12 +236,7 @@ export default function Intro() {
                     <Box component="span" sx={{ 
                       color: '#3b82f6',
                       display: 'block',
-                      fontSize: { 
-                        xs: '1.4rem', 
-                        sm: '1.6rem',
-                        md: '1.8rem',
-                        lg: '2.2rem' 
-                      }
+                      fontSize: '2.2rem'
                     }}>
                       Limitless Collaboration
                     </Box>
@@ -328,44 +246,28 @@ export default function Intro() {
                   <Typography
                     variant="h6"
                     sx={{
-                      mb: { xs: 2, md: 3 },
+                      mb: 3,
                       fontWeight: 500,
                       color: '#10b981',
                       opacity: isVisible ? 0.9 : 0,
-                      fontSize: { 
-                        xs: '0.9rem', 
-                        sm: '1rem',
-                        md: '1.1rem' 
-                      },
-                      transform: isVisible ? 'translateX(0)' : `translateX(${isMobile ? '0' : '-80px'})`,
+                      fontSize: '1.1rem',
+                      transform: isVisible ? 'translateX(0)' : 'translateX(-80px)',
                       transition: 'all 1s ease-out 0.4s'
                     }}
                   >
-                    {isMobile ? (
-                      <>
-                        Freelancers • Crypto Enthusiasts
-                        <br />
-                        Global Teams
-                      </>
-                    ) : (
-                      'Built for Freelancers • Crypto Enthusiasts • Global Teams'
-                    )}
+                    Built for Freelancers • Crypto Enthusiasts • Global Teams
                   </Typography>
                   
                   {/* Value Proposition */}
                   <Typography
                     variant="body1"
                     sx={{
-                      mb: { xs: 2, md: 3 },
-                      fontSize: { 
-                        xs: '0.9rem', 
-                        sm: '1rem',
-                        md: '1.1rem' 
-                      },
+                      mb: 3,
+                      fontSize: '1.1rem',
                       lineHeight: 1.6,
                       color: isDarkMode ? '#e5e7eb' : '#4b5563',
                       opacity: isVisible ? 0.9 : 0,
-                      transform: isVisible ? 'translateY(0)' : `translateY(${isMobile ? '20px' : '30px'})`,
+                      transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
                       transition: 'all 1s ease-out 0.6s'
                     }}
                   >
@@ -387,35 +289,34 @@ export default function Intro() {
                     </Link>
                   </Typography>
 
-                  {/* Features Grid - Progressive Layout */}
-                  <Grid container spacing={{ xs: 1.5, sm: 2 }} sx={{ mb: { xs: 3, md: 4 } }}>
-                    {features.map((feature, index) => (
-                      <Grid item xs={12} sm={4} key={index}>
+                  {/* Features Grid */}
+                  <Grid container spacing={2} sx={{ mb: 4 }}>
+                    {introFeatures.map((feature, index) => (
+                      <Grid item xs={4} key={index}>
                         <Box 
                           sx={{ 
                             textAlign: 'center',
-                            p: { xs: 1, sm: 1.5 },
-                            transform: isVisible ? 'scale(1) translateY(0)' : `scale(0.9) translateY(${isMobile ? '20px' : '40px'})`,
+                            p: 1.5,
+                            transform: isVisible ? 'scale(1) translateY(0)' : 'scale(0.9) translateY(40px)',
                             opacity: isVisible ? 1 : 0,
                             transition: `all 0.6s ease-out ${0.8 + index * 0.2}s`
                           }}
                         >
-                          <Box sx={{ mb: { xs: 0.5, sm: 1 } }}>
+                          <Box sx={{ mb: 1 }}>
                             {feature.icon}
                           </Box>
                           <Typography variant="subtitle2" sx={{ 
                             fontWeight: 600, 
                             mb: 0.5,
                             color: isDarkMode ? '#ffffff' : '#1a1a1a',
-                            fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                            fontSize: '0.875rem'
                           }}>
                             {feature.title}
                           </Typography>
                           <Typography variant="caption" sx={{ 
                             opacity: 0.7,
                             color: isDarkMode ? '#d1d5db' : '#6b7280',
-                            fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                            display: { xs: 'none', sm: 'block' }
+                            fontSize: '0.75rem'
                           }}>
                             {feature.description}
                           </Typography>
@@ -424,15 +325,15 @@ export default function Intro() {
                     ))}
                   </Grid>
 
-                  {/* Trust Indicators - Progressive Design */}
+                  {/* Trust Indicators */}
                   <Box 
                     sx={{ 
                       display: 'flex', 
                       flexWrap: 'wrap',
-                      gap: { xs: 0.5, sm: 1 }, 
+                      gap: 1, 
                       alignItems: 'center', 
-                      justifyContent: { xs: 'center', md: 'flex-start' },
-                      mb: { xs: 3, md: 3 },
+                      justifyContent: 'flex-start',
+                      mb: 3,
                       '& > *': {
                         transform: isVisible ? 'scale(1)' : 'scale(0)',
                         opacity: isVisible ? 1 : 0,
@@ -446,19 +347,19 @@ export default function Intro() {
                           key={index}
                           icon={indicator.icon}
                           label={indicator.label}
-                          size={isMobile ? "small" : "medium"}
+                          size="medium"
                           sx={{ 
                             backgroundColor: indicator.color,
                             color: isDarkMode ? '#ffffff' : '#1a1a1a',
                             border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
                             cursor: indicator.link ? 'pointer' : 'default',
-                            fontSize: { xs: '0.7rem', sm: '0.8rem' },
-                            height: { xs: 28, sm: 32 },
+                            fontSize: '0.8rem',
+                            height: 32,
                             '& .MuiChip-icon': {
                               color: 'inherit'
                             },
                             '& .MuiChip-label': {
-                              px: { xs: 1, sm: 1.5 }
+                              px: 1.5
                             },
                             '&:hover': indicator.link ? {
                               backgroundColor: indicator.color.replace('0.1', '0.2'),
@@ -489,43 +390,42 @@ export default function Intro() {
               </Fade>
             </Grid>
 
-            {/* Feature Highlight Cards - Progressive Layout */}
-            <Grid item xs={12} md={6} sx={{ order: { xs: 2, md: 2 } }}>
+            {/* Feature Highlight Cards */}
+            <Grid item xs={6}>
               <Box 
                 sx={{ 
-                  pl: { md: 4 },
-                  transform: isVisible ? 'translateX(0)' : `translateX(${isMobile ? '0' : '100px'})`,
+                  pl: 4,
+                  transform: isVisible ? 'translateX(0)' : 'translateX(100px)',
                   opacity: isVisible ? 1 : 0,
-                  transition: 'all 1s ease-out 0.5s',
-                  mt: { xs: 2, md: 0 }
+                  transition: 'all 1s ease-out 0.5s'
                 }}
               >
-                {/* Success Stats - Progressive Design */}
+                {/* Success Stats */}
                 <Card
                   sx={{
-                    mb: { xs: 2, md: 3 },
+                    mb: 3,
                     background: isDarkMode 
                       ? 'rgba(255,255,255,0.05)' 
                       : 'rgba(0,0,0,0.02)',
                     backdropFilter: 'blur(10px)',
                     border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-                    borderRadius: { xs: 2, md: 3 },
-                    transform: isVisible ? 'rotateY(0deg)' : `rotateY(${isMobile ? '0deg' : '-15deg'})`,
+                    borderRadius: 3,
+                    transform: isVisible ? 'rotateY(0deg)' : 'rotateY(-15deg)',
                     transformOrigin: 'left center',
                     transition: 'all 0.8s ease-out 0.8s'
                   }}
                 >
-                  <CardContent sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
-                    <Grid container spacing={{ xs: 2, md: 3 }} textAlign="center">
+                  <CardContent sx={{ p: 3 }}>
+                    <Grid container spacing={3} textAlign="center">
                       <Grid item xs={4}>
                         <Typography 
-                          variant={isMobile ? "h5" : "h4"}
+                          variant="h4"
                           sx={{ 
                             fontWeight: 700, 
                             color: '#3b82f6',
                             transform: isVisible ? 'scale(1)' : 'scale(0)',
                             transition: 'all 0.6s ease-out 1.2s',
-                            fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' }
+                            fontSize: '2.125rem'
                           }}
                         >
                           0%
@@ -534,7 +434,7 @@ export default function Intro() {
                           variant="caption" 
                           sx={{ 
                             color: isDarkMode ? '#d1d5db' : '#6b7280',
-                            fontSize: { xs: '0.7rem', sm: '0.75rem' }
+                            fontSize: '0.75rem'
                           }}
                         >
                           Commission Fees
@@ -542,13 +442,13 @@ export default function Intro() {
                       </Grid>
                       <Grid item xs={4}>
                         <Typography 
-                          variant={isMobile ? "h5" : "h4"}
+                          variant="h4"
                           sx={{ 
                             fontWeight: 700, 
                             color: '#10b981',
                             transform: isVisible ? 'scale(1)' : 'scale(0)',
                             transition: 'all 0.6s ease-out 1.4s',
-                            fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' }
+                            fontSize: '2.125rem'
                           }}
                         >
                           24/7
@@ -557,7 +457,7 @@ export default function Intro() {
                           variant="caption" 
                           sx={{ 
                             color: isDarkMode ? '#d1d5db' : '#6b7280',
-                            fontSize: { xs: '0.7rem', sm: '0.75rem' }
+                            fontSize: '0.75rem'
                           }}
                         >
                           Global Access
@@ -565,13 +465,13 @@ export default function Intro() {
                       </Grid>
                       <Grid item xs={4}>
                         <Typography 
-                          variant={isMobile ? "h5" : "h4"}
+                          variant="h4"
                           sx={{ 
                             fontWeight: 700, 
                             color: '#f59e0b',
                             transform: isVisible ? 'scale(1)' : 'scale(0)',
                             transition: 'all 0.6s ease-out 1.6s',
-                            fontSize: { xs: '1.5rem', sm: '2rem', md: '2.125rem' }
+                            fontSize: '2.125rem'
                           }}
                         >
                           100%
@@ -592,7 +492,7 @@ export default function Intro() {
                             variant="caption" 
                             sx={{ 
                               color: isDarkMode ? '#d1d5db' : '#6b7280',
-                              fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                              fontSize: '0.75rem',
                               cursor: 'pointer'
                             }}
                           >
@@ -604,8 +504,8 @@ export default function Intro() {
                   </CardContent>
                 </Card>
 
-                {/* Feature Highlight Cards - Progressive Layout */}
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 1.5, md: 2 } }}>
+                {/* Feature Highlight Cards */}
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   <Card
                     sx={{
                       background: isDarkMode 
@@ -613,29 +513,29 @@ export default function Intro() {
                         : 'rgba(0,0,0,0.02)',
                       backdropFilter: 'blur(10px)',
                       border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
-                      borderRadius: { xs: 2, md: 3 },
+                      borderRadius: 3,
                       '&:hover': {
-                        transform: `translateY(${isMobile ? '-2px' : '-4px'})`,
+                        transform: 'translateY(-4px)',
                         boxShadow: isDarkMode 
                           ? '0 8px 25px rgba(0,0,0,0.3)' 
                           : '0 8px 25px rgba(0,0,0,0.1)'
                       },
-                      transform: isVisible ? 'translateY(0) rotateX(0deg)' : `translateY(${isMobile ? '30px' : '50px'}) rotateX(${isMobile ? '0deg' : '-10deg'})`,
+                      transform: isVisible ? 'translateY(0) rotateX(0deg)' : 'translateY(50px) rotateX(-10deg)',
                       opacity: isVisible ? 1 : 0,
                       transition: 'all 0.8s ease-out 1.2s'
                     }}
                   >
-                    <CardContent sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 1.5, md: 2 } }}>
+                    <CardContent sx={{ p: 3 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                         <Psychology sx={{ 
-                          mr: { xs: 1.5, md: 2 }, 
+                          mr: 2, 
                           color: '#3b82f6', 
-                          fontSize: { xs: 24, sm: 28, md: 32 }
+                          fontSize: 32
                         }} />
                         <Typography variant="h6" sx={{ 
                           fontWeight: 600,
                           color: isDarkMode ? '#ffffff' : '#1a1a1a',
-                          fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' }
+                          fontSize: '1.25rem'
                         }}>
                           AI-Powered Matching
                         </Typography>
@@ -644,7 +544,7 @@ export default function Intro() {
                         opacity: 0.8, 
                         lineHeight: 1.6,
                         color: isDarkMode ? '#d1d5db' : '#4b5563',
-                        fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                        fontSize: '0.875rem'
                       }}>
                         Smart contract templates and automated matching between freelancers and clients based on skills, budget, and project requirements.
                       </Typography>
@@ -658,29 +558,29 @@ export default function Intro() {
                         : 'rgba(0,0,0,0.02)',
                       backdropFilter: 'blur(10px)',
                       border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
-                      borderRadius: { xs: 2, md: 3 },
+                      borderRadius: 3,
                       '&:hover': {
-                        transform: `translateY(${isMobile ? '-2px' : '-4px'})`,
+                        transform: 'translateY(-4px)',
                         boxShadow: isDarkMode 
                           ? '0 8px 25px rgba(0,0,0,0.3)' 
                           : '0 8px 25px rgba(0,0,0,0.1)'
                       },
-                      transform: isVisible ? 'translateY(0) rotateX(0deg)' : `translateY(${isMobile ? '40px' : '70px'}) rotateX(${isMobile ? '0deg' : '-15deg'})`,
+                      transform: isVisible ? 'translateY(0) rotateX(0deg)' : 'translateY(70px) rotateX(-15deg)',
                       opacity: isVisible ? 1 : 0,
                       transition: 'all 0.8s ease-out 1.4s'
                     }}
                   >
-                    <CardContent sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 1.5, md: 2 } }}>
+                    <CardContent sx={{ p: 3 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                         <Security sx={{ 
-                          mr: { xs: 1.5, md: 2 }, 
+                          mr: 2, 
                           color: '#10b981', 
-                          fontSize: { xs: 24, sm: 28, md: 32 }
+                          fontSize: 32
                         }} />
                         <Typography variant="h6" sx={{ 
                           fontWeight: 600,
                           color: isDarkMode ? '#ffffff' : '#1a1a1a',
-                          fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' }
+                          fontSize: '1.25rem'
                         }}>
                           Secure Crypto Escrow
                         </Typography>
@@ -689,7 +589,7 @@ export default function Intro() {
                         opacity: 0.8, 
                         lineHeight: 1.6,
                         color: isDarkMode ? '#d1d5db' : '#4b5563',
-                        fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                        fontSize: '0.875rem'
                       }}>
                         Automated escrow system with milestone-based payments in cryptocurrency. Guarantee your payment before start working. No banks, no borders, no restrictions.
                       </Typography>

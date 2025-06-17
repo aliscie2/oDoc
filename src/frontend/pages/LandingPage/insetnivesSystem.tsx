@@ -28,32 +28,10 @@ import {
   Payment,
   Gavel
 } from '@mui/icons-material';
+import { badBehaviors, goodBehaviors, punishments, rewards } from './landingPageData';
 
 const TrustBehaviorSystem = () => {
-  const badBehaviors = [
-    { icon: <Refresh fontSize="small" />, text: 'Repeated cancellations' },
-    { icon: <Gavel fontSize="small" />, text: 'Excessive disputes' },
-    { icon: <Close fontSize="small" />, text: 'Breaking contract terms' }
-  ];
-
-  const goodBehaviors = [
-    { icon: <Payment fontSize="small" />, text: 'Releasing payments' },
-    { icon: <Assignment fontSize="small" />, text: 'Creating contracts' },
-    { icon: <Group fontSize="small" />, text: 'Interacting with many users' },
-    { icon: <TrendingUp fontSize="small" />, text: 'High transaction volume' }
-  ];
-
-  const punishments = [
-    { icon: <TrendingDown fontSize="small" />, text: 'Trust score drops' },
-    { icon: <AccountBalance fontSize="small" />, text: 'Funds staked' },
-    { icon: <Lock fontSize="small" />, text: 'Transaction cap' }
-  ];
-
-  const rewards = [
-    { icon: <TrendingUp fontSize="small" />, text: 'Higher trust score' },
-    { icon: <LockOpen fontSize="small" />, text: 'Transaction freedom' },
-    { icon: <SwapHoriz fontSize="small" />, text: 'Refund old escrow' }
-  ];
+  
 
   const SectionCard = ({ title, items, color, icon }) => (
     <Card sx={{ height: '100%', mb: 2 }}>

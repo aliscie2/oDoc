@@ -1,19 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Box, Container, Grid, Typography, Paper, useTheme, styled } from '@mui/material';
-import { Lock, Security, Architecture, VerifiedUser, GppGood, Shield, MonitorHeart } from '@mui/icons-material';
+import { Lock } from '@mui/icons-material';
+import { securityFeatures } from './landingPageData';
 
 const SecuritySection = () => {
   const theme = useTheme();
 
-  const securityFeatures = [
-    { icon: <Security />, title: 'Tamper-proof Records', description: 'Immutable blockchain records maintain audit integrity' },
-    { icon: <Architecture />, title: 'Decentralized Architecture', description: 'Distributed network eliminates single points of failure' },
-    { icon: <VerifiedUser />, title: 'Verified Access', description: 'Biometric authentication and digital identity verification' },
-    { icon: <GppGood />, title: 'Fraud Prevention', description: 'Smart contracts with cryptographic transaction validation' },
-    { icon: <Shield />, title: 'Secure Comms', description: 'End-to-end encrypted messaging protocols' },
-    { icon: <MonitorHeart />, title: 'Real-time Monitoring', description: 'AI-powered anomaly detection system' },
-  ];
 
   return (
     <Box sx={{ py: { xs: 6, md: 10 }, position: 'relative', overflow: 'hidden', bgcolor: 'transparent' }}>

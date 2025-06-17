@@ -15,10 +15,8 @@ import {
   Container,
   useTheme,
   alpha,
-  Paper,
   Avatar,
   Zoom,
-  useMediaQuery,
   Stack,
 } from '@mui/material';
 import {
@@ -34,12 +32,7 @@ import {
   Search,
   Handshake,
 } from '@mui/icons-material';
-
-interface StepData {
-  label: string;
-  description: string;
-  icon: React.ReactElement;
-}
+import { businessSteps, freelancerSteps, StepData } from './landingPageData';
 
 interface UserTypeCardProps {
   type: 'freelancer' | 'business';
@@ -48,7 +41,6 @@ interface UserTypeCardProps {
   steps: StepData[];
   isHovered: boolean;
   onHover: (type: 'freelancer' | 'business' | null) => void;
-  isMobile: boolean;
 }
 
 const UserTypeCard: React.FC<UserTypeCardProps> = ({
@@ -58,31 +50,28 @@ const UserTypeCard: React.FC<UserTypeCardProps> = ({
   steps,
   isHovered,
   onHover,
-  isMobile,
 }) => {
   const theme = useTheme();
   const [activeStep, setActiveStep] = useState(0);
 
   useEffect(() => {
-    if (isHovered && !isMobile) {
+    if (isHovered) {
       const timer = setInterval(() => {
         setActiveStep((prev) => (prev + 1) % steps.length);
       }, 2000);
       return () => clearInterval(timer);
     }
-  }, [isHovered, steps.length, isMobile]);
+  }, [isHovered, steps.length]);
 
   const cardColor = type === 'freelancer' ? theme.palette.primary : theme.palette.secondary;
 
   return (
     <Card
       elevation={isHovered ? 12 : 4}
-      onMouseEnter={() => !isMobile && onHover(type)}
-      onMouseLeave={() => !isMobile && onHover(null)}
-      onClick={() => isMobile && onHover(isHovered ? null : type)}
+      onMouseEnter={() => onHover(type)}
+      onMouseLeave={() => onHover(null)}
       sx={{
-        height: isMobile ? 'auto' : (isHovered ? 600 : 400),
-        minHeight: isMobile ? 300 : 'auto',
+        height: isHovered ? 600 : 400,
         transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
         cursor: 'pointer',
         background: isHovered
@@ -92,7 +81,6 @@ const UserTypeCard: React.FC<UserTypeCardProps> = ({
         borderColor: isHovered ? cardColor.main : alpha(theme.palette.divider, 0.2),
         position: 'relative',
         overflow: 'hidden',
-        mb: isMobile ? 2 : 0,
         '&::before': {
           content: '""',
           position: 'absolute',
@@ -109,7 +97,7 @@ const UserTypeCard: React.FC<UserTypeCardProps> = ({
     >
       <CardContent 
         sx={{ 
-          p: isMobile ? 2 : 3, 
+          p: 3, 
           height: '100%', 
           display: 'flex', 
           flexDirection: 'column' 
@@ -120,8 +108,8 @@ const UserTypeCard: React.FC<UserTypeCardProps> = ({
             sx={{
               bgcolor: cardColor.main,
               mr: 2,
-              width: isMobile ? 48 : 56,
-              height: isMobile ? 48 : 56,
+              width: 56,
+              height: 56,
               transition: 'all 0.3s ease',
               transform: isHovered ? 'scale(1.1)' : 'scale(1)',
             }}
@@ -129,7 +117,7 @@ const UserTypeCard: React.FC<UserTypeCardProps> = ({
             {type === 'freelancer' ? <Work /> : <Business />}
           </Avatar>
           <Typography 
-            variant={isMobile ? "h6" : "h5"} 
+            variant="h5" 
             fontWeight="bold" 
             color={cardColor.main}
             sx={{ lineHeight: 1.2 }}
@@ -138,7 +126,7 @@ const UserTypeCard: React.FC<UserTypeCardProps> = ({
           </Typography>
         </Box>
 
-        <Stack spacing={isMobile ? 1 : 1.5} sx={{ mb: 3 }}>
+        <Stack spacing={1.5} sx={{ mb: 3 }}>
           {features.map((feature, index) => (
             <Zoom
               key={feature}
@@ -155,7 +143,7 @@ const UserTypeCard: React.FC<UserTypeCardProps> = ({
                   }
                   label={feature}
                   variant="outlined"
-                  size={isMobile ? "small" : "medium"}
+                  size="medium"
                   sx={{
                     color: cardColor.main,
                     borderColor: cardColor.main,
@@ -168,7 +156,7 @@ const UserTypeCard: React.FC<UserTypeCardProps> = ({
                     },
                     '& .MuiChip-icon': { 
                       color: cardColor.main,
-                      fontSize: isMobile ? 16 : 20,
+                      fontSize: 20,
                     },
                     width: '100%',
                     justifyContent: 'flex-start',
@@ -184,7 +172,7 @@ const UserTypeCard: React.FC<UserTypeCardProps> = ({
             {isHovered && (
               <Box>
                 <Typography 
-                  variant={isMobile ? "subtitle1" : "h6"} 
+                  variant="h6" 
                   gutterBottom 
                   color={cardColor.main} 
                   fontWeight="bold"
@@ -208,26 +196,26 @@ const UserTypeCard: React.FC<UserTypeCardProps> = ({
                           <Avatar
                             sx={{
                               bgcolor: index <= activeStep ? cardColor.main : alpha(theme.palette.grey[400], 0.5),
-                              width: isMobile ? 28 : 32,
-                              height: isMobile ? 28 : 32,
+                              width: 32,
+                              height: 32,
                               transition: 'all 0.3s ease',
                             }}
                           >
-                            {React.cloneElement(step.icon, { sx: { fontSize: isMobile ? 14 : 16 } })}
+                            {React.cloneElement(step.icon, { sx: { fontSize: 16 } })}
                           </Avatar>
                         )}
                       >
                         <Typography 
                           fontWeight="medium" 
                           color={cardColor.main}
-                          variant={isMobile ? "body2" : "body1"}
+                          variant="body1"
                         >
                           {step.label}
                         </Typography>
                       </StepLabel>
                       <StepContent>
                         <Typography 
-                          variant={isMobile ? "caption" : "body2"} 
+                          variant="body2" 
                           color={theme.palette.text.secondary}
                           sx={{ lineHeight: 1.4 }}
                         >
@@ -248,7 +236,7 @@ const UserTypeCard: React.FC<UserTypeCardProps> = ({
               <Button
                 variant="contained"
                 fullWidth
-                size={isMobile ? "medium" : "large"}
+                size="large"
                 sx={{
                   bgcolor: cardColor.main,
                   color: theme.palette.getContrastText(cardColor.main),
@@ -256,10 +244,10 @@ const UserTypeCard: React.FC<UserTypeCardProps> = ({
                     bgcolor: cardColor.dark,
                   },
                   borderRadius: 2,
-                  py: isMobile ? 1 : 1.5,
+                  py: 1.5,
                   fontWeight: 'bold',
                   textTransform: 'none',
-                  fontSize: isMobile ? '0.875rem' : '1rem',
+                  fontSize: '1rem',
                 }}
               >
                 Get Started
@@ -275,62 +263,20 @@ const UserTypeCard: React.FC<UserTypeCardProps> = ({
 const LandingPage: React.FC = () => {
   const [hoveredSection, setHoveredSection] = useState<'freelancer' | 'business' | null>(null);
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const freelancerSteps: StepData[] = [
-    {
-      label: 'Sign Up',
-      description: 'Create your account and get verified',
-      icon: <PersonAdd />,
-    },
-    {
-      label: 'Upload CV',
-      description: 'Show your CV to our AI Job matcher to find perfect jobs',
-      icon: <Description />,
-    },
-    {
-      label: 'Create Contract',
-      description: 'Generate new document and contract for your project',
-      icon: <Handshake />,
-    },
-  ];
-
-  const businessSteps: StepData[] = [
-    {
-      label: 'Sign Up',
-      description: 'Create your business account',
-      icon: <PersonAdd />,
-    },
-    {
-      label: 'Make Deposit',
-      description: 'Secure your funds in blockchain escrow',
-      icon: <AttachMoney />,
-    },
-    {
-      label: 'AI Matching',
-      description: 'Tell our AI your requirements to find top freelancers',
-      icon: <Search />,
-    },
-    {
-      label: 'Create Contract',
-      description: 'Finalize contract with your chosen freelancer',
-      icon: <Handshake />,
-    },
-  ];
 
   return (
     <Box 
       sx={{ 
         minHeight: '100vh', 
-        py: isSmall ? 4 : isMobile ? 6 : 8,
+        py: 8,
         backgroundColor: theme.palette.background.default,
       }}
     >
       <Container maxWidth="lg">
-        <Box sx={{ textAlign: 'center', mb: isSmall ? 4 : isMobile ? 6 : 8 }}>
+        <Box sx={{ textAlign: 'center', mb: 8 }}>
           <Typography
-            variant={isSmall ? "h3" : isMobile ? "h2" : "h1"}
+            variant="h1"
             fontWeight="bold"
             gutterBottom
             sx={{
@@ -339,13 +285,13 @@ const LandingPage: React.FC = () => {
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               mb: 2,
-              fontSize: isSmall ? '2.5rem' : isMobile ? '3rem' : '4rem',
+              fontSize: '4rem',
             }}
           >
             oDoc
           </Typography>
           <Typography 
-            variant={isSmall ? "h6" : isMobile ? "h5" : "h4"} 
+            variant="h4" 
             color={theme.palette.text.secondary} 
             gutterBottom
             sx={{ 
@@ -356,10 +302,10 @@ const LandingPage: React.FC = () => {
             Easy to use. Trustless contracts. Automated payments.
           </Typography>
           <Typography 
-            variant={isSmall ? "body2" : "body1"} 
+            variant="body1" 
             color={theme.palette.text.secondary} 
             sx={{ 
-              maxWidth: isSmall ? 300 : isMobile ? 500 : 600, 
+              maxWidth: 600, 
               mx: 'auto',
               lineHeight: 1.6,
             }}
@@ -368,8 +314,8 @@ const LandingPage: React.FC = () => {
           </Typography>
         </Box>
 
-        <Grid container spacing={isMobile ? 2 : 4} justifyContent="center">
-          <Grid item xs={12} md={6}>
+        <Grid container spacing={4} justifyContent="center">
+          <Grid item md={6}>
             <UserTypeCard
               type="freelancer"
               title="I'm a Freelancer"
@@ -381,10 +327,9 @@ const LandingPage: React.FC = () => {
               steps={freelancerSteps}
               isHovered={hoveredSection === 'freelancer'}
               onHover={setHoveredSection}
-              isMobile={isMobile}
             />
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid item md={6}>
             <UserTypeCard
               type="business"
               title="I'm a Business Owner"
@@ -396,7 +341,6 @@ const LandingPage: React.FC = () => {
               steps={businessSteps}
               isHovered={hoveredSection === 'business'}
               onHover={setHoveredSection}
-              isMobile={isMobile}
             />
           </Grid>
         </Grid>

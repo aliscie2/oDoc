@@ -45,7 +45,7 @@ A **Promise** is a commitment to pay someone a specific amount of money when cer
 - **Low Trust Threshold**: Karma score ≤ 1.5
 - **Restriction**: Cannot send or receive promises > $100
 - **Duration**: Until karma score improves above 1.5
-- **Improvement**: Through successful promise completion or paid karma boost
+- **Improvement**: Through successful promise completion, increased transaction volume, or paid karma boost
 - **Anti-Sybil**: Prevents new accounts from accessing high-value transactions
 
 ### **Dispute Abuse Prevention**
@@ -55,12 +55,53 @@ A **Promise** is a commitment to pay someone a specific amount of money when cer
 - **Impact**: Can still receive payments, but no refund privileges
 - **Purpose**: Discourage frivolous dispute filing
 
+---
+
+## 📊 Karma Score Calculation System
+
+### **Action Rating Components**
+Your karma score is dynamically calculated based on multiple factors every time you interact with promises:
+
+| Factor | Weight Impact | Description |
+|--------|---------------|-------------|
+| **User Interactions** | Base multiplier (w) | • 1-3 users: w = 1.0-3.0<br>• 3+ users: w = 5.0<br>• More interactions = higher weight |
+| **Objection Count** | Penalty multiplier | • 0-2 objections: w = 5.0<br>• 3-6 objections: w = 3.0<br>• 7-12 objections: w = 2.0<br>• 12+ objections: w = 0.5 |
+| **Transaction Volume** | Activity bonus | • <$100 total: w = 2.5<br>• $100+ total: maintains full weight<br>• Higher volume shows commitment |
+| **Debt-to-Activity Ratio** | Core metric | `abs(debt - spent) / abs(debt + spent)`<br>• Measures financial reliability<br>• Lower ratio = better score |
+
+### **Karma Calculation Formula**
+```
+Final Karma = (Debt-to-Activity Ratio) × Weight Factor
+
+Where Weight Factor considers:
+- Number of unique users interacted with
+- Total objections received against your promises  
+- Combined transaction volume (spent + received)
+```
+
+### **Historical Karma Tracking**
+Every promise action creates a permanent `ActionRating` record containing:
+- **Snapshot Karma**: Your score at that moment
+- **Financial State**: Spent, received, promises, and debt amounts
+- **Transaction Context**: Which promise triggered the rating
+- **Timestamp**: When the action occurred
+- **Progress Tracking**: Historical trend of your karma evolution
+
+### **Dynamic Score Updates**
+Your karma recalculates automatically when:
+- Creating a new promise
+- Releasing a payment
+- Receiving an objection
+- Interacting with new users
+- Changing your debt-to-activity ratio
+
 ### **Karma Score Enhancement**
-- **Free Method**: Gradual increase through successful promise completion
-- **Paid Method**: Commission-based karma boost with sliding fee scale
-- **Anti-Gaming**: Economic barrier prevents Sybil attacks and karma farming
-- **Fee Structure**: Higher current karma = higher commission cost
-- **Verification**: Time-weighted scoring prevents rapid manipulation
+- **Organic Growth**: Karma improves through successful promise completion and increased user interactions
+- **Volume Incentive**: Higher transaction volumes (spent + received) maintain better weight factors
+- **Relationship Building**: Interacting with more unique users significantly boosts your weight multiplier
+- **Objection Management**: Keeping objections low (under 3) maintains maximum karma potential
+- **Paid Method**: Commission-based karma boost with sliding fee scale *(if implemented)*
+- **Historical Performance**: Your karma history shows consistent behavioral patterns over time
 
 ---
 
@@ -232,9 +273,11 @@ Once created, these cannot be changed:
 1. **Verify your balance** before creating promises to avoid failures
 2. **Understand High Promise implications** - funds are immediately locked and non-refundable
 3. **Avoid consecutive cancellations** to prevent $50 spending caps
-4. **Build karma gradually** through consistent promise completion
-5. **Plan for High Promise refunds** by ensuring you can meet 150% volume requirements
-6. **Target high-karma users** (>3.0) to unlock premium rewards and green flag status
+4. **Build karma strategically** by increasing user interactions and transaction volume
+5. **Minimize objections** by clear communication and reliable promise fulfillment
+6. **Monitor your debt-to-activity ratio** to maintain optimal karma scores
+7. **Plan for High Promise refunds** by ensuring you can meet 150% volume requirements
+8. **Target high-karma users** (>3.0) to unlock premium rewards and green flag status
 
 ### **For Promise Receivers**
 1. **Confirm promises promptly** to show good faith participation
@@ -246,11 +289,13 @@ Once created, these cannot be changed:
 
 ### **For All Users**
 1. **Monitor your karma score** regularly to understand your limits and reward eligibility
-2. **Plan for behavioral restrictions** when managing multiple promises
-3. **Understand the economic incentives** built into the system
-4. **Work toward premium benefits** by maintaining dispute-free periods
-5. **Engage with high-karma users** (>3.0) to unlock advanced rewards
-6. **Consider long-term karma goals** for cashback and zero-fee benefits
+2. **Track your karma history** through the ActionRating records to see improvement trends
+3. **Plan for behavioral restrictions** when managing multiple promises
+4. **Understand the economic incentives** built into the system
+5. **Work toward premium benefits** by maintaining dispute-free periods
+6. **Engage with diverse users** to maximize your interaction count weight factor
+7. **Balance your financial activity** to optimize your debt-to-activity ratio
+8. **Consider long-term karma goals** for cashback and zero-fee benefits
 
 ---
 

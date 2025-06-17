@@ -15,6 +15,7 @@ import {
   Shield,
   Rocket,
 } from "lucide-react";
+import { useBackendContext } from "@/contexts/BackendContext";
 
 // Keyframe Animations
 const float = keyframes`
@@ -307,7 +308,8 @@ const features = [
   },
 ];
 
-const LandingPage = ({ login }) => {
+const LandingPage = () => {
+  const { login } = useBackendContext();
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
