@@ -41,7 +41,7 @@
     "date-fns": "^4.1.0",
     "ethers": "6.13.5",
     "flowbite-react": "^0.10.1",
-    "framer-motion": "12.4.10",
+    "framer-motion": "^12.18.1",
     "ic-use-siwe-identity": "^0.1.2",
     "ic-websocket-js": "^0.4.1",
     "immer": "^10.1.1",
