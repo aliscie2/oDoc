@@ -66,7 +66,7 @@ impl Affiliate {
     // Adjust this value as needed
     pub fn get(id: &String) -> Option<Self> {
         AFFILIATE.with(|store| {
-            let mut store = store.borrow_mut();
+            let store = store.borrow_mut();
             store.get(id)
         })
     }
@@ -78,7 +78,7 @@ impl Affiliate {
     }
 
     // Register a new affiliate
-    pub fn register_affiliate(id: String) -> Self {
+    pub fn register_affiliate(_id: String) -> Self {
         let caller_id = caller().to_text();
 
         let affiliate = Affiliate {

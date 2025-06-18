@@ -730,4 +730,36 @@ impl CustomContract {
         }
         promise
     }
+
+    pub fn is_contract_owner(&self, caller: Principal) -> bool {
+        self.creator == caller.to_string()
+    }
+
+    pub fn is_contract_participant(&self, _caller: Principal) -> bool {
+        false // Or implement logic based on payments, promises, etc.
+    }
+
+    pub fn get_contracts_by_owner(&self, _caller: Principal) -> Vec<StoredContract> {
+        vec![]
+    }
+
+    pub fn get_contracts_by_participant(&self, _caller: Principal) -> Vec<StoredContract> {
+        vec![]
+    }
+
+    pub fn get_contract_by_id(&self, id: &str) -> Option<StoredContract> {
+        if self.id == *id {
+            Some(StoredContract::CustomContract(self.clone()))
+        } else {
+            None
+        }
+    }
+
+    pub fn is_duplicate_name(&self, name: &str) -> bool {
+        self.name == *name
+    }
+
+    pub fn is_duplicate_id(&self, id: &str) -> bool {
+        self.id == *id
+    }
 }

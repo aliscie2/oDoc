@@ -1,56 +1,66 @@
-use candid::{CandidType, Decode, Deserialize, Encode, Principal};
-use ic_cdk::api::call;
-use ic_stable_structures::{storable::Bound, StableBTreeMap, Storable};
-use std::borrow::Cow;
+use candid::Principal;
+use ic_stable_structures::{DefaultMemoryImpl, StableBTreeMap};
 use std::cell::RefCell;
-use std::collections::HashMap;
 
 mod state;
-pub use state::*;
+use state::UserState;
 
 thread_local! {
-    static USER_STATES: RefCell<StableBTreeMap<String, UserState>> = RefCell::new(
-        StableBTreeMap::init(
-            crate::MEMORY_MANAGER.with(|m| m.borrow().get(crate::MemoryId::new(10))),
-        )
+    static USER_STATE_STORE: RefCell<StableBTreeMap<Principal, UserState, DefaultMemoryImpl>> = RefCell::new(
+        StableBTreeMap::init(DefaultMemoryImpl::default())
     );
 }
 
-pub fn get_user_state(user_id: Principal) -> Option<UserState> {
-    USER_STATES.with(|states| {
-        states
-            .borrow()
-            .get(&user_id.to_string())
-    })
-}
-
-pub fn save_user_state(user_id: Principal, state: UserState) {
-    USER_STATES.with(|states| {
-        states
-            .borrow_mut()
-            .insert(user_id.to_string(), state);
+pub fn update_user_state(principal: Principal, is_online: bool) {
+    USER_STATE_STORE.with(|store| {
+        let mut store = store.borrow_mut();
+        let mut state = store.get(&principal).unwrap_or_else(|| UserState::new());
+        state.is_online = is_online;
+        state.last_active = ic_cdk::api::time();
+        store.insert(principal, state);
     });
 }
 
-pub fn create_user_state(user_id: Principal, subscription: Subscription) -> UserState {
-    let state = UserState::new(subscription);
+pub fn get_user_state(principal: Principal) -> Option<UserState> {
+    USER_STATE_STORE.with(|store| {
+        store.borrow().get(&principal)
+    })
+}
+
+pub fn record_user_cycles(principal: Principal, operation: &str, cycles: u64) -> Result<(), String> {
+    USER_STATE_STORE.with(|store| {
+        let mut store = store.borrow_mut();
+        let mut state = store.get(&principal).unwrap_or_else(|| UserState::new());
+        state.record_cycles(operation.to_string(), cycles);
+        store.insert(principal, state);
+    });
+    Ok(())
+}
+
+pub fn get_user_total_cycles(principal: Principal) -> Result<u64, String> {
+    USER_STATE_STORE.with(|store| {
+        let store = store.borrow();
+        let state = store.get(&principal).unwrap_or_else(|| UserState::new());
+        Ok(state.get_total_cycles_consumed())
+    })
+}
+
+pub fn get_user_operation_cycles(principal: Principal, operation: &str) -> Result<u64, String> {
+    USER_STATE_STORE.with(|store| {
+        let store = store.borrow();
+        let state = store.get(&principal).unwrap_or_else(|| UserState::new());
+        Ok(state.get_operation_cycles(operation.to_string()))
+    })
+}
+
+pub fn create_user_state(user_id: Principal, _subscription: String) -> UserState {
+    let state = UserState::new();
     save_user_state(user_id, state.clone());
     state
 }
 
-pub fn record_cycles(user_id: Principal, operation: &str, cycles: u64) -> Result<(), String> {
-    let mut state = get_user_state(user_id).ok_or("User state not found")?;
-    state.record_cycles(operation, cycles);
-    save_user_state(user_id, state);
-    Ok(())
-}
-
-pub fn get_total_cycles(user_id: Principal) -> Result<u64, String> {
-    let state = get_user_state(user_id).ok_or("User state not found")?;
-    Ok(state.get_total_cycles_consumed())
-}
-
-pub fn get_operation_cycles(user_id: Principal, operation: &str) -> Result<u64, String> {
-    let state = get_user_state(user_id).ok_or("User state not found")?;
-    Ok(state.get_operation_cycles(operation))
+fn save_user_state(user_id: Principal, state: UserState) {
+    USER_STATE_STORE.with(|store| {
+        store.borrow_mut().insert(user_id, state);
+    });
 } 

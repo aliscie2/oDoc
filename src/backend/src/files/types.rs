@@ -149,11 +149,11 @@ impl FileNode {
             }
 
             // First pass: Find and update the old parent
-            let mut old_parent_id = None;
+            let mut _old_parent_id = None;
             for file in user_files.files.iter_mut() {
                 if file.children.contains(&child_id) {
                     file.children.retain(|id| id != &child_id);
-                    old_parent_id = Some(file.id.clone());
+                    _old_parent_id = Some(file.id.clone());
                 }
             }
 

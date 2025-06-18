@@ -160,8 +160,8 @@ impl Notification {
     pub fn pure_save(&self) {
         NOTIFICATIONS.with(|notifications| {
             let mut notifications = notifications.borrow_mut();
-            let mut user_notifications = notifications.get(&self.receiver.to_text());
-            if let Some((mut user_notifications)) = user_notifications {
+            let user_notifications = notifications.get(&self.receiver.to_text());
+            if let Some((user_notifications)) = user_notifications {
                 let mut notifications_list = user_notifications.notifications;
                 notifications_list.retain(|notification| notification.id != self.id);
                 notifications_list.push(self.clone());
@@ -215,7 +215,7 @@ impl Notification {
 
     pub fn delete(&self) {
         NOTIFICATIONS.with(|notifications| {
-            let mut user_notifications = notifications.borrow_mut();
+            let user_notifications = notifications.borrow_mut();
             let mut user_notifications = user_notifications
                 .get(&caller().to_string())
                 .unwrap_or_else(|| NotificationVec {
@@ -233,7 +233,7 @@ impl Notification {
 
     pub fn seen(&self) {
         NOTIFICATIONS.with(|notifications| {
-            let mut user_notifications = notifications.borrow_mut();
+            let user_notifications = notifications.borrow_mut();
             let mut user_notifications = user_notifications
                 .get(&caller().to_string())
                 .unwrap_or_else(|| NotificationVec {

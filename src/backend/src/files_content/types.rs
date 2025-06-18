@@ -174,7 +174,7 @@ impl ContentNode {
     pub fn delete_file_contents(file_id: FileId) {
         let current_user = caller().to_string();
         FILE_CONTENTS.with(|file_contents| {
-            let mut contents = file_contents.borrow_mut();
+            let contents = file_contents.borrow_mut();
             if let Some(mut content_node_vec) = contents.get(&current_user) {
                 content_node_vec.contents.remove(&file_id);
             }
@@ -184,7 +184,7 @@ impl ContentNode {
     pub fn delete_file_content(file_id: FileId) {
         let current_user = caller().to_string();
         FILE_CONTENTS.with(|file_contents| {
-            let mut contents = file_contents.borrow_mut();
+            let contents = file_contents.borrow_mut();
             if let Some(mut content_node_vec) = contents.get(&current_user) {
                 content_node_vec.contents.remove(&file_id);
             }

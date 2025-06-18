@@ -86,7 +86,7 @@ impl User {
 
     pub fn get_user_from_principal(id: Principal) -> Option<User> {
         PROFILE_STORE.with(|profile_store| {
-            let mut store = profile_store.borrow();
+            let store = profile_store.borrow();
             store.get(&id.to_string())
         })
     }

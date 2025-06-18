@@ -20,7 +20,7 @@ impl AppMessage {
     }
 }
 
-pub fn on_open(args: OnOpenCallbackArgs) {
+pub fn on_open(_args: OnOpenCallbackArgs) {
     let msg = AppMessage {
         notification: None,
         text: String::from("Connection is open"),

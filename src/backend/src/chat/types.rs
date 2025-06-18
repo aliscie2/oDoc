@@ -94,7 +94,7 @@ impl Chat {
             let chats = store.borrow();
             chats
                 .iter()
-                .find(|(chat_id, chat)| chat.id == id)
+                .find(|(_chat_id, chat)| chat.id == id)
                 .map(|(_, chat)| chat.clone())
         })
     }

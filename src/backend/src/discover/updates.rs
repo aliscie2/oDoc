@@ -45,8 +45,8 @@ fn save_post(mut post: Post) -> Result<(), String> {
         post.date_created = ic_cdk::api::time();
 
         if posts.len() >= 2 {
-            let one_day = 86400;
-            let diff = time_diff(
+            let _one_day = 86400;
+            let _diff = time_diff(
                 ic_cdk::api::time(),
                 posts.last().unwrap().date_created.clone(),
             );

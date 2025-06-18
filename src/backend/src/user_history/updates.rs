@@ -9,7 +9,7 @@ use crate::user_history::{Rating, UserHistory};
 fn rate_user(user: Principal, mut rating: Rating) -> Result<(), String> {
     rating.user_id = caller();
     let mut user = UserHistory::get(user);
-    let res = user.rate(rating)?;
+    user.rate(rating)?;
     user.calc_users_rate();
     user.save();
     Ok(())

@@ -74,7 +74,7 @@ fn get_user_notifications() -> Vec<Notification> {
 #[update]
 fn see_notifications(ids: Vec<String>) -> Result<String, String> {
     for id in ids {
-        let mut notification = Notification::get(caller().to_string(), id);
+        let notification = Notification::get(caller().to_string(), id);
         if notification.is_none() {
             return Err("Notification not found".to_string());
         }
