@@ -203,6 +203,11 @@ export interface CustomContract {
   date_updated: number;
   promises: Array<CPayment>;
 }
+export interface CycleLedger {
+  last_updated: bigint;
+  operation_cycles: Array<[string, bigint]>;
+  total_cycles_consumed: bigint;
+}
 export type Error =
   | { OwnerAlreadyExists: null }
   | { InsufficientAllowance: { allowance: bigint } }
@@ -533,6 +538,11 @@ export type ShareFilePermission =
   | { CanView: null }
   | { CanUpdate: null };
 export type StoredContract = { CustomContract: CustomContract };
+export interface Subscription {
+  tier: string;
+  end_date: bigint;
+  start_date: bigint;
+}
 export interface Table {
   rows: Array<Row>;
   columns: Array<Column>;
@@ -588,6 +598,13 @@ export interface UserProfile {
   photo: Uint8Array | number[];
   debts: Array<string>;
   received: number;
+}
+export interface UserState {
+  is_transfering: boolean;
+  subscription: Subscription;
+  cycle_ledger: CycleLedger;
+  ai_credits: number;
+  is_ai_free_tier: boolean;
 }
 export interface Wallet {
   balance: number;
@@ -657,6 +674,7 @@ export interface _SERVICE {
   get_my_calendar: ActorMethod<[], Calendar>;
   get_my_chats: ActorMethod<[], Array<FEChat>>;
   get_my_jobs: ActorMethod<[], Array<Job>>;
+  get_operation_cycles: ActorMethod<[string], Result_1>;
   get_owners: ActorMethod<[], Array<Principal>>;
   get_post: ActorMethod<[string], Result_10>;
   get_posts: ActorMethod<[bigint, bigint], Array<PostUser>>;
@@ -664,6 +682,7 @@ export interface _SERVICE {
   get_shared_file: ActorMethod<[string], Result_12>;
   get_sns_status: ActorMethod<[], Result_13>;
   get_swaps: ActorMethod<[], Array<[Principal, Principal]>>;
+  get_total_cycles: ActorMethod<[], Result_1>;
   get_user: ActorMethod<[string], Result>;
   get_user_notifications: ActorMethod<[], Array<Notification>>;
   get_user_profile: ActorMethod<[Principal], Result_14>;
@@ -686,6 +705,7 @@ export interface _SERVICE {
   object_on_cancel: ActorMethod<[CPayment, string], Result_3>;
   pay: ActorMethod<[PayArgs], Result_2>;
   rate_user: ActorMethod<[Principal, Rating], Result_3>;
+  record_cycles: ActorMethod<[string, bigint], Result>;
   register: ActorMethod<[string, RegisterUser], Result>;
   reject_friend_request: ActorMethod<[string], Result>;
   remove_owner: ActorMethod<[AddOwnerArgs], Result_2>;
