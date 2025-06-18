@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 import {
   Button,
   Menu,
@@ -9,16 +9,14 @@ import {
   Typography,
   styled,
   keyframes,
-} from '@mui/material';
-import { LoadingButton } from '@mui/lab';
-import { Save, Warning, Block } from '@mui/icons-material';
-
+} from "@mui/material";
+import { LoadingButton } from "@mui/lab";
+import { Save, Warning, Block } from "@mui/icons-material";
 
 // import SaveButtons, { SaveButtonItem } from './SaveButtons';
-import { useDocsSave } from './useDocsSave';
-import { useCalendarSave } from './useCalendarSave';
-import { useJobsSave } from './useJobSave';
-
+import { useDocsSave } from "./useDocsSave";
+import { useCalendarSave } from "./useCalendarSave";
+import { useJobsSave } from "./useJobSave";
 
 const shakeAndScaleAnimation = keyframes`
   0% { transform: translateX(0) scale(1); }
@@ -57,19 +55,19 @@ const floatingAnimation = keyframes`
 // Styled Components
 const AnimatedButtonWrapper = styled(Box)`
   display: inline-block;
-  
+
   &.shake {
     animation: ${shakeAndScaleAnimation} 1.2s cubic-bezier(0.36, 0, 0.66, -0.56);
     animation-fill-mode: forwards;
   }
-  
+
   &.radiation {
     animation: ${radiationAnimation} 1.5s infinite;
-    
+
     .MuiButton-root {
       background-color: #ff5252 !important;
       color: white !important;
-      
+
       &:hover {
         background-color: #d32f2f !important;
       }
@@ -78,70 +76,70 @@ const AnimatedButtonWrapper = styled(Box)`
 `;
 
 const FloatingTooltip = styled(Tooltip)(({ theme }) => ({
-  '& .MuiTooltip-tooltip': {
+  "& .MuiTooltip-tooltip": {
     backgroundColor: theme.palette.grey[900],
     color: theme.palette.common.white,
-    fontSize: '0.875rem',
+    fontSize: "0.875rem",
     fontWeight: 500,
     padding: theme.spacing(1.5, 2),
     borderRadius: 12,
     maxWidth: 280,
-    textAlign: 'center',
-    boxShadow: '0 8px 32px rgba(0,0,0,0.24)',
+    textAlign: "center",
+    boxShadow: "0 8px 32px rgba(0,0,0,0.24)",
     border: `1px solid ${theme.palette.divider}`,
     animation: `${floatingAnimation} 2s ease-in-out infinite`,
-    
-    '&.changes-warning': {
+
+    "&.changes-warning": {
       backgroundColor: theme.palette.warning.dark,
       color: theme.palette.warning.contrastText,
     },
-    
-    '&.prevent-close': {
+
+    "&.prevent-close": {
       backgroundColor: theme.palette.error.dark,
       color: theme.palette.error.contrastText,
       animation: `${floatingAnimation} 1.5s ease-in-out infinite`,
-    }
+    },
   },
-  '& .MuiTooltip-arrow': {
+  "& .MuiTooltip-arrow": {
     color: theme.palette.grey[900],
-    fontSize: '1.2rem',
-    
-    '&::before': {
+    fontSize: "1.2rem",
+
+    "&::before": {
       border: `1px solid ${theme.palette.divider}`,
-    }
+    },
   },
   '&[data-popper-placement*="bottom"] .MuiTooltip-arrow': {
-    '&::before': {
-      borderTop: 'none',
-      borderLeft: 'none',
-    }
+    "&::before": {
+      borderTop: "none",
+      borderLeft: "none",
+    },
   },
   '&[data-popper-placement*="top"] .MuiTooltip-arrow': {
-    '&::before': {
-      borderBottom: 'none',
-      borderRight: 'none',
-    }
+    "&::before": {
+      borderBottom: "none",
+      borderRight: "none",
+    },
   },
   '&[data-popper-placement*="right"] .MuiTooltip-arrow': {
-    '&::before': {
-      borderBottom: 'none',
-      borderLeft: 'none',
-    }
+    "&::before": {
+      borderBottom: "none",
+      borderLeft: "none",
+    },
   },
   '&[data-popper-placement*="left"] .MuiTooltip-arrow': {
-    '&::before': {
-      borderTop: 'none',
-      borderRight: 'none',
-    }
-  }
+    "&::before": {
+      borderTop: "none",
+      borderRight: "none",
+    },
+  },
 }));
 
 const StyledMenu = styled(Menu)(({ theme }) => ({
-  '& .MuiPaper-root': {
+  "& .MuiPaper-root": {
     minWidth: 200,
     borderRadius: 12,
     marginTop: theme.spacing(1),
-    boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+    boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
     border: `1px solid ${theme.palette.divider}`,
   },
 }));
@@ -151,22 +149,22 @@ const MenuSection = styled(Box)(({ theme }) => ({
 }));
 
 const SectionTitle = styled(Typography)(({ theme }) => ({
-  fontSize: '0.75rem',
+  fontSize: "0.75rem",
   fontWeight: 600,
   color: theme.palette.text.secondary,
-  textTransform: 'uppercase',
-  letterSpacing: '0.5px',
+  textTransform: "uppercase",
+  letterSpacing: "0.5px",
   marginBottom: theme.spacing(0.5),
 }));
 
 const ActionButton = styled(Button)(({ theme }) => ({
-  justifyContent: 'flex-start',
-  width: '100%',
-  textTransform: 'none',
-  fontSize: '0.875rem',
+  justifyContent: "flex-start",
+  width: "100%",
+  textTransform: "none",
+  fontSize: "0.875rem",
   padding: theme.spacing(0.5, 1),
   borderRadius: 6,
-  '&:hover': {
+  "&:hover": {
     backgroundColor: theme.palette.action.hover,
   },
 }));
@@ -187,10 +185,12 @@ interface SaveButtonsProps {
 const SaveButtons: React.FC<SaveButtonsProps> = ({ items }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [isPreventingClose, setIsPreventingClose] = useState(false);
-  const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>({});
+  const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>(
+    {},
+  );
   const buttonWrapperRef = useRef<HTMLDivElement>(null);
-  
-  const hasChanges = items.some(item => item.isChanged);
+
+  const hasChanges = items.some((item) => item.isChanged);
   const open = Boolean(anchorEl);
 
   // Handle browser/tab close prevention
@@ -198,23 +198,24 @@ const SaveButtons: React.FC<SaveButtonsProps> = ({ items }) => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (hasChanges) {
         e.preventDefault();
-        e.returnValue = "You have unsaved changes. Are you sure you want to leave?";
+        e.returnValue =
+          "You have unsaved changes. Are you sure you want to leave?";
         setIsPreventingClose(true);
-        
+
         // Trigger shake animation
         if (buttonWrapperRef.current) {
-          buttonWrapperRef.current.classList.remove('shake');
+          buttonWrapperRef.current.classList.remove("shake");
           void buttonWrapperRef.current.offsetWidth; // Trigger reflow
-          buttonWrapperRef.current.classList.add('shake');
+          buttonWrapperRef.current.classList.add("shake");
         }
-        
+
         // Reset preventing close state after animation
         setTimeout(() => setIsPreventingClose(false), 2000);
       }
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [hasChanges]);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -226,14 +227,14 @@ const SaveButtons: React.FC<SaveButtonsProps> = ({ items }) => {
     setAnchorEl(null);
   };
 
-  const handleAction = async (itemName: string, action: 'save' | 'reset') => {
-    const item = items.find(i => i.name === itemName);
+  const handleAction = async (itemName: string, action: "save" | "reset") => {
+    const item = items.find((i) => i.name === itemName);
     if (!item) return;
 
-    setLoadingStates(prev => ({ ...prev, [itemName]: true }));
-    
+    setLoadingStates((prev) => ({ ...prev, [itemName]: true }));
+
     try {
-      if (action === 'save') {
+      if (action === "save") {
         await item.onSave();
       } else {
         await item.onReset();
@@ -241,34 +242,34 @@ const SaveButtons: React.FC<SaveButtonsProps> = ({ items }) => {
     } catch (error) {
       console.error(`Error ${action}ing ${itemName}:`, error);
     } finally {
-      setLoadingStates(prev => ({ ...prev, [itemName]: false }));
+      setLoadingStates((prev) => ({ ...prev, [itemName]: false }));
     }
-    
+
     handleClose();
   };
 
   const getButtonProps = () => {
     if (!hasChanges) {
       return {
-        variant: 'outlined' as const,
-        color: 'inherit' as const,
+        variant: "outlined" as const,
+        color: "inherit" as const,
         startIcon: <Save />,
         disabled: true,
       };
     }
-    
+
     if (isPreventingClose) {
       return {
-        variant: 'contained' as const,
-        color: 'error' as const,
+        variant: "contained" as const,
+        color: "error" as const,
         startIcon: <Block />,
         disabled: false,
       };
     }
-    
+
     return {
-      variant: 'contained' as const,
-      color: 'warning' as const,
+      variant: "contained" as const,
+      color: "warning" as const,
       startIcon: <Warning />,
       disabled: false,
     };
@@ -276,34 +277,35 @@ const SaveButtons: React.FC<SaveButtonsProps> = ({ items }) => {
 
   const getTooltipMessage = () => {
     if (!hasChanges) return "No changes to save";
-    if (isPreventingClose) return "You have unsaved changes! Save before closing.";
-    
-    const changedItems = items.filter(item => item.isChanged);
-    return `Unsaved changes in: ${changedItems.map(item => item.name).join(', ')}`;
+    if (isPreventingClose)
+      return "You have unsaved changes! Save before closing.";
+
+    const changedItems = items.filter((item) => item.isChanged);
+    return `Unsaved changes in: ${changedItems.map((item) => item.name).join(", ")}`;
   };
 
   const getWrapperClasses = () => {
     const classes = [];
-    if (isPreventingClose) classes.push('radiation');
-    return classes.join(' ');
+    if (isPreventingClose) classes.push("radiation");
+    return classes.join(" ");
   };
 
   const getTooltipClasses = () => {
-    if (isPreventingClose) return 'prevent-close';
-    if (hasChanges) return 'changes-warning';
-    return '';
+    if (isPreventingClose) return "prevent-close";
+    if (hasChanges) return "changes-warning";
+    return "";
   };
 
   const buttonProps = getButtonProps();
-  if (!hasChanges){
-    return <></>
+  if (!hasChanges) {
+    return <></>;
   }
   return (
     <>
-      <FloatingTooltip 
-        title={getTooltipMessage()} 
-        arrow 
-        placement="top" 
+      <FloatingTooltip
+        title={getTooltipMessage()}
+        arrow
+        placement="top"
         className={getTooltipClasses()}
         componentsProps={{
           tooltip: {
@@ -311,10 +313,10 @@ const SaveButtons: React.FC<SaveButtonsProps> = ({ items }) => {
           },
           arrow: {
             className: getTooltipClasses(),
-          }
+          },
         }}
       >
-        <AnimatedButtonWrapper 
+        <AnimatedButtonWrapper
           ref={buttonWrapperRef}
           className={getWrapperClasses()}
         >
@@ -323,9 +325,9 @@ const SaveButtons: React.FC<SaveButtonsProps> = ({ items }) => {
             onClick={handleClick}
             loading={Object.values(loadingStates).some(Boolean)}
             sx={{
-              transition: 'all 0.3s ease-in-out',
-              '&:not(:disabled):hover': {
-                transform: 'scale(1.05)',
+              transition: "all 0.3s ease-in-out",
+              "&:not(:disabled):hover": {
+                transform: "scale(1.05)",
               },
             }}
           >
@@ -339,12 +341,12 @@ const SaveButtons: React.FC<SaveButtonsProps> = ({ items }) => {
         open={open}
         onClose={handleClose}
         anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'center',
+          vertical: "bottom",
+          horizontal: "center",
         }}
         transformOrigin={{
-          vertical: 'top',
-          horizontal: 'center',
+          vertical: "top",
+          horizontal: "center",
         }}
       >
         {items.map((item, index) => (
@@ -353,31 +355,31 @@ const SaveButtons: React.FC<SaveButtonsProps> = ({ items }) => {
               <SectionTitle>
                 {item.name.charAt(0).toUpperCase() + item.name.slice(1)}
                 {item.isChanged && (
-                  <Typography 
-                    component="span" 
-                    sx={{ 
-                      ml: 1, 
-                      color: 'warning.main', 
-                      fontSize: '0.7rem' 
+                  <Typography
+                    component="span"
+                    sx={{
+                      ml: 1,
+                      color: "warning.main",
+                      fontSize: "0.7rem",
                     }}
                   >
                     • Modified
                   </Typography>
                 )}
               </SectionTitle>
-              
-              <Box sx={{ display: 'flex', gap: 1 }}>
+
+              <Box sx={{ display: "flex", gap: 1 }}>
                 <ActionButton
-                  onClick={() => handleAction(item.name, 'save')}
+                  onClick={() => handleAction(item.name, "save")}
                   disabled={!item.isChanged || loadingStates[item.name]}
                   startIcon={<Save fontSize="small" />}
                   color="primary"
                 >
                   Save
                 </ActionButton>
-                
+
                 <ActionButton
-                  onClick={() => handleAction(item.name, 'reset')}
+                  onClick={() => handleAction(item.name, "reset")}
                   disabled={!item.isChanged || loadingStates[item.name]}
                   color="inherit"
                 >
@@ -385,7 +387,7 @@ const SaveButtons: React.FC<SaveButtonsProps> = ({ items }) => {
                 </ActionButton>
               </Box>
             </MenuSection>
-            
+
             {index < items.length - 1 && <Divider />}
           </div>
         ))}
@@ -394,10 +396,7 @@ const SaveButtons: React.FC<SaveButtonsProps> = ({ items }) => {
   );
 };
 
-
-
-
-// save buttons action compnent 
+// save buttons action compnent
 const SaveButtonsContainer: React.FC = () => {
   const docsHook = useDocsSave();
   const calendarHook = useCalendarSave();
@@ -405,21 +404,21 @@ const SaveButtonsContainer: React.FC = () => {
 
   const saveItems: SaveButtonItem[] = [
     {
-      name: 'docs',
+      name: "docs",
       isChanged: docsHook.isChanged,
       onSave: docsHook.save,
       onReset: docsHook.reset,
       loading: docsHook.loading,
     },
     {
-      name: 'calendar',
+      name: "calendar",
       isChanged: calendarHook.isChanged,
       onSave: calendarHook.save,
       onReset: calendarHook.reset,
       loading: calendarHook.loading,
     },
     {
-      name: 'jobs',
+      name: "jobs",
       isChanged: jobsHook.isChanged,
       onSave: jobsHook.save,
       onReset: jobsHook.reset,
@@ -429,7 +428,5 @@ const SaveButtonsContainer: React.FC = () => {
 
   return <SaveButtons items={saveItems} />;
 };
-
-
 
 export default SaveButtonsContainer;

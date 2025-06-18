@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Box,
   Typography,
@@ -8,10 +8,10 @@ import {
   useTheme,
   Fade,
   Popper,
-  ClickAwayListener
-} from '@mui/material';
+  ClickAwayListener,
+} from "@mui/material";
 import { Link } from "react-router-dom";
-import { useSelector } from 'react-redux';
+import { useSelector } from "react-redux";
 
 interface AiCreditsCircleProps {
   currentAICredits: number;
@@ -22,26 +22,29 @@ interface AiCreditsCircleProps {
 const AiCreditsCircle: React.FC<AiCreditsCircleProps> = ({
   currentAICredits,
   maxCredits = 5, // Changed to 5 dollars max
-  onBuyCredit
+  onBuyCredit,
 }) => {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const [inputAmount, setInputAmount] = useState<string>('');
-  const [error, setError] = useState<string>('');
+  const [inputAmount, setInputAmount] = useState<string>("");
+  const [error, setError] = useState<string>("");
   const theme = useTheme();
-  
+
   const { wallet } = useSelector((state: any) => state.filesState);
-  
+
   // Calculate percentage based on dollar amount (0-5)
-  const percentage = Math.max(0, Math.min(100, (currentAICredits / maxCredits) * 100));
-  
+  const percentage = Math.max(
+    0,
+    Math.min(100, (currentAICredits / maxCredits) * 100),
+  );
+
   const getColor = () => {
     if (percentage >= 75) return theme.palette.success.main; // Green
-    if (percentage >= 50) return '#8BC34A'; // Light Green  
-    if (percentage >= 35) return '#FFC107'; // Yellow
-    if (percentage >= 20) return '#FF9800'; // Orange
-    if (percentage >= 10) return '#FF5722'; // Dark Orange
-    if (percentage >= 5) return '#F44336'; // Red
-    return '#D32F2F'; // Dark Red for critical levels
+    if (percentage >= 50) return "#8BC34A"; // Light Green
+    if (percentage >= 35) return "#FFC107"; // Yellow
+    if (percentage >= 20) return "#FF9800"; // Orange
+    if (percentage >= 10) return "#FF5722"; // Dark Orange
+    if (percentage >= 5) return "#F44336"; // Red
+    return "#D32F2F"; // Dark Red for critical levels
   };
 
   const handleMouseEnter = (event: React.MouseEvent<HTMLElement>) => {
@@ -50,66 +53,66 @@ const AiCreditsCircle: React.FC<AiCreditsCircleProps> = ({
 
   const handleMouseLeave = () => {
     setAnchorEl(null);
-    setError('');
+    setError("");
   };
 
   const handleSubmit = () => {
     const amount = parseFloat(inputAmount);
-    
+
     if (isNaN(amount) || amount < 1 || amount > 5) {
-      setError('Please enter amount between $1-$5');
+      setError("Please enter amount between $1-$5");
       return;
     }
 
     if (wallet.balance < amount) {
-      setError('insufficient-balance');
+      setError("insufficient-balance");
       return;
     }
 
     onBuyCredit(amount);
-    setInputAmount('');
+    setInputAmount("");
     setAnchorEl(null);
-    setError('');
+    setError("");
   };
 
   const open = Boolean(anchorEl);
 
   return (
     <ClickAwayListener onClickAway={handleMouseLeave}>
-      <Box sx={{ position: 'relative' }}>
+      <Box sx={{ position: "relative" }}>
         {/* Credits Circle */}
         <Box
           onMouseEnter={handleMouseEnter}
           sx={{
             width: 40,
             height: 40,
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            position: 'relative',
+            borderRadius: "50%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            position: "relative",
             backgroundColor: theme.palette.background.paper,
-            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-            '&:hover': {
-              transform: 'scale(1.15)',
+            transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+            "&:hover": {
+              transform: "scale(1.15)",
               boxShadow: `0 6px 20px ${getColor()}50`,
             },
             // Pulsing animation for very low credits
             ...(percentage < 15 && {
-              animation: 'pulse 2s infinite',
-              '@keyframes pulse': {
-                '0%': {
-                  boxShadow: `0 0 0 0 ${getColor()}40`
+              animation: "pulse 2s infinite",
+              "@keyframes pulse": {
+                "0%": {
+                  boxShadow: `0 0 0 0 ${getColor()}40`,
                 },
-                '70%': {
-                  boxShadow: `0 0 0 10px ${getColor()}00`
+                "70%": {
+                  boxShadow: `0 0 0 10px ${getColor()}00`,
                 },
-                '100%': {
-                  boxShadow: `0 0 0 0 ${getColor()}00`
-                }
-              }
-            })
+                "100%": {
+                  boxShadow: `0 0 0 0 ${getColor()}00`,
+                },
+              },
+            }),
           }}
         >
           {/* Progress Ring - Donut Chart Style */}
@@ -117,11 +120,14 @@ const AiCreditsCircle: React.FC<AiCreditsCircleProps> = ({
             width="40"
             height="40"
             style={{
-              position: 'absolute',
+              position: "absolute",
               top: -3,
               left: -3,
-              transform: 'rotate(-90deg)',
-              filter: percentage < 20 ? 'drop-shadow(0 0 4px rgba(244, 67, 54, 0.6))' : undefined
+              transform: "rotate(-90deg)",
+              filter:
+                percentage < 20
+                  ? "drop-shadow(0 0 4px rgba(244, 67, 54, 0.6))"
+                  : undefined,
             }}
           >
             {/* Background circle */}
@@ -145,8 +151,8 @@ const AiCreditsCircle: React.FC<AiCreditsCircleProps> = ({
               strokeDasharray={`${(percentage / 100) * 106.81} 106.81`}
               strokeLinecap="round"
               style={{
-                transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-                filter: percentage < 30 ? 'brightness(1.2)' : undefined
+                transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
+                filter: percentage < 30 ? "brightness(1.2)" : undefined,
               }}
             />
             {/* Inner shadow effect for low credits */}
@@ -162,28 +168,28 @@ const AiCreditsCircle: React.FC<AiCreditsCircleProps> = ({
                 strokeDasharray={`${(percentage / 100) * 81.68} 81.68`}
                 strokeLinecap="round"
                 style={{
-                  transition: 'all 0.5s ease'
+                  transition: "all 0.5s ease",
                 }}
               />
             )}
           </svg>
-          
+
           {/* Payment Amount Text */}
           <Typography
             variant="caption"
             sx={{
-              fontSize: '9px',
-              fontWeight: 'bold',
+              fontSize: "9px",
+              fontWeight: "bold",
               color: getColor(),
               lineHeight: 1,
               textShadow: percentage < 20 ? `0 0 8px ${getColor()}` : undefined,
-              transition: 'all 0.3s ease',
+              transition: "all 0.3s ease",
               // Make text more prominent when credits are very low
               ...(percentage < 10 && {
-                fontSize: '8px',
+                fontSize: "8px",
                 fontWeight: 900,
-                letterSpacing: '-0.5px'
-              })
+                letterSpacing: "-0.5px",
+              }),
             }}
           >
             ${currentAICredits.toFixed(currentAICredits % 1 === 0 ? 0 : 2)}
@@ -207,7 +213,7 @@ const AiCreditsCircle: React.FC<AiCreditsCircleProps> = ({
                   mt: 1,
                   minWidth: 200,
                   borderRadius: 2,
-                  border: `1px solid ${theme.palette.divider}`
+                  border: `1px solid ${theme.palette.divider}`,
                 }}
               >
                 <Typography
@@ -215,30 +221,31 @@ const AiCreditsCircle: React.FC<AiCreditsCircleProps> = ({
                   sx={{
                     mb: 1,
                     fontWeight: 600,
-                    color: theme.palette.text.primary
+                    color: theme.palette.text.primary,
                   }}
                 >
-                  AI Credits: ${currentAICredits.toFixed(2)}/${maxCredits.toFixed(0)}
+                  AI Credits: ${currentAICredits.toFixed(2)}/$
+                  {maxCredits.toFixed(0)}
                 </Typography>
-                
+
                 <Typography
                   variant="caption"
                   sx={{
-                    display: 'block',
+                    display: "block",
                     mb: 2,
-                    color: theme.palette.text.secondary
+                    color: theme.palette.text.secondary,
                   }}
                 >
                   Buy more credits ($1-$5)
                 </Typography>
 
-                {error === 'insufficient-balance' ? (
+                {error === "insufficient-balance" ? (
                   <Box sx={{ mb: 2 }}>
                     <Typography
                       variant="body2"
                       sx={{
                         color: theme.palette.error.main,
-                        mb: 1
+                        mb: 1,
                       }}
                     >
                       Please make a deposit first
@@ -249,17 +256,19 @@ const AiCreditsCircle: React.FC<AiCreditsCircleProps> = ({
                       variant="subtitle2"
                       sx={{
                         color: theme.palette.primary.main,
-                        textDecoration: 'none',
-                        '&:hover': {
-                          textDecoration: 'underline'
-                        }
+                        textDecoration: "none",
+                        "&:hover": {
+                          textDecoration: "underline",
+                        },
                       }}
                     >
                       Deposit here
                     </Typography>
                   </Box>
                 ) : (
-                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
+                  <Box
+                    sx={{ display: "flex", gap: 1, alignItems: "flex-start" }}
+                  >
                     <TextField
                       size="small"
                       type="number"
@@ -267,18 +276,18 @@ const AiCreditsCircle: React.FC<AiCreditsCircleProps> = ({
                       value={inputAmount}
                       onChange={(e) => {
                         setInputAmount(e.target.value);
-                        setError('');
+                        setError("");
                       }}
                       inputProps={{
                         min: 1,
                         max: 5,
-                        step: 0.01
+                        step: 0.01,
                       }}
                       sx={{
                         width: 80,
-                        '& .MuiOutlinedInput-root': {
-                          height: 32
-                        }
+                        "& .MuiOutlinedInput-root": {
+                          height: 32,
+                        },
                       }}
                     />
                     <Button
@@ -287,10 +296,10 @@ const AiCreditsCircle: React.FC<AiCreditsCircleProps> = ({
                       onClick={handleSubmit}
                       disabled={!inputAmount}
                       sx={{
-                        minWidth: 'auto',
+                        minWidth: "auto",
                         px: 2,
                         height: 32,
-                        fontSize: '0.75rem'
+                        fontSize: "0.75rem",
                       }}
                     >
                       Buy
@@ -298,13 +307,13 @@ const AiCreditsCircle: React.FC<AiCreditsCircleProps> = ({
                   </Box>
                 )}
 
-                {error && error !== 'insufficient-balance' && (
+                {error && error !== "insufficient-balance" && (
                   <Typography
                     variant="caption"
                     sx={{
-                      display: 'block',
+                      display: "block",
                       mt: 1,
-                      color: theme.palette.error.main
+                      color: theme.palette.error.main,
                     }}
                   >
                     {error}

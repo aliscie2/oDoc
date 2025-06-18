@@ -1,9 +1,9 @@
-import React, { useMemo } from 'react';
-import { Breadcrumbs, Typography } from '@mui/material';
-import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import styled from '@emotion/styled';
-import {FileNode} from "../../../declarations/backend/backend.did";
+import React, { useMemo } from "react";
+import { Breadcrumbs, Typography } from "@mui/material";
+import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import styled from "@emotion/styled";
+import { FileNode } from "../../../declarations/backend/backend.did";
 
 // Strong typing for file structure
 
@@ -20,7 +20,7 @@ const StyledLink = styled(RouterLink)`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  
+
   &:hover {
     text-decoration: underline;
   }
@@ -35,12 +35,14 @@ const BreadcrumbNavigation: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const { files, current_file } = useSelector<any, FilesState>((state) => state.filesState);
+  const { files, current_file } = useSelector<any, FilesState>(
+    (state) => state.filesState,
+  );
 
   // Extract current ID from path
-  const currentId = useMemo(() =>
-    location.pathname.split('/').filter(Boolean).pop() || '',
-    [location.pathname]
+  const currentId = useMemo(
+    () => location.pathname.split("/").filter(Boolean).pop() || "",
+    [location.pathname],
   );
 
   // Build breadcrumb path
@@ -49,45 +51,46 @@ const BreadcrumbNavigation: React.FC = () => {
     let currentFileId = id;
 
     while (currentFileId) {
-      const file = files?.find(f => f?.id === currentFileId);
+      const file = files?.find((f) => f?.id === currentFileId);
       if (!file) break;
 
       path.unshift(file);
-      currentFileId = file.parent?.[0] ?? '';
+      currentFileId = file.parent?.[0] ?? "";
     }
 
     return path;
   };
 
   // Memoized breadcrumb items
-  const breadcrumbItems = useMemo(() =>
-    currentId && files?.length ? buildPath(currentId) : [],
-    [currentId, files]
+  const breadcrumbItems = useMemo(
+    () => (currentId && files?.length ? buildPath(currentId) : []),
+    [currentId, files],
   );
 
   // Event handlers
   const handleFileClick = (file: FileNode) => (e: React.MouseEvent) => {
     e.preventDefault();
     navigate(file.id);
-    dispatch({ type: 'CURRENT_FILE', payload: { file } });
+    dispatch({ type: "CURRENT_FILE", payload: { file } });
   };
 
   const handleHomeClick = () => {
-    dispatch({ type: 'CURRENT_FILE', payload: { file: null } });
+    dispatch({ type: "CURRENT_FILE", payload: { file: null } });
   };
 
   // Render breadcrumb items
   const renderBreadcrumbItem = (item: FileNode, index: number) => {
     const isLast = index === breadcrumbItems.length - 1;
-    const displayName = item.name.length > MAX_TEXT_LENGTH
-      ? `${item.name.slice(0, MAX_TEXT_LENGTH)}...`
-      : item.name;
+    const displayName =
+      item.name.length > MAX_TEXT_LENGTH
+        ? `${item.name.slice(0, MAX_TEXT_LENGTH)}...`
+        : item.name;
 
     return isLast ? (
       <Typography
         key={item.id}
         noWrap
-        sx={{ maxWidth: 200, color: 'text.primary' }}
+        sx={{ maxWidth: 200, color: "text.primary" }}
       >
         {displayName}
       </Typography>

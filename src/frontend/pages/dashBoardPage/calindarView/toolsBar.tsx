@@ -16,11 +16,10 @@ import CopyButton from "../../../components/MuiComponents/copyButton";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../redux/reducers";
 
-
 import { MoreVert, NavigateBefore, NavigateNext } from "@mui/icons-material";
 import CircleIcon from "@mui/icons-material/Circle";
 import TimeZoneSelector from "./timezone";
-import GoogleCalendarIntegration from "./googleAccounts";  // Add this import
+import GoogleCalendarIntegration from "./googleAccounts"; // Add this import
 import GmailConnection from "./GmailConnection";
 
 const CustomToolbar = (toolbar) => {
@@ -82,7 +81,7 @@ const CustomToolbar = (toolbar) => {
         <CalendarManagement />
       </MenuItem>
       <MenuItem>
-        <GoogleCalendarIntegration />  {/* Add to mobile menu */}
+        <GoogleCalendarIntegration /> {/* Add to mobile menu */}
       </MenuItem>
     </Menu>
   );
@@ -133,8 +132,8 @@ const CustomToolbar = (toolbar) => {
               {!isCalendarPage && <CopyButton title="Share" value={copyLink} />}
               <CalendarManagement />
 
-              <GoogleCalendarIntegration /> 
-              <GmailConnection/>
+              <GoogleCalendarIntegration />
+              <GmailConnection />
             </ButtonGroup>
           )}
 

@@ -17,7 +17,10 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { DndProvider } from "react-dnd";
 import { canisterId } from "../declarations/backend";
 import getckUsdcBalance from "./utils/getBalance";
-import { AvailabilityTimezone, EventTimezone } from "./pages/dashBoardPage/calindarView/serializers";
+import {
+  AvailabilityTimezone,
+  EventTimezone,
+} from "./pages/dashBoardPage/calindarView/serializers";
 import { RootState } from "./redux/reducers";
 
 import RegistrationForm from "./components/MainComponents/RegistrationForm";
@@ -53,7 +56,7 @@ const LoadingContainer = styled(Box)(({ theme }) => ({
 }));
 
 const App: React.FC = () => {
-  const { isLoggedIn,isRegistered } = useSelector(
+  const { isLoggedIn, isRegistered } = useSelector(
     (state: any) => state.uiState,
   );
   const { isFetching } = useSelector((state: RootState) => state.uiState);
@@ -63,52 +66,39 @@ const App: React.FC = () => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const theme = useTheme();
 
-
-
   useEffect(() => {
-
     const fetchInitialData = async () => {
-
-     
-      
       try {
-        dispatch({type:"IS_FETCHING", isFetching: true });
-  
+        dispatch({ type: "IS_FETCHING", isFetching: true });
+
         const res = await backendActor.get_initial_data();
         const workspaces = await backendActor.get_work_spaces();
         if ("Err" in res && res.Err == "Anonymous user.") {
-          dispatch( { isRegistered: false, type:"IS_REGISTERED" });
+          dispatch({ isRegistered: false, type: "IS_REGISTERED" });
         } else {
-          dispatch( { isRegistered: true, type:"IS_REGISTERED" });
-  
+          dispatch({ isRegistered: true, type: "IS_REGISTERED" });
+
           const getProfileRes = await backendActor.get_user_profile(
             Principal.fromText(res.Ok.Profile.id),
           );
           dispatch({
-            type:"INIT_FILES_STATE",
+            type: "INIT_FILES_STATE",
             data: { ...res.Ok, ProfileHistory: getProfileRes.Ok, workspaces },
-          })
-        };
-
-
-
-       
+          });
+        }
       } catch (error) {
         console.log("Issue fetching initial data from backend: ", error);
       }
       dispatch({
-        type:"IS_FETCHING",
-        isFetching: false
+        type: "IS_FETCHING",
+        isFetching: false,
       });
     };
-  
-    if (isLoggedIn && backendActor&& !isFetching) {
+
+    if (isLoggedIn && backendActor && !isFetching) {
       fetchInitialData();
     }
-
-
   }, [backendActor]); // Do not use isLoggedIn here, because it is alreay change backendActor when isLoggedIn chancged.
-
 
   // after setup
 
@@ -117,36 +107,36 @@ const App: React.FC = () => {
       (async () => {
         try {
           if (profile) {
-// get notifications
+            // get notifications
             let notificationRes = await backendActor.get_user_notifications(0);
-              let chatsList = await  backendActor.get_my_chats(0);
+            let chatsList = await backendActor.get_my_chats(0);
 
-              dispatch({
-                type:"UPDATE_NOT_LIST",
-                new_list:notificationRes,
-              })
-              dispatch({
-                type:"SET_CHATS",
-                chats: chatsList
-              })
-// get calendar
-              
+            dispatch({
+              type: "UPDATE_NOT_LIST",
+              new_list: notificationRes,
+            });
+            dispatch({
+              type: "SET_CHATS",
+              chats: chatsList,
+            });
+            // get calendar
+
             let res = await backendActor.get_my_calendar();
             let aiCredits = await backendActor.get_ai_credits();
-            if (aiCredits.Err == "User does not exist"){
+            if (aiCredits.Err == "User does not exist") {
               let _ = await backendActor.drop_free_credits();
               dispatch({
                 type: "INIT_AI_CREDITS",
                 credits: 1,
                 isFree: true,
-              })
-            } else if (!aiCredits.Err){
+              });
+            } else if (!aiCredits.Err) {
               let isFree = await backendActor.is_ai_free_tier();
               dispatch({
                 type: "INIT_AI_CREDITS",
                 credits: aiCredits.Ok,
                 isFree: isFree.Ok || true,
-              })
+              });
             }
             res.events = res.events.map((event) => EventTimezone(event));
             res.availabilities = res.availabilities.map((event) =>
@@ -157,15 +147,13 @@ const App: React.FC = () => {
               calendar: res,
             });
           }
-        }
-        catch (error) {
+        } catch (error) {
           console.log("Issue fetching calendar from backend: ", error);
         }
       })();
     }
-  },[profile])
+  }, [profile]);
 
-  
   useSocket();
 
   // Approve tokens
@@ -213,8 +201,6 @@ const App: React.FC = () => {
       throw error;
     }
   }, [backendActor]);
-
-
 
   // Main deposit flow
   useEffect(() => {
@@ -317,14 +303,13 @@ const App: React.FC = () => {
   return (
     <BrowserRouter>
       <MainContent>
-      
         <SearchPopper />
-        
+
         <TopNavBar />
         <DndProvider backend={HTML5Backend}>
           <NavBar>
             <PageContainer>
-              {isRegistered ==false?<RegistrationForm />:<Pages />}
+              {isRegistered == false ? <RegistrationForm /> : <Pages />}
             </PageContainer>
           </NavBar>
         </DndProvider>

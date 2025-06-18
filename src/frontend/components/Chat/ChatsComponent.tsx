@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   List,
   ListItem,
@@ -7,8 +7,8 @@ import {
   Avatar,
   Typography,
   Paper,
-  Box
-} from '@mui/material';
+  Box,
+} from "@mui/material";
 
 interface Message {
   id: string;
@@ -31,7 +31,7 @@ interface ChatsComponentProps {
 
 const ChatsComponent: React.FC<ChatsComponentProps> = ({ chats }) => {
   return (
-    <Paper elevation={3} sx={{ maxWidth: 600, mx: 'auto', mt: 2, p: 2 }}>
+    <Paper elevation={3} sx={{ maxWidth: 600, mx: "auto", mt: 2, p: 2 }}>
       <Typography variant="h6" gutterBottom>
         Chats
       </Typography>
@@ -42,10 +42,10 @@ const ChatsComponent: React.FC<ChatsComponentProps> = ({ chats }) => {
             alignItems="flex-start"
             sx={{
               mb: 1,
-              '&:hover': {
-                backgroundColor: 'action.hover',
-                cursor: 'pointer'
-              }
+              "&:hover": {
+                backgroundColor: "action.hover",
+                cursor: "pointer",
+              },
             }}
           >
             <ListItemAvatar>
@@ -60,10 +60,15 @@ const ChatsComponent: React.FC<ChatsComponentProps> = ({ chats }) => {
                     variant="body2"
                     color="text.primary"
                   >
-                    {chat.messages[chat.messages.length - 1]?.content || 'No messages'}
+                    {chat.messages[chat.messages.length - 1]?.content ||
+                      "No messages"}
                   </Typography>
-                  <Typography variant="caption" display="block" color="text.secondary">
-                    {chat.messages[chat.messages.length - 1]?.timestamp || ''}
+                  <Typography
+                    variant="caption"
+                    display="block"
+                    color="text.secondary"
+                  >
+                    {chat.messages[chat.messages.length - 1]?.timestamp || ""}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
                     {`${chat.members.length} members`}

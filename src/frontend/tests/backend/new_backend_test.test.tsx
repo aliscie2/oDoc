@@ -5,5 +5,4 @@ import {
 import { assert } from "vitest";
 import { newContract } from "./data_samples";
 
-test("Sample test", async () => {
-});
+test("Sample test", async () => {});

@@ -25,19 +25,20 @@
 
 3. in your .env file add
 
-    1. When you run `dfx deploy` you will get 3 links, frontend, backend and internet_identity copy the value with
-       localhost and the port after it
-    2. `VITE_IC_HOST='http://localhost:<the port of your of the canister, after runing dfx deploy backend you will get   backend: http://127.0.0.1:<port>/?canisterId=<...>&id=<...>>`
-    3. `VITE_INTERNET_IDENTITY=<internet_identity id at the end of link after ?id=.....>`
-    4. `POCKET_IC_BIN=/<path to>/pocket-ic`
-    5. `BACKEND_WASM=/<ur dir>/odoc/target/wasm32-unknown-unknown/release/backend.wasm`
-    6. `VITE_DFX_NETWORK='local'`
-    7. `VITE_DFX_PORT=<the port from dfx deploy urls>`
+   1. When you run `dfx deploy` you will get 3 links, frontend, backend and internet_identity copy the value with
+      localhost and the port after it
+   2. `VITE_IC_HOST='http://localhost:<the port of your of the canister, after runing dfx deploy backend you will get   backend: http://127.0.0.1:<port>/?canisterId=<...>&id=<...>>`
+   3. `VITE_INTERNET_IDENTITY=<internet_identity id at the end of link after ?id=.....>`
+   4. `POCKET_IC_BIN=/<path to>/pocket-ic`
+   5. `BACKEND_WASM=/<ur dir>/odoc/target/wasm32-unknown-unknown/release/backend.wasm`
+   6. `VITE_DFX_NETWORK='local'`
+   7. `VITE_DFX_PORT=<the port from dfx deploy urls>`
 
 4. read this https://crates.io/crates/pocket-ic
 5. and read this https://www.npmjs.com/package/@hadronous/pic
 
 ## TO get started
+
 1. `dfx start --background --clean`
    - Note: somtimes you need to check the commands from `MakeFile` in `generate_candid_file`
 2. `dfx deploy backend`
@@ -55,7 +56,7 @@
 Odoc
 
 This app is Notion.so clone, roam research clone and obsidian clone. The main purpose of this app is not to just clone
-these note-taking apps but to make an  **Open source note-taking app** with automation features.
+these note-taking apps but to make an **Open source note-taking app** with automation features.
 
 # learn about Odoc here.
 
@@ -82,11 +83,11 @@ these note-taking apps but to make an  **Open source note-taking app** with auto
    and share it with others.
 4. **search** : We will have 6 search functionaries.
 
-    - search for words in file
-    - search for files names
-    - global search for words in any files in any directory you choose
-    - regular expression search.
-    - save your search results and reuse them again.
+   - search for words in file
+   - search for files names
+   - global search for words in any files in any directory you choose
+   - regular expression search.
+   - save your search results and reuse them again.
 
 5. **spreadsheet** : similar to Microsoft Excel you will have a spreadsheet where you can store your data and implement
    formulas. Also, with plugins you can implement custom formulas like a Google translator. Last but not least, you can
@@ -94,13 +95,13 @@ these note-taking apps but to make an  **Open source note-taking app** with auto
    interact with this spreadsheet.
 
 - Features:
-    - **Columns permissions**: You can decide who can see, update each column or comment on a column
-    - **Views permission**: You can decide who can see each view. Also, the views permission called rows permission
-      because you can add a file for a view to event specific users from sewing septic rows. And this filter can't be
-      removed by anyone so others can only add more filters but can't touch your filter.
-    - **Custom smart contract**: you can write somthing
-      like `if (approved = true) {transfer(100$).to(columns.assigned)}` this will automatically release the payment of a
-      ser when you approve the delivery of an item.
+  - **Columns permissions**: You can decide who can see, update each column or comment on a column
+  - **Views permission**: You can decide who can see each view. Also, the views permission called rows permission
+    because you can add a file for a view to event specific users from sewing septic rows. And this filter can't be
+    removed by anyone so others can only add more filters but can't touch your filter.
+  - **Custom smart contract**: you can write somthing
+    like `if (approved = true) {transfer(100$).to(columns.assigned)}` this will automatically release the payment of a
+    ser when you approve the delivery of an item.
 
 1. **Ownership** : when you create a component, or a plugin or a service you will own it as an NFT. Hence, you can make
    money from it. There are three ways to make money with NFTs. One by selling it. Second, by getting percentage on
@@ -122,16 +123,16 @@ these note-taking apps but to make an  **Open source note-taking app** with auto
 - Disability: Because I am using rust and wasm everything became durable and easy, even the code editor. With `rust` I
   can execute any program langauge seamlessly.
 - I also ran few **experiment** before building this project in order to reach to the ultimate way.
-    - [experiment 1](https://github.com/aliscie/Odoc-tauri-react)
-    - [other experiment](https://github.com/aliscie/Odoc2)
-    - [other experiment](https://github.com/aliscie/autdox)
-    - [notion clone](https://github.com/aliscie/Notion.so-clone)
-    - [second notion clone](https://github.com/aliscie/notion-clone-1)
-    - [Other experiment](https://github.com/AlenSci/Odoc-1)
-    - [experiment 2](https://github.com/aliscie/Learning-webstack-from-cloning-notion.so)
-    - [experiment 3](https://github.com/AlenSci/Odoc1) [also see demo](https://www.youtube.com/watch?v=zXdL4B73Rkc) [and this](https://www.youtube.com/playlist?list=PLZ54FkZk9dwGrJSxLIm4-NLvHlhyQKL6T)
-    - [experiment 4](https://github.com/AlenSci/Odoc)
-    - [experiment 5](https://github.com/aliscie/Odoc-rust)
+  - [experiment 1](https://github.com/aliscie/Odoc-tauri-react)
+  - [other experiment](https://github.com/aliscie/Odoc2)
+  - [other experiment](https://github.com/aliscie/autdox)
+  - [notion clone](https://github.com/aliscie/Notion.so-clone)
+  - [second notion clone](https://github.com/aliscie/notion-clone-1)
+  - [Other experiment](https://github.com/AlenSci/Odoc-1)
+  - [experiment 2](https://github.com/aliscie/Learning-webstack-from-cloning-notion.so)
+  - [experiment 3](https://github.com/AlenSci/Odoc1) [also see demo](https://www.youtube.com/watch?v=zXdL4B73Rkc) [and this](https://www.youtube.com/playlist?list=PLZ54FkZk9dwGrJSxLIm4-NLvHlhyQKL6T)
+  - [experiment 4](https://github.com/AlenSci/Odoc)
+  - [experiment 5](https://github.com/aliscie/Odoc-rust)
 
 ## Development:
 
@@ -152,11 +153,11 @@ these note-taking apps but to make an  **Open source note-taking app** with auto
 
 1. check [tauri prerequisites](https://tauri.app/v1/guides/getting-started/prerequisites/)
    especially the following prerequisites.
-    1. $`curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
-        - or run $`curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh`
-    2. install xcode
-        - to check that run $`xcode-select --install`
-    3. make sure to have c++
+   1. $`curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
+      - or run $`curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh`
+   2. install xcode
+      - to check that run $`xcode-select --install`
+   3. make sure to have c++
 
 ### running the project
 
@@ -186,25 +187,25 @@ backend: https://a4gq6-oaaaa-aaaab-qaa4q-cai.raw.icp0.io/?id=lrcwp-yiaaa-aaaal-a
 frontend: https://lwdq3-vqaaa-aaaal-acwda-cai.icp0.io/
 Local fake eth addresses : "0xEBbfA18c99FF8526A6C32e9eDF41ED48b6F10Cdd"
 
-# testing frontend 
+# testing frontend
 
-  `yarn playwright test`
-    Runs the end-to-end tests.
+`yarn playwright test`
+Runs the end-to-end tests.
 
-  `yarn playwright test --ui`
-    Starts the interactive UI mode.
+`yarn playwright test --ui`
+Starts the interactive UI mode.
 
-  `yarn playwright test --project=chromium`
-    Runs the tests only on Desktop Chrome.
+`yarn playwright test --project=chromium`
+Runs the tests only on Desktop Chrome.
 
-  yarn playwright test example
-    Runs the tests in a specific file.
+yarn playwright test example
+Runs the tests in a specific file.
 
-  yarn playwright test --debug
-    Runs the tests in debug mode.
+yarn playwright test --debug
+Runs the tests in debug mode.
 
-  yarn playwright codegen
-    Auto generate tests with Codegen.
+yarn playwright codegen
+Auto generate tests with Codegen.
 
 We suggest that you begin by typing:
 

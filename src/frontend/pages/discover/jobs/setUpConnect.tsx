@@ -1,22 +1,38 @@
 import { useBackendContext } from "@/contexts/BackendContext";
-import { 
-  Button, IconButton, Menu, MenuItem, Tooltip, Typography, Dialog,
-  DialogTitle, DialogContent, DialogActions, TextField, Box, Divider,
-  Alert, CircularProgress, AlertTitle, LinearProgress, Stack, Chip
+import {
+  Button,
+  IconButton,
+  Menu,
+  MenuItem,
+  Tooltip,
+  Typography,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Box,
+  Divider,
+  Alert,
+  CircularProgress,
+  AlertTitle,
+  LinearProgress,
+  Stack,
+  Chip,
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
-import DeleteIcon from '@mui/icons-material/Delete';
-import StarIcon from '@mui/icons-material/Star';
-import StarBorderIcon from '@mui/icons-material/StarBorder';
-import EmailIcon from '@mui/icons-material/Email';
-import GoogleIcon from '@mui/icons-material/Google';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import WarningIcon from '@mui/icons-material/Warning';
-import CloseIcon from '@mui/icons-material/Close';
-import ScheduleIcon from '@mui/icons-material/Schedule';
-import sendEmail from './utils/sendEmail';
+import DeleteIcon from "@mui/icons-material/Delete";
+import StarIcon from "@mui/icons-material/Star";
+import StarBorderIcon from "@mui/icons-material/StarBorder";
+import EmailIcon from "@mui/icons-material/Email";
+import GoogleIcon from "@mui/icons-material/Google";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import WarningIcon from "@mui/icons-material/Warning";
+import CloseIcon from "@mui/icons-material/Close";
+import ScheduleIcon from "@mui/icons-material/Schedule";
+import sendEmail from "./utils/sendEmail";
 import { Job } from "$/declarations/backend/backend.did";
 
 const SetupBanner = () => {
@@ -26,18 +42,18 @@ const SetupBanner = () => {
   const currentJob = jobs.find((job: Job) => job.id === currentJobId);
   const { backendActor } = useBackendContext();
   const dispatch = useDispatch();
-  
+
   // States
   const [dismissed, setDismissed] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
   const [availabilityDialogOpen, setAvailabilityDialogOpen] = useState(false);
   const [showCloseAlert, setShowCloseAlert] = useState(false);
-  const [verificationCode, setVerificationCode] = useState('');
-  const [generatedCode, setGeneratedCode] = useState('');
+  const [verificationCode, setVerificationCode] = useState("");
+  const [generatedCode, setGeneratedCode] = useState("");
   const [showVerification, setShowVerification] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [trials, setTrials] = useState(0);
   const [lastTrialTime, setLastTrialTime] = useState<number>(0);
   const [emailInput, setEmailInput] = useState("");
@@ -50,17 +66,19 @@ const SetupBanner = () => {
   const availabilityCompleted = (calendar?.availabilities || []).length > 0;
   const allCompleted = emailCompleted && availabilityCompleted;
   const hasIncomplete = !emailCompleted || !availabilityCompleted;
-  const completedCount = (emailCompleted ? 1 : 0) + (availabilityCompleted ? 1 : 0);
+  const completedCount =
+    (emailCompleted ? 1 : 0) + (availabilityCompleted ? 1 : 0);
   const progress = (completedCount / 2) * 100;
 
   // Effects
   useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client';
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
     script.async = true;
     script.defer = true;
     document.body.appendChild(script);
-    return () => document.body.contains(script) && document.body.removeChild(script);
+    return () =>
+      document.body.contains(script) && document.body.removeChild(script);
   }, []);
 
   useEffect(() => {
@@ -84,17 +102,23 @@ const SetupBanner = () => {
           <Button
             variant="contained"
             onClick={(e) => setAnchorEl(e.currentTarget)}
-            sx={{ 
+            sx={{
               minWidth: { xs: 120, sm: 150 },
-              fontSize: { xs: '0.875rem', sm: '1rem' }
+              fontSize: { xs: "0.875rem", sm: "1rem" },
             }}
           >
             {emails.length > 1 ? "Emails" : emails[0]}
           </Button>
-          <Menu anchorEl={anchorEl} open={open} onClose={() => setAnchorEl(null)}>
+          <Menu
+            anchorEl={anchorEl}
+            open={open}
+            onClose={() => setAnchorEl(null)}
+          >
             {emails.map((email: string, index: number) => (
               <MenuItem key={email} sx={{ minWidth: { xs: 250, sm: 300 } }}>
-                <Typography sx={{ flexGrow: 1, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                <Typography
+                  sx={{ flexGrow: 1, fontSize: { xs: "0.875rem", sm: "1rem" } }}
+                >
                   {email}
                 </Typography>
                 {index === 0 ? (
@@ -105,12 +129,12 @@ const SetupBanner = () => {
                   </Tooltip>
                 ) : (
                   <Tooltip title="Set as default">
-                    <IconButton 
+                    <IconButton
                       size="small"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setEmails(prev => {
-                          const filtered = prev.filter(e => e !== email);
+                        setEmails((prev) => {
+                          const filtered = prev.filter((e) => e !== email);
                           return [email, ...filtered];
                         });
                       }}
@@ -120,11 +144,11 @@ const SetupBanner = () => {
                   </Tooltip>
                 )}
                 <Tooltip title="Remove email">
-                  <IconButton 
+                  <IconButton
                     size="small"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setEmails(prev => prev.filter(e => e !== email));
+                      setEmails((prev) => prev.filter((e) => e !== email));
                     }}
                     color="error"
                   >
@@ -133,7 +157,13 @@ const SetupBanner = () => {
                 </Tooltip>
               </MenuItem>
             ))}
-            <MenuItem onClick={() => { setEmailDialogOpen(true); setAnchorEl(null); resetEmailDialog(); }}>
+            <MenuItem
+              onClick={() => {
+                setEmailDialogOpen(true);
+                setAnchorEl(null);
+                resetEmailDialog();
+              }}
+            >
               Add Another Email
             </MenuItem>
           </Menu>
@@ -156,26 +186,33 @@ const SetupBanner = () => {
   };
 
   const resetEmailDialog = () => {
-    setEmailInput('');
-    setVerificationCode('');
-    setGeneratedCode('');
+    setEmailInput("");
+    setVerificationCode("");
+    setGeneratedCode("");
     setShowVerification(false);
-    setError('');
+    setError("");
     setLoading(false);
   };
 
   const addEmailToBackend = async (email: string) => {
     try {
-      const calendar_id = await backendActor.add_google_calendar_id(calendar.id, [email]);
-      if ('Err' in calendar_id) {
+      const calendar_id = await backendActor.add_google_calendar_id(
+        calendar.id,
+        [email],
+      );
+      if ("Err" in calendar_id) {
         alert("Error adding google calendar id");
         return false;
       }
-      setEmails(prev => [...prev, email]);
-      dispatch({ type: "ADD_CALENDAR_EMAIL", id: calendar_id.Ok, email: email });
+      setEmails((prev) => [...prev, email]);
+      dispatch({
+        type: "ADD_CALENDAR_EMAIL",
+        id: calendar_id.Ok,
+        email: email,
+      });
       return true;
     } catch (error) {
-      console.error('Error adding email to backend:', error);
+      console.error("Error adding email to backend:", error);
       alert("Error adding google calendar id");
       return false;
     }
@@ -187,13 +224,18 @@ const SetupBanner = () => {
       if (window.google) {
         const client = window.google.accounts.oauth2.initTokenClient({
           client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-          scope: 'email profile',
+          scope: "email profile",
           callback: async (response: any) => {
             if (response.access_token) {
               try {
-                const res = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-                  headers: { 'Authorization': `Bearer ${response.access_token}` }
-                });
+                const res = await fetch(
+                  "https://www.googleapis.com/oauth2/v2/userinfo",
+                  {
+                    headers: {
+                      Authorization: `Bearer ${response.access_token}`,
+                    },
+                  },
+                );
                 const userInfo = await res.json();
                 const success = await addEmailToBackend(userInfo.email);
                 if (success) {
@@ -201,40 +243,44 @@ const SetupBanner = () => {
                   resetEmailDialog();
                 }
               } catch (err) {
-                setError('Failed to get user information');
+                setError("Failed to get user information");
               }
             }
-          }
+          },
         });
         client.requestAccessToken();
       }
     } catch (error) {
-      setError('Failed to initialize Google OAuth');
+      setError("Failed to initialize Google OAuth");
     }
   };
 
   const handleSendVerification = async () => {
     if (!canMakeTrial()) {
-      setError('Maximum trials reached. Please try again in 1 hour.');
+      setError("Maximum trials reached. Please try again in 1 hour.");
       return;
     }
-    if (!emailInput || !emailInput.includes('@')) {
-      setError('Please enter a valid email address');
+    if (!emailInput || !emailInput.includes("@")) {
+      setError("Please enter a valid email address");
       return;
     }
 
     setLoading(true);
-    setError('');
-    
+    setError("");
+
     try {
       const code = Math.floor(100000 + Math.random() * 900000).toString();
       setGeneratedCode(code);
-      await sendEmail("Email Verification Code", `Your verification code is: ${code}`, [emailInput]);
+      await sendEmail(
+        "Email Verification Code",
+        `Your verification code is: ${code}`,
+        [emailInput],
+      );
       setShowVerification(true);
-      setTrials(prev => prev + 1);
+      setTrials((prev) => prev + 1);
       setLastTrialTime(Date.now());
     } catch (error) {
-      setError('Failed to send verification email');
+      setError("Failed to send verification email");
     } finally {
       setLoading(false);
     }
@@ -248,21 +294,23 @@ const SetupBanner = () => {
         resetEmailDialog();
       }
     } else {
-      setError('Invalid verification code');
+      setError("Invalid verification code");
     }
   };
 
-  const handleCloseDialog = (dialogType: 'email' | 'availability') => {
+  const handleCloseDialog = (dialogType: "email" | "availability") => {
     if (hasIncomplete) {
       setShowCloseAlert(true);
       return;
     }
-    dialogType === 'email' ? setEmailDialogOpen(false) : setAvailabilityDialogOpen(false);
-    if (dialogType === 'email') resetEmailDialog();
+    dialogType === "email"
+      ? setEmailDialogOpen(false)
+      : setAvailabilityDialogOpen(false);
+    if (dialogType === "email") resetEmailDialog();
   };
 
-  const forceCloseDialog = (dialogType: 'email' | 'availability') => {
-    if (dialogType === 'email') {
+  const forceCloseDialog = (dialogType: "email" | "availability") => {
+    if (dialogType === "email") {
       setEmailDialogOpen(false);
       resetEmailDialog();
     } else {
@@ -283,12 +331,12 @@ const SetupBanner = () => {
   return (
     <>
       {/* Main Setup Banner */}
-      <Alert 
-        severity="warning" 
-        sx={{ 
-          mb: 2, 
+      <Alert
+        severity="warning"
+        sx={{
+          mb: 2,
           borderRadius: 2,
-          '& .MuiAlert-message': { width: '100%' }
+          "& .MuiAlert-message": { width: "100%" },
         }}
         action={
           <IconButton
@@ -304,20 +352,30 @@ const SetupBanner = () => {
         <AlertTitle sx={{ mb: 1 }}>
           Complete Your Account Setup ({completedCount}/2)
         </AlertTitle>
-        
-        <LinearProgress 
-          variant="determinate" 
-          value={progress} 
+
+        <LinearProgress
+          variant="determinate"
+          value={progress}
           sx={{ mb: 2, height: 6, borderRadius: 3 }}
         />
-        
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="flex-start">
+
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={2}
+          alignItems="flex-start"
+        >
           <Box sx={{ flex: 1 }}>
             <Typography variant="body2" sx={{ mb: 1 }}>
               Please complete these steps to get the most out of your account:
             </Typography>
-            
-            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mb: { xs: 2, sm: 0 } }}>
+
+            <Stack
+              direction="row"
+              spacing={1}
+              flexWrap="wrap"
+              useFlexGap
+              sx={{ mb: { xs: 2, sm: 0 } }}
+            >
               <Chip
                 icon={emailCompleted ? <CheckCircleIcon /> : <EmailIcon />}
                 label="Email Verification"
@@ -326,7 +384,9 @@ const SetupBanner = () => {
                 variant={emailCompleted ? "filled" : "outlined"}
               />
               <Chip
-                icon={availabilityCompleted ? <CheckCircleIcon /> : <ScheduleIcon />}
+                icon={
+                  availabilityCompleted ? <CheckCircleIcon /> : <ScheduleIcon />
+                }
                 label="Calendar Setup"
                 color={availabilityCompleted ? "success" : "warning"}
                 size="small"
@@ -334,8 +394,8 @@ const SetupBanner = () => {
               />
             </Stack>
           </Box>
-          
-          <Stack direction={{ xs: 'row', sm: 'column' }} spacing={1}>
+
+          <Stack direction={{ xs: "row", sm: "column" }} spacing={1}>
             {!emailCompleted && (
               <Button
                 size="small"
@@ -368,17 +428,23 @@ const SetupBanner = () => {
           <Button
             variant="contained"
             onClick={(e) => setAnchorEl(e.currentTarget)}
-            sx={{ 
+            sx={{
               minWidth: { xs: 120, sm: 150 },
-              fontSize: { xs: '0.875rem', sm: '1rem' }
+              fontSize: { xs: "0.875rem", sm: "1rem" },
             }}
           >
             {emails.length > 1 ? "Emails" : emails[0]}
           </Button>
-          <Menu anchorEl={anchorEl} open={open} onClose={() => setAnchorEl(null)}>
+          <Menu
+            anchorEl={anchorEl}
+            open={open}
+            onClose={() => setAnchorEl(null)}
+          >
             {emails.map((email: string, index: number) => (
               <MenuItem key={email} sx={{ minWidth: { xs: 250, sm: 300 } }}>
-                <Typography sx={{ flexGrow: 1, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+                <Typography
+                  sx={{ flexGrow: 1, fontSize: { xs: "0.875rem", sm: "1rem" } }}
+                >
                   {email}
                 </Typography>
                 {index === 0 ? (
@@ -389,12 +455,12 @@ const SetupBanner = () => {
                   </Tooltip>
                 ) : (
                   <Tooltip title="Set as default">
-                    <IconButton 
+                    <IconButton
                       size="small"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setEmails(prev => {
-                          const filtered = prev.filter(e => e !== email);
+                        setEmails((prev) => {
+                          const filtered = prev.filter((e) => e !== email);
                           return [email, ...filtered];
                         });
                       }}
@@ -404,11 +470,11 @@ const SetupBanner = () => {
                   </Tooltip>
                 )}
                 <Tooltip title="Remove email">
-                  <IconButton 
+                  <IconButton
                     size="small"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setEmails(prev => prev.filter(e => e !== email));
+                      setEmails((prev) => prev.filter((e) => e !== email));
                     }}
                     color="error"
                   >
@@ -417,7 +483,13 @@ const SetupBanner = () => {
                 </Tooltip>
               </MenuItem>
             ))}
-            <MenuItem onClick={() => { setEmailDialogOpen(true); setAnchorEl(null); resetEmailDialog(); }}>
+            <MenuItem
+              onClick={() => {
+                setEmailDialogOpen(true);
+                setAnchorEl(null);
+                resetEmailDialog();
+              }}
+            >
               Add Another Email
             </MenuItem>
           </Menu>
@@ -425,66 +497,88 @@ const SetupBanner = () => {
       )}
 
       {/* Email Setup Dialog */}
-      <Dialog 
-        open={emailDialogOpen} 
-        onClose={() => handleCloseDialog('email')} 
-        maxWidth="sm" 
+      <Dialog
+        open={emailDialogOpen}
+        onClose={() => handleCloseDialog("email")}
+        maxWidth="sm"
         fullWidth
         PaperProps={{
           sx: {
             m: { xs: 1, sm: 2 },
-            maxHeight: { xs: '90vh', sm: '80vh' },
-            overflow: 'auto'
-          }
+            maxHeight: { xs: "90vh", sm: "80vh" },
+            overflow: "auto",
+          },
         }}
       >
         <DialogTitle sx={{ pb: 1 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="h6" sx={{ fontSize: { xs: '1.125rem', sm: '1.25rem' } }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Typography
+              variant="h6"
+              sx={{ fontSize: { xs: "1.125rem", sm: "1.25rem" } }}
+            >
               Email Setup
             </Typography>
-            <IconButton onClick={() => handleCloseDialog('email')} size="small">
+            <IconButton onClick={() => handleCloseDialog("email")} size="small">
               <CloseIcon />
             </IconButton>
           </Box>
         </DialogTitle>
         <DialogContent sx={{ px: { xs: 2, sm: 3 } }}>
           {error && (
-            <Alert severity="error" sx={{ mb: 2, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+            <Alert
+              severity="error"
+              sx={{ mb: 2, fontSize: { xs: "0.875rem", sm: "1rem" } }}
+            >
               {error}
             </Alert>
           )}
-          
+
           {!showVerification ? (
             <Box sx={{ mt: 1 }}>
-              <Typography variant="h6" sx={{ fontSize: { xs: '1rem', sm: '1.125rem' }, mb: 2 }}>
+              <Typography
+                variant="h6"
+                sx={{ fontSize: { xs: "1rem", sm: "1.125rem" }, mb: 2 }}
+              >
                 Choose an option:
               </Typography>
-              
+
               {/* Gmail OAuth */}
               <Button
                 variant="contained"
                 fullWidth
                 startIcon={<GoogleIcon />}
                 onClick={handleGoogleAuth}
-                sx={{ 
+                sx={{
                   mb: 2,
                   py: { xs: 1, sm: 1.5 },
-                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                  fontSize: { xs: "0.875rem", sm: "1rem" },
                 }}
               >
                 Connect with Gmail
               </Button>
 
               <Divider sx={{ my: 2 }}>
-                <Typography variant="body2" color="textSecondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
+                <Typography
+                  variant="body2"
+                  color="textSecondary"
+                  sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+                >
                   OR
                 </Typography>
               </Divider>
 
               {/* Manual Email */}
               <Box>
-                <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.875rem', sm: '1rem' }, mb: 1 }}>
+                <Typography
+                  variant="subtitle1"
+                  sx={{ fontSize: { xs: "0.875rem", sm: "1rem" }, mb: 1 }}
+                >
                   Add Email Manually
                 </Typography>
                 <TextField
@@ -493,11 +587,11 @@ const SetupBanner = () => {
                   type="email"
                   value={emailInput}
                   onChange={(e) => setEmailInput(e.target.value)}
-                  sx={{ 
+                  sx={{
                     mb: 2,
-                    '& .MuiInputBase-input': {
-                      fontSize: { xs: '0.875rem', sm: '1rem' }
-                    }
+                    "& .MuiInputBase-input": {
+                      fontSize: { xs: "0.875rem", sm: "1rem" },
+                    },
                   }}
                 />
                 <Button
@@ -505,20 +599,26 @@ const SetupBanner = () => {
                   fullWidth
                   onClick={handleSendVerification}
                   disabled={loading || !canMakeTrial()}
-                  startIcon={loading ? <CircularProgress size={20} /> : <EmailIcon />}
-                  sx={{ 
+                  startIcon={
+                    loading ? <CircularProgress size={20} /> : <EmailIcon />
+                  }
+                  sx={{
                     py: { xs: 1, sm: 1.5 },
-                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                    fontSize: { xs: "0.875rem", sm: "1rem" },
                   }}
                 >
-                  {loading ? 'Sending...' : 'Send Verification Code'}
+                  {loading ? "Sending..." : "Send Verification Code"}
                 </Button>
                 {trials > 0 && (
-                  <Typography variant="caption" color="textSecondary" sx={{ 
-                    mt: 1, 
-                    display: 'block',
-                    fontSize: { xs: '0.6875rem', sm: '0.75rem' }
-                  }}>
+                  <Typography
+                    variant="caption"
+                    color="textSecondary"
+                    sx={{
+                      mt: 1,
+                      display: "block",
+                      fontSize: { xs: "0.6875rem", sm: "0.75rem" },
+                    }}
+                  >
                     Trials used: {trials}/3 per hour
                   </Typography>
                 )}
@@ -526,7 +626,10 @@ const SetupBanner = () => {
             </Box>
           ) : (
             <Box sx={{ mt: 1 }}>
-              <Typography variant="body1" sx={{ mb: 2, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
+              <Typography
+                variant="body1"
+                sx={{ mb: 2, fontSize: { xs: "0.875rem", sm: "1rem" } }}
+              >
                 We've sent a verification code to <strong>{emailInput}</strong>
               </Typography>
               <TextField
@@ -535,11 +638,11 @@ const SetupBanner = () => {
                 value={verificationCode}
                 onChange={(e) => setVerificationCode(e.target.value)}
                 inputProps={{ maxLength: 6 }}
-                sx={{ 
+                sx={{
                   mb: 2,
-                  '& .MuiInputBase-input': {
-                    fontSize: { xs: '0.875rem', sm: '1rem' }
-                  }
+                  "& .MuiInputBase-input": {
+                    fontSize: { xs: "0.875rem", sm: "1rem" },
+                  },
                 }}
               />
               <Button
@@ -547,10 +650,10 @@ const SetupBanner = () => {
                 fullWidth
                 onClick={handleVerifyCode}
                 disabled={verificationCode.length !== 6}
-                sx={{ 
+                sx={{
                   mb: 1,
                   py: { xs: 1, sm: 1.5 },
-                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                  fontSize: { xs: "0.875rem", sm: "1rem" },
                 }}
               >
                 Verify Code
@@ -559,7 +662,7 @@ const SetupBanner = () => {
                 variant="text"
                 fullWidth
                 onClick={() => setShowVerification(false)}
-                sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+                sx={{ fontSize: { xs: "0.875rem", sm: "1rem" } }}
               >
                 Back to Email Entry
               </Button>
@@ -569,31 +672,47 @@ const SetupBanner = () => {
       </Dialog>
 
       {/* Availability Setup Dialog */}
-      <Dialog 
-        open={availabilityDialogOpen} 
-        onClose={() => handleCloseDialog('availability')} 
-        maxWidth="sm" 
+      <Dialog
+        open={availabilityDialogOpen}
+        onClose={() => handleCloseDialog("availability")}
+        maxWidth="sm"
         fullWidth
         PaperProps={{
           sx: {
             m: { xs: 1, sm: 2 },
-            maxHeight: { xs: '90vh', sm: '80vh' }
-          }
+            maxHeight: { xs: "90vh", sm: "80vh" },
+          },
         }}
       >
         <DialogTitle>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="h6" sx={{ fontSize: { xs: '1.125rem', sm: '1.25rem' } }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Typography
+              variant="h6"
+              sx={{ fontSize: { xs: "1.125rem", sm: "1.25rem" } }}
+            >
               Availability Setup
             </Typography>
-            <IconButton onClick={() => handleCloseDialog('availability')} size="small">
+            <IconButton
+              onClick={() => handleCloseDialog("availability")}
+              size="small"
+            >
               <CloseIcon />
             </IconButton>
           </Box>
         </DialogTitle>
         <DialogContent sx={{ px: { xs: 2, sm: 3 } }}>
-          <Typography variant="body1" sx={{ mt: 1, mb: 2, fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-            You can tell your calendar e.g. "I am available every day from 9AM to 6PM except Fridays."
+          <Typography
+            variant="body1"
+            sx={{ mt: 1, mb: 2, fontSize: { xs: "0.875rem", sm: "1rem" } }}
+          >
+            You can tell your calendar e.g. "I am available every day from 9AM
+            to 6PM except Fridays."
           </Typography>
           <Button
             variant="contained"
@@ -601,18 +720,18 @@ const SetupBanner = () => {
             component={Link}
             to="/dashboard"
             onClick={() => setAvailabilityDialogOpen(false)}
-            sx={{ 
+            sx={{
               py: { xs: 1, sm: 1.5 },
-              fontSize: { xs: '0.875rem', sm: '1rem' }
+              fontSize: { xs: "0.875rem", sm: "1rem" },
             }}
           >
             Go to Dashboard to Set Calendar Availability
           </Button>
         </DialogContent>
         <DialogActions sx={{ px: { xs: 2, sm: 3 }, pb: { xs: 2, sm: 3 } }}>
-          <Button 
-            onClick={() => forceCloseDialog('availability')}
-            sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+          <Button
+            onClick={() => forceCloseDialog("availability")}
+            sx={{ fontSize: { xs: "0.875rem", sm: "1rem" } }}
           >
             Cancel
           </Button>
@@ -620,35 +739,35 @@ const SetupBanner = () => {
       </Dialog>
 
       {/* Close Alert Dialog */}
-      <Dialog 
+      <Dialog
         open={showCloseAlert}
         PaperProps={{
-          sx: { m: { xs: 1, sm: 2 } }
+          sx: { m: { xs: 1, sm: 2 } },
         }}
       >
-        <DialogTitle sx={{ fontSize: { xs: '1.125rem', sm: '1.25rem' } }}>
+        <DialogTitle sx={{ fontSize: { xs: "1.125rem", sm: "1.25rem" } }}>
           Setup Required
         </DialogTitle>
         <DialogContent sx={{ px: { xs: 2, sm: 3 } }}>
-          <Typography sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}>
-            Please complete the required setup steps before closing. 
-            You can use the setup buttons above to continue.
+          <Typography sx={{ fontSize: { xs: "0.875rem", sm: "1rem" } }}>
+            Please complete the required setup steps before closing. You can use
+            the setup buttons above to continue.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: { xs: 2, sm: 3 }, pb: { xs: 2, sm: 3 } }}>
-          <Button 
+          <Button
             onClick={() => setShowCloseAlert(false)}
-            sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+            sx={{ fontSize: { xs: "0.875rem", sm: "1rem" } }}
           >
             Continue Setup
           </Button>
-          <Button 
+          <Button
             onClick={() => {
-              forceCloseDialog('email');
-              forceCloseDialog('availability');
+              forceCloseDialog("email");
+              forceCloseDialog("availability");
             }}
             color="error"
-            sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+            sx={{ fontSize: { xs: "0.875rem", sm: "1rem" } }}
           >
             Close Anyway
           </Button>

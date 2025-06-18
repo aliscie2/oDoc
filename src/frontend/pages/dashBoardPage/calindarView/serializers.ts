@@ -69,26 +69,31 @@ export const AvailabilityTimezone = (
 
   if (convertedScheduleType.DateRange) {
     convertedScheduleType.DateRange = {
-      start_date: Number(converter(BigInt(convertedScheduleType.DateRange.start_date))),
-      end_date: Number(converter(BigInt(convertedScheduleType.DateRange.end_date))),
+      start_date: Number(
+        converter(BigInt(convertedScheduleType.DateRange.start_date)),
+      ),
+      end_date: Number(
+        converter(BigInt(convertedScheduleType.DateRange.end_date)),
+      ),
     };
   }
 
   if (convertedScheduleType.WeeklyRecurring) {
     convertedScheduleType.WeeklyRecurring = {
       ...convertedScheduleType.WeeklyRecurring,
-      valid_until: convertedScheduleType.WeeklyRecurring.valid_until 
-        ? convertedScheduleType.WeeklyRecurring.valid_until.map(
-            (time) => (time ? Number(converter(BigInt(time))) : 0)
+      valid_until: convertedScheduleType.WeeklyRecurring.valid_until
+        ? convertedScheduleType.WeeklyRecurring.valid_until.map((time) =>
+            time ? Number(converter(BigInt(time))) : 0,
           )
         : undefined, // Handle undefined/null valid_until
     };
   }
 
   if (convertedScheduleType.SpecificDates) {
-    convertedScheduleType.SpecificDates = convertedScheduleType.SpecificDates.map((date) =>
-      Number(converter(BigInt(date)))
-    );
+    convertedScheduleType.SpecificDates =
+      convertedScheduleType.SpecificDates.map((date) =>
+        Number(converter(BigInt(date))),
+      );
   }
 
   return {
@@ -96,4 +101,3 @@ export const AvailabilityTimezone = (
     schedule_type: convertedScheduleType,
   };
 };
-

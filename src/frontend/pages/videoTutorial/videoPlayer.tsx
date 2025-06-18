@@ -3,12 +3,12 @@ import React, { useEffect, useRef, useState } from "react";
 import ReactPlayer from "react-player";
 import useIsInViewport from "./useViewPort";
 
-const VideoPlayer = ({ 
-  video, 
-  startTime, 
-  style 
-}: { 
-  video: Tutorial; 
+const VideoPlayer = ({
+  video,
+  startTime,
+  style,
+}: {
+  video: Tutorial;
   startTime?: number;
   style?: React.CSSProperties;
 }) => {
@@ -39,10 +39,10 @@ const VideoPlayer = ({
   return (
     <Box
       ref={containerRef}
-      sx={{ 
-        height: "100%", 
+      sx={{
+        height: "100%",
         width: "100%",
-        display: "flex", 
+        display: "flex",
         flexDirection: "column",
         position: "relative",
         // Remove any default margins/padding
@@ -110,7 +110,7 @@ const VideoPlayer = ({
           vimeo: {
             playerOptions: {
               responsive: true,
-            }
+            },
           },
           file: {
             attributes: {
@@ -118,9 +118,9 @@ const VideoPlayer = ({
                 width: "100%",
                 height: "100%",
                 objectFit: "cover",
-              }
-            }
-          }
+              },
+            },
+          },
         }}
       />
     </Box>

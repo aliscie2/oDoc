@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -25,8 +25,8 @@ import {
   AccordionSummary,
   AccordionDetails,
   Stack,
-  Divider
-} from '@mui/material';
+  Divider,
+} from "@mui/material";
 import {
   ExpandMore,
   PlayArrow,
@@ -39,11 +39,11 @@ import {
   Public,
   CheckCircle,
   Star,
-  ArrowForward
-} from '@mui/icons-material';
-import { 
-  businessSteps, 
-  freelancerSteps, 
+  ArrowForward,
+} from "@mui/icons-material";
+import {
+  businessSteps,
+  freelancerSteps,
   StepData,
   introFeatures,
   trustIndicators,
@@ -55,14 +55,14 @@ import {
   goodBehaviors,
   badBehaviors,
   rewards,
-  punishments
-} from './landingPageData';
-import TutorialsSection from './mobileVideoTutorials';
+  punishments,
+} from "./landingPageData";
+import TutorialsSection from "./mobileVideoTutorials";
 
 const AnimatedCounter = ({ end, duration = 2000 }) => {
   const [count, setCount] = useState(0);
   const [started, setStarted] = useState(false);
-  
+
   const trigger = useScrollTrigger({
     threshold: 0.5,
     disableHysteresis: true,
@@ -76,7 +76,7 @@ const AnimatedCounter = ({ end, duration = 2000 }) => {
         if (startTime === null) startTime = currentTime;
         const progress = Math.min((currentTime - startTime) / duration, 1);
         setCount(Math.floor(progress * end));
-        
+
         if (progress < 1) {
           requestAnimationFrame(animate);
         }
@@ -90,7 +90,7 @@ const AnimatedCounter = ({ end, duration = 2000 }) => {
 
 const FloatingElement = ({ children, delay = 0 }) => {
   const [visible, setVisible] = useState(false);
-  
+
   useEffect(() => {
     const timer = setTimeout(() => setVisible(true), delay);
     return () => clearTimeout(timer);
@@ -107,17 +107,17 @@ const GlowCard = ({ children, ...props }) => (
   <Card
     {...props}
     sx={{
-      background: 'rgba(255, 255, 255, 0.05)',
-      backdropFilter: 'blur(10px)',
-      border: '1px solid rgba(255, 255, 255, 0.1)',
+      background: "rgba(255, 255, 255, 0.05)",
+      backdropFilter: "blur(10px)",
+      border: "1px solid rgba(255, 255, 255, 0.1)",
       borderRadius: 3,
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-      '&:hover': {
-        transform: 'translateY(-4px)',
-        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
-        border: '1px solid rgba(255, 255, 255, 0.2)',
+      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+      "&:hover": {
+        transform: "translateY(-4px)",
+        boxShadow: "0 20px 40px rgba(0, 0, 0, 0.3)",
+        border: "1px solid rgba(255, 255, 255, 0.2)",
       },
-      ...props.sx
+      ...props.sx,
     }}
   >
     {children}
@@ -137,48 +137,50 @@ export default function CryptoLandingPage() {
   const steps = activeTab === 0 ? freelancerSteps : businessSteps;
 
   return (
-    <Box sx={{ minHeight: '100vh', overflow: 'hidden' }}>
+    <Box sx={{ minHeight: "100vh", overflow: "hidden" }}>
       {/* Hero Section */}
       <Container maxWidth="sm" sx={{ pt: 4, pb: 6 }}>
         <Fade in timeout={1000}>
           <Box textAlign="center" mb={4}>
-            <Typography 
-              variant="h3" 
-              component="h1" 
+            <Typography
+              variant="h3"
+              component="h1"
               fontWeight="800"
               sx={{
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                backgroundClip: 'text',
-                textFillColor: 'transparent',
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                backgroundClip: "text",
+                textFillColor: "transparent",
                 mb: 2,
-                lineHeight: 1.2
+                lineHeight: 1.2,
               }}
             >
               Crypto Agreement Platform
             </Typography>
-            <Typography 
-              variant="h5" 
-              color="text.secondary" 
+            <Typography
+              variant="h5"
+              color="text.secondary"
               fontWeight="300"
               sx={{ mb: 1 }}
             >
               Limitless Collaboration
             </Typography>
-            <Typography 
-              variant="body1" 
+            <Typography
+              variant="body1"
               color="text.secondary"
               sx={{ mb: 3, opacity: 0.8 }}
             >
               Built for Freelancers • Crypto Enthusiasts • Global Teams
             </Typography>
-            <Typography 
+            <Typography
               variant="body2"
               color="text.secondary"
               sx={{ mb: 4, lineHeight: 1.6 }}
             >
-              Eliminate middlemen, spreadsheets, and task managers. Streamline contracts, payments, escrow, and collaboration into one seamless crypto-native platform.
+              Eliminate middlemen, spreadsheets, and task managers. Streamline
+              contracts, payments, escrow, and collaboration into one seamless
+              crypto-native platform.
             </Typography>
-            
+
             <Stack direction="row" spacing={1} justifyContent="center" mb={4}>
               {trustIndicators.map((indicator, index) => (
                 <FloatingElement key={indicator.label} delay={index * 200}>
@@ -188,8 +190,8 @@ export default function CryptoLandingPage() {
                     size="small"
                     sx={{
                       backgroundColor: indicator.color,
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      '& .MuiChip-label': { fontSize: '0.75rem' }
+                      border: "1px solid rgba(255, 255, 255, 0.1)",
+                      "& .MuiChip-label": { fontSize: "0.75rem" },
                     }}
                   />
                 </FloatingElement>
@@ -204,12 +206,12 @@ export default function CryptoLandingPage() {
                 borderRadius: 6,
                 px: 4,
                 py: 1.5,
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                boxShadow: '0 8px 32px rgba(102, 126, 234, 0.4)',
-                '&:hover': {
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 12px 40px rgba(102, 126, 234, 0.6)',
-                }
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                boxShadow: "0 8px 32px rgba(102, 126, 234, 0.4)",
+                "&:hover": {
+                  transform: "translateY(-2px)",
+                  boxShadow: "0 12px 40px rgba(102, 126, 234, 0.6)",
+                },
               }}
             >
               Get Started
@@ -217,16 +219,20 @@ export default function CryptoLandingPage() {
           </Box>
         </Fade>
 
-
         {/* AI Job Matcher Section */}
         <Box sx={{ mb: 6 }}>
           <Typography variant="h4" fontWeight="700" textAlign="center" mb={3}>
             Stop the Endless Job Hunt
           </Typography>
-          <Typography variant="body1" color="text.secondary" textAlign="center" mb={4}>
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            textAlign="center"
+            mb={4}
+          >
             Stop searching for Talents or Jobs, let AI do it.
           </Typography>
-          
+
           <Grid container spacing={2} sx={{ mb: 4 }}>
             {jobMatcherFeatures.map((feature, index) => (
               <Grid item xs={12} key={feature.title}>
@@ -273,11 +279,8 @@ export default function CryptoLandingPage() {
           </GlowCard>
         </Box>
 
-
-
-
         {/* Benefits Section */}
-        <TutorialsSection/>
+        <TutorialsSection />
 
         {/* Features Preview */}
         <Grid container spacing={2} sx={{ mb: 6 }}>
@@ -334,30 +337,33 @@ export default function CryptoLandingPage() {
           </Grid>
         </GlowCard>
 
-        
         {/* Benefits Section */}
         <Box sx={{ mb: 6 }}>
           <Typography variant="h4" fontWeight="700" textAlign="center" mb={4}>
             Why Choose ODoc?
           </Typography>
-          
+
           {benefitsData.slice(0, 4).map((benefit, index) => (
-            <Accordion 
+            <Accordion
               key={benefit.id}
               expanded={expandedBenefit === benefit.id}
-              onChange={(e, isExpanded) => setExpandedBenefit(isExpanded ? benefit.id : null)}
+              onChange={(e, isExpanded) =>
+                setExpandedBenefit(isExpanded ? benefit.id : null)
+              }
               sx={{
                 mb: 2,
-                background: 'rgba(255, 255, 255, 0.05)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                background: "rgba(255, 255, 255, 0.05)",
+                backdropFilter: "blur(10px)",
+                border: "1px solid rgba(255, 255, 255, 0.1)",
                 borderRadius: 2,
-                '&:before': { display: 'none' }
+                "&:before": { display: "none" },
               }}
             >
               <AccordionSummary expandIcon={<ExpandMore />}>
                 <Box display="flex" alignItems="center" gap={2}>
-                  <Avatar sx={{ bgcolor: benefit.color, width: 32, height: 32 }}>
+                  <Avatar
+                    sx={{ bgcolor: benefit.color, width: 32, height: 32 }}
+                  >
                     {benefit.icon}
                   </Avatar>
                   <Box>
@@ -365,7 +371,7 @@ export default function CryptoLandingPage() {
                       {benefit.title}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {benefit.description.split('\n')[0]}
+                      {benefit.description.split("\n")[0]}
                     </Typography>
                   </Box>
                 </Box>
@@ -375,10 +381,10 @@ export default function CryptoLandingPage() {
                   {benefit.expandedContent}
                 </Typography>
                 {benefit.stats && (
-                  <Chip 
+                  <Chip
                     label={benefit.stats}
                     size="small"
-                    sx={{ mt: 2, bgcolor: 'rgba(255, 255, 255, 0.1)' }}
+                    sx={{ mt: 2, bgcolor: "rgba(255, 255, 255, 0.1)" }}
                   />
                 )}
               </AccordionDetails>
@@ -391,9 +397,9 @@ export default function CryptoLandingPage() {
           <Typography variant="h4" fontWeight="700" textAlign="center" mb={3}>
             Get Started
           </Typography>
-          
-          <Tabs 
-            value={activeTab} 
+
+          <Tabs
+            value={activeTab}
             onChange={handleTabChange}
             centered
             sx={{ mb: 3 }}
@@ -408,7 +414,9 @@ export default function CryptoLandingPage() {
                 <Step key={step.label}>
                   <StepLabel
                     icon={
-                      <Avatar sx={{ bgcolor: 'primary.main', width: 32, height: 32 }}>
+                      <Avatar
+                        sx={{ bgcolor: "primary.main", width: 32, height: 32 }}
+                      >
                         {step.icon}
                       </Avatar>
                     }
@@ -418,7 +426,11 @@ export default function CryptoLandingPage() {
                     </Typography>
                   </StepLabel>
                   <StepContent>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mb: 2 }}
+                    >
                       {step.description}
                     </Typography>
                     <Box>
@@ -428,7 +440,7 @@ export default function CryptoLandingPage() {
                         size="small"
                         disabled={index === steps.length - 1}
                       >
-                        {index === steps.length - 1 ? 'Complete' : 'Continue'}
+                        {index === steps.length - 1 ? "Complete" : "Continue"}
                       </Button>
                       {index > 0 && (
                         <Button
@@ -452,19 +464,29 @@ export default function CryptoLandingPage() {
           <Typography variant="h4" fontWeight="700" textAlign="center" mb={4}>
             Enterprise Security
           </Typography>
-          
+
           <Grid container spacing={2}>
             {securityFeatures.slice(0, 4).map((feature, index) => (
               <Grid item xs={12} sm={6} key={feature.title}>
                 <FloatingElement delay={index * 150}>
-                  <GlowCard sx={{ height: '100%' }}>
+                  <GlowCard sx={{ height: "100%" }}>
                     <CardContent sx={{ p: 2 }}>
                       <Box display="flex" alignItems="flex-start" gap={2}>
-                        <Avatar sx={{ bgcolor: 'secondary.main', width: 32, height: 32 }}>
+                        <Avatar
+                          sx={{
+                            bgcolor: "secondary.main",
+                            width: 32,
+                            height: 32,
+                          }}
+                        >
                           {feature.icon}
                         </Avatar>
                         <Box>
-                          <Typography variant="subtitle1" fontWeight="600" gutterBottom>
+                          <Typography
+                            variant="subtitle1"
+                            fontWeight="600"
+                            gutterBottom
+                          >
                             {feature.title}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
@@ -485,14 +507,20 @@ export default function CryptoLandingPage() {
           <Typography variant="h5" fontWeight="600" textAlign="center" mb={3}>
             Trust & Karma System
           </Typography>
-          
+
           <Grid container spacing={2}>
             <Grid item xs={6}>
               <Typography variant="subtitle2" color="success.main" mb={1}>
                 Good Behaviors
               </Typography>
               {goodBehaviors.slice(0, 2).map((behavior, index) => (
-                <Box key={index} display="flex" alignItems="center" gap={1} mb={1}>
+                <Box
+                  key={index}
+                  display="flex"
+                  alignItems="center"
+                  gap={1}
+                  mb={1}
+                >
                   {behavior.icon}
                   <Typography variant="caption" color="text.secondary">
                     {behavior.text}
@@ -505,7 +533,13 @@ export default function CryptoLandingPage() {
                 Bad Behaviors
               </Typography>
               {badBehaviors.slice(0, 2).map((behavior, index) => (
-                <Box key={index} display="flex" alignItems="center" gap={1} mb={1}>
+                <Box
+                  key={index}
+                  display="flex"
+                  alignItems="center"
+                  gap={1}
+                  mb={1}
+                >
                   {behavior.icon}
                   <Typography variant="caption" color="text.secondary">
                     {behavior.text}
@@ -514,22 +548,22 @@ export default function CryptoLandingPage() {
               ))}
             </Grid>
           </Grid>
-          
+
           <Divider sx={{ my: 2 }} />
-          
+
           <Box textAlign="center">
             <Typography variant="h6" fontWeight="600" color="primary">
               Trust Score: 850
             </Typography>
-            <LinearProgress 
-              variant="determinate" 
-              value={85} 
-              sx={{ 
-                mt: 1, 
-                height: 8, 
+            <LinearProgress
+              variant="determinate"
+              value={85}
+              sx={{
+                mt: 1,
+                height: 8,
                 borderRadius: 4,
-                bgcolor: 'rgba(255, 255, 255, 0.1)'
-              }} 
+                bgcolor: "rgba(255, 255, 255, 0.1)",
+              }}
             />
           </Box>
         </GlowCard>
@@ -542,7 +576,7 @@ export default function CryptoLandingPage() {
           <Typography variant="body1" color="text.secondary" mb={4}>
             Join thousands of professionals who've already made the switch.
           </Typography>
-          
+
           <Stack direction="row" spacing={2} justifyContent="center">
             <Button
               variant="contained"
@@ -551,8 +585,8 @@ export default function CryptoLandingPage() {
                 borderRadius: 6,
                 px: 4,
                 py: 1.5,
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                boxShadow: '0 8px 32px rgba(102, 126, 234, 0.4)',
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                boxShadow: "0 8px 32px rgba(102, 126, 234, 0.4)",
               }}
             >
               Start Free Trial
@@ -565,7 +599,7 @@ export default function CryptoLandingPage() {
                 borderRadius: 6,
                 px: 4,
                 py: 1.5,
-                borderColor: 'rgba(255, 255, 255, 0.3)',
+                borderColor: "rgba(255, 255, 255, 0.3)",
               }}
             >
               Watch Demo

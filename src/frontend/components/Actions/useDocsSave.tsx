@@ -1,10 +1,10 @@
-import { useCallback, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useSnackbar } from 'notistack';
-import { useBackendContext } from '@/contexts/BackendContext';
-import { handleRedux } from '@/redux/store/handleRedux';
-import serializeFileContents from '@/DataProcessing/serialize/serializeFileContents';
-import { StoredContract } from '$/declarations/backend/backend.did';
+import { useCallback, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useSnackbar } from "notistack";
+import { useBackendContext } from "@/contexts/BackendContext";
+import { handleRedux } from "@/redux/store/handleRedux";
+import serializeFileContents from "@/DataProcessing/serialize/serializeFileContents";
+import { StoredContract } from "$/declarations/backend/backend.did";
 
 interface UseDocsSaveReturn {
   isChanged: boolean;
@@ -40,7 +40,9 @@ export const useDocsSave = (): UseDocsSaveReturn => {
 
     try {
       const serializedContent = serializeFileContents(changes.contents);
-      const serializedContracts = Object.values(changes.contracts) as StoredContract[];
+      const serializedContracts = Object.values(
+        changes.contracts,
+      ) as StoredContract[];
 
       const res: any = await backendActor.multi_updates(
         changes.files,
@@ -56,7 +58,9 @@ export const useDocsSave = (): UseDocsSaveReturn => {
         enqueueSnackbar(res.Err, { variant: "error" });
         throw new Error(res.Err);
       } else {
-        enqueueSnackbar("Documents saved successfully!", { variant: "success" });
+        enqueueSnackbar("Documents saved successfully!", {
+          variant: "success",
+        });
         dispatch(handleRedux("RESOLVE_CHANGES"));
       }
     } catch (error) {
@@ -66,13 +70,22 @@ export const useDocsSave = (): UseDocsSaveReturn => {
       closeSnackbar(loadingSnackbar);
       setLoading(false);
     }
-  }, [backendActor, changes, dispatch, enqueueSnackbar, closeSnackbar, isChanged]);
+  }, [
+    backendActor,
+    changes,
+    dispatch,
+    enqueueSnackbar,
+    closeSnackbar,
+    isChanged,
+  ]);
 
   const reset = useCallback(async () => {
     try {
       // Reset all changes in the files state
       dispatch(handleRedux("RESET_CHANGES"));
-      enqueueSnackbar("Document changes reset successfully!", { variant: "info" });
+      enqueueSnackbar("Document changes reset successfully!", {
+        variant: "info",
+      });
     } catch (error) {
       console.error({ resetDocsError: error });
       enqueueSnackbar("Failed to reset document changes", { variant: "error" });

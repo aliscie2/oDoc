@@ -1,124 +1,129 @@
-import { Job, Match } from '$/declarations/backend/backend.did';
+import { Job, Match } from "$/declarations/backend/backend.did";
 
 export const dummyMatchingJobs: Job[] = [
   {
-    id: 'job-1',
+    id: "job-1",
     active: true,
     required_match_score: 0.75,
-    category: { 'Job': null },
-    description: 'Senior Blockchain Developer needed for a cutting-edge Web3 project. Looking for someone with strong experience in Rust, Solidity, and decentralized systems.',
-    proficiency_level: 'Senior',
-    education: ['Bachelor\'s degree in Computer Science or related field'],
+    category: { Job: null },
+    description:
+      "Senior Blockchain Developer needed for a cutting-edge Web3 project. Looking for someone with strong experience in Rust, Solidity, and decentralized systems.",
+    proficiency_level: "Senior",
+    education: ["Bachelor's degree in Computer Science or related field"],
     experience: [
-      '5+ years of software development experience',
-      '3+ years of blockchain development',
-      'Experience with smart contract development'
+      "5+ years of software development experience",
+      "3+ years of blockchain development",
+      "Experience with smart contract development",
     ],
-    job_titles: ['Senior Blockchain Developer', 'Smart Contract Engineer', 'Web3 Developer'],
-    certifications: ['Blockchain Certification preferred'],
+    job_titles: [
+      "Senior Blockchain Developer",
+      "Smart Contract Engineer",
+      "Web3 Developer",
+    ],
+    certifications: ["Blockchain Certification preferred"],
     skills: [
-      'Rust',
-      'Solidity',
-      'Ethereum',
-      'Smart Contracts',
-      'Web3.js',
-      'React',
-      'Node.js',
-      'TypeScript'
+      "Rust",
+      "Solidity",
+      "Ethereum",
+      "Smart Contracts",
+      "Web3.js",
+      "React",
+      "Node.js",
+      "TypeScript",
     ],
-    emails: [
-      'ex@g.com',
-      
-    ],
-    links: ['https://example-blockchain-company.com'],
+    emails: ["ex@g.com"],
+    links: ["https://example-blockchain-company.com"],
     matches: [],
-    trust_score: '9.2',
-    trust_note: 'Verified employer with multiple successful hires'
+    trust_score: "9.2",
+    trust_note: "Verified employer with multiple successful hires",
   },
   {
-    id: 'job-2',
+    id: "job-2",
     active: true,
     required_match_score: 0.65,
-    category: { 'Job': null },
-    description: 'Full Stack Developer with React and Node.js expertise needed for a growing startup. Must have experience with modern JavaScript frameworks and RESTful APIs.',
-    proficiency_level: 'Mid-Senior',
-    education: ['Computer Science degree or equivalent experience'],
+    category: { Job: null },
+    description:
+      "Full Stack Developer with React and Node.js expertise needed for a growing startup. Must have experience with modern JavaScript frameworks and RESTful APIs.",
+    proficiency_level: "Mid-Senior",
+    education: ["Computer Science degree or equivalent experience"],
     experience: [
-      '3+ years of full stack development',
-      'Experience with React and Node.js',
-      'Experience with database design'
+      "3+ years of full stack development",
+      "Experience with React and Node.js",
+      "Experience with database design",
     ],
-    job_titles: ['Full Stack Developer', 'JavaScript Developer', 'MERN Stack Developer'],
+    job_titles: [
+      "Full Stack Developer",
+      "JavaScript Developer",
+      "MERN Stack Developer",
+    ],
     certifications: [],
     skills: [
-      'React',
-      'Node.js',
-      'JavaScript',
-      'TypeScript',
-      'MongoDB',
-      'Express',
-      'REST APIs',
-      'Git',
-      'AWS'
+      "React",
+      "Node.js",
+      "JavaScript",
+      "TypeScript",
+      "MongoDB",
+      "Express",
+      "REST APIs",
+      "Git",
+      "AWS",
     ],
-    links: ['https://example-startup.com/careers'],
+    links: ["https://example-startup.com/careers"],
     matches: [],
-    trust_score: '8.5',
-    trust_note: 'New employer with verified business credentials'
+    trust_score: "8.5",
+    trust_note: "New employer with verified business credentials",
   },
   {
-    id: 'job-3',
+    id: "job-3",
     active: true,
     required_match_score: 0.7,
-    category: { 'Job': null },
-    description: 'Backend Engineer specializing in Python needed for a data-intensive application. Must have experience with FastAPI, Django, and database optimization.',
-    proficiency_level: 'Senior',
-    education: ['Bachelor\'s or Master\'s in Computer Science or related field'],
+    category: { Job: null },
+    description:
+      "Backend Engineer specializing in Python needed for a data-intensive application. Must have experience with FastAPI, Django, and database optimization.",
+    proficiency_level: "Senior",
+    education: ["Bachelor's or Master's in Computer Science or related field"],
     experience: [
-      '4+ years of backend development',
-      'Experience with Python frameworks',
-      'Experience with database optimization'
+      "4+ years of backend development",
+      "Experience with Python frameworks",
+      "Experience with database optimization",
     ],
-    job_titles: ['Backend Engineer', 'Python Developer', 'API Developer'],
-    certifications: ['AWS Certified Developer a plus'],
+    job_titles: ["Backend Engineer", "Python Developer", "API Developer"],
+    certifications: ["AWS Certified Developer a plus"],
     skills: [
-      'Python',
-      'FastAPI',
-      'Django',
-      'PostgreSQL',
-      'GraphQL',
-      'Docker',
-      'Kubernetes',
-      'CI/CD',
-      'AWS'
+      "Python",
+      "FastAPI",
+      "Django",
+      "PostgreSQL",
+      "GraphQL",
+      "Docker",
+      "Kubernetes",
+      "CI/CD",
+      "AWS",
     ],
-    links: ['https://example-tech-company.com/jobs'],
+    links: ["https://example-tech-company.com/jobs"],
     matches: [],
-    trust_score: '9.0',
-    trust_note: 'Established company with excellent reviews'
-  }
+    trust_score: "9.0",
+    trust_note: "Established company with excellent reviews",
+  },
 ];
 
-export const dummyMatches  = [
+export const dummyMatches = [
   {
-    'missmatching_skills' : ['python','fastapi','django'],
-  'user_id' : "567-723-waef-231",
-  'score' : 8.6,
-  'job_id' : "job-1",
-
+    missmatching_skills: ["python", "fastapi", "django"],
+    user_id: "567-723-waef-231",
+    score: 8.6,
+    job_id: "job-1",
   },
   {
-    'missmatching_skills' : ['a','b','c'],
-  'user_id' : "567-723-waef-231",
-  'score' : 8,
-  'job_id' : "job-2",
-
+    missmatching_skills: ["a", "b", "c"],
+    user_id: "567-723-waef-231",
+    score: 8,
+    job_id: "job-2",
   },
   {
-    'missmatching_skills' : ['x','t','z'],
-  'user_id' : "567-723-waef-231",
-  'score' : 3,
-  'job_id' : "job-3",
-
-  }
-]
+    missmatching_skills: ["x", "t", "z"],
+    user_id: "567-723-waef-231",
+    score: 3,
+    job_id: "job-3",
+  },
+];

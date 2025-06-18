@@ -28,15 +28,15 @@ const EmailComposer = () => {
     try {
       setIsSending(true);
       const sanitizedHtml = sanitizeHtml(htmlContent, sanitizeConfig);
-      const email_list = await backendActor.get_emails() || [];
-      
-      email_list.forEach(async (email)=>{
+      const email_list = (await backendActor.get_emails()) || [];
+
+      email_list.forEach(async (email) => {
         const response = await sendEmail(subject, sanitizedHtml, email);
-        if (response.status !== 200){
-          console.log({response})
+        if (response.status !== 200) {
+          console.log({ response });
         }
-      })
-    
+      });
+
       setIsDialogOpen(false);
       setHtmlContent("");
       setSubject("");
@@ -56,30 +56,32 @@ const EmailComposer = () => {
 
   return (
     <>
-      <button onClick={() => setIsDialogOpen(true)}>
-        Compose Email
-      </button>
+      <button onClick={() => setIsDialogOpen(true)}>Compose Email</button>
 
       {isDialogOpen && (
-        <div style={{
-          position: "fixed",
-          inset: 0,
-          backgroundColor: "rgba(0,0,0,0.5)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          zIndex: 1000,
-        }}>
-          <div style={{
-            backgroundColor: "inherit",
-            padding: "20px",
-            borderRadius: "8px",
-            width: "90%",
-            maxWidth: "800px",
-            maxHeight: "90vh",
-            overflow: "auto",
-            border: "1px solid currentColor",
-          }}>
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "inherit",
+              padding: "20px",
+              borderRadius: "8px",
+              width: "90%",
+              maxWidth: "800px",
+              maxHeight: "90vh",
+              overflow: "auto",
+              border: "1px solid currentColor",
+            }}
+          >
             <input
               type="text"
               placeholder="Subject *"
@@ -97,7 +99,13 @@ const EmailComposer = () => {
               }}
             />
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "15px",
+              }}
+            >
               <div>
                 <h4>HTML Editor</h4>
                 <textarea
@@ -130,7 +138,7 @@ const EmailComposer = () => {
                     backgroundColor: "inherit",
                   }}
                   dangerouslySetInnerHTML={{
-                    __html: sanitizeHtml(htmlContent, sanitizeConfig)
+                    __html: sanitizeHtml(htmlContent, sanitizeConfig),
                   }}
                 />
               </div>
@@ -146,7 +154,10 @@ const EmailComposer = () => {
                   borderRadius: "4px",
                   backgroundColor: "inherit",
                   color: "inherit",
-                  cursor: isSending || !subject.trim() || !htmlContent.trim() ? "not-allowed" : "pointer",
+                  cursor:
+                    isSending || !subject.trim() || !htmlContent.trim()
+                      ? "not-allowed"
+                      : "pointer",
                 }}
               >
                 {isSending ? "Sending..." : "Send Email"}

@@ -64,26 +64,26 @@ const PromoNotification: React.FC = () => {
 
   // Enhanced background for better contrast
   const getNotificationBackground = () => {
-    if (theme.palette.mode === 'dark') {
+    if (theme.palette.mode === "dark") {
       return {
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        backdropFilter: 'blur(12px)',
-        border: '1px solid rgba(255, 255, 255, 0.2)',
+        backgroundColor: "rgba(255, 255, 255, 0.1)",
+        backdropFilter: "blur(12px)",
+        border: "1px solid rgba(255, 255, 255, 0.2)",
       };
     }
     return {
       backgroundColor: theme.palette.background.paper,
-      backdropFilter: 'blur(8px)',
-      border: '1px solid',
+      backdropFilter: "blur(8px)",
+      border: "1px solid",
       borderColor: theme.palette.divider,
     };
   };
 
   const getArrowColors = () => {
-    if (theme.palette.mode === 'dark') {
+    if (theme.palette.mode === "dark") {
       return {
-        borderColor: 'rgba(255, 255, 255, 0.2)',
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        borderColor: "rgba(255, 255, 255, 0.2)",
+        backgroundColor: "rgba(255, 255, 255, 0.1)",
       };
     }
     return {
@@ -107,7 +107,9 @@ const PromoNotification: React.FC = () => {
       }}
     >
       <Slide direction="down" in={isVisible} mountOnEnter unmountOnExit>
-        <Box sx={{ position: "relative", display: "flex", alignItems: "center" }}>
+        <Box
+          sx={{ position: "relative", display: "flex", alignItems: "center" }}
+        >
           {/* Large ODOC Token - positioned outside */}
           <Box
             sx={{
@@ -137,38 +139,39 @@ const PromoNotification: React.FC = () => {
               width: "100%",
               ml: 8,
               ...getNotificationBackground(),
-              boxShadow: theme.palette.mode === 'dark' 
-                ? '0 8px 32px rgba(0, 0, 0, 0.5)' 
-                : theme.shadows[2],
+              boxShadow:
+                theme.palette.mode === "dark"
+                  ? "0 8px 32px rgba(0, 0, 0, 0.5)"
+                  : theme.shadows[2],
               position: "relative",
-              '& .MuiAlert-icon': {
-                display: 'none',
+              "& .MuiAlert-icon": {
+                display: "none",
               },
               // Speech bubble arrow pointing to the coin
-              '&::before': {
+              "&::before": {
                 content: '""',
-                position: 'absolute',
+                position: "absolute",
                 left: -10,
-                top: '50%',
-                transform: 'translateY(-50%)',
+                top: "50%",
+                transform: "translateY(-50%)",
                 width: 0,
                 height: 0,
-                borderTop: '10px solid transparent',
-                borderBottom: '10px solid transparent',
-                borderRight: '10px solid',
+                borderTop: "10px solid transparent",
+                borderBottom: "10px solid transparent",
+                borderRight: "10px solid",
                 borderRightColor: arrowColors.borderColor,
               },
-              '&::after': {
+              "&::after": {
                 content: '""',
-                position: 'absolute',
+                position: "absolute",
                 left: -9,
-                top: '50%',
-                transform: 'translateY(-50%)',
+                top: "50%",
+                transform: "translateY(-50%)",
                 width: 0,
                 height: 0,
-                borderTop: '10px solid transparent',
-                borderBottom: '10px solid transparent',
-                borderRight: '10px solid',
+                borderTop: "10px solid transparent",
+                borderBottom: "10px solid transparent",
+                borderRight: "10px solid",
                 borderRightColor: arrowColors.backgroundColor,
               },
             }}
@@ -176,12 +179,13 @@ const PromoNotification: React.FC = () => {
               <IconButton
                 size="small"
                 onClick={() => setIsVisible(false)}
-                sx={{ 
+                sx={{
                   color: "text.secondary",
-                  '&:hover': {
-                    backgroundColor: theme.palette.mode === 'dark' 
-                      ? 'rgba(255, 255, 255, 0.1)' 
-                      : 'rgba(0, 0, 0, 0.04)',
+                  "&:hover": {
+                    backgroundColor:
+                      theme.palette.mode === "dark"
+                        ? "rgba(255, 255, 255, 0.1)"
+                        : "rgba(0, 0, 0, 0.04)",
                   },
                 }}
               >
@@ -190,12 +194,12 @@ const PromoNotification: React.FC = () => {
             }
           >
             <Box sx={{ pl: 2 }}>
-              <Typography 
-                variant="subtitle2" 
-                sx={{ 
-                  fontWeight: 600, 
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  fontWeight: 600,
                   mb: 0.5,
-                  color: "text.primary"
+                  color: "text.primary",
                 }}
               >
                 Earn tokens for your activity

@@ -26,8 +26,6 @@ import { RootState } from "../../redux/reducers";
 import Posts from "./posts";
 import Jobs from "./jobs";
 
-
-
 const SidebarCard = ({ title, children }) => (
   <Card sx={{ mb: 2, borderRadius: 1 }}>
     <CardContent>
@@ -251,20 +249,28 @@ const SocialFeed = () => {
       <FeedWrapper isNavOpen={isNavOpen}>
         {!isNavOpen && <Sidebar items={sidebarContent.left} position="left" />}
         <MainContainer>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-            <Tabs value={activeTab} onChange={handleTabChange} aria-label="discover tabs">
+          <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 3 }}>
+            <Tabs
+              value={activeTab}
+              onChange={handleTabChange}
+              aria-label="discover tabs"
+            >
               <Tab label="Jobs" />
               <Tab label="Posts" />
             </Tabs>
           </Box>
-          
-          
+
           {activeTab === 0 && <Jobs />}
-          {activeTab === 1 && <Posts posts={posts} isLoggedIn={isLoggedIn} searchValue={searchValue} />}
+          {activeTab === 1 && (
+            <Posts
+              posts={posts}
+              isLoggedIn={isLoggedIn}
+              searchValue={searchValue}
+            />
+          )}
         </MainContainer>
         <Sidebar items={sidebarContent.right} position="right" />
       </FeedWrapper>
-
     </ThemeProvider>
   );
 };

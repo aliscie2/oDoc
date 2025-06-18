@@ -1,8 +1,8 @@
 // src/frontend/tests/ic-mocks.ts
-import { vi } from 'vitest';
+import { vi } from "vitest";
 
 // Mock dfinity agent
-vi.mock('@dfinity/agent', () => ({
+vi.mock("@dfinity/agent", () => ({
   Actor: {
     createActor: vi.fn(),
   },
@@ -12,7 +12,7 @@ vi.mock('@dfinity/agent', () => ({
 }));
 
 // Mock dfinity principal
-vi.mock('@dfinity/principal', () => ({
+vi.mock("@dfinity/principal", () => ({
   Principal: {
     fromText: vi.fn((text) => ({ toString: () => text })),
     anonymous: vi.fn(),
@@ -20,26 +20,28 @@ vi.mock('@dfinity/principal', () => ({
 }));
 
 // Mock dfinity auth client
-vi.mock('@dfinity/auth-client', () => ({
+vi.mock("@dfinity/auth-client", () => ({
   AuthClient: {
-    create: vi.fn(() => Promise.resolve({
-      getIdentity: vi.fn(),
-      login: vi.fn(),
-      logout: vi.fn(),
-    })),
+    create: vi.fn(() =>
+      Promise.resolve({
+        getIdentity: vi.fn(),
+        login: vi.fn(),
+        logout: vi.fn(),
+      }),
+    ),
   },
 }));
 
 // Mock canister IDs
-vi.mock('process', () => ({
+vi.mock("process", () => ({
   env: {
-    BACKEND_CANISTER_ID: 'rrkah-fqaaa-aaaaa-aaaaq-cai',
-    NODE_ENV: 'test',
+    BACKEND_CANISTER_ID: "rrkah-fqaaa-aaaaa-aaaaq-cai",
+    NODE_ENV: "test",
   },
 }));
 
 // Mock window.ic
-Object.defineProperty(window, 'ic', {
+Object.defineProperty(window, "ic", {
   value: {
     plug: {
       isConnected: vi.fn(() => Promise.resolve(true)),
@@ -66,7 +68,7 @@ export const mockBackendActor = {
   // Add other backend canister methods as needed
 };
 
-vi.mock('canisters/backend', () => ({
+vi.mock("canisters/backend", () => ({
   createActor: () => mockBackendActor,
 }));
 

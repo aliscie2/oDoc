@@ -11,7 +11,13 @@ emailjs.init(import.meta.env.VITE_REACT_APP_EMAILJS_USER_ID);
  * @param {string} receiverEmail - Recipient email address
  * @returns {Promise<boolean>} - Returns true if email sent successfully, false otherwise
  */
-const sendEmail = async (subject:string, body:string, receiverEmail:string[], extra:any={}, template:string = import.meta.env.VITE_REACT_APP_EMAILJS_TEMPLATE_ID) => {
+const sendEmail = async (
+  subject: string,
+  body: string,
+  receiverEmail: string[],
+  extra: any = {},
+  template: string = import.meta.env.VITE_REACT_APP_EMAILJS_TEMPLATE_ID,
+) => {
   try {
     // Sanitize HTML content to prevent XSS attacks
     const sanitizedBody = sanitizeHtml(body, {
@@ -33,12 +39,10 @@ const sendEmail = async (subject:string, body:string, receiverEmail:string[], ex
         to_email: receiverEmail,
         subject: subject,
         html_message: sanitizedBody,
-      }
+      },
     );
 
-
     if (response.status === 200) {
-
       return true;
     } else {
       console.error("Failed to send email:", response);

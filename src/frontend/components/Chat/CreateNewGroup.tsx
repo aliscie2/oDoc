@@ -12,7 +12,6 @@ import {
   ADD_CHATS_NOTIFICATIONS,
 } from "../../redux/types/chatsTypes";
 
-
 function useCreateChatGroup() {
   const dispatch = useDispatch();
   const { backendActor } = useBackendContext();

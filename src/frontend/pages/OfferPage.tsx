@@ -330,7 +330,9 @@ const LandingPage = () => {
                 <span>Token Reward Program</span>
               </FloatingBadge>
 
-              <GradientHeading>Join ODoc's Token Reward Program</GradientHeading>
+              <GradientHeading>
+                Join ODoc's Token Reward Program
+              </GradientHeading>
 
               <Box
                 sx={{
@@ -373,13 +375,16 @@ const LandingPage = () => {
             </Box>
 
             <Box sx={{ textAlign: "center" }}>
-              <GlassCard sx={{ 
-                mb: 3, 
-                display: "block",
-                background: "linear-gradient(135deg, rgba(76, 29, 149, 0.2), rgba(49, 46, 129, 0.3))",
-                border: "1px solid rgba(139, 92, 246, 0.3)",
-                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.2)"
-              }}>
+              <GlassCard
+                sx={{
+                  mb: 3,
+                  display: "block",
+                  background:
+                    "linear-gradient(135deg, rgba(76, 29, 149, 0.2), rgba(49, 46, 129, 0.3))",
+                  border: "1px solid rgba(139, 92, 246, 0.3)",
+                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.2)",
+                }}
+              >
                 <Box
                   sx={{
                     color: "#F3E8FF",
@@ -425,7 +430,7 @@ const LandingPage = () => {
                           transform: "translateY(-2px)",
                           boxShadow: "0 4px 12px rgba(139, 92, 246, 0.3)",
                           background: "rgba(109, 40, 217, 0.25)",
-                        }
+                        },
                       }}
                     >
                       <Box
@@ -436,12 +441,13 @@ const LandingPage = () => {
                           alignItems: "center",
                           justifyContent: "center",
                           borderRadius: "50%",
-                          background: "linear-gradient(135deg, rgba(109, 40, 217, 0.4), rgba(79, 70, 229, 0.4))",
+                          background:
+                            "linear-gradient(135deg, rgba(109, 40, 217, 0.4), rgba(79, 70, 229, 0.4))",
                           color: "#E9D5FF",
                           fontWeight: "bold",
                           fontSize: "1.1rem",
                           mr: 1.5,
-                          border: "1px solid rgba(139, 92, 246, 0.3)"
+                          border: "1px solid rgba(139, 92, 246, 0.3)",
                         }}
                       >
                         {tier.score}
@@ -450,7 +456,7 @@ const LandingPage = () => {
                         sx={{
                           color: "#E9D5FF",
                           fontSize: "0.95rem",
-                          fontWeight: 500
+                          fontWeight: 500,
                         }}
                       >
                         {tier.reward}

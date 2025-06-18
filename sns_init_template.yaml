@@ -1,326 +1,90 @@
-
 name: Odoc
-
-
 
 description: Odoco is a decentralized documentation platform for writing documents and smart contracts. For example, as documents you can write articles, books, courses with videos. A contract example, is a share contract where you can write who own how much of a specific payment.
 
-
 Principals: []
-
-
-
 
 logo: ~
 
-
-
 url: ~
 
-
-
 NnsProposal:
-    
-    title: ~
+  title: ~
 
-    
-    
-    url: ~
+  url: ~
 
-    
-    summary: ~
-
-
-
+  summary: ~
 
 fallback_controller_principals: []
 
-
-
-
-
-
-
-
 dapp_canisters: []
 
-
-
 Token:
-    
-    
-    name: ~
+  name: ~
 
-    
-    
-    symbol: ~
+  symbol: ~
 
-    
-    
-    transaction_fee: ~
+  transaction_fee: ~
 
-    
-    
-    
-    logo: ~
-
-
-
+  logo: ~
 
 Proposals:
-    
-    
-    rejection_fee: ~
+  rejection_fee: ~
 
-    
-    
-    
-    
-    initial_voting_period: ~
+  initial_voting_period: ~
 
-
-        
-    
-        
-    maximum_wait_for_quiet_deadline_extension: ~
-
+  maximum_wait_for_quiet_deadline_extension: ~
 
 Neurons:
-    
-    
-    minimum_creation_stake: ~
-
+  minimum_creation_stake: ~
 
 Voting:
-    
-    
-        
-    
-        
-    
-    minimum_dissolve_delay: ~
+  minimum_dissolve_delay: ~
 
-    
-    
-    
-    
-    
-    MaximumVotingPowerBonuses:
-        
-        
-        
-        
-        
-                
-        
-        
-        
-        
-        
-        
-        
-        
-                
-        
-        
-        DissolveDelay:
-            
-            
-            
-            duration: ~
-            
-            
-            
-            
-            
-            bonus: ~
+  MaximumVotingPowerBonuses:
+    DissolveDelay:
+      duration: ~
 
-        
-        
-        
-        
-        
-        
-                
-        
-        
-        
-        
-        
-        
-        
-        
-                
-        
-        Age:
-            
-            
-            
-            
-            
-            duration: ~
-            
-            
-            
-            
-            
-            bonus: ~
+      bonus: ~
 
-    
-        
-    
-    
-    
-    
-        
-    
-    
-    
-        
-    
-        
-    
-    RewardRate:
-        
-        
-        initial: ~
+    Age:
+      duration: ~
 
-        
-        
-        
-        
-        final: ~
+      bonus: ~
 
-        
-        
-                
-                
-        transition_duration: ~
+  RewardRate:
+    initial: ~
 
+    final: ~
 
-
-
-
-
-
-
-
-
-
+    transition_duration: ~
 
 Distribution:
-    
-    
-    
-    
-    
-    
-    
-    
-    
-        
-    
-    
-    
-    
-    
-    Neurons: []
-    
-    InitialBalances:
-        
-        
-        
-        
-        governance: ~
+  Neurons: []
 
-        
-        
-        
-        swap: ~
+  InitialBalances:
+    governance: ~
 
-    
-    
-    total: ~
+    swap: ~
 
-
-
-
+  total: ~
 
 Swap:
-    
-    
-    
-    
-    
-    minimum_participants: ~
+  minimum_participants: ~
 
-    
-    
-    
-    
-    
-    minimum_icp: ~
+  minimum_icp: ~
 
-    
-    
-    
-    
-    
-    
-    
-    maximum_icp: ~
+  maximum_icp: ~
 
-    
-    
-    
-    minimum_participant_icp: ~
+  minimum_participant_icp: ~
 
-    
-    
-    
-    maximum_participant_icp: ~
+  maximum_participant_icp: ~
 
-    
-    
-        
-    
-    
+  VestingSchedule:
+    events: ~
 
-    
-        
-    
-        
-    
+    interval: ~
 
-    
-    
-    
-    VestingSchedule:
-        
-        
-        
-        
-        events: ~
+  duration: ~
 
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        interval: ~
-
-
-    
-    
-    duration: ~
-
-    
-    
-    
-    neurons_fund_investment_icp: ~
+  neurons_fund_investment_icp: ~

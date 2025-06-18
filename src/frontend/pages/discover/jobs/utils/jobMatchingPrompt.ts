@@ -1,12 +1,11 @@
 import { Match } from "$/declarations/backend/backend.did";
 
-let match: Match ={
-    
-    'matching_skills' : ['python','fastapi','django'],
-  'user_id' : "567-723-waef-231",
-  'score' : 8.6,
-  'job_id' : "job-1",
-  'date_updated' : BigInt(Date.now() * 1e6),
+let match: Match = {
+  matching_skills: ["python", "fastapi", "django"],
+  user_id: "567-723-waef-231",
+  score: 8.6,
+  job_id: "job-1",
+  date_updated: BigInt(Date.now() * 1e6),
 };
 
 export const JOB_MATCHING_PROMPT = `

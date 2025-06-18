@@ -17,7 +17,12 @@ import {
   Fade,
 } from "@mui/material";
 import { tutorials } from "./landingPageData";
-import { PlayArrow, ChevronLeft, ChevronRight, CheckCircle } from "@mui/icons-material";
+import {
+  PlayArrow,
+  ChevronLeft,
+  ChevronRight,
+  CheckCircle,
+} from "@mui/icons-material";
 import VideoPlayer from "../videoTutorial/videoPlayer";
 import { useSelector } from "react-redux";
 
@@ -42,7 +47,6 @@ const TutorialsSection: React.FC<TutorialsSectionProps> = () => {
     uiState: useSelector((state: any) => state.uiState),
     filesState: useSelector((state: any) => state.filesState),
   };
-  
 
   const currentTutorial = tutorials[selectedTutorial] || tutorials[0];
 
@@ -58,8 +62,8 @@ const TutorialsSection: React.FC<TutorialsSectionProps> = () => {
     };
 
     calculateVideoHeight();
-    window.addEventListener('resize', calculateVideoHeight);
-    return () => window.removeEventListener('resize', calculateVideoHeight);
+    window.addEventListener("resize", calculateVideoHeight);
+    return () => window.removeEventListener("resize", calculateVideoHeight);
   }, []);
 
   // Auto-hide overlay after 3 seconds, show on interaction
@@ -105,7 +109,7 @@ const TutorialsSection: React.FC<TutorialsSectionProps> = () => {
     if (!isDragging.current) {
       const deltaX = Math.abs(e.touches[0].clientX - touchStartX.current);
       const deltaY = Math.abs(e.touches[0].clientY - touchStartY.current);
-      
+
       // Start dragging if horizontal movement is greater than vertical
       if (deltaX > deltaY && deltaX > 10) {
         isDragging.current = true;
@@ -132,7 +136,7 @@ const TutorialsSection: React.FC<TutorialsSectionProps> = () => {
         setSelectedTutorial(selectedTutorial - 1);
       }
     }
-    
+
     isDragging.current = false;
   };
 
@@ -194,9 +198,9 @@ const TutorialsSection: React.FC<TutorialsSectionProps> = () => {
 
         {/* Current Video Info */}
         <Fade in={true} key={selectedTutorial} timeout={300}>
-          <Box 
-            sx={{ 
-              textAlign: "center", 
+          <Box
+            sx={{
+              textAlign: "center",
               mb: { xs: 3, md: 4 },
               px: { xs: 2, md: 0 },
             }}
@@ -235,25 +239,26 @@ const TutorialsSection: React.FC<TutorialsSectionProps> = () => {
                 }}
               >
                 {currentTutorial?.title}
-                {currentTutorial?.checkCondition && currentTutorial.checkCondition(state) && (
-                  <CheckCircle
-                    color="success"
-                    sx={{
-                      fontSize: { xs: "1.25rem", md: "1.5rem" },
-                      animation: "fadeIn 0.5s ease-in",
-                      "@keyframes fadeIn": {
-                        "0%": {
-                          opacity: 0,
-                          transform: "scale(0.8)",
+                {currentTutorial?.checkCondition &&
+                  currentTutorial.checkCondition(state) && (
+                    <CheckCircle
+                      color="success"
+                      sx={{
+                        fontSize: { xs: "1.25rem", md: "1.5rem" },
+                        animation: "fadeIn 0.5s ease-in",
+                        "@keyframes fadeIn": {
+                          "0%": {
+                            opacity: 0,
+                            transform: "scale(0.8)",
+                          },
+                          "100%": {
+                            opacity: 1,
+                            transform: "scale(1)",
+                          },
                         },
-                        "100%": {
-                          opacity: 1,
-                          transform: "scale(1)",
-                        },
-                      },
-                    }}
-                  />
-                )}
+                      }}
+                    />
+                  )}
               </Typography>
               <Typography
                 variant="body1"
@@ -267,22 +272,34 @@ const TutorialsSection: React.FC<TutorialsSectionProps> = () => {
               >
                 {currentTutorial?.description}
               </Typography>
-              
+
               {/* Tutorial counter with navigation arrows */}
-              <Box sx={{ mt: 2, display: "flex", justifyContent: "center", alignItems: "center", gap: 1 }}>
+              <Box
+                sx={{
+                  mt: 2,
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  gap: 1,
+                }}
+              >
                 <IconButton
                   onClick={goToPrevious}
                   disabled={selectedTutorial === 0}
                   sx={{
-                    color: selectedTutorial === 0 
-                      ? "text.disabled" 
-                      : theme.palette.primary.main,
+                    color:
+                      selectedTutorial === 0
+                        ? "text.disabled"
+                        : theme.palette.primary.main,
                     backgroundColor: alpha(theme.palette.primary.main, 0.1),
                     "&:hover": {
                       backgroundColor: alpha(theme.palette.primary.main, 0.2),
                     },
                     "&:disabled": {
-                      backgroundColor: alpha(theme.palette.action.disabled, 0.1),
+                      backgroundColor: alpha(
+                        theme.palette.action.disabled,
+                        0.1,
+                      ),
                     },
                     width: { xs: 36, md: 40 },
                     height: { xs: 36, md: 40 },
@@ -312,15 +329,19 @@ const TutorialsSection: React.FC<TutorialsSectionProps> = () => {
                   onClick={goToNext}
                   disabled={selectedTutorial === tutorials.length - 1}
                   sx={{
-                    color: selectedTutorial === tutorials.length - 1 
-                      ? "text.disabled" 
-                      : theme.palette.primary.main,
+                    color:
+                      selectedTutorial === tutorials.length - 1
+                        ? "text.disabled"
+                        : theme.palette.primary.main,
                     backgroundColor: alpha(theme.palette.primary.main, 0.1),
                     "&:hover": {
                       backgroundColor: alpha(theme.palette.primary.main, 0.2),
                     },
                     "&:disabled": {
-                      backgroundColor: alpha(theme.palette.action.disabled, 0.1),
+                      backgroundColor: alpha(
+                        theme.palette.action.disabled,
+                        0.1,
+                      ),
                     },
                     width: { xs: 36, md: 40 },
                     height: { xs: 36, md: 40 },
@@ -370,7 +391,8 @@ const TutorialsSection: React.FC<TutorialsSectionProps> = () => {
             const offset = index - selectedTutorial;
             const isActive = index === selectedTutorial;
             const isVisible = Math.abs(offset) <= 1;
-            const isCompleted = tutorial.checkCondition && tutorial.checkCondition(state);
+            const isCompleted =
+              tutorial.checkCondition && tutorial.checkCondition(state);
 
             return (
               <Paper
@@ -388,8 +410,8 @@ const TutorialsSection: React.FC<TutorialsSectionProps> = () => {
                   transform: `translateX(${offset * 100}%) scale(${
                     isActive ? 1 : 0.95
                   })`,
-                  transition: isDragging.current 
-                    ? "none" 
+                  transition: isDragging.current
+                    ? "none"
                     : "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
                   zIndex: tutorials.length - Math.abs(offset),
                   opacity: Math.abs(offset) > 1 ? 0 : 1,
@@ -484,27 +506,31 @@ const TutorialsSection: React.FC<TutorialsSectionProps> = () => {
                 >
                   <Box sx={{ display: "flex", height: "100%" }}>
                     {tutorials.map((tutorialItem, idx) => {
-                      const tutorialCompleted = tutorialItem.checkCondition && tutorialItem.checkCondition(state);
+                      const tutorialCompleted =
+                        tutorialItem.checkCondition &&
+                        tutorialItem.checkCondition(state);
                       return (
                         <Box
                           key={idx}
                           sx={{
                             flex: 1,
                             height: "100%",
-                            bgcolor: idx === selectedTutorial 
-                              ? theme.palette.primary.main 
-                              : tutorialCompleted
-                              ? theme.palette.success.main
-                              : alpha(theme.palette.common.white, 0.2),
+                            bgcolor:
+                              idx === selectedTutorial
+                                ? theme.palette.primary.main
+                                : tutorialCompleted
+                                  ? theme.palette.success.main
+                                  : alpha(theme.palette.common.white, 0.2),
                             cursor: "pointer",
                             transition: "all 0.3s ease",
                             "&:hover": {
-                              bgcolor: idx === selectedTutorial 
-                                ? theme.palette.primary.light
-                                : tutorialCompleted
-                                ? theme.palette.success.light
-                                : alpha(theme.palette.common.white, 0.3),
-                            }
+                              bgcolor:
+                                idx === selectedTutorial
+                                  ? theme.palette.primary.light
+                                  : tutorialCompleted
+                                    ? theme.palette.success.light
+                                    : alpha(theme.palette.common.white, 0.3),
+                            },
                           }}
                           onClick={() => setSelectedTutorial(idx)}
                         />

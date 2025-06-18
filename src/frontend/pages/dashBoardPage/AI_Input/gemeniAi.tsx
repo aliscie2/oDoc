@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-// TODO 
+// TODO
 // instead of `import { GoogleGenerativeAI } from "@google/generative-ai";
 // ` use GeminiAgent GeminiAgent.ts gemeniAi.tsx
 import { Calendar } from "../../../../declarations/backend/backend.did";
@@ -97,7 +97,6 @@ class TimeFormatter {
 // Calendar formatter for AI prompt
 class CalendarFormatter {
   static formatCalendarForPrompt(calendar: Calendar): string {
-
     const sections: string[] = [];
     if (calendar?.events?.length) {
       sections.push(
@@ -297,11 +296,13 @@ export async function processCalendarText(
   text: string,
   oldCalendar: Calendar,
   dispatch: (action: any) => void,
-): Promise<{feedback: string, data: CalendarAction}[]> {
+): Promise<{ feedback: string; data: CalendarAction }[]> {
   const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-thinking-exp-1219" });
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.0-flash-thinking-exp-1219",
+    });
     const now = Date.now() * 1e6;
 
     const prompt = `
@@ -422,7 +423,7 @@ export async function processCalendarText(
 
       return {
         feedback: item.feedback || "Action processed successfully.",
-        data: ActionProcessor.processAction(action)
+        data: ActionProcessor.processAction(action),
       };
     });
   } catch (error) {

@@ -1,10 +1,10 @@
-import React, { useEffect, useRef } from 'react';
-import { Box, Container, useTheme } from '@mui/material';
+import React, { useEffect, useRef } from "react";
+import { Box, Container, useTheme } from "@mui/material";
 
 interface SectionProps {
   id: string;
   children: React.ReactNode;
-  containerWidth?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  containerWidth?: "xs" | "sm" | "md" | "lg" | "xl";
   sx?: object;
   transparent?: boolean;
 }
@@ -12,9 +12,9 @@ interface SectionProps {
 const Section: React.FC<SectionProps> = ({
   id,
   children,
-  containerWidth = 'lg',
+  containerWidth = "lg",
   sx = {},
-  transparent = false
+  transparent = false,
 }) => {
   const theme = useTheme();
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -23,20 +23,20 @@ const Section: React.FC<SectionProps> = ({
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          entry.target.style.opacity = '1';
-          entry.target.style.transform = 'translateY(0)';
+          entry.target.style.opacity = "1";
+          entry.target.style.transform = "translateY(0)";
           // REMOVED: scrollIntoView call that was causing the issue
         }
       },
       {
         threshold: 0.3,
-        rootMargin: '-20% 0px -20% 0px'
-      }
+        rootMargin: "-20% 0px -20% 0px",
+      },
     );
 
     if (sectionRef.current) {
-      sectionRef.current.style.opacity = '0';
-      sectionRef.current.style.transform = 'translateY(20px)';
+      sectionRef.current.style.opacity = "0";
+      sectionRef.current.style.transform = "translateY(20px)";
       observer.observe(sectionRef.current);
     }
 
@@ -53,22 +53,24 @@ const Section: React.FC<SectionProps> = ({
       id={id}
       component="section"
       sx={{
-        minHeight: { xs: 'calc(100vh - 56px)', sm: 'calc(100vh - 64px)', md: '100vh' },
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        scrollSnapAlign: 'start',
-        transition: 'opacity 0.5s ease, transform 0.5s ease',
-        bgcolor: transparent ? 'transparent' : theme.palette.background.default,
+        minHeight: {
+          xs: "calc(100vh - 56px)",
+          sm: "calc(100vh - 64px)",
+          md: "100vh",
+        },
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        scrollSnapAlign: "start",
+        transition: "opacity 0.5s ease, transform 0.5s ease",
+        bgcolor: transparent ? "transparent" : theme.palette.background.default,
         color: theme.palette.text.primary,
         px: { xs: 2, sm: 3, md: 4 },
         py: { xs: 4, sm: 6, md: 8 },
-        ...sx
+        ...sx,
       }}
     >
-      <Container maxWidth={containerWidth}>
-        {children}
-      </Container>
+      <Container maxWidth={containerWidth}>{children}</Container>
     </Box>
   );
 };

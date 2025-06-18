@@ -2,7 +2,7 @@ import React, { CSSProperties } from "react";
 import classNames from "classnames";
 
 import styles from "./Action.module.css";
-import {Button} from "@mui/material";
+import { Button } from "@mui/material";
 
 export interface Props extends React.HTMLAttributes<HTMLButtonElement> {
   active?: {
@@ -20,14 +20,12 @@ export function Action({ active, className, cursor, style, ...props }: Props) {
       tabIndex={0}
       style={
         {
-
           ...style,
           cursor,
           "--fill": active?.fill,
           "--background": active?.background,
           paddingLeft: "5px",
           paddingRight: "5px",
-
         } as CSSProperties
       }
     />

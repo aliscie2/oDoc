@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Box,
   Card,
@@ -14,7 +13,7 @@ import {
   Divider,
   Collapse,
   Fade,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Search,
   Event,
@@ -26,56 +25,54 @@ import {
   Undo,
   Redo,
   Person,
-} from '@mui/icons-material';
-
+} from "@mui/icons-material";
 
 // Base Card Component
 
-export  const BaseCard = ({ 
-    children, 
-    onMouseEnter, 
-    onMouseLeave, 
-    onClick, 
-    isVisible = true 
-  }) => {
-    const cardStyle = {
-      background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
-      backdropFilter: 'blur(20px)',
-      border: '1px solid rgba(255,255,255,0.1)',
-      borderRadius: '16px',
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-      cursor: 'pointer',
-      '&:hover': {
-        transform: 'translateY(-4px)',
-        boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
-        border: '1px solid rgba(255,255,255,0.2)',
-      }
-    };
-  
-    if (!isVisible) return null;
-  
-    return (
-      <Fade in={isVisible}>
-        <Card
-          sx={cardStyle}
-          onMouseEnter={onMouseEnter}
-          onMouseLeave={onMouseLeave}
-          onClick={onClick}
-        >
-          <CardContent>
-            {children}
-          </CardContent>
-        </Card>
-      </Fade>
-    );
+export const BaseCard = ({
+  children,
+  onMouseEnter,
+  onMouseLeave,
+  onClick,
+  isVisible = true,
+}) => {
+  const cardStyle = {
+    background:
+      "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)",
+    backdropFilter: "blur(20px)",
+    border: "1px solid rgba(255,255,255,0.1)",
+    borderRadius: "16px",
+    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+    cursor: "pointer",
+    "&:hover": {
+      transform: "translateY(-4px)",
+      boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
+      border: "1px solid rgba(255,255,255,0.2)",
+    },
   };
-  
-  // Card Header Component
-  export const CardHeader = ({ icon, title, color }) => (
-    <Box display="flex" alignItems="center" mb={2}>
-      {React.cloneElement(icon, { sx: { mr: 2, color } })}
-      <Typography variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
-        {title}
-      </Typography>
-    </Box>
+
+  if (!isVisible) return null;
+
+  return (
+    <Fade in={isVisible}>
+      <Card
+        sx={cardStyle}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        onClick={onClick}
+      >
+        <CardContent>{children}</CardContent>
+      </Card>
+    </Fade>
   );
+};
+
+// Card Header Component
+export const CardHeader = ({ icon, title, color }) => (
+  <Box display="flex" alignItems="center" mb={2}>
+    {React.cloneElement(icon, { sx: { mr: 2, color } })}
+    <Typography variant="h6" sx={{ color: "white", fontWeight: 600 }}>
+      {title}
+    </Typography>
+  </Box>
+);

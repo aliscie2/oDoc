@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Box,
   Card,
@@ -9,8 +9,8 @@ import {
   List,
   ListItem,
   ListItemIcon,
-  ListItemText
-} from '@mui/material';
+  ListItemText,
+} from "@mui/material";
 import {
   ThumbDown,
   ThumbUp,
@@ -26,21 +26,29 @@ import {
   Group,
   Assignment,
   Payment,
-  Gavel
-} from '@mui/icons-material';
-import { badBehaviors, goodBehaviors, punishments, rewards } from './landingPageData';
+  Gavel,
+} from "@mui/icons-material";
+import {
+  badBehaviors,
+  goodBehaviors,
+  punishments,
+  rewards,
+} from "./landingPageData";
 
 const TrustBehaviorSystem = () => {
-  
-
   const SectionCard = ({ title, items, color, icon }) => (
-    <Card sx={{ height: '100%', mb: 2 }}>
+    <Card sx={{ height: "100%", mb: 2 }}>
       <CardContent>
         <Box display="flex" alignItems="center" mb={2}>
-          <Avatar sx={{ bgcolor: `${color}.main`, mr: 2, width: 40, height: 40 }}>
+          <Avatar
+            sx={{ bgcolor: `${color}.main`, mr: 2, width: 40, height: 40 }}
+          >
             {icon}
           </Avatar>
-          <Typography variant="h6" sx={{ color: `${color}.main`, fontWeight: 'bold' }}>
+          <Typography
+            variant="h6"
+            sx={{ color: `${color}.main`, fontWeight: "bold" }}
+          >
             {title}
           </Typography>
         </Box>
@@ -50,9 +58,9 @@ const TrustBehaviorSystem = () => {
               <ListItemIcon sx={{ color: `${color}.main`, minWidth: 36 }}>
                 {item.icon}
               </ListItemIcon>
-              <ListItemText 
+              <ListItemText
                 primary={item.text}
-                primaryTypographyProps={{ variant: 'body2' }}
+                primaryTypographyProps={{ variant: "body2" }}
               />
             </ListItem>
           ))}
@@ -62,12 +70,12 @@ const TrustBehaviorSystem = () => {
   );
 
   return (
-    <Box sx={{ p: 2, maxWidth: 800, mx: 'auto' }}>
-      <Typography 
-        variant="h4" 
-        align="center" 
+    <Box sx={{ p: 2, maxWidth: 800, mx: "auto" }}>
+      <Typography
+        variant="h4"
+        align="center"
         gutterBottom
-        sx={{ mb: 3, fontWeight: 'bold' }}
+        sx={{ mb: 3, fontWeight: "bold" }}
       >
         oDoc Karma metrix
       </Typography>
@@ -81,7 +89,7 @@ const TrustBehaviorSystem = () => {
             icon={<ThumbDown />}
           />
         </Grid>
-        
+
         <Grid item xs={12} sm={6}>
           <SectionCard
             title="REWARDS"
@@ -90,7 +98,7 @@ const TrustBehaviorSystem = () => {
             icon={<ThumbUp />}
           />
         </Grid>
-        
+
         <Grid item xs={12} sm={6}>
           <SectionCard
             title="BAD BEHAVIOR"
@@ -99,7 +107,7 @@ const TrustBehaviorSystem = () => {
             icon={<Close />}
           />
         </Grid>
-        
+
         <Grid item xs={12} sm={6}>
           <SectionCard
             title="GOOD BEHAVIOR"

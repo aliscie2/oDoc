@@ -33,11 +33,7 @@ const Posts: React.FC<PostsProps> = ({ posts, isLoggedIn, searchValue }) => {
       {filterPosts
         .filter((post) => !post.is_comment)
         .map((post) => (
-          <ViewPostComponent
-            posts={posts}
-            key={post.id}
-            post={post}
-          />
+          <ViewPostComponent posts={posts} key={post.id} post={post} />
         ))}
       <LoadMorePosts />
     </>

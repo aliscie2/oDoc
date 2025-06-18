@@ -39,7 +39,7 @@ import { Chat, Message } from "../../../declarations/backend/backend.did";
 import { Principal } from "@dfinity/principal";
 import { randomString } from "../../DataProcessing/dataSamples";
 import { convertToBlobLink } from "@/DataProcessing/imageToVec";
-import oDocLogo from '@/public/logo.png';
+import oDocLogo from "@/public/logo.png";
 
 // Memoized form components (unchanged)
 const GroupNameField = memo(({ value, onChange }) => (
@@ -155,13 +155,13 @@ const CreateGroupDialog = memo(
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose}>Cancel</Button>
-          <Button 
-            onClick={handleSubmit} 
-            variant="contained" 
+          <Button
+            onClick={handleSubmit}
+            variant="contained"
             color="primary"
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Creating...' : 'Create Group'}
+            {isSubmitting ? "Creating..." : "Create Group"}
           </Button>
         </DialogActions>
       </Dialog>
@@ -186,31 +186,34 @@ const ChatList = memo(
     isLoadingMore: boolean;
   }) => {
     const { currentWorkspace } = useSelector((state: any) => state.filesState);
-    
+
     // Calculate unread count for each chat if not already present
     const chatsWithUnread = chats
-      .filter(chat => 
-        // Include chat if it's in current workspace or if current workspace is default
-        currentWorkspace.name === "default" || 
-        chat.workspaces.includes(currentWorkspace.id)
+      .filter(
+        (chat) =>
+          // Include chat if it's in current workspace or if current workspace is default
+          currentWorkspace.name === "default" ||
+          chat.workspaces.includes(currentWorkspace.id),
       )
       .map((chat) => {
         if ("unread" in chat) return chat;
 
         const unseenCount = chat.messages.reduce((count, message) => {
-        const isSeen = message.seen_by.some(
-          (user) => user.toString() === currentUserId,
-        );
-        return count + (isSeen ? 0 : 1);
-      }, 0);
+          const isSeen = message.seen_by.some(
+            (user) => user.toString() === currentUserId,
+          );
+          return count + (isSeen ? 0 : 1);
+        }, 0);
 
-      return {
-        ...chat,
-        unread: unseenCount,
-      };
-    });
+        return {
+          ...chat,
+          unread: unseenCount,
+        };
+      });
 
-    const { all_friends, workspaces,profile } = useSelector((state: any) => state.filesState);
+    const { all_friends, workspaces, profile } = useSelector(
+      (state: any) => state.filesState,
+    );
 
     const getOtherUser = (chat) => {
       if (chat.name !== "private_chat") return null;
@@ -225,8 +228,9 @@ const ChatList = memo(
       <Box sx={{ width: "100%" }}>
         <List sx={{ padding: 0, width: "100%" }}>
           {chatsWithUnread.map((chat) => {
-            
-            let isOdoc = chat.members.find(m => m.toText() !== profile?.id) =="tgwpc-6xuon-k3a6y-ey7lt-xksjs-qx22h-ikhbt-4yp3a-6stco-rymbe-pqe";
+            let isOdoc =
+              chat.members.find((m) => m.toText() !== profile?.id) ==
+              "tgwpc-6xuon-k3a6y-ey7lt-xksjs-qx22h-ikhbt-4yp3a-6stco-rymbe-pqe";
             const otherUser = getOtherUser(chat);
             return (
               <ListItem
@@ -241,7 +245,11 @@ const ChatList = memo(
               >
                 <ListItemAvatar>
                   {chat.name === "private_chat" ? (
-                    <Avatar src={isOdoc?oDocLogo:convertToBlobLink(otherUser?.photo)}>
+                    <Avatar
+                      src={
+                        isOdoc ? oDocLogo : convertToBlobLink(otherUser?.photo)
+                      }
+                    >
                       {otherUser?.name?.charAt(0)}
                     </Avatar>
                   ) : (
@@ -256,10 +264,11 @@ const ChatList = memo(
                       sx={{ display: "flex", justifyContent: "space-between" }}
                     >
                       <Typography variant="subtitle2">
-                        {isOdoc? "oDoc":chat.name === "private_chat"
-                          ? otherUser?.name || "Unknown User"
-                          : chat.name}
-                        
+                        {isOdoc
+                          ? "oDoc"
+                          : chat.name === "private_chat"
+                            ? otherUser?.name || "Unknown User"
+                            : chat.name}
                       </Typography>
                       {chat.unread > 0 && (
                         <Badge badgeContent={chat.unread} color="error" />
@@ -269,11 +278,20 @@ const ChatList = memo(
                   secondary={
                     <>
                       {chat.messages[0]?.message || "No messages"}
-                      {currentWorkspace.name === "default" && chat.workspaces.length > 0 && (
-                        <Typography component="span" sx={{ ml: 1, color: 'text.secondary' }}>
-                          [{workspaces.filter(w => chat.workspaces.includes(w.id)).map(w => w.name).join(', ')}]
-                        </Typography>
-                      )}
+                      {currentWorkspace.name === "default" &&
+                        chat.workspaces.length > 0 && (
+                          <Typography
+                            component="span"
+                            sx={{ ml: 1, color: "text.secondary" }}
+                          >
+                            [
+                            {workspaces
+                              .filter((w) => chat.workspaces.includes(w.id))
+                              .map((w) => w.name)
+                              .join(", ")}
+                            ]
+                          </Typography>
+                        )}
                     </>
                   }
                 />
@@ -281,17 +299,17 @@ const ChatList = memo(
             );
           })}
         </List>
-        
+
         {/* Load More Button */}
         {showLoadMore && (
-          <MenuItem 
-            onClick={onLoadMore} 
+          <MenuItem
+            onClick={onLoadMore}
             disabled={isLoadingMore}
-            sx={{ 
-              justifyContent: "center", 
+            sx={{
+              justifyContent: "center",
               borderTop: 1,
               borderColor: "divider",
-              py: 1.5
+              py: 1.5,
             }}
           >
             {isLoadingMore ? (
@@ -322,13 +340,12 @@ const ChatNotifications = () => {
   const [createGroupOpen, setCreateGroupOpen] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMoreChats, setHasMoreChats] = useState(false);
-  
-  useEffect(()=>{
-    if (hasMoreChats!=chats.length > 14){
+
+  useEffect(() => {
+    if (hasMoreChats != chats.length > 14) {
       setHasMoreChats(chats.length > 14);
     }
-    
-  },[chats.length])
+  }, [chats.length]);
 
   const { backendActor } = useBackendContext();
   const { profile, currentWorkspace } = useSelector(
@@ -355,15 +372,14 @@ const ChatNotifications = () => {
 
     setIsLoadingMore(true);
     try {
-
       let chatsList = await backendActor.get_my_chats(chats.length);
-      
+
       if (chatsList.length === 0) {
         setHasMoreChats(false);
       } else {
         dispatch({
           type: "SET_CHATS",
-          chats: [...chats, ...chatsList]
+          chats: [...chats, ...chatsList],
         });
       }
     } catch (error) {
@@ -430,9 +446,7 @@ const ChatNotifications = () => {
 
         const updatedMessages = chat.messages.map((msg) => ({
           ...msg,
-          seen_by: msg.seen_by.some(
-            (user) => user.toString() === profile?.id,
-          )
+          seen_by: msg.seen_by.some((user) => user.toString() === profile?.id)
             ? msg.seen_by
             : [...msg.seen_by, Principal.fromText(profile?.id)],
         }));
@@ -443,7 +457,7 @@ const ChatNotifications = () => {
           unread: 0, // Add unread property and set to 0
         };
 
-        dispatch({type: "UPDATE_CHAT", chat: updatedChat});
+        dispatch({ type: "UPDATE_CHAT", chat: updatedChat });
 
         // Call backend if there are unseen messages
         handleOpenChat(chat);
@@ -499,7 +513,7 @@ const ChatNotifications = () => {
         const result = await backendActor.make_new_chat_room(newChat);
         if ("Ok" in result) {
           // Add new chat to local state
-          dispatch({type:"SET_CHATS", chats:[newChat, ...chats]})
+          dispatch({ type: "SET_CHATS", chats: [newChat, ...chats] });
           // Open the new chat window
           handleOpenChat(newChat);
         } else {
@@ -536,8 +550,10 @@ const ChatNotifications = () => {
         // console.log("Message sent:", { res });
 
         // Update local state
-        dispatch({type:"UPDATE_CHAT", chat: { ...chat, messages: [newMessage,...chat.messages] }  })
-      
+        dispatch({
+          type: "UPDATE_CHAT",
+          chat: { ...chat, messages: [newMessage, ...chat.messages] },
+        });
       } catch (error) {
         console.error("Error sending message:", error);
       }
@@ -625,7 +641,8 @@ const ChatNotifications = () => {
           name: "",
           members: [],
           admins: [],
-          workspace: currentWorkspace.name !== "default"? [currentWorkspace.id] : []
+          workspace:
+            currentWorkspace.name !== "default" ? [currentWorkspace.id] : [],
         }}
         users={all_friends}
         workspaces={workspaces}

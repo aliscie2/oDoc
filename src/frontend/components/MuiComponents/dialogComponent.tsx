@@ -40,7 +40,7 @@ const DialogComponent: React.FC<DialogComponentProps> = ({
       await onConfirm();
       setOpen(false);
     } catch (error) {
-      console.error('Dialog confirmation error:', error);
+      console.error("Dialog confirmation error:", error);
     } finally {
       setLoading(false);
     }
@@ -48,20 +48,20 @@ const DialogComponent: React.FC<DialogComponentProps> = ({
 
   return (
     <>
-      <Box sx={{ position: 'relative', display: 'inline-block' }}>
+      <Box sx={{ position: "relative", display: "inline-block" }}>
         {loading ? (
           <CircularProgress
             size={24}
             sx={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              marginTop: '-12px',
-              marginLeft: '-12px',
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              marginTop: "-12px",
+              marginLeft: "-12px",
             }}
           />
         ) : (
-          <Box onClick={() => setOpen(true)} sx={{ cursor: 'pointer' }}>
+          <Box onClick={() => setOpen(true)} sx={{ cursor: "pointer" }}>
             {button}
           </Box>
         )}
@@ -72,25 +72,30 @@ const DialogComponent: React.FC<DialogComponentProps> = ({
         onClose={handleClose}
         PaperProps={{
           sx: {
-            backgroundColor: theme.palette.mode === 'dark'
-              ? alpha(theme.palette.background.paper, 0.95)
-              : theme.palette.background.paper,
-            maxWidth: 'sm',
+            backgroundColor:
+              theme.palette.mode === "dark"
+                ? alpha(theme.palette.background.paper, 0.95)
+                : theme.palette.background.paper,
+            maxWidth: "sm",
             margin: theme.spacing(2),
           },
         }}
       >
-        <DialogTitle sx={{
-          typography: 'h6',
-          color: theme.palette.text.primary,
-        }}>
+        <DialogTitle
+          sx={{
+            typography: "h6",
+            color: theme.palette.text.primary,
+          }}
+        >
           {title}
         </DialogTitle>
 
-        <DialogContent sx={{
-          color: theme.palette.text.secondary,
-          py: theme.spacing(2),
-        }}>
+        <DialogContent
+          sx={{
+            color: theme.palette.text.secondary,
+            py: theme.spacing(2),
+          }}
+        >
           {content}
         </DialogContent>
 
@@ -100,7 +105,7 @@ const DialogComponent: React.FC<DialogComponentProps> = ({
             disabled={loading}
             sx={{
               color: theme.palette.primary.main,
-              '&:hover': {
+              "&:hover": {
                 backgroundColor: alpha(theme.palette.primary.main, 0.1),
               },
             }}
@@ -112,13 +117,13 @@ const DialogComponent: React.FC<DialogComponentProps> = ({
             disabled={loading}
             sx={{
               color: theme.palette.error.main,
-              '&:hover': {
+              "&:hover": {
                 backgroundColor: alpha(theme.palette.error.main, 0.1),
               },
             }}
             autoFocus
           >
-            {loading ? 'Processing...' : title}
+            {loading ? "Processing..." : title}
           </Button>
         </DialogActions>
       </Dialog>

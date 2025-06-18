@@ -1,5 +1,5 @@
 // src/components/Shares/PaymentDialog.tsx
-import React from 'react';
+import React from "react";
 import {
   Dialog,
   DialogTitle,
@@ -11,8 +11,11 @@ import {
   Typography,
   Box,
   CircularProgress,
-} from '@mui/material';
-import { User, CPayment as Promise } from '../../../declarations/backend/backend.did';
+} from "@mui/material";
+import {
+  User,
+  CPayment as Promise,
+} from "../../../declarations/backend/backend.did";
 
 interface PaymentDialogProps {
   open: boolean;
@@ -57,15 +60,15 @@ export const PaymentDialog: React.FC<PaymentDialogProps> = ({
           {promises.map((promise) => (
             <Box
               key={promise.id}
-              sx={{ display: 'flex', justifyContent: 'space-between' }}
+              sx={{ display: "flex", justifyContent: "space-between" }}
             >
               <Typography variant="body2">
                 {allFriends.find((f) => f.id === promise.receiver)?.name ||
                   promise.receiver}
               </Typography>
               <Typography variant="body2">
-                {(amount * (promise.amount / 100)).toLocaleString()}{' '}
-                ({promise.amount}%)
+                {(amount * (promise.amount / 100)).toLocaleString()} (
+                {promise.amount}%)
               </Typography>
             </Box>
           ))}
@@ -78,7 +81,7 @@ export const PaymentDialog: React.FC<PaymentDialogProps> = ({
           disabled={loading || amount <= 0}
           variant="contained"
         >
-          {loading ? <CircularProgress size={24} /> : 'Pay'}
+          {loading ? <CircularProgress size={24} /> : "Pay"}
         </Button>
       </DialogActions>
     </Dialog>

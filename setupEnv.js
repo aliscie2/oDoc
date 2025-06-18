@@ -4,11 +4,9 @@ const path = require("path");
 function initCanisterEnv() {
   let localCanisters, prodCanisters;
   try {
-    localCanisters = require(path.resolve(
-      ".dfx",
-      "local",
-      "canister_ids.json"
-    ));
+    localCanisters = require(
+      path.resolve(".dfx", "local", "canister_ids.json"),
+    );
   } catch (error) {
     console.log("No local canister_ids.json found");
   }

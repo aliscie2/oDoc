@@ -1,5 +1,5 @@
-import React, {useState} from "react";
-import {Button} from "@mui/material";
+import React, { useState } from "react";
+import { Button } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 
@@ -57,4 +57,4 @@ const CopyButton = ({ title, value }) => {
   );
 };
 
-export default CopyButton
+export default CopyButton;

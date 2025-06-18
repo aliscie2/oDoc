@@ -99,7 +99,7 @@ function ShareFilePage(props: any) {
             to={`/user?id=${file?.author}`}
             component={Link}
             variant="body4"
-            color={'primary'}
+            color={"primary"}
           >
             See the author
           </Typography>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 import {
   Box,
   Typography,
@@ -18,13 +18,13 @@ import {
   AccountBalance,
   Psychology,
   Public,
-} from '@mui/icons-material';
+} from "@mui/icons-material";
 import { motion, useInView } from "framer-motion";
 import { useSelector } from "react-redux";
 import Link from "@mui/material/Link";
 import logo from "../../public/logo.png";
 import GetStartedButton from "./getStartedButton";
-import { introFeatures, trustIndicators } from './landingPageData';
+import { introFeatures, trustIndicators } from "./landingPageData";
 
 const MotionBox = motion(Box);
 const MotionTypography = motion(Typography);
@@ -32,7 +32,7 @@ const MotionTypography = motion(Typography);
 export default function Intro() {
   const sectionRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
-  
+
   const { profile, profile_history, wallet, friends } = useSelector(
     (state: any) => state.filesState,
   );
@@ -56,8 +56,8 @@ export default function Intro() {
       },
       {
         threshold: 0.2,
-        rootMargin: '-50px 0px -50px 0px'
-      }
+        rootMargin: "-50px 0px -50px 0px",
+      },
     );
 
     if (sectionRef.current) {
@@ -83,10 +83,10 @@ export default function Intro() {
   };
 
   const itemVariants = {
-    hidden: { 
-      opacity: 0, 
+    hidden: {
+      opacity: 0,
       y: 20,
-      x: -20
+      x: -20,
     },
     visible: {
       opacity: 1,
@@ -99,26 +99,24 @@ export default function Intro() {
     },
   };
 
-  
-
   return (
     <Box
       ref={sectionRef}
       sx={{
         position: "relative",
         width: "100%",
-        minHeight: '100vh',
+        minHeight: "100vh",
         overflow: "hidden",
-        display: 'flex',
-        alignItems: 'center',
-        background: 'inherit',
-        color: 'inherit',
+        display: "flex",
+        alignItems: "center",
+        background: "inherit",
+        color: "inherit",
       }}
     >
       {/* Background Pattern */}
       <Box
         sx={{
-          position: 'absolute',
+          position: "absolute",
           top: 0,
           left: 0,
           right: 0,
@@ -129,17 +127,17 @@ export default function Intro() {
           `,
           zIndex: 0,
           opacity: isVisible ? 1 : 0,
-          transition: 'opacity 0.8s ease-in-out'
+          transition: "opacity 0.8s ease-in-out",
         }}
       />
 
-      <Container 
-        maxWidth="lg" 
-        sx={{ 
-          position: 'relative', 
-          zIndex: 1, 
+      <Container
+        maxWidth="lg"
+        sx={{
+          position: "relative",
+          zIndex: 1,
           py: 6,
-          px: 3
+          px: 3,
         }}
       >
         <MotionBox
@@ -148,12 +146,12 @@ export default function Intro() {
           animate={isInView ? "visible" : "hidden"}
           variants={containerVariants}
         >
-          <Grid 
-            container 
-            spacing={4} 
-            alignItems="center" 
-            sx={{ 
-              minHeight: '80vh'
+          <Grid
+            container
+            spacing={4}
+            alignItems="center"
+            sx={{
+              minHeight: "80vh",
             }}
           >
             {/* Main Content */}
@@ -161,10 +159,10 @@ export default function Intro() {
               <Fade in={isVisible} timeout={1000}>
                 <Box
                   sx={{
-                    transform: isVisible ? 'translateY(0)' : 'translateY(50px)',
+                    transform: isVisible ? "translateY(0)" : "translateY(50px)",
                     opacity: isVisible ? 1 : 0,
-                    transition: 'all 0.8s ease-out',
-                    textAlign: 'left'
+                    transition: "all 0.8s ease-out",
+                    textAlign: "left",
                   }}
                 >
                   {/* Logo and Brand */}
@@ -173,7 +171,7 @@ export default function Intro() {
                     sx={{
                       display: "flex",
                       alignItems: "center",
-                      justifyContent: 'flex-start',
+                      justifyContent: "flex-start",
                       mb: 3,
                     }}
                   >
@@ -185,8 +183,8 @@ export default function Intro() {
                         visible: {
                           scale: 1,
                           opacity: 1,
-                          transition: { duration: 0.5 }
-                        }
+                          transition: { duration: 0.5 },
+                        },
                       }}
                       style={{
                         width: "60px",
@@ -201,7 +199,8 @@ export default function Intro() {
                       sx={{
                         fontSize: "3.5rem",
                         fontWeight: 700,
-                        background: "linear-gradient(135deg, #3b82f6 0%, #10b981 100%)",
+                        background:
+                          "linear-gradient(135deg, #3b82f6 0%, #10b981 100%)",
                         WebkitBackgroundClip: "text",
                         WebkitTextFillColor: "transparent",
                         backgroundClip: "text",
@@ -217,27 +216,35 @@ export default function Intro() {
                     component="h1"
                     sx={{
                       fontWeight: 700,
-                      fontSize: '2.5rem',
+                      fontSize: "2.5rem",
                       lineHeight: 1.2,
                       mb: 2,
-                      color: isDarkMode ? '#ffffff' : '#1a1a1a',
-                      transform: isVisible ? 'translateX(0)' : 'translateX(-100px)',
+                      color: isDarkMode ? "#ffffff" : "#1a1a1a",
+                      transform: isVisible
+                        ? "translateX(0)"
+                        : "translateX(-100px)",
                       opacity: isVisible ? 1 : 0,
-                      transition: 'all 1s ease-out 0.2s'
+                      transition: "all 1s ease-out 0.2s",
                     }}
                   >
-                    <Box component="span" sx={{ 
-                      fontSize: '1.8rem',
-                      display: 'block',
-                      mb: 0.5
-                    }}>
-                      Crypto Agreement Platform{' '}
+                    <Box
+                      component="span"
+                      sx={{
+                        fontSize: "1.8rem",
+                        display: "block",
+                        mb: 0.5,
+                      }}
+                    >
+                      Crypto Agreement Platform{" "}
                     </Box>
-                    <Box component="span" sx={{ 
-                      color: '#3b82f6',
-                      display: 'block',
-                      fontSize: '2.2rem'
-                    }}>
+                    <Box
+                      component="span"
+                      sx={{
+                        color: "#3b82f6",
+                        display: "block",
+                        fontSize: "2.2rem",
+                      }}
+                    >
                       Limitless Collaboration
                     </Box>
                   </Typography>
@@ -248,41 +255,45 @@ export default function Intro() {
                     sx={{
                       mb: 3,
                       fontWeight: 500,
-                      color: '#10b981',
+                      color: "#10b981",
                       opacity: isVisible ? 0.9 : 0,
-                      fontSize: '1.1rem',
-                      transform: isVisible ? 'translateX(0)' : 'translateX(-80px)',
-                      transition: 'all 1s ease-out 0.4s'
+                      fontSize: "1.1rem",
+                      transform: isVisible
+                        ? "translateX(0)"
+                        : "translateX(-80px)",
+                      transition: "all 1s ease-out 0.4s",
                     }}
                   >
                     Built for Freelancers • Crypto Enthusiasts • Global Teams
                   </Typography>
-                  
+
                   {/* Value Proposition */}
                   <Typography
                     variant="body1"
                     sx={{
                       mb: 3,
-                      fontSize: '1.1rem',
+                      fontSize: "1.1rem",
                       lineHeight: 1.6,
-                      color: isDarkMode ? '#e5e7eb' : '#4b5563',
+                      color: isDarkMode ? "#e5e7eb" : "#4b5563",
                       opacity: isVisible ? 0.9 : 0,
-                      transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
-                      transition: 'all 1s ease-out 0.6s'
+                      transform: isVisible
+                        ? "translateY(0)"
+                        : "translateY(30px)",
+                      transition: "all 1s ease-out 0.6s",
                     }}
                   >
-                    Eliminate middlemen, spreadsheets, and task managers. 
-                    Streamline contracts, payments, escrow, and collaboration 
-                    into one seamless crypto-native platform. Powered by AI & {" "}
+                    Eliminate middlemen, spreadsheets, and task managers.
+                    Streamline contracts, payments, escrow, and collaboration
+                    into one seamless crypto-native platform. Powered by AI &{" "}
                     <Link
                       href="https://internetcomputer.org/"
                       target="_blank"
                       rel="noopener noreferrer"
                       sx={{
-                        color: '#3b82f6',
-                        textDecoration: 'none',
+                        color: "#3b82f6",
+                        textDecoration: "none",
                         fontWeight: 500,
-                        "&:hover": { textDecoration: 'underline' },
+                        "&:hover": { textDecoration: "underline" },
                       }}
                     >
                       Internet Computer
@@ -293,31 +304,37 @@ export default function Intro() {
                   <Grid container spacing={2} sx={{ mb: 4 }}>
                     {introFeatures.map((feature, index) => (
                       <Grid item xs={4} key={index}>
-                        <Box 
-                          sx={{ 
-                            textAlign: 'center',
+                        <Box
+                          sx={{
+                            textAlign: "center",
                             p: 1.5,
-                            transform: isVisible ? 'scale(1) translateY(0)' : 'scale(0.9) translateY(40px)',
+                            transform: isVisible
+                              ? "scale(1) translateY(0)"
+                              : "scale(0.9) translateY(40px)",
                             opacity: isVisible ? 1 : 0,
-                            transition: `all 0.6s ease-out ${0.8 + index * 0.2}s`
+                            transition: `all 0.6s ease-out ${0.8 + index * 0.2}s`,
                           }}
                         >
-                          <Box sx={{ mb: 1 }}>
-                            {feature.icon}
-                          </Box>
-                          <Typography variant="subtitle2" sx={{ 
-                            fontWeight: 600, 
-                            mb: 0.5,
-                            color: isDarkMode ? '#ffffff' : '#1a1a1a',
-                            fontSize: '0.875rem'
-                          }}>
+                          <Box sx={{ mb: 1 }}>{feature.icon}</Box>
+                          <Typography
+                            variant="subtitle2"
+                            sx={{
+                              fontWeight: 600,
+                              mb: 0.5,
+                              color: isDarkMode ? "#ffffff" : "#1a1a1a",
+                              fontSize: "0.875rem",
+                            }}
+                          >
                             {feature.title}
                           </Typography>
-                          <Typography variant="caption" sx={{ 
-                            opacity: 0.7,
-                            color: isDarkMode ? '#d1d5db' : '#6b7280',
-                            fontSize: '0.75rem'
-                          }}>
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              opacity: 0.7,
+                              color: isDarkMode ? "#d1d5db" : "#6b7280",
+                              fontSize: "0.75rem",
+                            }}
+                          >
                             {feature.description}
                           </Typography>
                         </Box>
@@ -326,19 +343,19 @@ export default function Intro() {
                   </Grid>
 
                   {/* Trust Indicators */}
-                  <Box 
-                    sx={{ 
-                      display: 'flex', 
-                      flexWrap: 'wrap',
-                      gap: 1, 
-                      alignItems: 'center', 
-                      justifyContent: 'flex-start',
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: 1,
+                      alignItems: "center",
+                      justifyContent: "flex-start",
                       mb: 3,
-                      '& > *': {
-                        transform: isVisible ? 'scale(1)' : 'scale(0)',
+                      "& > *": {
+                        transform: isVisible ? "scale(1)" : "scale(0)",
                         opacity: isVisible ? 1 : 0,
-                        transition: 'all 0.5s ease-out 1.6s',
-                      }
+                        transition: "all 0.5s ease-out 1.6s",
+                      },
                     }}
                   >
                     {trustIndicators.map((indicator, index) => {
@@ -348,23 +365,28 @@ export default function Intro() {
                           icon={indicator.icon}
                           label={indicator.label}
                           size="medium"
-                          sx={{ 
+                          sx={{
                             backgroundColor: indicator.color,
-                            color: isDarkMode ? '#ffffff' : '#1a1a1a',
-                            border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-                            cursor: indicator.link ? 'pointer' : 'default',
-                            fontSize: '0.8rem',
+                            color: isDarkMode ? "#ffffff" : "#1a1a1a",
+                            border: `1px solid ${isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`,
+                            cursor: indicator.link ? "pointer" : "default",
+                            fontSize: "0.8rem",
                             height: 32,
-                            '& .MuiChip-icon': {
-                              color: 'inherit'
+                            "& .MuiChip-icon": {
+                              color: "inherit",
                             },
-                            '& .MuiChip-label': {
-                              px: 1.5
+                            "& .MuiChip-label": {
+                              px: 1.5,
                             },
-                            '&:hover': indicator.link ? {
-                              backgroundColor: indicator.color.replace('0.1', '0.2'),
-                              transform: 'scale(1.05)'
-                            } : {}
+                            "&:hover": indicator.link
+                              ? {
+                                  backgroundColor: indicator.color.replace(
+                                    "0.1",
+                                    "0.2",
+                                  ),
+                                  transform: "scale(1.05)",
+                                }
+                              : {},
                           }}
                         />
                       );
@@ -375,7 +397,7 @@ export default function Intro() {
                           href={indicator.link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          sx={{ textDecoration: 'none' }}
+                          sx={{ textDecoration: "none" }}
                         >
                           {ChipContent}
                         </Link>
@@ -392,108 +414,108 @@ export default function Intro() {
 
             {/* Feature Highlight Cards */}
             <Grid item xs={6}>
-              <Box 
-                sx={{ 
+              <Box
+                sx={{
                   pl: 4,
-                  transform: isVisible ? 'translateX(0)' : 'translateX(100px)',
+                  transform: isVisible ? "translateX(0)" : "translateX(100px)",
                   opacity: isVisible ? 1 : 0,
-                  transition: 'all 1s ease-out 0.5s'
+                  transition: "all 1s ease-out 0.5s",
                 }}
               >
                 {/* Success Stats */}
                 <Card
                   sx={{
                     mb: 3,
-                    background: isDarkMode 
-                      ? 'rgba(255,255,255,0.05)' 
-                      : 'rgba(0,0,0,0.02)',
-                    backdropFilter: 'blur(10px)',
-                    border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                    background: isDarkMode
+                      ? "rgba(255,255,255,0.05)"
+                      : "rgba(0,0,0,0.02)",
+                    backdropFilter: "blur(10px)",
+                    border: `1px solid ${isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`,
                     borderRadius: 3,
-                    transform: isVisible ? 'rotateY(0deg)' : 'rotateY(-15deg)',
-                    transformOrigin: 'left center',
-                    transition: 'all 0.8s ease-out 0.8s'
+                    transform: isVisible ? "rotateY(0deg)" : "rotateY(-15deg)",
+                    transformOrigin: "left center",
+                    transition: "all 0.8s ease-out 0.8s",
                   }}
                 >
                   <CardContent sx={{ p: 3 }}>
                     <Grid container spacing={3} textAlign="center">
                       <Grid item xs={4}>
-                        <Typography 
+                        <Typography
                           variant="h4"
-                          sx={{ 
-                            fontWeight: 700, 
-                            color: '#3b82f6',
-                            transform: isVisible ? 'scale(1)' : 'scale(0)',
-                            transition: 'all 0.6s ease-out 1.2s',
-                            fontSize: '2.125rem'
+                          sx={{
+                            fontWeight: 700,
+                            color: "#3b82f6",
+                            transform: isVisible ? "scale(1)" : "scale(0)",
+                            transition: "all 0.6s ease-out 1.2s",
+                            fontSize: "2.125rem",
                           }}
                         >
                           0%
                         </Typography>
-                        <Typography 
-                          variant="caption" 
-                          sx={{ 
-                            color: isDarkMode ? '#d1d5db' : '#6b7280',
-                            fontSize: '0.75rem'
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: isDarkMode ? "#d1d5db" : "#6b7280",
+                            fontSize: "0.75rem",
                           }}
                         >
                           Commission Fees
                         </Typography>
                       </Grid>
                       <Grid item xs={4}>
-                        <Typography 
+                        <Typography
                           variant="h4"
-                          sx={{ 
-                            fontWeight: 700, 
-                            color: '#10b981',
-                            transform: isVisible ? 'scale(1)' : 'scale(0)',
-                            transition: 'all 0.6s ease-out 1.4s',
-                            fontSize: '2.125rem'
+                          sx={{
+                            fontWeight: 700,
+                            color: "#10b981",
+                            transform: isVisible ? "scale(1)" : "scale(0)",
+                            transition: "all 0.6s ease-out 1.4s",
+                            fontSize: "2.125rem",
                           }}
                         >
                           24/7
                         </Typography>
-                        <Typography 
-                          variant="caption" 
-                          sx={{ 
-                            color: isDarkMode ? '#d1d5db' : '#6b7280',
-                            fontSize: '0.75rem'
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: isDarkMode ? "#d1d5db" : "#6b7280",
+                            fontSize: "0.75rem",
                           }}
                         >
                           Global Access
                         </Typography>
                       </Grid>
                       <Grid item xs={4}>
-                        <Typography 
+                        <Typography
                           variant="h4"
-                          sx={{ 
-                            fontWeight: 700, 
-                            color: '#f59e0b',
-                            transform: isVisible ? 'scale(1)' : 'scale(0)',
-                            transition: 'all 0.6s ease-out 1.6s',
-                            fontSize: '2.125rem'
+                          sx={{
+                            fontWeight: 700,
+                            color: "#f59e0b",
+                            transform: isVisible ? "scale(1)" : "scale(0)",
+                            transition: "all 0.6s ease-out 1.6s",
+                            fontSize: "2.125rem",
                           }}
                         >
                           100%
                         </Typography>
-                        
+
                         <Link
                           href="https://github.com/aliscie2/oDoc"
                           target="_blank"
                           rel="noopener noreferrer"
-                          sx={{ 
-                            textDecoration: 'none',
-                            '&:hover': {
-                              textDecoration: 'underline'
-                            }
+                          sx={{
+                            textDecoration: "none",
+                            "&:hover": {
+                              textDecoration: "underline",
+                            },
                           }}
                         >
                           <Typography
-                            variant="caption" 
-                            sx={{ 
-                              color: isDarkMode ? '#d1d5db' : '#6b7280',
-                              fontSize: '0.75rem',
-                              cursor: 'pointer'
+                            variant="caption"
+                            sx={{
+                              color: isDarkMode ? "#d1d5db" : "#6b7280",
+                              fontSize: "0.75rem",
+                              cursor: "pointer",
                             }}
                           >
                             Open Source
@@ -505,93 +527,121 @@ export default function Intro() {
                 </Card>
 
                 {/* Feature Highlight Cards */}
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                   <Card
                     sx={{
-                      background: isDarkMode 
-                        ? 'rgba(255,255,255,0.03)' 
-                        : 'rgba(0,0,0,0.02)',
-                      backdropFilter: 'blur(10px)',
-                      border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+                      background: isDarkMode
+                        ? "rgba(255,255,255,0.03)"
+                        : "rgba(0,0,0,0.02)",
+                      backdropFilter: "blur(10px)",
+                      border: `1px solid ${isDarkMode ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}`,
                       borderRadius: 3,
-                      '&:hover': {
-                        transform: 'translateY(-4px)',
-                        boxShadow: isDarkMode 
-                          ? '0 8px 25px rgba(0,0,0,0.3)' 
-                          : '0 8px 25px rgba(0,0,0,0.1)'
+                      "&:hover": {
+                        transform: "translateY(-4px)",
+                        boxShadow: isDarkMode
+                          ? "0 8px 25px rgba(0,0,0,0.3)"
+                          : "0 8px 25px rgba(0,0,0,0.1)",
                       },
-                      transform: isVisible ? 'translateY(0) rotateX(0deg)' : 'translateY(50px) rotateX(-10deg)',
+                      transform: isVisible
+                        ? "translateY(0) rotateX(0deg)"
+                        : "translateY(50px) rotateX(-10deg)",
                       opacity: isVisible ? 1 : 0,
-                      transition: 'all 0.8s ease-out 1.2s'
+                      transition: "all 0.8s ease-out 1.2s",
                     }}
                   >
                     <CardContent sx={{ p: 3 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                        <Psychology sx={{ 
-                          mr: 2, 
-                          color: '#3b82f6', 
-                          fontSize: 32
-                        }} />
-                        <Typography variant="h6" sx={{ 
-                          fontWeight: 600,
-                          color: isDarkMode ? '#ffffff' : '#1a1a1a',
-                          fontSize: '1.25rem'
-                        }}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", mb: 2 }}
+                      >
+                        <Psychology
+                          sx={{
+                            mr: 2,
+                            color: "#3b82f6",
+                            fontSize: 32,
+                          }}
+                        />
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            fontWeight: 600,
+                            color: isDarkMode ? "#ffffff" : "#1a1a1a",
+                            fontSize: "1.25rem",
+                          }}
+                        >
                           AI-Powered Matching
                         </Typography>
                       </Box>
-                      <Typography variant="body2" sx={{ 
-                        opacity: 0.8, 
-                        lineHeight: 1.6,
-                        color: isDarkMode ? '#d1d5db' : '#4b5563',
-                        fontSize: '0.875rem'
-                      }}>
-                        Smart contract templates and automated matching between freelancers and clients based on skills, budget, and project requirements.
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          opacity: 0.8,
+                          lineHeight: 1.6,
+                          color: isDarkMode ? "#d1d5db" : "#4b5563",
+                          fontSize: "0.875rem",
+                        }}
+                      >
+                        Smart contract templates and automated matching between
+                        freelancers and clients based on skills, budget, and
+                        project requirements.
                       </Typography>
                     </CardContent>
                   </Card>
 
                   <Card
                     sx={{
-                      background: isDarkMode 
-                        ? 'rgba(255,255,255,0.03)' 
-                        : 'rgba(0,0,0,0.02)',
-                      backdropFilter: 'blur(10px)',
-                      border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+                      background: isDarkMode
+                        ? "rgba(255,255,255,0.03)"
+                        : "rgba(0,0,0,0.02)",
+                      backdropFilter: "blur(10px)",
+                      border: `1px solid ${isDarkMode ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}`,
                       borderRadius: 3,
-                      '&:hover': {
-                        transform: 'translateY(-4px)',
-                        boxShadow: isDarkMode 
-                          ? '0 8px 25px rgba(0,0,0,0.3)' 
-                          : '0 8px 25px rgba(0,0,0,0.1)'
+                      "&:hover": {
+                        transform: "translateY(-4px)",
+                        boxShadow: isDarkMode
+                          ? "0 8px 25px rgba(0,0,0,0.3)"
+                          : "0 8px 25px rgba(0,0,0,0.1)",
                       },
-                      transform: isVisible ? 'translateY(0) rotateX(0deg)' : 'translateY(70px) rotateX(-15deg)',
+                      transform: isVisible
+                        ? "translateY(0) rotateX(0deg)"
+                        : "translateY(70px) rotateX(-15deg)",
                       opacity: isVisible ? 1 : 0,
-                      transition: 'all 0.8s ease-out 1.4s'
+                      transition: "all 0.8s ease-out 1.4s",
                     }}
                   >
                     <CardContent sx={{ p: 3 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                        <Security sx={{ 
-                          mr: 2, 
-                          color: '#10b981', 
-                          fontSize: 32
-                        }} />
-                        <Typography variant="h6" sx={{ 
-                          fontWeight: 600,
-                          color: isDarkMode ? '#ffffff' : '#1a1a1a',
-                          fontSize: '1.25rem'
-                        }}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", mb: 2 }}
+                      >
+                        <Security
+                          sx={{
+                            mr: 2,
+                            color: "#10b981",
+                            fontSize: 32,
+                          }}
+                        />
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            fontWeight: 600,
+                            color: isDarkMode ? "#ffffff" : "#1a1a1a",
+                            fontSize: "1.25rem",
+                          }}
+                        >
                           Secure Crypto Escrow
                         </Typography>
                       </Box>
-                      <Typography variant="body2" sx={{ 
-                        opacity: 0.8, 
-                        lineHeight: 1.6,
-                        color: isDarkMode ? '#d1d5db' : '#4b5563',
-                        fontSize: '0.875rem'
-                      }}>
-                        Automated escrow system with milestone-based payments in cryptocurrency. Guarantee your payment before start working. No banks, no borders, no restrictions.
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          opacity: 0.8,
+                          lineHeight: 1.6,
+                          color: isDarkMode ? "#d1d5db" : "#4b5563",
+                          fontSize: "0.875rem",
+                        }}
+                      >
+                        Automated escrow system with milestone-based payments in
+                        cryptocurrency. Guarantee your payment before start
+                        working. No banks, no borders, no restrictions.
                       </Typography>
                     </CardContent>
                   </Card>

@@ -56,7 +56,7 @@ const DeleteFile: React.FC<DeleteFileProps> = ({ item }) => {
       conformationMessage={`Are you sure you want to delete this File`}
       onClick={handleDeleteFile}
     >
-      <DeleteIcon  fontSize="small" /> Delete
+      <DeleteIcon fontSize="small" /> Delete
     </ConformationMessage>
   );
 };

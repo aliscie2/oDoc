@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Box,
   Typography,
@@ -16,7 +16,7 @@ import {
   ListItem,
   ListItemText,
   ListItemAvatar,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Groups as GroupsIcon,
   MoreVert as MoreVertIcon,
@@ -24,7 +24,7 @@ import {
   StarBorder as StarBorderIcon,
   CheckCircleOutline as CheckCircleOutlineIcon,
   TrendingUp as TrendingUpIcon,
-} from '@mui/icons-material';
+} from "@mui/icons-material";
 
 // Sample teams data
 const SAMPLE_TEAMS = [
@@ -37,16 +37,24 @@ const SAMPLE_TEAMS = [
       { id: 2, name: "Mike Ross", role: "Senior Developer", avatar: "MR" },
       { id: 3, name: "Anna Smith", role: "UX Designer", avatar: "AS" },
       { id: 4, name: "John Doe", role: "Developer", avatar: "JD" },
-      { id: 5, name: "Emma Wilson", role: "Developer", avatar: "EW" }
+      { id: 5, name: "Emma Wilson", role: "Developer", avatar: "EW" },
     ],
     activeProjects: 4,
     completedProjects: 12,
     performance: 92,
     tags: ["React", "Vue", "UI/UX"],
     recentActivity: [
-      { type: "completed", text: "Completed Website Redesign", date: "2 days ago" },
-      { type: "started", text: "Started Mobile App Development", date: "1 week ago" }
-    ]
+      {
+        type: "completed",
+        text: "Completed Website Redesign",
+        date: "2 days ago",
+      },
+      {
+        type: "started",
+        text: "Started Mobile App Development",
+        date: "1 week ago",
+      },
+    ],
   },
   {
     id: 2,
@@ -56,16 +64,24 @@ const SAMPLE_TEAMS = [
       { id: 6, name: "David Kim", role: "Team Lead", avatar: "DK" },
       { id: 7, name: "Lisa Park", role: "Senior Developer", avatar: "LP" },
       { id: 8, name: "Tom Brown", role: "DevOps Engineer", avatar: "TB" },
-      { id: 9, name: "Rachel Green", role: "Backend Developer", avatar: "RG" }
+      { id: 9, name: "Rachel Green", role: "Backend Developer", avatar: "RG" },
     ],
     activeProjects: 3,
     completedProjects: 8,
     performance: 88,
     tags: ["Node.js", "Python", "AWS"],
     recentActivity: [
-      { type: "completed", text: "API Integration Complete", date: "1 day ago" },
-      { type: "started", text: "Database Migration Project", date: "3 days ago" }
-    ]
+      {
+        type: "completed",
+        text: "API Integration Complete",
+        date: "1 day ago",
+      },
+      {
+        type: "started",
+        text: "Database Migration Project",
+        date: "3 days ago",
+      },
+    ],
   },
   {
     id: 3,
@@ -74,25 +90,34 @@ const SAMPLE_TEAMS = [
     members: [
       { id: 10, name: "Emily White", role: "Creative Director", avatar: "EW" },
       { id: 11, name: "James Lee", role: "Senior Designer", avatar: "JL" },
-      { id: 12, name: "Sofia Garcia", role: "UI Designer", avatar: "SG" }
+      { id: 12, name: "Sofia Garcia", role: "UI Designer", avatar: "SG" },
     ],
     activeProjects: 5,
     completedProjects: 15,
     performance: 95,
     tags: ["UI/UX", "Figma", "Adobe XD"],
     recentActivity: [
-      { type: "completed", text: "Brand Guidelines Update", date: "4 days ago" },
-      { type: "started", text: "New Product Design", date: "1 week ago" }
-    ]
-  }
+      {
+        type: "completed",
+        text: "Brand Guidelines Update",
+        date: "4 days ago",
+      },
+      { type: "started", text: "New Product Design", date: "1 week ago" },
+    ],
+  },
 ];
 
 const TeamMetric = ({ icon, label, value }) => (
-  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+  <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
     {icon}
     <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
       {label}:
-      <Typography component="span" variant="body2" color="text.primary" sx={{ ml: 0.5, fontWeight: 'medium' }}>
+      <Typography
+        component="span"
+        variant="body2"
+        color="text.primary"
+        sx={{ ml: 0.5, fontWeight: "medium" }}
+      >
         {value}
       </Typography>
     </Typography>
@@ -103,10 +128,17 @@ const TeamCard = ({ team }) => {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <Card sx={{ height: '100%' }}>
+    <Card sx={{ height: "100%" }}>
       <CardContent>
         {/* Header */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            mb: 2,
+          }}
+        >
           <Box>
             <Typography variant="h6" gutterBottom>
               {team.name}
@@ -175,13 +207,13 @@ const TeamCard = ({ team }) => {
               <ListItemText
                 primary={activity.text}
                 secondary={activity.date}
-                secondaryTypographyProps={{ variant: 'caption' }}
+                secondaryTypographyProps={{ variant: "caption" }}
               />
             </ListItem>
           ))}
         </List>
 
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+        <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
           <Button size="small" variant="outlined">
             View Team
           </Button>
@@ -194,7 +226,14 @@ const TeamCard = ({ team }) => {
 const TeamsView = () => {
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 3,
+        }}
+      >
         <Typography variant="h5">Teams</Typography>
         <Button variant="contained" color="primary" startIcon={<GroupsIcon />}>
           New Team

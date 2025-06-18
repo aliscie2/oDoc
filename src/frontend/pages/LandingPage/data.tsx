@@ -134,7 +134,8 @@ const roadMap = [
   {
     is_done: false,
     title: "External Integration",
-    content: "google calendar and Notion synchronization for seamless data transfer and updates",
+    content:
+      "google calendar and Notion synchronization for seamless data transfer and updates",
   },
   {
     is_done: false,

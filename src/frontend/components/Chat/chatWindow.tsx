@@ -1,12 +1,30 @@
 import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 import {
-  AppBar, Box, Button, CircularProgress, Dialog, FormControl, IconButton,
-  InputLabel, MenuItem, Paper, Select, TextField, Toolbar, Typography,
+  AppBar,
+  Box,
+  Button,
+  CircularProgress,
+  Dialog,
+  FormControl,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  TextField,
+  Toolbar,
+  Typography,
 } from "@mui/material";
 import { AdminsSelect, MembersSelect, WorkspaceSelect } from "./index";
 import {
-  ArrowBack, Check, DragIndicator, OpenInFull, Send, Settings,
-  Minimize, Close
+  ArrowBack,
+  Check,
+  DragIndicator,
+  OpenInFull,
+  Send,
+  Settings,
+  Minimize,
+  Close,
 } from "@mui/icons-material";
 import { useBackendContext } from "../../contexts/BackendContext";
 import { useDispatch, useSelector } from "react-redux";
@@ -16,501 +34,592 @@ import { Link } from "react-router-dom";
 import { Chat } from "../../../declarations/backend/backend.did";
 import { handleRedux } from "../../redux/store/handleRedux";
 
-const ChatWindow = memo(({
-  chat, onClose, position, onPositionChange, onSendMessage, onUpdateChat, dialog = false
-}) => {
-  const [isDragging, setIsDragging] = useState(false);
-  const [isSettingsView, setIsSettingsView] = useState(false);
-  const [formData, setFormData] = useState({
-    name: chat.name,
-    workspaces: chat.workspaces,
-    admins: chat.admins,
-    members: chat.members,
-  });
-  const { workspaces, all_friends, profile } = useSelector(state => state.filesState);
-  const { backendActor } = useBackendContext();
-  const dispatch = useDispatch();
-  
-  const [dragPosition, setDragPosition] = useState(position || { x: 100, y: 100 });
-  const [newMessage, setNewMessage] = useState("");
-  const [isMinimized, setIsMinimized] = useState(false);
-  const [isSending, setIsSending] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
-  
-  // Infinite scroll states
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [hasMoreMessages, setHasMoreMessages] = useState(true);
-  const [isScrolledToBottom, setIsScrolledToBottom] = useState(true);
-  
-  const messagesEndRef = useRef(null);
-  const messagesContainerRef = useRef(null);
-  const saveSuccessTimeout = useRef(null);
-  const previousScrollHeight = useRef(0);
+const ChatWindow = memo(
+  ({
+    chat,
+    onClose,
+    position,
+    onPositionChange,
+    onSendMessage,
+    onUpdateChat,
+    dialog = false,
+  }) => {
+    const [isDragging, setIsDragging] = useState(false);
+    const [isSettingsView, setIsSettingsView] = useState(false);
+    const [formData, setFormData] = useState({
+      name: chat.name,
+      workspaces: chat.workspaces,
+      admins: chat.admins,
+      members: chat.members,
+    });
+    const { workspaces, all_friends, profile } = useSelector(
+      (state) => state.filesState,
+    );
+    const { backendActor } = useBackendContext();
+    const dispatch = useDispatch();
 
-  const isDragEnabled = position && onPositionChange;
+    const [dragPosition, setDragPosition] = useState(
+      position || { x: 100, y: 100 },
+    );
+    const [newMessage, setNewMessage] = useState("");
+    const [isMinimized, setIsMinimized] = useState(false);
+    const [isSending, setIsSending] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [saveSuccess, setSaveSuccess] = useState(false);
 
-  useEffect(() => {
-    if (position) setDragPosition(position);
-  }, [position]);
+    // Infinite scroll states
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const [hasMoreMessages, setHasMoreMessages] = useState(true);
+    const [isScrolledToBottom, setIsScrolledToBottom] = useState(true);
 
-  const scrollToBottom = useCallback(() => {
-    if (isScrolledToBottom) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [isScrolledToBottom]);
+    const messagesEndRef = useRef(null);
+    const messagesContainerRef = useRef(null);
+    const saveSuccessTimeout = useRef(null);
+    const previousScrollHeight = useRef(0);
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [chat.messages, scrollToBottom]);
+    const isDragEnabled = position && onPositionChange;
 
-  // Handle scroll to detect when user scrolls up
-  const handleScroll = useCallback(async () => {
-    const container = messagesContainerRef.current;
-    if (!container || isLoadingMore || !hasMoreMessages) return;
+    useEffect(() => {
+      if (position) setDragPosition(position);
+    }, [position]);
 
-    const { scrollTop, scrollHeight, clientHeight } = container;
-    
-    // Check if user is at the bottom
-    const isAtBottom = scrollHeight - scrollTop <= clientHeight + 5;
-    setIsScrolledToBottom(isAtBottom);
+    const scrollToBottom = useCallback(() => {
+      if (isScrolledToBottom) {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      }
+    }, [isScrolledToBottom]);
 
-    // Check if user scrolled to the top (load more messages)
-    if (scrollTop === 0) {
-      setIsLoadingMore(true);
-      previousScrollHeight.current = scrollHeight;
+    useEffect(() => {
+      scrollToBottom();
+    }, [chat.messages, scrollToBottom]);
 
+    // Handle scroll to detect when user scrolls up
+    const handleScroll = useCallback(async () => {
+      const container = messagesContainerRef.current;
+      if (!container || isLoadingMore || !hasMoreMessages) return;
+
+      const { scrollTop, scrollHeight, clientHeight } = container;
+
+      // Check if user is at the bottom
+      const isAtBottom = scrollHeight - scrollTop <= clientHeight + 5;
+      setIsScrolledToBottom(isAtBottom);
+
+      // Check if user scrolled to the top (load more messages)
+      if (scrollTop === 0) {
+        setIsLoadingMore(true);
+        previousScrollHeight.current = scrollHeight;
+
+        try {
+          const olderMessages = await backendActor.load_more_messages(
+            chat.id,
+            chat.messages.length,
+          );
+
+          if (olderMessages.length === 0) {
+            setHasMoreMessages(false);
+          } else {
+            // Since backend returns messages in reverse order (latest first),
+            // we need to reverse them to get chronological order for prepending
+            const chronologicalMessages = [...olderMessages].reverse();
+
+            dispatch(
+              handleRedux("UPDATE_CHAT", {
+                chat: {
+                  ...chat,
+                  messages: [...chronologicalMessages, ...chat.messages],
+                },
+              }),
+            );
+          }
+        } catch (error) {
+          console.error("Error loading more messages:", error);
+        } finally {
+          setIsLoadingMore(false);
+        }
+      }
+    }, [backendActor, chat, dispatch, isLoadingMore, hasMoreMessages]);
+
+    // Maintain scroll position after loading more messages
+    useEffect(() => {
+      if (isLoadingMore) return;
+
+      const container = messagesContainerRef.current;
+      if (container && previousScrollHeight.current > 0) {
+        const newScrollHeight = container.scrollHeight;
+        const scrollDifference = newScrollHeight - previousScrollHeight.current;
+        container.scrollTop = scrollDifference;
+        previousScrollHeight.current = 0;
+      }
+    }, [chat.messages, isLoadingMore]);
+
+    const renderSenderName = (sender) => {
+      const senderStr =
+        sender instanceof Principal ? sender.toString() : sender?.toString();
+      if (!senderStr) return "Unknown User";
+
+      return senderStr === profile?.id
+        ? "You"
+        : all_friends.find((u) => u.id === senderStr)?.name ||
+            senderStr.slice(8, 16);
+    };
+
+    const isCurrentUser = (sender) => {
+      const senderStr =
+        sender instanceof Principal ? sender.toString() : sender?.__principal__;
+      return senderStr === profile?.id;
+    };
+
+    const handleSendMessage = useCallback(
+      async (e) => {
+        e.preventDefault();
+        if (!newMessage.trim() || !profile?.id || isSending) return;
+
+        try {
+          setIsSending(true);
+          await onSendMessage(chat.id, newMessage);
+          setNewMessage("");
+          setIsScrolledToBottom(true); // Ensure we scroll to bottom after sending
+          setTimeout(scrollToBottom, 100); // Delay to ensure message is rendered
+        } catch (error) {
+          console.error("Error sending message:", error);
+        } finally {
+          setIsSending(false);
+        }
+      },
+      [
+        chat.id,
+        newMessage,
+        profile?.id,
+        isSending,
+        onSendMessage,
+        scrollToBottom,
+      ],
+    );
+
+    const handleDragStart = useCallback(
+      (e) => {
+        if (!isDragEnabled) return;
+        setIsDragging(true);
+        const rect = e.currentTarget.getBoundingClientRect();
+        e.currentTarget.dataset.offsetX = e.clientX - rect.left;
+        e.currentTarget.dataset.offsetY = e.clientY - rect.top;
+      },
+      [isDragEnabled],
+    );
+
+    const handleDrag = useCallback(
+      (e) => {
+        if (!isDragEnabled || !isDragging || !e.clientX || !e.clientY) return;
+        const offsetX = parseFloat(e.currentTarget.dataset.offsetX);
+        const offsetY = parseFloat(e.currentTarget.dataset.offsetY);
+        setDragPosition({
+          x: Math.max(0, e.clientX - offsetX),
+          y: Math.max(0, e.clientY - offsetY),
+        });
+      },
+      [isDragEnabled, isDragging],
+    );
+
+    const handleDragEnd = useCallback(() => {
+      if (!isDragEnabled) return;
+      setIsDragging(false);
+      onPositionChange?.(chat.id, dragPosition);
+    }, [isDragEnabled, chat.id, dragPosition, onPositionChange]);
+
+    const handleSaveChat = async (updatedChat) => {
+      setIsSaving(true);
       try {
-        const olderMessages = await backendActor.load_more_messages(
-          chat.id, 
-          chat.messages.length
-        );
+        const formattedChat = {
+          ...updatedChat,
+          admins: updatedChat.admins.map((a) => Principal.fromText(a.id || a)),
+          creator:
+            updatedChat.creator instanceof Principal
+              ? updatedChat.creator
+              : Principal.fromText(updatedChat.creator.id),
+          members: updatedChat.members.map((m) =>
+            Principal.fromText(m.id || m),
+          ),
+          messages: updatedChat.messages.map((msg) => ({
+            ...msg,
+            sender:
+              msg.sender instanceof Principal
+                ? msg.sender
+                : Principal.fromText(msg.sender),
+            seen_by: msg.seen_by.map((s) =>
+              s instanceof Principal ? s : Principal.fromText(s),
+            ),
+            date:
+              typeof msg.date === "bigint"
+                ? msg.date
+                : BigInt(msg.date.toString()),
+          })),
+        };
 
-        if (olderMessages.length === 0) {
-          setHasMoreMessages(false);
-        } else {
-          // Since backend returns messages in reverse order (latest first),
-          // we need to reverse them to get chronological order for prepending
-          const chronologicalMessages = [...olderMessages].reverse();
-          
-          dispatch(handleRedux("UPDATE_CHAT", { 
-            chat: { 
-              ...chat, 
-              messages: [...chronologicalMessages, ...chat.messages] 
-            } 
-          }));
+        const result = await backendActor.update_chat(formattedChat);
+        if ("Ok" in result) {
+          onUpdateChat?.(result.Ok);
+          setSaveSuccess(true);
+          if (saveSuccessTimeout.current)
+            clearTimeout(saveSuccessTimeout.current);
+          saveSuccessTimeout.current = setTimeout(
+            () => setSaveSuccess(false),
+            2000,
+          );
         }
       } catch (error) {
-        console.error("Error loading more messages:", error);
+        console.error("Failed to update chat:", error);
       } finally {
-        setIsLoadingMore(false);
+        setIsSaving(false);
       }
-    }
-  }, [backendActor, chat, dispatch, isLoadingMore, hasMoreMessages]);
+    };
 
-  // Maintain scroll position after loading more messages
-  useEffect(() => {
-    if (isLoadingMore) return;
-    
-    const container = messagesContainerRef.current;
-    if (container && previousScrollHeight.current > 0) {
-      const newScrollHeight = container.scrollHeight;
-      const scrollDifference = newScrollHeight - previousScrollHeight.current;
-      container.scrollTop = scrollDifference;
-      previousScrollHeight.current = 0;
-    }
-  }, [chat.messages, isLoadingMore]);
+    const handleDeleteChat = () => {
+      if (
+        !window.confirm(
+          "Are you sure you want to delete this chat? This action cannot be undone.",
+        )
+      )
+        return;
 
-  const renderSenderName = (sender) => {
-    const senderStr = sender instanceof Principal ? sender.toString() : sender?.toString();
-    if (!senderStr) return "Unknown User";
-    
-    return senderStr === profile?.id
-      ? "You"
-      : all_friends.find(u => u.id === senderStr)?.name || senderStr.slice(8, 16);
-  };
+      backendActor
+        .delete_chat(chat.id)
+        .then((result) => {
+          if ("Ok" in result) {
+            dispatch(handleRedux("DELETE_CHAT", { chat_id: chat.id }));
+            onClose(chat.id);
+          }
+        })
+        .catch((error) => console.error("Failed to delete chat:", error));
+    };
 
-  const isCurrentUser = (sender) => {
-    const senderStr = sender instanceof Principal ? sender.toString() : sender?.__principal__;
-    return senderStr === profile?.id;
-  };
+    const isPrivateChat = chat.name === "private_chat";
+    const isCreator = chat.creator?.id === profile?.id;
+    const chatDisplayName = isPrivateChat
+      ? renderSenderName(chat.members.find((m) => m.toText() !== profile?.id))
+      : chat.name;
 
-  const handleSendMessage = useCallback(async (e) => {
-    e.preventDefault();
-    if (!newMessage.trim() || !profile?.id || isSending) return;
-
-    try {
-      setIsSending(true);
-      await onSendMessage(chat.id, newMessage);
-      setNewMessage("");
-      setIsScrolledToBottom(true); // Ensure we scroll to bottom after sending
-      setTimeout(scrollToBottom, 100); // Delay to ensure message is rendered
-    } catch (error) {
-      console.error("Error sending message:", error);
-    } finally {
-      setIsSending(false);
-    }
-  }, [chat.id, newMessage, profile?.id, isSending, onSendMessage, scrollToBottom]);
-
-  const handleDragStart = useCallback((e) => {
-    if (!isDragEnabled) return;
-    setIsDragging(true);
-    const rect = e.currentTarget.getBoundingClientRect();
-    e.currentTarget.dataset.offsetX = e.clientX - rect.left;
-    e.currentTarget.dataset.offsetY = e.clientY - rect.top;
-  }, [isDragEnabled]);
-
-  const handleDrag = useCallback((e) => {
-    if (!isDragEnabled || !isDragging || !e.clientX || !e.clientY) return;
-    const offsetX = parseFloat(e.currentTarget.dataset.offsetX);
-    const offsetY = parseFloat(e.currentTarget.dataset.offsetY);
-    setDragPosition({
-      x: Math.max(0, e.clientX - offsetX),
-      y: Math.max(0, e.clientY - offsetY),
-    });
-  }, [isDragEnabled, isDragging]);
-
-  const handleDragEnd = useCallback(() => {
-    if (!isDragEnabled) return;
-    setIsDragging(false);
-    onPositionChange?.(chat.id, dragPosition);
-  }, [isDragEnabled, chat.id, dragPosition, onPositionChange]);
-
-  const handleSaveChat = async (updatedChat) => {
-    setIsSaving(true);
-    try {
-      const formattedChat = {
-        ...updatedChat,
-        admins: updatedChat.admins.map(a => Principal.fromText(a.id || a)),
-        creator: updatedChat.creator instanceof Principal 
-          ? updatedChat.creator 
-          : Principal.fromText(updatedChat.creator.id),
-        members: updatedChat.members.map(m => Principal.fromText(m.id || m)),
-        messages: updatedChat.messages.map(msg => ({
-          ...msg,
-          sender: msg.sender instanceof Principal ? msg.sender : Principal.fromText(msg.sender),
-          seen_by: msg.seen_by.map(s => s instanceof Principal ? s : Principal.fromText(s)),
-          date: typeof msg.date === "bigint" ? msg.date : BigInt(msg.date.toString()),
-        })),
-      };
-      
-      const result = await backendActor.update_chat(formattedChat);
-      if ("Ok" in result) {
-        onUpdateChat?.(result.Ok);
-        setSaveSuccess(true);
-        if (saveSuccessTimeout.current) clearTimeout(saveSuccessTimeout.current);
-        saveSuccessTimeout.current = setTimeout(() => setSaveSuccess(false), 2000);
-      }
-    } catch (error) {
-      console.error("Failed to update chat:", error);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleDeleteChat = () => {
-    if (!window.confirm("Are you sure you want to delete this chat? This action cannot be undone.")) return;
-    
-    backendActor.delete_chat(chat.id)
-      .then(result => {
-        if ("Ok" in result) {
-          dispatch(handleRedux("DELETE_CHAT", { chat_id: chat.id }));
-          onClose(chat.id);
-        }
-      })
-      .catch(error => console.error("Failed to delete chat:", error));
-  };
-
-  const isPrivateChat = chat.name === "private_chat";
-  const isCreator = chat.creator?.id === profile?.id;
-  const chatDisplayName = isPrivateChat
-    ? renderSenderName(chat.members.find(m => m.toText() !== profile?.id))
-    : chat.name;
-
-  const headerContent = (
-    <AppBar
-      position="static"
-      color="default"
-      elevation={0}
-      onMouseDown={handleDragStart}
-      onMouseMove={handleDrag}
-      onMouseUp={handleDragEnd}
-      onMouseLeave={() => setIsDragging(false)}
-      sx={{ 
-        cursor: isDragEnabled ? "move" : "default",
-        borderBottom: 1,
-        borderColor: "divider"
-      }}
-    >
-      <Toolbar variant="dense" sx={{ minHeight: 48 }}>
-        {isDragEnabled && <DragIndicator sx={{ mr: 1 }} />}
-        <Typography
-          component={Link}
-          to={`/user?id=${chat.members.find(m => String(m) !== profile?.id)}`}
-          variant="subtitle2"
-          sx={{ 
-            flex: 1, 
-            fontWeight: 600,
-            textDecoration: "none",
-            "&:hover": { textDecoration: "underline" }
-          }}
-        >
-          {chatDisplayName}
-        </Typography>
-        
-        <IconButton size="small" onClick={() => setIsMinimized(!isMinimized)}>
-          {isMinimized ? <OpenInFull /> : <Minimize />}
-        </IconButton>
-        
-        {!isPrivateChat && isCreator && (
-          <IconButton size="small" onClick={() => setIsSettingsView(!isSettingsView)}>
-            {isSettingsView ? <ArrowBack /> : <Settings />}
-          </IconButton>
-        )}
-        
-        <IconButton size="small" onClick={() => onClose(chat.id)}>
-          <Close />
-        </IconButton>
-      </Toolbar>
-    </AppBar>
-  );
-
-  const messagesContent = !isMinimized && !isSettingsView && (
-    <>
-      <Box 
-        ref={messagesContainerRef}
-        onScroll={handleScroll}
-        sx={{ 
-          flex: 1, 
-          overflow: "auto", 
-          p: 2,
-          display: "flex",
-          flexDirection: "column"
+    const headerContent = (
+      <AppBar
+        position="static"
+        color="default"
+        elevation={0}
+        onMouseDown={handleDragStart}
+        onMouseMove={handleDrag}
+        onMouseUp={handleDragEnd}
+        onMouseLeave={() => setIsDragging(false)}
+        sx={{
+          cursor: isDragEnabled ? "move" : "default",
+          borderBottom: 1,
+          borderColor: "divider",
         }}
       >
-        {/* Loading indicator at the top */}
-        {isLoadingMore && (
-          <Box sx={{ display: "flex", justifyContent: "center", p: 2 }}>
-            <CircularProgress size={24} />
-          </Box>
-        )}
-        
-        {/* No more messages indicator */}
-        {!hasMoreMessages && chat.messages.length > 0 && (
-          <Box sx={{ display: "flex", justifyContent: "center", p: 2 }}>
-            <Typography variant="caption" color="text.secondary">
-              No more messages available
-            </Typography>
-          </Box>
-        )}
-
-        {/* Messages - reverse to show latest at bottom */}
-        {[...chat.messages].reverse().map(message => {
-          const isOwn = isCurrentUser(message.sender);
-          return (
-            <Paper
-              key={message.id}
-              elevation={0}
-              sx={{
-                p: 1.5,
-                mb: 1,
-                maxWidth: "75%",
-                ml: isOwn ? "auto" : 0,
-                bgcolor: isOwn ? "primary.main" : "background.default",
-                color: isOwn ? "primary.contrastText" : "text.primary",
-                border: 1,
-                borderColor: "divider",
-                borderRadius: 2,
-              }}
-            >
-              <Typography
-                component={Link}
-                to={`/user?id=${message.sender.toString()}`}
-                variant="caption"
-                sx={{
-                  fontWeight: 600,
-                  color: isOwn ? "primary.contrastText" : "primary.main",
-                  textDecoration: "none",
-                  "&:hover": { textDecoration: "underline" },
-                }}
-              >
-                {renderSenderName(message.sender)}
-              </Typography>
-              <Typography variant="body2" sx={{ mt: 0.5 }}>
-                {message.message}
-              </Typography>
-              <Typography
-                variant="caption"
-                sx={{ 
-                  color: isOwn ? "primary.contrastText" : "text.secondary",
-                  opacity: 0.8,
-                  mt: 0.5,
-                  display: "block"
-                }}
-              >
-                {formatTimestamp(message.date)}
-              </Typography>
-            </Paper>
-          );
-        })}
-        <div ref={messagesEndRef} />
-      </Box>
-
-      <Box sx={{ p: 1.5, borderTop: 1, borderColor: "divider" }}>
-        <form onSubmit={handleSendMessage} style={{ display: "flex", gap: 8 }}>
-          <TextField
-            fullWidth
-            size="small"
-            placeholder="Type a message..."
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            disabled={isSending}
-            sx={{ 
-              "& .MuiOutlinedInput-root": {
-                borderRadius: 3
-              }
+        <Toolbar variant="dense" sx={{ minHeight: 48 }}>
+          {isDragEnabled && <DragIndicator sx={{ mr: 1 }} />}
+          <Typography
+            component={Link}
+            to={`/user?id=${chat.members.find((m) => String(m) !== profile?.id)}`}
+            variant="subtitle2"
+            sx={{
+              flex: 1,
+              fontWeight: 600,
+              textDecoration: "none",
+              "&:hover": { textDecoration: "underline" },
             }}
-          />
-          <IconButton
-            type="submit"
-            color="primary"
-            disabled={isSending || !newMessage.trim()}
-            sx={{ borderRadius: 2 }}
           >
-            {isSending ? <CircularProgress size={20} color="inherit" /> : <Send />}
+            {chatDisplayName}
+          </Typography>
+
+          <IconButton size="small" onClick={() => setIsMinimized(!isMinimized)}>
+            {isMinimized ? <OpenInFull /> : <Minimize />}
           </IconButton>
-        </form>
-      </Box>
-    </>
-  );
 
-  const settingsContent = !isMinimized && isSettingsView && (
-    <Box sx={{ flex: 1, overflow: "auto", p: 2 }}>
-      <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-        Chat Settings
-      </Typography>
+          {!isPrivateChat && isCreator && (
+            <IconButton
+              size="small"
+              onClick={() => setIsSettingsView(!isSettingsView)}
+            >
+              {isSettingsView ? <ArrowBack /> : <Settings />}
+            </IconButton>
+          )}
 
-      {!isCreator ? (
-        <Typography color="error" variant="body2">
-          Only the chat creator can modify settings
-        </Typography>
-      ) : (
-        <>
-          <TextField
-            fullWidth
-            label="Chat Name"
-            value={formData.name}
-            onChange={(e) => setFormData(prev => ({ 
-              ...prev, 
-              name: e.target.value === "private_chat" ? "private chat" : e.target.value 
-            }))}
-            sx={{ mb: 2 }}
-          />
-          
-          <WorkspaceSelect
-            value={workspaces.filter(w => formData.workspaces.includes(w.id))}
-            onChange={(newValue) => setFormData(prev => ({
-              ...prev,
-              workspaces: newValue.map(w => w.id)
-            }))}
-            workspaces={workspaces}
-          />
+          <IconButton size="small" onClick={() => onClose(chat.id)}>
+            <Close />
+          </IconButton>
+        </Toolbar>
+      </AppBar>
+    );
 
-          <AdminsSelect
-            value={all_friends.filter(f => formData.admins.some(a => a.toString() === f.id))}
-            onChange={(newValue) => setFormData(prev => ({
-              ...prev,
-              admins: newValue.map(admin => admin.id)
-            }))}
-            members={all_friends}
-          />
+    const messagesContent = !isMinimized && !isSettingsView && (
+      <>
+        <Box
+          ref={messagesContainerRef}
+          onScroll={handleScroll}
+          sx={{
+            flex: 1,
+            overflow: "auto",
+            p: 2,
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          {/* Loading indicator at the top */}
+          {isLoadingMore && (
+            <Box sx={{ display: "flex", justifyContent: "center", p: 2 }}>
+              <CircularProgress size={24} />
+            </Box>
+          )}
 
-          <MembersSelect
-            value={all_friends.filter(f => formData.members.some(m => m.toString() === f.id))}
-            onChange={(newValue) => setFormData(prev => ({
-              ...prev,
-              members: newValue.map(member => member.id)
-            }))}
-            users={all_friends}
-          />
+          {/* No more messages indicator */}
+          {!hasMoreMessages && chat.messages.length > 0 && (
+            <Box sx={{ display: "flex", justifyContent: "center", p: 2 }}>
+              <Typography variant="caption" color="text.secondary">
+                No more messages available
+              </Typography>
+            </Box>
+          )}
 
-          <Box sx={{ display: "flex", gap: 1, mt: 3 }}>
-            <Button
-              variant="contained"
-              color={saveSuccess ? "success" : "primary"}
+          {/* Messages - reverse to show latest at bottom */}
+          {[...chat.messages].reverse().map((message) => {
+            const isOwn = isCurrentUser(message.sender);
+            return (
+              <Paper
+                key={message.id}
+                elevation={0}
+                sx={{
+                  p: 1.5,
+                  mb: 1,
+                  maxWidth: "75%",
+                  ml: isOwn ? "auto" : 0,
+                  bgcolor: isOwn ? "primary.main" : "background.default",
+                  color: isOwn ? "primary.contrastText" : "text.primary",
+                  border: 1,
+                  borderColor: "divider",
+                  borderRadius: 2,
+                }}
+              >
+                <Typography
+                  component={Link}
+                  to={`/user?id=${message.sender.toString()}`}
+                  variant="caption"
+                  sx={{
+                    fontWeight: 600,
+                    color: isOwn ? "primary.contrastText" : "primary.main",
+                    textDecoration: "none",
+                    "&:hover": { textDecoration: "underline" },
+                  }}
+                >
+                  {renderSenderName(message.sender)}
+                </Typography>
+                <Typography variant="body2" sx={{ mt: 0.5 }}>
+                  {message.message}
+                </Typography>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: isOwn ? "primary.contrastText" : "text.secondary",
+                    opacity: 0.8,
+                    mt: 0.5,
+                    display: "block",
+                  }}
+                >
+                  {formatTimestamp(message.date)}
+                </Typography>
+              </Paper>
+            );
+          })}
+          <div ref={messagesEndRef} />
+        </Box>
+
+        <Box sx={{ p: 1.5, borderTop: 1, borderColor: "divider" }}>
+          <form
+            onSubmit={handleSendMessage}
+            style={{ display: "flex", gap: 8 }}
+          >
+            <TextField
               fullWidth
-              disabled={isSaving}
-              startIcon={isSaving ? <CircularProgress size={16} /> : saveSuccess ? <Check /> : null}
-              onClick={async () => {
-                await handleSaveChat({ ...chat, ...formData, creator: chat.creator });
-                setIsSettingsView(false);
+              size="small"
+              placeholder="Type a message..."
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              disabled={isSending}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: 3,
+                },
               }}
+            />
+            <IconButton
+              type="submit"
+              color="primary"
+              disabled={isSending || !newMessage.trim()}
               sx={{ borderRadius: 2 }}
             >
-              {saveSuccess ? "Saved!" : "Save Changes"}
-            </Button>
+              {isSending ? (
+                <CircularProgress size={20} color="inherit" />
+              ) : (
+                <Send />
+              )}
+            </IconButton>
+          </form>
+        </Box>
+      </>
+    );
 
-            {!isPrivateChat && (
+    const settingsContent = !isMinimized && isSettingsView && (
+      <Box sx={{ flex: 1, overflow: "auto", p: 2 }}>
+        <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+          Chat Settings
+        </Typography>
+
+        {!isCreator ? (
+          <Typography color="error" variant="body2">
+            Only the chat creator can modify settings
+          </Typography>
+        ) : (
+          <>
+            <TextField
+              fullWidth
+              label="Chat Name"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  name:
+                    e.target.value === "private_chat"
+                      ? "private chat"
+                      : e.target.value,
+                }))
+              }
+              sx={{ mb: 2 }}
+            />
+
+            <WorkspaceSelect
+              value={workspaces.filter((w) =>
+                formData.workspaces.includes(w.id),
+              )}
+              onChange={(newValue) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  workspaces: newValue.map((w) => w.id),
+                }))
+              }
+              workspaces={workspaces}
+            />
+
+            <AdminsSelect
+              value={all_friends.filter((f) =>
+                formData.admins.some((a) => a.toString() === f.id),
+              )}
+              onChange={(newValue) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  admins: newValue.map((admin) => admin.id),
+                }))
+              }
+              members={all_friends}
+            />
+
+            <MembersSelect
+              value={all_friends.filter((f) =>
+                formData.members.some((m) => m.toString() === f.id),
+              )}
+              onChange={(newValue) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  members: newValue.map((member) => member.id),
+                }))
+              }
+              users={all_friends}
+            />
+
+            <Box sx={{ display: "flex", gap: 1, mt: 3 }}>
               <Button
-                variant="outlined"
-                color="error"
-                onClick={handleDeleteChat}
-                sx={{ borderRadius: 2, minWidth: 100 }}
+                variant="contained"
+                color={saveSuccess ? "success" : "primary"}
+                fullWidth
+                disabled={isSaving}
+                startIcon={
+                  isSaving ? (
+                    <CircularProgress size={16} />
+                  ) : saveSuccess ? (
+                    <Check />
+                  ) : null
+                }
+                onClick={async () => {
+                  await handleSaveChat({
+                    ...chat,
+                    ...formData,
+                    creator: chat.creator,
+                  });
+                  setIsSettingsView(false);
+                }}
+                sx={{ borderRadius: 2 }}
               >
-                Delete
+                {saveSuccess ? "Saved!" : "Save Changes"}
               </Button>
-            )}
-          </Box>
-        </>
-      )}
-    </Box>
-  );
 
-  const content = (
-    <>
-      {headerContent}
-      {messagesContent}
-      {settingsContent}
-    </>
-  );
+              {!isPrivateChat && (
+                <Button
+                  variant="outlined"
+                  color="error"
+                  onClick={handleDeleteChat}
+                  sx={{ borderRadius: 2, minWidth: 100 }}
+                >
+                  Delete
+                </Button>
+              )}
+            </Box>
+          </>
+        )}
+      </Box>
+    );
 
-  return dialog ? (
-    <Dialog
-      open={true}
-      onClose={() => onClose(chat.id)}
-      maxWidth="sm"
-      fullWidth
-      PaperProps={{
-        sx: {
-          height: 600,
+    const content = (
+      <>
+        {headerContent}
+        {messagesContent}
+        {settingsContent}
+      </>
+    );
+
+    return dialog ? (
+      <Dialog
+        open={true}
+        onClose={() => onClose(chat.id)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            height: 600,
+            display: "flex",
+            flexDirection: "column",
+            borderRadius: 3,
+          },
+        }}
+      >
+        {content}
+      </Dialog>
+    ) : (
+      <Paper
+        elevation={8}
+        sx={{
+          position: "fixed",
+          top: dragPosition.y,
+          left: dragPosition.x,
+          width: 340,
+          height: isMinimized ? "auto" : 480,
           display: "flex",
           flexDirection: "column",
+          zIndex: 1300,
           borderRadius: 3,
-        }
-      }}
-    >
-      {content}
-    </Dialog>
-  ) : (
-    <Paper
-      elevation={8}
-      sx={{
-        position: "fixed",
-        top: dragPosition.y,
-        left: dragPosition.x,
-        width: 340,
-        height: isMinimized ? "auto" : 480,
-        display: "flex",
-        flexDirection: "column",
-        zIndex: 1300,
-        borderRadius: 3,
-        overflow: "hidden",
-        boxShadow: "0 8px 0px rgba(0,0,0,0.12)",
-      }}
-    >
-      {content}
-    </Paper>
-  );
-});
+          overflow: "hidden",
+          boxShadow: "0 8px 0px rgba(0,0,0,0.12)",
+        }}
+      >
+        {content}
+      </Paper>
+    );
+  },
+);
 
 export default ChatWindow;

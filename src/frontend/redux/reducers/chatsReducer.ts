@@ -52,7 +52,7 @@ export function chatsReducer(
     case "EXTEND_CHATS": {
       return {
         ...state,
-        chats: [...state.chats,...action.chats],
+        chats: [...state.chats, ...action.chats],
       };
     }
     case UPDATE_CHAT: {

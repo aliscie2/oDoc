@@ -3,7 +3,14 @@ import YouTubeIcon from "@mui/icons-material/YouTube";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import TwitterIcon from "@mui/icons-material/Twitter";
-import { IconButton, SvgIcon, Typography, Box, Container, Divider } from "@mui/material";
+import {
+  IconButton,
+  SvgIcon,
+  Typography,
+  Box,
+  Container,
+  Divider,
+} from "@mui/material";
 import { useSelector } from "react-redux";
 
 const XIcon = (props) => (
@@ -102,7 +109,8 @@ const PageFooter = () => {
                 mx: "auto",
               }}
             >
-              Connect with us and stay updated on our latest projects and updates
+              Connect with us and stay updated on our latest projects and
+              updates
             </Typography>
           </Box>
 

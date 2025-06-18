@@ -39,5 +39,4 @@ test("Test render login", async () => {
   // expect("Ok" in res3).toBeTruthy();
 
   // let res4 = await global.actor.get_user_profile(Principal.fromText(res.Ok.id))
-
 });

@@ -50,7 +50,7 @@ import { convertToBlobLink } from "../../../DataProcessing/imageToVec";
 import { Z_INDEX_TOP_NAVBAR } from "../../../constants/zIndex";
 import { RootState } from "../../../redux/reducers";
 import getStyles from "./styles";
-import EnhancedUserAvatar from './EnhancedUserAvatar';
+import EnhancedUserAvatar from "./EnhancedUserAvatar";
 
 export default function TopNavBar() {
   const dispatch = useDispatch();
@@ -113,12 +113,12 @@ export default function TopNavBar() {
     dispatch(handleRedux("LOGOUT"));
     navigate("/");
   };
-  
+
   const menuOptions = [
-    { 
-      content: isDarkMode ? "Light Mode" : "Dark Mode", 
-      icon: isDarkMode ? <LightModeIcon /> : <DarkModeIcon />, 
-      onClick: () => dispatch(handleRedux("TOGGLE_DARK"))
+    {
+      content: isDarkMode ? "Light Mode" : "Dark Mode",
+      icon: isDarkMode ? <LightModeIcon /> : <DarkModeIcon />,
+      onClick: () => dispatch(handleRedux("TOGGLE_DARK")),
     },
     { content: "Profile", to: "/profile", icon: <Person2Icon /> },
     { content: "Contracts", to: "/contracts", icon: <GavelIcon /> },
@@ -140,9 +140,7 @@ export default function TopNavBar() {
           />
           <BottomNavigationAction
             label="Chat"
-            icon={
-              <ChatsComponent isMobile={true} />
-            }
+            icon={<ChatsComponent isMobile={true} />}
           />
           <BottomNavigationAction
             label="Profile"
@@ -201,7 +199,7 @@ export default function TopNavBar() {
             icon={isNavOpen ? <MenuOpenIcon /> : <MenuIcon />}
             onClick={() => dispatch(handleRedux("TOGGLE_NAV"))}
           />
-          
+
           {isLoggedIn ? renderActionButtons() : <LoginButton isMobile={true} />}
         </BottomNavigation>
 
@@ -283,7 +281,11 @@ export default function TopNavBar() {
       </Box>
 
       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-        {isLoggedIn ? renderActionButtons() : <LoginButton sx={styles.loginButton} />}
+        {isLoggedIn ? (
+          renderActionButtons()
+        ) : (
+          <LoginButton sx={styles.loginButton} />
+        )}
       </Box>
     </Toolbar>
   );

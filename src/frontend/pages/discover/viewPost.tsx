@@ -50,7 +50,7 @@ const scaleUpAnimation = keyframes`
 `;
 
 const PostCard = styled(Card)(({ theme }) => ({
-  background: 'transparent',
+  background: "transparent",
   borderBottom: `1px solid ${theme.palette.divider}`,
   padding: 0,
   position: "relative",
@@ -59,9 +59,9 @@ const PostCard = styled(Card)(({ theme }) => ({
   overflow: "visible",
   borderRadius: 0,
   marginBottom: 0,
-  '&:hover': {
-    animation: `${scaleUpAnimation} 0.2s ease-out forwards`
-  }
+  "&:hover": {
+    animation: `${scaleUpAnimation} 0.2s ease-out forwards`,
+  },
 }));
 
 const StyledCardContent = styled(CardContent)(({ theme }) => ({
@@ -92,7 +92,7 @@ const ActionButton = styled(IconButton)(({ theme }) => ({
   },
   "&.Mui-disabled": {
     opacity: 0.5,
-  }
+  },
 }));
 
 const StyledMenu = styled(Menu)(({ theme }) => ({
@@ -113,7 +113,9 @@ const ViewPostComponent: React.FC<ViewPostComponentProps> = ({
   const [showComments, setShowComments] = React.useState(false);
   const [voteLoading, setVoteLoad] = React.useState(false);
   const [isChanged, setChanged] = React.useState(false);
-  const [menuAnchorEl, setMenuAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [menuAnchorEl, setMenuAnchorEl] = React.useState<null | HTMLElement>(
+    null,
+  );
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const [votes, setVotes] = React.useState({
     up: post.votes_up,
@@ -179,7 +181,7 @@ const ViewPostComponent: React.FC<ViewPostComponentProps> = ({
     }
     setVoteLoad(true);
     try {
-      const votesUp = votes.up.map(v => v.toString());
+      const votesUp = votes.up.map((v) => v.toString());
       if (votesUp.includes(profile?.id)) {
         const res = await backendActor.unvote(post.id);
         setVotes({ up: res.Ok.votes_up, down: res.Ok.votes_down });
@@ -199,7 +201,7 @@ const ViewPostComponent: React.FC<ViewPostComponentProps> = ({
     }
     setVoteLoad(true);
     try {
-      const votesDown = votes.down.map(v => v.toString());
+      const votesDown = votes.down.map((v) => v.toString());
       if (votesDown.includes(profile.id)) {
         const res = await backendActor.unvote(post.id);
         setVotes({ up: res.Ok.votes_up, down: res.Ok.votes_down });
@@ -218,22 +220,30 @@ const ViewPostComponent: React.FC<ViewPostComponentProps> = ({
         <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
           <UserAvatarMenu sx={{ mr: 2 }} user={post.creator} />
           <Box>
-            <Box sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 0.5,
-              fontWeight: "bold"
-            }}>
-              <Box component="span" sx={{
-                color: theme.palette.text.secondary,
-                fontWeight: 'normal'
-              }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 0.5,
+                fontWeight: "bold",
+              }}
+            >
+              <Box
+                component="span"
+                sx={{
+                  color: theme.palette.text.secondary,
+                  fontWeight: "normal",
+                }}
+              >
                 @{post.creator.name}
               </Box>
-              <Box component="span" sx={{
-                color: theme.palette.text.secondary,
-                fontWeight: 'normal'
-              }}>
+              <Box
+                component="span"
+                sx={{
+                  color: theme.palette.text.secondary,
+                  fontWeight: "normal",
+                }}
+              >
                 · {formatRelativeTime(post.date_created)}
               </Box>
             </Box>
@@ -275,8 +285,14 @@ const ViewPostComponent: React.FC<ViewPostComponentProps> = ({
 
           <ActionButton
             onClick={onLike}
-            disabled={!profile || profile?.id === post.creator.id || voteLoading}
-            className={votes.up.map(v => v.toString()).includes(profile?.id) ? "liked" : ""}
+            disabled={
+              !profile || profile?.id === post.creator.id || voteLoading
+            }
+            className={
+              votes.up.map((v) => v.toString()).includes(profile?.id)
+                ? "liked"
+                : ""
+            }
           >
             <Favorite />
             <Box component="span" sx={{ ml: 1, fontSize: "0.875rem" }}>
@@ -286,8 +302,14 @@ const ViewPostComponent: React.FC<ViewPostComponentProps> = ({
 
           <ActionButton
             onClick={onDisLike}
-            disabled={!profile || profile?.id === post.creator.id || voteLoading}
-            className={votes.down.map(v => v.toString()).includes(profile?.id) ? "disliked" : ""}
+            disabled={
+              !profile || profile?.id === post.creator.id || voteLoading
+            }
+            className={
+              votes.down.map((v) => v.toString()).includes(profile?.id)
+                ? "disliked"
+                : ""
+            }
           >
             <ThumbDown />
             <Box component="span" sx={{ ml: 1, fontSize: "0.875rem" }}>
@@ -308,7 +330,7 @@ const ViewPostComponent: React.FC<ViewPostComponentProps> = ({
               sx={{
                 ml: 2,
                 textTransform: "none",
-                borderRadius: "20px"
+                borderRadius: "20px",
               }}
             >
               Save
@@ -317,7 +339,13 @@ const ViewPostComponent: React.FC<ViewPostComponentProps> = ({
         </Box>
 
         <Collapse in={showComments}>
-          <Box sx={{ mt: 3, borderTop: `1px solid ${theme.palette.divider}`, pt: 2 }}>
+          <Box
+            sx={{
+              mt: 3,
+              borderTop: `1px solid ${theme.palette.divider}`,
+              pt: 2,
+            }}
+          >
             <CommentList post={post} />
           </Box>
         </Collapse>
@@ -336,7 +364,8 @@ const ViewPostComponent: React.FC<ViewPostComponentProps> = ({
         >
           <DialogTitle>Delete Post</DialogTitle>
           <DialogContent>
-            Are you sure you want to delete this post? This action cannot be undone.
+            Are you sure you want to delete this post? This action cannot be
+            undone.
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>

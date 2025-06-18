@@ -18,11 +18,12 @@ import {
 } from "@mui/material";
 import format from "date-fns/format";
 import { RootState } from "../../../redux/reducers";
-import GoogleCalendarButton, { createGoogleCalendarUrl } from "./addEventToGoogleCalenar";
+import GoogleCalendarButton, {
+  createGoogleCalendarUrl,
+} from "./addEventToGoogleCalenar";
 import { Link } from "react-router-dom";
 import { useGoogleCalendar } from "./googleAccounts/useGoogleCalendar";
 import { useBackendContext } from "@/contexts/BackendContext";
-
 
 // Job interface based on your Rust struct
 interface Job {
@@ -84,8 +85,8 @@ const EventDialog = ({ open, onClose, slotInfo, selectedEvent = null }) => {
   const getJobIdFromUrl = (): string | null => {
     try {
       const urlParams = new URLSearchParams(window.location.search);
-      const jobIdFromParam = urlParams.get('jobId');
-      
+      const jobIdFromParam = urlParams.get("jobId");
+
       if (jobIdFromParam) {
         return jobIdFromParam;
       }
@@ -95,7 +96,7 @@ const EventDialog = ({ open, onClose, slotInfo, selectedEvent = null }) => {
       const jobIdMatch = searchString.match(/[?&]jobId=([^&]*)/);
       return jobIdMatch ? decodeURIComponent(jobIdMatch[1]) : null;
     } catch (error) {
-      console.warn('Error parsing jobId from URL:', error);
+      console.warn("Error parsing jobId from URL:", error);
       return null;
     }
   };
@@ -104,7 +105,7 @@ const EventDialog = ({ open, onClose, slotInfo, selectedEvent = null }) => {
   useEffect(() => {
     const fetchJobData = async () => {
       const jobId = getJobIdFromUrl();
-      
+
       if (!jobId || !backendActor) {
         return;
       }
@@ -114,15 +115,15 @@ const EventDialog = ({ open, onClose, slotInfo, selectedEvent = null }) => {
 
       try {
         const jobData = await backendActor.get_job(jobId);
-        
+
         if (jobData && jobData.length > 0) {
           setJob(jobData[0]);
         } else {
-          setJobError('Job not found');
+          setJobError("Job not found");
         }
       } catch (error) {
-        console.error('Error fetching job data:', error);
-        setJobError('Failed to fetch job data');
+        console.error("Error fetching job data:", error);
+        setJobError("Failed to fetch job data");
       } finally {
         setIsLoadingJob(false);
       }
@@ -133,30 +134,29 @@ const EventDialog = ({ open, onClose, slotInfo, selectedEvent = null }) => {
 
   // Generate event title and description from job data
   const generateEventDataFromJob = (job: Job) => {
-    const jobTitlesStr = job.job_titles.length > 0 
-      ? job.job_titles.join(', ') 
-      : 'Job Opportunity';
-    
+    const jobTitlesStr =
+      job.job_titles.length > 0 ? job.job_titles.join(", ") : "Job Opportunity";
+
     const title = `Interview: ${jobTitlesStr}`;
-    
+
     let description = `Job Interview Details:\n\n`;
     description += `Position: ${jobTitlesStr}\n`;
     description += `Proficiency Level: ${job.proficiency_level}\n`;
-    
+
     if (job.skills.length > 0) {
-      description += `Required Skills: ${job.skills.join(', ')}\n`;
+      description += `Required Skills: ${job.skills.join(", ")}\n`;
     }
-    
+
     if (job.description) {
       description += `\nJob Description:\n${job.description}\n`;
     }
-    
+
     if (job.contacts.length > 0) {
-      description += `\nContact Information: ${job.contacts.join(', ')}\n`;
+      description += `\nContact Information: ${job.contacts.join(", ")}\n`;
     }
-    
+
     if (job.emails.length > 0) {
-      description += `Email: ${job.emails.join(', ')}\n`;
+      description += `Email: ${job.emails.join(", ")}\n`;
     }
 
     return { title, description };
@@ -228,12 +228,12 @@ const EventDialog = ({ open, onClose, slotInfo, selectedEvent = null }) => {
   const handleSubmit = async () => {
     // Validation
     if (!eventData.title.trim()) {
-      alert('Event title is required');
+      alert("Event title is required");
       return;
     }
 
     if (!slotInfo?.start || !slotInfo?.end) {
-      alert('Invalid event time slot');
+      alert("Invalid event time slot");
       return;
     }
 
@@ -251,21 +251,23 @@ const EventDialog = ({ open, onClose, slotInfo, selectedEvent = null }) => {
     try {
       if (isEditMode) {
         if (isConnected) {
-          await executeGoogleAction({ type: "UPDATE_EVENT", event: eventPayload });
+          await executeGoogleAction({
+            type: "UPDATE_EVENT",
+            event: eventPayload,
+          });
         }
         dispatch({ type: "UPDATE_EVENT", event: eventPayload });
       } else {
-        const attendees = [
-          calendar?.googleIds?.[0],
-          calendarId
-        ].filter(Boolean); // Remove null/undefined values
-        
+        const attendees = [calendar?.googleIds?.[0], calendarId].filter(
+          Boolean,
+        ); // Remove null/undefined values
+
         console.log({ attendees });
-        
+
         if (isConnected) {
-          await executeGoogleAction({ 
-            type: "ADD_EVENT", 
-            event: { ...eventPayload, attendees } 
+          await executeGoogleAction({
+            type: "ADD_EVENT",
+            event: { ...eventPayload, attendees },
           });
         }
         dispatch({ type: "ADD_EVENT", event: eventPayload });
@@ -273,26 +275,29 @@ const EventDialog = ({ open, onClose, slotInfo, selectedEvent = null }) => {
 
       handleClose();
     } catch (error) {
-      console.error('Error saving event:', error);
-      alert('Failed to save event. Please try again.');
+      console.error("Error saving event:", error);
+      alert("Failed to save event. Please try again.");
     }
   };
 
   const handleDelete = async () => {
     if (!selectedEvent?.id) {
-      alert('Cannot delete event: Invalid event ID');
+      alert("Cannot delete event: Invalid event ID");
       return;
     }
 
     try {
       if (isConnected) {
-        await executeGoogleAction({ type: "DELETE_EVENT", id: selectedEvent.id });
+        await executeGoogleAction({
+          type: "DELETE_EVENT",
+          id: selectedEvent.id,
+        });
       }
       dispatch({ type: "DELETE_EVENT", id: selectedEvent.id });
       handleClose();
     } catch (error) {
-      console.error('Error deleting event:', error);
-      alert('Failed to delete event. Please try again.');
+      console.error("Error deleting event:", error);
+      alert("Failed to delete event. Please try again.");
     }
   };
 
@@ -338,19 +343,23 @@ const EventDialog = ({ open, onClose, slotInfo, selectedEvent = null }) => {
       <DialogTitle>
         {isEditMode ? "Update Event" : "Create New Event"}
         {job && !isEditMode && (
-          <Typography variant="caption" display="block" sx={{ mt: 1, opacity: 0.7 }}>
-            Auto-filled from job: {job.job_titles.join(', ') || 'Untitled Job'}
+          <Typography
+            variant="caption"
+            display="block"
+            sx={{ mt: 1, opacity: 0.7 }}
+          >
+            Auto-filled from job: {job.job_titles.join(", ") || "Untitled Job"}
           </Typography>
         )}
       </DialogTitle>
       <DialogContent>
         {/* Loading and error states */}
         {isLoadingJob && (
-          <Typography variant="body2" sx={{ mb: 2, fontStyle: 'italic' }}>
+          <Typography variant="body2" sx={{ mb: 2, fontStyle: "italic" }}>
             Loading job information...
           </Typography>
         )}
-        
+
         {jobError && (
           <Typography variant="body2" color="error" sx={{ mb: 2 }}>
             {jobError}
@@ -367,7 +376,11 @@ const EventDialog = ({ open, onClose, slotInfo, selectedEvent = null }) => {
             disabled={!canEdit}
             required
             error={!eventData.title.trim() && eventData.title !== ""}
-            helperText={!eventData.title.trim() && eventData.title !== "" ? "Title is required" : ""}
+            helperText={
+              !eventData.title.trim() && eventData.title !== ""
+                ? "Title is required"
+                : ""
+            }
           />
 
           <TextField
@@ -470,7 +483,7 @@ const EventDialog = ({ open, onClose, slotInfo, selectedEvent = null }) => {
             </Typography>
           </Box>
         )}
-        
+
         {canEdit && slotInfo && (
           <GoogleCalendarButton
             event={{
@@ -490,19 +503,19 @@ const EventDialog = ({ open, onClose, slotInfo, selectedEvent = null }) => {
             {showRecurrence ? "Hide Recurrence" : "Add Recurrence"}
           </Button>
         )}
-        
+
         {isEditMode && canEdit && (
           <Button onClick={() => setShowDeleteConfirm(true)} color="error">
             Delete
           </Button>
         )}
-        
+
         <Button onClick={handleClose}>Close</Button>
-        
+
         {canEdit && (
-          <Button 
-            onClick={handleSubmit} 
-            color="primary" 
+          <Button
+            onClick={handleSubmit}
+            color="primary"
             variant="contained"
             disabled={!eventData.title.trim() || isLoadingJob}
           >

@@ -1,15 +1,29 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Box, Container, Grid, Typography, Paper, useTheme, styled } from '@mui/material';
-import { Lock } from '@mui/icons-material';
-import { securityFeatures } from './landingPageData';
+import React from "react";
+import { motion } from "framer-motion";
+import {
+  Box,
+  Container,
+  Grid,
+  Typography,
+  Paper,
+  useTheme,
+  styled,
+} from "@mui/material";
+import { Lock } from "@mui/icons-material";
+import { securityFeatures } from "./landingPageData";
 
 const SecuritySection = () => {
   const theme = useTheme();
 
-
   return (
-    <Box sx={{ py: { xs: 6, md: 10 }, position: 'relative', overflow: 'hidden', bgcolor: 'transparent' }}>
+    <Box
+      sx={{
+        py: { xs: 6, md: 10 },
+        position: "relative",
+        overflow: "hidden",
+        bgcolor: "transparent",
+      }}
+    >
       <Container maxWidth="lg">
         <LockHeader />
 
@@ -29,22 +43,24 @@ const LockHeader = () => {
   const theme = useTheme();
 
   return (
-    <Box sx={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: 3,
-      mb: { xs: 4, md: 6 },
-      flexWrap: 'wrap',
-    }}>
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 3,
+        mb: { xs: 4, md: 6 },
+        flexWrap: "wrap",
+      }}
+    >
       <motion.div
         initial={{ scale: 0 }}
         whileInView={{ scale: 1 }}
         viewport={{ amount: 0.5 }}
-        transition={{ type: 'spring', stiffness: 120 }}
+        transition={{ type: "spring", stiffness: 120 }}
       >
         <LockIconContainer>
-          <Lock sx={{ fontSize: 56, color: 'white' }} />
+          <Lock sx={{ fontSize: 56, color: "white" }} />
           <Particles />
         </LockIconContainer>
       </motion.div>
@@ -55,16 +71,20 @@ const LockHeader = () => {
         viewport={{ amount: 0.5 }}
         transition={{ delay: 0.2 }}
       >
-        <Typography variant="h2" sx={{
-          fontWeight: 800,
-          background: theme.palette.mode === 'dark'
-            ? 'linear-gradient(45deg, #e0e7ff 30%, #38bdf8 90%)'
-            : 'linear-gradient(45deg, #1e3a8a 30%, #2563eb 90%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          lineHeight: 1.2,
-          fontSize: { xs: '2.5rem', md: '3.5rem' },
-        }}>
+        <Typography
+          variant="h2"
+          sx={{
+            fontWeight: 800,
+            background:
+              theme.palette.mode === "dark"
+                ? "linear-gradient(45deg, #e0e7ff 30%, #38bdf8 90%)"
+                : "linear-gradient(45deg, #1e3a8a 30%, #2563eb 90%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            lineHeight: 1.2,
+            fontSize: { xs: "2.5rem", md: "3.5rem" },
+          }}
+        >
           Cyber Security
         </Typography>
       </motion.div>
@@ -81,15 +101,13 @@ const SecurityFeatureCard = ({ index, icon, title, description }) => {
       transition={{ delay: 0.1 * index }}
     >
       <FeatureCard elevation={0}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
           <motion.div
             initial={{ scale: 0 }}
             whileInView={{ scale: 1 }}
             transition={{ delay: 0.2 + index * 0.1 }}
           >
-            <IconWrapper>
-              {icon}
-            </IconWrapper>
+            <IconWrapper>{icon}</IconWrapper>
           </motion.div>
           <Typography variant="h6" sx={{ fontWeight: 600 }}>
             {title}
@@ -108,48 +126,49 @@ const IconWrapper = styled(motion.div)(({ theme }) => ({
   width: 48,
   height: 48,
   borderRadius: 12,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  backgroundColor: theme.palette.mode === 'dark'
-    ? 'rgba(56, 189, 248, 0.1)'
-    : 'rgba(30, 58, 138, 0.1)',
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  backgroundColor:
+    theme.palette.mode === "dark"
+      ? "rgba(56, 189, 248, 0.1)"
+      : "rgba(30, 58, 138, 0.1)",
   marginRight: theme.spacing(2),
-  '& .MuiSvgIcon-root': {
+  "& .MuiSvgIcon-root": {
     fontSize: 28,
-    color: theme.palette.mode === 'dark' ? '#38bdf8' : '#1e3a8a',
+    color: theme.palette.mode === "dark" ? "#38bdf8" : "#1e3a8a",
   },
 }));
 
-
 const FeatureCard = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
-  height: '100%',
-  backgroundColor: theme.palette.mode === 'dark'
-    ? 'rgba(30, 41, 59, 0.5)'
-    : 'rgba(255, 255, 255, 0.7)',
-  backdropFilter: 'blur(12px)',
+  height: "100%",
+  backgroundColor:
+    theme.palette.mode === "dark"
+      ? "rgba(30, 41, 59, 0.5)"
+      : "rgba(255, 255, 255, 0.7)",
+  backdropFilter: "blur(12px)",
   border: `1px solid ${theme.palette.divider}`,
-  transition: 'all 0.3s ease',
-  '&:hover': {
-    transform: 'translateY(-4px)',
+  transition: "all 0.3s ease",
+  "&:hover": {
+    transform: "translateY(-4px)",
     boxShadow: theme.shadows[6],
   },
 }));
 
-
 const LockIconContainer = styled(Box)(({ theme }) => ({
-  position: 'relative',
+  position: "relative",
   width: 120,
   height: 120,
-  borderRadius: '50%',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  background: theme.palette.mode === 'dark'
-    ? 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%)'
-    : 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-  boxShadow: '0 8px 32px rgba(30, 58, 138, 0.3)',
+  borderRadius: "50%",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  background:
+    theme.palette.mode === "dark"
+      ? "linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%)"
+      : "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
+  boxShadow: "0 8px 32px rgba(30, 58, 138, 0.3)",
 }));
 
 const Particles = () => {
@@ -164,11 +183,11 @@ const Particles = () => {
         <motion.div
           key={i}
           style={{
-            position: 'absolute',
+            position: "absolute",
             width: 8,
             height: 8,
-            borderRadius: '50%',
-            background: 'rgba(255, 255, 255, 0.6)',
+            borderRadius: "50%",
+            background: "rgba(255, 255, 255, 0.6)",
           }}
           initial={{ x: 0, y: 0, opacity: 0 }}
           animate={{
@@ -180,7 +199,7 @@ const Particles = () => {
             duration: 2,
             delay,
             repeat: Infinity,
-            repeatType: 'loop',
+            repeatType: "loop",
           }}
         />
       ))}

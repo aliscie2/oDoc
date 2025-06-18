@@ -15,7 +15,6 @@ import LoaderButton from "../MuiComponents/LoaderButton";
 import compressImage from "@/DataProcessing/compressImage";
 import { useLocation } from "react-router-dom";
 
-
 // Utility function to convert File to Uint8Array
 const fileToUint8Array = (file: File): Promise<Uint8Array> => {
   return new Promise((resolve, reject) => {
@@ -24,7 +23,7 @@ const fileToUint8Array = (file: File): Promise<Uint8Array> => {
       if (reader.result instanceof ArrayBuffer) {
         resolve(new Uint8Array(reader.result));
       } else {
-        reject(new Error('Failed to read file as ArrayBuffer'));
+        reject(new Error("Failed to read file as ArrayBuffer"));
       }
     };
     reader.onerror = () => reject(reader.error);
@@ -57,7 +56,7 @@ const RegistrationForm: React.FC = () => {
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = event.target;
-    setFormValues(prev => ({ ...prev, [id]: value }));
+    setFormValues((prev) => ({ ...prev, [id]: value }));
   };
 
   const handleUploadPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -70,7 +69,7 @@ const RegistrationForm: React.FC = () => {
         // console.log(`Compressed photo size: ${compressedSizeInMB.toFixed(2)} MB`);
         setPhoto(compressedImage);
       } catch (error) {
-        console.error('Error compressing image:', error);
+        console.error("Error compressing image:", error);
         setPhoto(image); // Fallback to original if compression fails
       }
     }
@@ -100,7 +99,7 @@ const RegistrationForm: React.FC = () => {
 
       const affiliateId = "";
       const result = await backendActor.register(affiliateId, input);
-      
+
       if (result?.Ok) {
         enqueueSnackbar(`Welcome ${result.Ok.name}, to Odoc`, {
           variant: "success",
@@ -110,38 +109,36 @@ const RegistrationForm: React.FC = () => {
         enqueueSnackbar(result.Err, { variant: "error" });
       }
     } catch (error) {
-      enqueueSnackbar(error.message || "Registration failed", { variant: "error" });
+      enqueueSnackbar(error.message || "Registration failed", {
+        variant: "error",
+      });
     } finally {
       setLoading(false);
     }
   };
-  
-  const location = useLocation()
-  
+
+  const location = useLocation();
+
   return (
     <Box sx={{ maxWidth: 400, mx: "auto", p: 3 }}>
       <Typography
-      key={location.pathname} 
-      hidden={location.pathname=='/'}
-      color='warning'
-        variant="h5" 
-        align="center" 
+        key={location.pathname}
+        hidden={location.pathname == "/"}
+        color="warning"
+        variant="h5"
+        align="center"
         sx={{ mb: 1, fontWeight: 300 }}
       >
         Please, register first.
       </Typography>
-      <Typography 
-        variant="h5" 
-        align="center" 
-        sx={{ mb: 1, fontWeight: 300 }}
-      >
+      <Typography variant="h5" align="center" sx={{ mb: 1, fontWeight: 300 }}>
         Welcome to Odoc
       </Typography>
-      
-      <Typography 
-        variant="body2" 
-        align="center" 
-        color="text.secondary" 
+
+      <Typography
+        variant="body2"
+        align="center"
+        color="text.secondary"
         sx={{ mb: 4 }}
       >
         Complete your profile to get started
@@ -156,10 +153,7 @@ const RegistrationForm: React.FC = () => {
           onChange={handleUploadPhoto}
         />
         <label htmlFor="photo">
-          <IconButton 
-            component="span"
-            sx={{ p: 0 }}
-          >
+          <IconButton component="span" sx={{ p: 0 }}>
             <Avatar
               src={photo ? URL.createObjectURL(photo) : undefined}
               sx={{
@@ -172,7 +166,7 @@ const RegistrationForm: React.FC = () => {
                 "&:hover": {
                   borderColor: "primary.main",
                   transform: "scale(1.02)",
-                }
+                },
               }}
             >
               {!photo && <Add sx={{ fontSize: 24, color: "text.secondary" }} />}
@@ -193,7 +187,7 @@ const RegistrationForm: React.FC = () => {
           sx={{
             "& .MuiOutlinedInput-root": {
               borderRadius: 2,
-            }
+            },
           }}
         />
 
@@ -208,7 +202,7 @@ const RegistrationForm: React.FC = () => {
             sx={{
               "& .MuiOutlinedInput-root": {
                 borderRadius: 2,
-              }
+              },
             }}
           />
           <TextField
@@ -221,7 +215,7 @@ const RegistrationForm: React.FC = () => {
             sx={{
               "& .MuiOutlinedInput-root": {
                 borderRadius: 2,
-              }
+              },
             }}
           />
         </Stack>
@@ -237,7 +231,7 @@ const RegistrationForm: React.FC = () => {
           sx={{
             "& .MuiOutlinedInput-root": {
               borderRadius: 2,
-            }
+            },
           }}
         />
 
@@ -254,7 +248,7 @@ const RegistrationForm: React.FC = () => {
           sx={{
             "& .MuiOutlinedInput-root": {
               borderRadius: 2,
-            }
+            },
           }}
         />
 
@@ -263,8 +257,8 @@ const RegistrationForm: React.FC = () => {
           variant="contained"
           onClick={handleRegister}
           loading={loading}
-          sx={{ 
-            py: 1.5, 
+          sx={{
+            py: 1.5,
             mt: 4,
             borderRadius: 2,
             textTransform: "none",
@@ -272,7 +266,7 @@ const RegistrationForm: React.FC = () => {
             boxShadow: "none",
             "&:hover": {
               boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-            }
+            },
           }}
         >
           Complete Registration

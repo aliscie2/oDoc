@@ -318,9 +318,9 @@ const WalletPage = ({ wallet = defaultWallet }) => {
             </Typography>
           </Box>
           <Typography color={"error"}>
-              Gas fees of Ethirum is 1$, if you send 1$ only it will be lost and
-              your balance will stay 0$
-            </Typography>
+            Gas fees of Ethirum is 1$, if you send 1$ only it will be lost and
+            your balance will stay 0$
+          </Typography>
         </DialogContent>
       </Dialog>
 
@@ -361,7 +361,6 @@ const WalletPage = ({ wallet = defaultWallet }) => {
             Gas fees of Ethirum is 1$, if you send 1$ only it will be lost and
             your external wallet will get 0$
           </Typography>
-
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} disabled={isProcessing}>

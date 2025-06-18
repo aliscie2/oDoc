@@ -78,47 +78,47 @@ const ProjectDashboard = () => {
 
   // Tab configuration with disabled status
   const tabsConfig = [
-    { 
-      icon: <TodayIcon />, 
-      label: "Today's tasks", 
+    {
+      icon: <TodayIcon />,
+      label: "Today's tasks",
       disabled: true,
-      tooltip: "This feature is not available now, coming soon!" 
+      tooltip: "This feature is not available now, coming soon!",
     },
-    { 
-      icon: <ViewKanbanIcon />, 
-      label: "Tasks", 
+    {
+      icon: <ViewKanbanIcon />,
+      label: "Tasks",
       disabled: true,
-      tooltip: "This feature is not available now, coming soon!" 
+      tooltip: "This feature is not available now, coming soon!",
     },
-    { 
-      icon: <CalendarMonthIcon />, 
-      label: "Calendar", 
+    {
+      icon: <CalendarMonthIcon />,
+      label: "Calendar",
       disabled: false,
-      tooltip: "Calendar is fully working now" 
+      tooltip: "Calendar is fully working now",
     },
-    { 
-      icon: <InboxIcon />, 
-      label: "Submissions", 
+    {
+      icon: <InboxIcon />,
+      label: "Submissions",
       disabled: true,
-      tooltip: "This feature is not available now, coming soon!" 
+      tooltip: "This feature is not available now, coming soon!",
     },
-    { 
-      icon: <ProjectsIcon />, 
-      label: "Projects", 
+    {
+      icon: <ProjectsIcon />,
+      label: "Projects",
       disabled: true,
-      tooltip: "This feature is not available now, coming soon!" 
+      tooltip: "This feature is not available now, coming soon!",
     },
-    { 
-      icon: <TeamsIcon />, 
-      label: "Teams", 
+    {
+      icon: <TeamsIcon />,
+      label: "Teams",
       disabled: true,
-      tooltip: "This feature is not available now, coming soon!" 
+      tooltip: "This feature is not available now, coming soon!",
     },
-    { 
-      icon: <AddchartIcon />, 
-      label: "Metrics", 
+    {
+      icon: <AddchartIcon />,
+      label: "Metrics",
       disabled: true,
-      tooltip: "This feature is not available now, coming soon!" 
+      tooltip: "This feature is not available now, coming soon!",
     },
   ];
 
@@ -136,9 +136,10 @@ const ProjectDashboard = () => {
           borderBottom: 1,
           borderColor: "divider",
           mb: 3,
-          bgcolor: theme.palette.mode === "dark"
-            ? theme.palette.background.paper
-            : theme.palette.background.default,
+          bgcolor:
+            theme.palette.mode === "dark"
+              ? theme.palette.background.paper
+              : theme.palette.background.default,
         }}
       >
         <Tabs
@@ -171,12 +172,7 @@ const ProjectDashboard = () => {
           }}
         >
           {tabsConfig.map((tab, index) => (
-            <Tooltip 
-              key={index}
-              title={tab.tooltip} 
-              arrow
-              placement="top"
-            >
+            <Tooltip key={index} title={tab.tooltip} arrow placement="top">
               <span>
                 <Tab
                   icon={tab.icon}
@@ -185,10 +181,10 @@ const ProjectDashboard = () => {
                   sx={{
                     ...(tab.disabled && {
                       color: theme.palette.text.disabled,
-                      '&.Mui-disabled': {
+                      "&.Mui-disabled": {
                         color: theme.palette.text.disabled,
-                      }
-                    })
+                      },
+                    }),
                   }}
                 />
               </span>

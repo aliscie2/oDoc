@@ -46,7 +46,7 @@ export default function ContextMenu({
             mouseX: event.clientX + 2,
             mouseY: event.clientY - 6,
           }
-        : null
+        : null,
     );
   };
 
@@ -72,17 +72,15 @@ export default function ContextMenu({
             item.onClick?.();
           }}
           sx={{
-            minWidth: '240px',
+            minWidth: "240px",
             px: 3, // Add more horizontal padding
-            '&:hover': {
-              backgroundColor: 'action.hover',
+            "&:hover": {
+              backgroundColor: "action.hover",
             },
           }}
         >
           {item.icon && (
-            <ListItemIcon sx={{ minWidth: 36 }}>
-              {item.icon}
-            </ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 36 }}>{item.icon}</ListItemIcon>
           )}
           <ListItemText primary={item.content} />
         </MenuItem>
@@ -110,19 +108,19 @@ export default function ContextMenu({
         }
         elevation={3}
         sx={{
-          '& .MuiPaper-root': {
-            boxShadow: '0px 5px 15px rgba(0, 0, 0, 0.2)',
-            borderRadius: '8px',
-            minWidth: '280px', // Add minimum width for the entire menu
+          "& .MuiPaper-root": {
+            boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.2)",
+            borderRadius: "8px",
+            minWidth: "280px", // Add minimum width for the entire menu
           },
-          '& .MuiList-root': {
-            padding: '4px 0',
+          "& .MuiList-root": {
+            padding: "4px 0",
           },
-          '& .MuiMenuItem-root': {
-            padding: '8px 24px',
-            typography: 'body2',
-            '&:hover': {
-              backgroundColor: 'action.hover',
+          "& .MuiMenuItem-root": {
+            padding: "8px 24px",
+            typography: "body2",
+            "&:hover": {
+              backgroundColor: "action.hover",
             },
           },
         }}

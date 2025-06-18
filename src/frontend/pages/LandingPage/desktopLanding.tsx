@@ -10,7 +10,6 @@ import {
   Tooltip,
 } from "@mui/material";
 
-
 import { features, roadMap } from "./data";
 import WhyOdoc from "./whyOdoc";
 import Section from "./section";
@@ -30,50 +29,47 @@ import { useSelector } from "react-redux";
 import { useBackendContext } from "@/contexts/BackendContext";
 
 export default function DekstopLandingPage() {
-    const { login } = useBackendContext();
-const { isLoggedIn } = useSelector(
-    (state: any) => state.uiState,
-    );
-    
+  const { login } = useBackendContext();
+  const { isLoggedIn } = useSelector((state: any) => state.uiState);
+
   // Add video reference and scroll progress
   const videoRef = useRef(null);
   const { scrollYProgress } = useScroll();
-  const [activeSection, setActiveSection] = useState('');
-  
+  const [activeSection, setActiveSection] = useState("");
+
   // Use our custom hook for video scrolling effect with zoom
-  useScrollingEffect(videoRef, scrollYProgress, { 
+  useScrollingEffect(videoRef, scrollYProgress, {
     speedMultiplier: 5,
     zoomEffect: true,
-    maxZoom: 1.3 // Adjust this value to control maximum zoom level
+    maxZoom: 1.3, // Adjust this value to control maximum zoom level
   });
 
   // const { isDarkMode } = useSelector((state: any) => state.uiState);
-  
+
   // Always use dark video, but adjust opacity for light mode
   // const videoOpacity = isDarkMode ? 0.8 : 0.6;
 
   const sections = [
-    
-    { id: 'ai-job-matcher', title: 'AI Job Matcher' },
-    { id: 'getting-started', title: 'Getting Started' },
-    { id: 'odoc-structure', title: 'ODOC Structure' },
-    { id: 'why', title: 'Why ODOC' },
-    { id: 'trust-behavior', title: 'Trust & Behavior' },
-    { id: 'split-intro', title: 'Split Intro' },
-    { id: 'main-intro', title: 'Introduction' },
-    
-    { id: 'security', title: 'Security' },
-    { id: 'features', title: 'Features' },
-    { id: 'progress', title: 'Progress' },
-    { id: 'bottom', title: 'Get Started' },
+    { id: "ai-job-matcher", title: "AI Job Matcher" },
+    { id: "getting-started", title: "Getting Started" },
+    { id: "odoc-structure", title: "ODOC Structure" },
+    { id: "why", title: "Why ODOC" },
+    { id: "trust-behavior", title: "Trust & Behavior" },
+    { id: "split-intro", title: "Split Intro" },
+    { id: "main-intro", title: "Introduction" },
+
+    { id: "security", title: "Security" },
+    { id: "features", title: "Features" },
+    { id: "progress", title: "Progress" },
+    { id: "bottom", title: "Get Started" },
   ];
 
   const scrollToSection = (sectionId) => {
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
+        behavior: "smooth",
+        block: "start",
       });
     }
   };
@@ -81,7 +77,7 @@ const { isLoggedIn } = useSelector(
   useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.pageYOffset + window.innerHeight / 2;
-      let currentSection = '';
+      let currentSection = "";
 
       sections.forEach(({ id }) => {
         const element = document.getElementById(id);
@@ -102,76 +98,98 @@ const { isLoggedIn } = useSelector(
     };
 
     handleScroll();
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, [activeSection, sections]);
-  
+
   return (
     <Box sx={{ minHeight: "100vh", position: "relative" }}>
-      
       {/* Navigation Dots */}
-      <Box sx={{
-        position: 'fixed',
-        right: '20px',
-        top: '50%',
-        transform: 'translateY(-50%)',
-        zIndex: 1000,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '12px',
-      }}>
+      <Box
+        sx={{
+          position: "fixed",
+          right: "20px",
+          top: "50%",
+          transform: "translateY(-50%)",
+          zIndex: 1000,
+          display: "flex",
+          flexDirection: "column",
+          gap: "12px",
+        }}
+      >
         {sections.map(({ id, title }) => (
           <Tooltip key={id} title={title} placement="left" arrow>
             <Box
               onClick={() => scrollToSection(id)}
               sx={{
-                width: '12px',
-                height: '12px',
-                backgroundColor: activeSection === id ? '#2563eb' : 'rgba(37, 99, 235, 0.3)',
-                border: `2px solid ${activeSection === id ? '#2563eb' : 'rgba(37, 99, 235, 0.5)'}`,
-                borderRadius: '50%',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  backgroundColor: '#2563eb',
-                  transform: 'scale(1.2)',
-                  boxShadow: '0 0 8px rgba(37, 99, 235, 0.6)',
+                width: "12px",
+                height: "12px",
+                backgroundColor:
+                  activeSection === id ? "#2563eb" : "rgba(37, 99, 235, 0.3)",
+                border: `2px solid ${activeSection === id ? "#2563eb" : "rgba(37, 99, 235, 0.5)"}`,
+                borderRadius: "50%",
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+                "&:hover": {
+                  backgroundColor: "#2563eb",
+                  transform: "scale(1.2)",
+                  boxShadow: "0 0 8px rgba(37, 99, 235, 0.6)",
                 },
               }}
             />
           </Tooltip>
         ))}
       </Box>
-     
-      
-      <Section id="ai-job-matcher" sx={{ position: "relative", zIndex: 1 }} transparent={true}>
+
+      <Section
+        id="ai-job-matcher"
+        sx={{ position: "relative", zIndex: 1 }}
+        transparent={true}
+      >
         <AIJobMatcherSection />
       </Section>
 
-
       <Section id="getting-started" transparent={true}>
-        <GettingStarted/>
+        <GettingStarted />
       </Section>
 
-
-      <Section id="odoc-structure" sx={{ position: "relative", zIndex: 1 }} transparent={true}>
-        <OdocStrecture/>
+      <Section
+        id="odoc-structure"
+        sx={{ position: "relative", zIndex: 1 }}
+        transparent={true}
+      >
+        <OdocStrecture />
       </Section>
-      <Section id="why"  sx={{ position: "relative", zIndex: 1 }} transparent={true} >
+      <Section
+        id="why"
+        sx={{ position: "relative", zIndex: 1 }}
+        transparent={true}
+      >
         <WhyOdoc />
       </Section>
-      <Section id="trust-behavior" sx={{ position: "relative", zIndex: 1 }} transparent={true}>
-        <TrustBehaviorSystem/>
+      <Section
+        id="trust-behavior"
+        sx={{ position: "relative", zIndex: 1 }}
+        transparent={true}
+      >
+        <TrustBehaviorSystem />
       </Section>
-      <Section id="split-intro" sx={{ position: "relative", zIndex: 1 }} transparent={true}>
+      <Section
+        id="split-intro"
+        sx={{ position: "relative", zIndex: 1 }}
+        transparent={true}
+      >
         <SplitIntro />
       </Section>
 
-      <Section id="main-intro" sx={{ position: "relative", zIndex: 1 }} transparent={true}>
+      <Section
+        id="main-intro"
+        sx={{ position: "relative", zIndex: 1 }}
+        transparent={true}
+      >
         <Intro />
       </Section>
-  
-      
+
       <Section id="security" transparent={true}>
         <SecuritySection />
       </Section>
@@ -223,7 +241,7 @@ const { isLoggedIn } = useSelector(
 
       {/* Current Progress */}
       <Box id="progress">
-        <PlatformProgress/>
+        <PlatformProgress />
       </Box>
 
       {/* Call to Action */}
@@ -266,7 +284,6 @@ const { isLoggedIn } = useSelector(
           </Container>
         </Section>
       )}
-
 
       <PageFooter />
     </Box>

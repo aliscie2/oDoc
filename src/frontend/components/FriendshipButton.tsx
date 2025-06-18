@@ -47,7 +47,6 @@ const FriendshipButton: React.FC<FriendshipButtonProps> = ({ user }) => {
   const handleSendRequest = () =>
     handleAction(
       async () => {
-
         const res = await backendActor.send_friend_request(user.id);
 
         return res;

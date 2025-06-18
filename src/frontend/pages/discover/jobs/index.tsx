@@ -1,26 +1,26 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { Box } from '@mui/material';
+import React, { useState, useCallback, useEffect, useRef } from "react";
+import { Box } from "@mui/material";
 
-import AiChat from '@/components/AiChat';
-import { v4 as uuidv4 } from 'uuid';
-import { processResponseJobs } from './utils/processResponseJobs';
-import { useDispatch, useSelector } from 'react-redux';
-import { Job, JobUpdate } from '$/declarations/backend/backend.did';
-import { BUILD_JOB_PROMPT } from './utils/buildProfilePrompt';
-import JobSelector from '@/pages/discover/jobs/JobSelector';
-import JobSearchComponent from './JobSearchComponent';
+import AiChat from "@/components/AiChat";
+import { v4 as uuidv4 } from "uuid";
+import { processResponseJobs } from "./utils/processResponseJobs";
+import { useDispatch, useSelector } from "react-redux";
+import { Job, JobUpdate } from "$/declarations/backend/backend.did";
+import { BUILD_JOB_PROMPT } from "./utils/buildProfilePrompt";
+import JobSelector from "@/pages/discover/jobs/JobSelector";
+import JobSearchComponent from "./JobSearchComponent";
 
-import { useBackendContext } from '@/contexts/BackendContext';
-import LoginButton from '@/components/MainComponents/topNavBar/loginButton';
-import { Login } from '@mui/icons-material';
-import SetupBanner from './setUpConnect';
+import { useBackendContext } from "@/contexts/BackendContext";
+import LoginButton from "@/components/MainComponents/topNavBar/loginButton";
+import { Login } from "@mui/icons-material";
+import SetupBanner from "./setUpConnect";
 
 interface Message {
   id: string;
   content: string;
-  sender: 'user' | 'ai';
+  sender: "user" | "ai";
   timestamp: Date;
-};
+}
 
 interface ProcessedJobResponse {
   done: boolean;
@@ -35,12 +35,12 @@ interface ProcessedJobResponse {
 }
 
 const JobsPage: React.FC = () => {
-
   const { backendActor } = useBackendContext();
 
-
-  const { isChanged, currentJobId, jobs, matchingJobs } = useSelector((state: any) => state.jobState);
-  const { geminiAgent,credits } = useSelector((state: any) => state.AIState);
+  const { isChanged, currentJobId, jobs, matchingJobs } = useSelector(
+    (state: any) => state.jobState,
+  );
+  const { geminiAgent, credits } = useSelector((state: any) => state.AIState);
   const currentJobRef = useRef<Job | undefined>(undefined);
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
@@ -48,141 +48,147 @@ const JobsPage: React.FC = () => {
 
   const [isProfileDone, setIsProfileDone] = useState<boolean>(false);
 
- 
-
   useEffect(() => {
     currentJobRef.current = jobs.find((job: Job) => job.id === currentJobId);
   }, [currentJobId, jobs]);
 
-
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const res: { jobs: Job[]; matching_jobs: Job[] } = await backendActor.get_my_jobs();
-        dispatch({ type: "INIT_JOBS", jobs: res.jobs, matchingJobs: res.matching_jobs, });
+        const res: { jobs: Job[]; matching_jobs: Job[] } =
+          await backendActor.get_my_jobs();
+        dispatch({
+          type: "INIT_JOBS",
+          jobs: res.jobs,
+          matchingJobs: res.matching_jobs,
+        });
       } catch (error) {
         console.error("Error fetching jobs:", error);
       }
     };
-    
+
     fetchJobs();
   }, [dispatch]);
 
-  const handleSendMessage = useCallback(async (content: string) => {
-    if (!geminiAgent) return;
-    
-    setLoading(true);
-    try {
-      const newMessage: Message = {
-        id: uuidv4(),
-        content,
-        sender: 'user',
-        timestamp: new Date()
-      };
-      
-      setMessages(prev => [...prev, newMessage]);
-      
-     
-      const messageToSend = `
+  const handleSendMessage = useCallback(
+    async (content: string) => {
+      if (!geminiAgent) return;
+
+      setLoading(true);
+      try {
+        const newMessage: Message = {
+          id: uuidv4(),
+          content,
+          sender: "user",
+          timestamp: new Date(),
+        };
+
+        setMessages((prev) => [...prev, newMessage]);
+
+        const messageToSend = `
       ${BUILD_JOB_PROMPT}
       User Input: ${content},
       Current Job Data: ${JSON.stringify(currentJobRef.current)}
       `;
 
-      const response = await geminiAgent.sendMessage(messageToSend);
-      // let gemini_uage = geminiAgent?.getUsage();
+        const response = await geminiAgent.sendMessage(messageToSend);
+        // let gemini_uage = geminiAgent?.getUsage();
 
-      // const response = "```" + gmeniResponseExample + "```";
-      const parsed: ProcessedJobResponse = processResponseJobs(response).extractedData;
-      //TODO renreder <JobSearchComponent /> if parsed.isBreakingChanges == true
-       // Validate before processing
-       if (!currentJobId) {
-        
-        if (parsed.category =="Talent"&&jobs.some((j: Job) => Object.keys(j.category)[0] === "Talent")) {    
-          alert("You can create only one talent profile");
-          return;
-        } else if (jobs.filter((j: Job) => Object.keys(j.category)[0] === "Job").length >= 3) {
-          alert("You can have max 3 job posts");
-          return;
+        // const response = "```" + gmeniResponseExample + "```";
+        const parsed: ProcessedJobResponse =
+          processResponseJobs(response).extractedData;
+        //TODO renreder <JobSearchComponent /> if parsed.isBreakingChanges == true
+        // Validate before processing
+        if (!currentJobId) {
+          if (
+            parsed.category == "Talent" &&
+            jobs.some((j: Job) => Object.keys(j.category)[0] === "Talent")
+          ) {
+            alert("You can create only one talent profile");
+            return;
+          } else if (
+            jobs.filter((j: Job) => Object.keys(j.category)[0] === "Job")
+              .length >= 3
+          ) {
+            alert("You can have max 3 job posts");
+            return;
+          }
         }
+
+        if (!parsed || !parsed.updates) {
+          console.error("Invalid response format:", parsed);
+          alert(
+            "Somthing went wrong please try again. and report the issue on x.com/odoc_ic",
+          );
+        }
+        console.log("parsed", { parsed });
+        dispatch({
+          type: "UPDATE_FIELDS",
+          updates: parsed.updates,
+          category: parsed.category,
+          required_match_score: parsed.required_match_score,
+        });
+
+        if (parsed.done) {
+          setIsProfileDone(true);
+        }
+
+        const aiMessage: Message = {
+          id: uuidv4(),
+          content: parsed.feedback,
+          sender: "ai",
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, aiMessage]);
+      } catch (error) {
+        console.error("Error sending message:", error);
+      } finally {
+        setLoading(false);
       }
-
-      if (!parsed || !parsed.updates){
-        console.error("Invalid response format:", parsed);
-        alert("Somthing went wrong please try again. and report the issue on x.com/odoc_ic")
-      }
-      console.log("parsed", {parsed});
-      dispatch({
-        type: "UPDATE_FIELDS",
-        updates: parsed.updates,
-        category: parsed.category,
-        required_match_score:parsed.required_match_score
-      });
-
-      if (parsed.done) {
-        setIsProfileDone(true);
-      }
-
-      const aiMessage: Message = {
-        id: uuidv4(),
-        content: parsed.feedback,
-        sender: 'ai',
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, aiMessage]);
-    } catch (error) {
-      console.error('Error sending message:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [geminiAgent, jobs, currentJobId, dispatch]);
-
-
-
-  const { profile  } = useSelector(
-    (state: any) => state.filesState,
+    },
+    [geminiAgent, jobs, currentJobId, dispatch],
   );
-  
+
+  const { profile } = useSelector((state: any) => state.filesState);
+
   if (!profile) {
-    return <>
-    Please make suer to login first
-    <LoginButton 
-    startIcon={<Login />}
-                 />
-                 </>;
+    return (
+      <>
+        Please make suer to login first
+        <LoginButton startIcon={<Login />} />
+      </>
+    );
   }
 
-  const onBuyCredit = async (value)=>{
+  const onBuyCredit = async (value) => {
     let buyAiCredits = await backendActor.buy_ai_credits(value);
-    if (buyAiCredits.Ok){
+    if (buyAiCredits.Ok) {
       dispatch({
         type: "ADD_AI_CREDITS",
-        credits: value*0.8,
-      })
+        credits: value * 0.8,
+      });
     } else {
-      alert(buyAiCredits.Err)
+      alert(buyAiCredits.Err);
     }
-  }
+  };
   return (
-    <Box className="jobs-page-container" sx={{ padding: 0, margin: '0 auto' }}>
-
-      <SetupBanner/>
-
+    <Box className="jobs-page-container" sx={{ padding: 0, margin: "0 auto" }}>
+      <SetupBanner />
 
       <JobSelector />
       <AiChat
         key={geminiAgent}
         currentAICredits={geminiAgent?.remainingCredits()}
         onBuyCredit={onBuyCredit}
-      
         // title="Job Application Assistant"
         initialMessages={messages}
         infoMessage="Tell us are you looking for Job or talent?. Share ur resume/requirements and we will find it for you while you are sleeping."
         loading={loading}
         onSendMessage={handleSendMessage}
       />
-      {isProfileDone || matchingJobs.lenght > 0  || currentJobRef?.current?.skills.length > 0 && <JobSearchComponent />}
-    
+      {isProfileDone ||
+        matchingJobs.lenght > 0 ||
+        (currentJobRef?.current?.skills.length > 0 && <JobSearchComponent />)}
     </Box>
   );
 };

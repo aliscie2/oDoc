@@ -1,10 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect } from "react";
 
 const GoogleSignInButton = () => {
   useEffect(() => {
     // Load Google platform script
-    const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client';
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
     script.async = true;
     script.defer = true;
     document.body.appendChild(script);
@@ -16,8 +16,8 @@ const GoogleSignInButton = () => {
 
   const handleGoogleLogin = (response) => {
     // This will decode the JWT token to get user info
-    const userInfo = JSON.parse(atob(response.credential.split('.')[1]));
-    console.log('User email:', userInfo.email);
+    const userInfo = JSON.parse(atob(response.credential.split(".")[1]));
+    console.log("User email:", userInfo.email);
   };
 
   return (
@@ -38,7 +38,7 @@ const GoogleSignInButton = () => {
         data-shape="rectangular"
         data-logo_alignment="left"
         data-width="300"
-        style={{ margin: '0 auto' }}
+        style={{ margin: "0 auto" }}
       />
     </div>
   );

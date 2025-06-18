@@ -1,14 +1,14 @@
-import React, {useRef, useState} from "react";
-import {Box, Button} from "@mui/material";
-import {useBackendContext} from "../../contexts/BackendContext";
-import {useDispatch, useSelector} from "react-redux";
-import {Post} from "../../../declarations/backend/backend.did";
-import {deserializeContentTree} from "../../DataProcessing/deserlize/deserializeContents";
+import React, { useRef, useState } from "react";
+import { Box, Button } from "@mui/material";
+import { useBackendContext } from "../../contexts/BackendContext";
+import { useDispatch, useSelector } from "react-redux";
+import { Post } from "../../../declarations/backend/backend.did";
+import { deserializeContentTree } from "../../DataProcessing/deserlize/deserializeContents";
 import serializeFileContents from "../../DataProcessing/serialize/serializeFileContents";
 import EditorComponent from "../../components/EditorComponent";
-import {randomString} from "../../DataProcessing/dataSamples";
-import {handleRedux} from "../../redux/store/handleRedux";
-import {RootState} from "../../redux/reducers";
+import { randomString } from "../../DataProcessing/dataSamples";
+import { handleRedux } from "../../redux/store/handleRedux";
+import { RootState } from "../../redux/reducers";
 
 interface CommentFormProps {
   postId: string;

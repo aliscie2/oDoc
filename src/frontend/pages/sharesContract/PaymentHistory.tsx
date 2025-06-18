@@ -29,7 +29,9 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = ({
   remainingShares,
   onMakePayment,
 }) => {
-  const { profile ,all_friends} = useSelector((state: any) => state.filesState);
+  const { profile, all_friends } = useSelector(
+    (state: any) => state.filesState,
+  );
   const paymentsColumnDefs = [
     {
       editable: false,

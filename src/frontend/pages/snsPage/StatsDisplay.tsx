@@ -1,10 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import { Box, Chip, Fade, Stack, Typography } from "@mui/material";
-import { People as PeopleIcon, Assignment as AssignmentIcon, AccountBalance as AccountBalanceIcon } from '@mui/icons-material';
+import {
+  People as PeopleIcon,
+  Assignment as AssignmentIcon,
+  AccountBalance as AccountBalanceIcon,
+} from "@mui/icons-material";
 
 const StatsDisplay = ({ snsStatus, odocBalance }) => {
   const [show, setShow] = useState(false);
-  
+
   useEffect(() => {
     // Trigger animation after component mounts
     setShow(true);
@@ -12,15 +16,15 @@ const StatsDisplay = ({ snsStatus, odocBalance }) => {
 
   return (
     <Fade in={show} timeout={800}>
-      <Stack 
-        direction={{ xs: 'column', sm: 'row' }} 
-        spacing={2} 
-        sx={{ 
-          mt: 1, 
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={2}
+        sx={{
+          mt: 1,
           mb: 2,
-          display: 'flex',
-          flexWrap: 'wrap',
-          justifyContent: 'flex-start'
+          display: "flex",
+          flexWrap: "wrap",
+          justifyContent: "flex-start",
         }}
       >
         <Chip

@@ -1,7 +1,7 @@
-import OpenAI from 'openai';
+import OpenAI from "openai";
 
 interface DeepSeekMessage {
-  role: 'system' | 'user' | 'assistant';
+  role: "system" | "user" | "assistant";
   content: string;
 }
 
@@ -12,16 +12,16 @@ export class DeepSeekAgent {
 
   constructor() {
     this.openai = new OpenAI({
-      baseURL: 'https://api.deepseek.com',
-      apiKey: import.meta.env.VITE_DEEPSEEK_API_KEY || '',
-      dangerouslyAllowBrowser: true
+      baseURL: "https://api.deepseek.com",
+      apiKey: import.meta.env.VITE_DEEPSEEK_API_KEY || "",
+      dangerouslyAllowBrowser: true,
     });
-    this.model = 'deepseek-chat';
+    this.model = "deepseek-chat";
     this.conversationHistory = [
       {
-        role: 'system',
-        content: 'You are a helpful assistant.'
-      }
+        role: "system",
+        content: "You are a helpful assistant.",
+      },
     ];
   }
 
@@ -30,51 +30,51 @@ export class DeepSeekAgent {
       // Add user message to conversation history
       if (message.trim()) {
         this.conversationHistory.push({
-          role: 'user',
-          content: message
+          role: "user",
+          content: message,
         });
       }
-      
+
       // Use OpenAI SDK for the API request to DeepSeek
       const response = await this.openai.chat.completions.create({
         model: this.model,
         messages: this.conversationHistory,
         max_tokens: 4096,
-        temperature: 0.7
+        temperature: 0.7,
       });
 
       // Extract the assistant's response
-      const assistantMessage = response.choices[0].message.content || '';
-      
+      const assistantMessage = response.choices[0].message.content || "";
+
       // Log the response from DeepSeek
-      console.log('DeepSeek API response:', assistantMessage);
-      
+      console.log("DeepSeek API response:", assistantMessage);
+
       // Add assistant response to conversation history
       this.conversationHistory.push({
-        role: 'assistant',
-        content: assistantMessage
+        role: "assistant",
+        content: assistantMessage,
       });
-      
+
       return assistantMessage;
     } catch (error) {
-      console.error('Error calling DeepSeek API:', error);
-      
-      let errorMessage = 'Failed to get response from AI';
+      console.error("Error calling DeepSeek API:", error);
+
+      let errorMessage = "Failed to get response from AI";
       if (error instanceof Error) {
         errorMessage = error.message;
       }
-      
+
       throw new Error(errorMessage);
     }
   }
-  
+
   clearConversation(): void {
     // Reset conversation but keep the system message
     this.conversationHistory = [
       {
-        role: 'system',
-        content: 'You are a helpful assistant.'
-      }
+        role: "system",
+        content: "You are a helpful assistant.",
+      },
     ];
   }
 }

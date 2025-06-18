@@ -5,8 +5,6 @@ import {
   Event,
 } from "$/declarations/backend/backend.did";
 
-
-
 const calendar_actions: CalendarActions = {
   delete_availabilities: [],
   delete_events: [],
@@ -28,11 +26,10 @@ const initialState: any = {
   google_events: [], // Add this line to initialize google_events
   is_google_connected: false,
   calendarChanged: false,
-  isInitlized:false
+  isInitlized: false,
 };
 
 export function calendarReducer(state = initialState, action: any): any {
-
   switch (action.type) {
     case "SET_TRAINING_DATA":
       return {
@@ -117,7 +114,10 @@ export function calendarReducer(state = initialState, action: any): any {
       return state.is_google_connected
         ? {
             ...state,
-            google_events: [...state.google_events, { ...newEvent, isGoogleEvent: true }],
+            google_events: [
+              ...state.google_events,
+              { ...newEvent, isGoogleEvent: true },
+            ],
           }
         : {
             ...state,
@@ -138,23 +138,37 @@ export function calendarReducer(state = initialState, action: any): any {
         created_by: action.event.created_by || state.calendar.owner,
       };
       if (state.is_google_connected) {
-        const isInGoogleEvents = state.google_events.some(e => e.id === updatedEvent.id);
+        const isInGoogleEvents = state.google_events.some(
+          (e) => e.id === updatedEvent.id,
+        );
         return {
           ...state,
-          calendarChanged: state.calendar.events.some(e => e.id === updatedEvent.id), // Set if in calendar
+          calendarChanged: state.calendar.events.some(
+            (e) => e.id === updatedEvent.id,
+          ), // Set if in calendar
           google_events: isInGoogleEvents
-            ? state.google_events.map(e => e.id === updatedEvent.id ? { ...updatedEvent, isGoogleEvent: true } : e)
+            ? state.google_events.map((e) =>
+                e.id === updatedEvent.id
+                  ? { ...updatedEvent, isGoogleEvent: true }
+                  : e,
+              )
             : state.google_events,
           calendar: {
             ...state.calendar,
-            events: state.calendar.events.some(e => e.id === updatedEvent.id)
-              ? state.calendar.events.map(e => e.id === updatedEvent.id ? updatedEvent : e)
+            events: state.calendar.events.some((e) => e.id === updatedEvent.id)
+              ? state.calendar.events.map((e) =>
+                  e.id === updatedEvent.id ? updatedEvent : e,
+                )
               : state.calendar.events,
           },
-          calendar_actions: state.calendar.events.some(e => e.id === updatedEvent.id)
+          calendar_actions: state.calendar.events.some(
+            (e) => e.id === updatedEvent.id,
+          )
             ? {
                 ...state.calendar_actions,
-                events: state.calendar_actions.events.map(e => e.id === updatedEvent.id ? updatedEvent : e),
+                events: state.calendar_actions.events.map((e) =>
+                  e.id === updatedEvent.id ? updatedEvent : e,
+                ),
               }
             : state.calendar_actions,
         };
@@ -164,36 +178,47 @@ export function calendarReducer(state = initialState, action: any): any {
           calendarChanged: true, // Already set
           calendar_actions: {
             ...state.calendar_actions,
-            events: state.calendar_actions.events.map(e => e.id === updatedEvent.id ? updatedEvent : e),
+            events: state.calendar_actions.events.map((e) =>
+              e.id === updatedEvent.id ? updatedEvent : e,
+            ),
           },
           calendar: {
             ...state.calendar,
-            events: state.calendar.events.map(e => e.id === updatedEvent.id ? updatedEvent : e),
+            events: state.calendar.events.map((e) =>
+              e.id === updatedEvent.id ? updatedEvent : e,
+            ),
           },
         };
       }
 
     case "DELETE_EVENT":
       if (state.is_google_connected) {
-        const isInGoogleEvents = state.google_events.some(e => e.id === action.id);
-        const isInCalendarEvents = state.calendar.events.some(e => e.id === action.id);
-        
+        const isInGoogleEvents = state.google_events.some(
+          (e) => e.id === action.id,
+        );
+        const isInCalendarEvents = state.calendar.events.some(
+          (e) => e.id === action.id,
+        );
+
         return {
           ...state,
           calendarChanged: isInCalendarEvents, // Set if in calendar
           google_events: isInGoogleEvents
-            ? state.google_events.filter(e => e.id !== action.id)
+            ? state.google_events.filter((e) => e.id !== action.id)
             : state.google_events,
           calendar: {
             ...state.calendar,
             events: isInCalendarEvents
-              ? state.calendar.events.filter(e => e.id !== action.id)
+              ? state.calendar.events.filter((e) => e.id !== action.id)
               : state.calendar.events,
           },
           calendar_actions: isInCalendarEvents
             ? {
                 ...state.calendar_actions,
-                delete_events: [...state.calendar_actions.delete_events, action.id],
+                delete_events: [
+                  ...state.calendar_actions.delete_events,
+                  action.id,
+                ],
               }
             : state.calendar_actions,
         };
@@ -207,7 +232,7 @@ export function calendarReducer(state = initialState, action: any): any {
           },
           calendar: {
             ...state.calendar,
-            events: state.calendar.events.filter(e => e.id !== action.id),
+            events: state.calendar.events.filter((e) => e.id !== action.id),
           },
         };
       }
@@ -312,22 +337,22 @@ export function calendarReducer(state = initialState, action: any): any {
     case "SET_GOOGLE_CALENDAR":
       return {
         ...state,
-        is_google_connected:true,
-        google_events: action.events.map(event => ({
+        is_google_connected: true,
+        google_events: action.events.map((event) => ({
           ...event,
           id: `${event.id}`, // Add prefix to avoid ID conflicts
-          isGoogleEvent: true // Add flag to identify Google events
+          isGoogleEvent: true, // Add flag to identify Google events
         })),
       };
 
     case "ADD_CALENDAR_EMAIL":
-      if (state.calendar.id === action.id){
+      if (state.calendar.id === action.id) {
         return {
-         ...state,
+          ...state,
           calendar: {
-           ...state.calendar,
-            googleIds: [...(state.calendar.googleIds || []), action.email]
-          }
+            ...state.calendar,
+            googleIds: [...(state.calendar.googleIds || []), action.email],
+          },
         };
       }
       return {
@@ -336,7 +361,7 @@ export function calendarReducer(state = initialState, action: any): any {
           ...state.calendar,
           googleIds: [...(state.calendar.googleIds || []), action.email],
           id: action.id,
-        }
+        },
       };
 
     default:

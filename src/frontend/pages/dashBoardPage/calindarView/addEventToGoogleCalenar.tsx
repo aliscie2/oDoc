@@ -1,8 +1,8 @@
-import React from 'react';
-import { IconButton, Tooltip, useTheme } from '@mui/material';
-import GoogleIcon from '@mui/icons-material/Google';
-import sendEmail from '@/pages/discover/jobs/utils/sendEmail';
-import { useSelector } from 'react-redux';
+import React from "react";
+import { IconButton, Tooltip, useTheme } from "@mui/material";
+import GoogleIcon from "@mui/icons-material/Google";
+import sendEmail from "@/pages/discover/jobs/utils/sendEmail";
+import { useSelector } from "react-redux";
 
 // Utility function to create Google Calendar URL
 const createGoogleCalendarUrl = (event) => {
@@ -45,12 +45,11 @@ interface GoogleCalendarButtonProps {
 
 const GoogleCalendarButton: React.FC<GoogleCalendarButtonProps> = ({
   event,
-  className
+  className,
 }) => {
-
   const { calendar } = useSelector((state: any) => state.calendarState);
   const { profile } = useSelector((state: any) => state.filesState);
-  
+
   const theme = useTheme();
 
   const handleAddToCalendar = async (e: React.MouseEvent) => {
@@ -59,22 +58,24 @@ const GoogleCalendarButton: React.FC<GoogleCalendarButtonProps> = ({
     const calendarUrl = createGoogleCalendarUrl(event);
     window.open(calendarUrl, "_blank");
 
-
     // notify other user about the new event.
-    if (profile?.id != calendar?.owner){
+    if (profile?.id != calendar?.owner) {
       // let data = {
       //   calendarUrl,
       // };
       // for email in calendar.googleIds
-      for (let email of calendar?.googleIds){
+      for (let email of calendar?.googleIds) {
         // let isEmailSent = await sendEmail("New event","You have new event created" ,[email],data,"new_event");
-        let isEmailSent = await sendEmail(`New event`,`event created at oDoc by${profile.name}, click here to add to google: ${calendarUrl}` ,[email]);
-        if (isEmailSent){
+        let isEmailSent = await sendEmail(
+          `New event`,
+          `event created at oDoc by${profile.name}, click here to add to google: ${calendarUrl}`,
+          [email],
+        );
+        if (isEmailSent) {
           break;
-        } 
+        }
       }
     }
-    
   };
 
   return (
@@ -91,8 +92,8 @@ const GoogleCalendarButton: React.FC<GoogleCalendarButtonProps> = ({
           borderRadius: theme.shape.borderRadius,
           padding: theme.spacing(1, 2),
           "& svg": {
-            fontSize: "1.5rem"
-          }
+            fontSize: "1.5rem",
+          },
         }}
       >
         <GoogleIcon />

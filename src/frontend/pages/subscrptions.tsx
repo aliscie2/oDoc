@@ -267,7 +267,8 @@ const SubscriptionPlans = () => {
                   <Tooltip
                     title={
                       <Typography color="error">
-                        This option is not available now. We will upgrade our system in the next 3 months.
+                        This option is not available now. We will upgrade our
+                        system in the next 3 months.
                       </Typography>
                     }
                     arrow

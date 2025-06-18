@@ -1,7 +1,7 @@
 // Types for the scheduler components
-export type Day = 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun';
+export type Day = "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun";
 
-export type DialogType = 'availability' | 'unavailability' | 'event' | null;
+export type DialogType = "availability" | "unavailability" | "event" | null;
 
 export interface Availability {
   id: string;

@@ -108,7 +108,7 @@ export const Shares: React.FC<SharesProps> = ({
     try {
       const newPayments = contract.promises.map((promise) => ({
         id: randomString(),
-        status: { "None": null },
+        status: { None: null },
         date_created: Date.now(),
         date_released: Date.now(),
         cells: [],
@@ -276,7 +276,7 @@ export const DummyShares: React.FC = () => {
     try {
       const newPayments = contractData.promises.map((promise) => ({
         id: crypto.randomUUID(),
-        status: { "None": null },
+        status: { None: null },
         date_created: Date.now(),
         date_released: Date.now(),
         cells: [],

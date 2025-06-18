@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Alert,
   AlertTitle,
@@ -7,18 +7,18 @@ import {
   Box,
   Snackbar,
   useTheme,
-  useMediaQuery
-} from '@mui/material';
+  useMediaQuery,
+} from "@mui/material";
 import {
   Close as CloseIcon,
   Warning as WarningIcon,
-} from '@mui/icons-material';
-import {Z_INDEX_BANNER} from "../../constants/zIndex";
+} from "@mui/icons-material";
+import { Z_INDEX_BANNER } from "../../constants/zIndex";
 
 const DemoBanner = () => {
   const [open, setOpen] = useState(true);
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const handleClose = () => {
     setOpen(false);
@@ -27,10 +27,10 @@ const DemoBanner = () => {
   return (
     <Snackbar
       open={open}
-      anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      anchorOrigin={{ vertical: "top", horizontal: "center" }}
       sx={{
-        width: '100%',
-        maxWidth: '600px',
+        width: "100%",
+        maxWidth: "600px",
         top: ({ spacing }) => `${spacing(isMobile ? 1 : 9)} !important`, // Adjusted for navbar height
         zIndex: Z_INDEX_BANNER, // Ensure it's below the navbar
       }}
@@ -50,31 +50,34 @@ const DemoBanner = () => {
           </IconButton>
         }
         sx={{
-          width: '100%',
+          width: "100%",
           boxShadow: (theme) => theme.shadows[4],
-          backgroundColor: 'warning.light',
-          color: 'warning.dark',
-          '& .MuiAlert-icon': {
-            color: 'warning.main',
-            fontSize: '2rem',
-            alignItems: 'center'
+          backgroundColor: "warning.light",
+          color: "warning.dark",
+          "& .MuiAlert-icon": {
+            color: "warning.main",
+            fontSize: "2rem",
+            alignItems: "center",
           },
-          '& .MuiIconButton-root': {
-            color: 'warning.dark',
+          "& .MuiIconButton-root": {
+            color: "warning.dark",
           },
           border: 1,
-          borderColor: 'warning.main',
+          borderColor: "warning.main",
           m: 1, // Add margin to prevent touching screen edges
         }}
       >
-        <AlertTitle sx={{
-          fontWeight: 'bold',
-          mb: 0,
-          color: 'warning.dark'
-        }}>
+        <AlertTitle
+          sx={{
+            fontWeight: "bold",
+            mb: 0,
+            color: "warning.dark",
+          }}
+        >
           Feature Not Available
         </AlertTitle>
-        This is a demo dashboard with sample data. All information displayed is for demonstration purposes only.
+        This is a demo dashboard with sample data. All information displayed is
+        for demonstration purposes only.
       </Alert>
     </Snackbar>
   );

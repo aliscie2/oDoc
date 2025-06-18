@@ -9,7 +9,7 @@ import {
   useTheme,
   useMediaQuery,
 } from "@mui/material";
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useBackendContext } from "../../contexts/BackendContext";
 import { ClickAwayListener } from "@mui/base";
@@ -36,8 +36,8 @@ const AttractiveButton = {
   "&:hover": {
     background: "rgba(255, 71, 71, 0.9)",
     transform: "translateY(-2px)",
-    transition: "all 0.3s ease"
-  }
+    transition: "all 0.3s ease",
+  },
 };
 
 function GetStartedButton() {
@@ -47,7 +47,6 @@ function GetStartedButton() {
   const { login } = useBackendContext();
   const { isLoggedIn } = useSelector((state: any) => state.uiState);
   const [showTooltip, setShowTooltip] = useState(false);
-
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -195,13 +194,13 @@ function GetStartedButton() {
             PopperProps={PopperProps}
             title={<TooltipContent videoId="Lg-0q5oEenk" />}
           >
-            <LoginButton 
-            variant="contained"
-            size="large"
-            endIcon={<ArrowForward />}
-            sx={AttractiveButton}
-            isMobile={isMobile} />
-            
+            <LoginButton
+              variant="contained"
+              size="large"
+              endIcon={<ArrowForward />}
+              sx={AttractiveButton}
+              isMobile={isMobile}
+            />
           </Tooltip>
         </Box>
       </ClickAwayListener>

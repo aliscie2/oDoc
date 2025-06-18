@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 import {
   Box,
   Container,
@@ -10,7 +10,7 @@ import {
   Chip,
   Fade,
   useTheme,
-} from '@mui/material';
+} from "@mui/material";
 import {
   TrendingUp,
   Speed,
@@ -19,11 +19,10 @@ import {
   Work,
   Psychology,
   Notifications,
-  Explore
-} from '@mui/icons-material';
-import { Link } from 'react-router-dom';
-import { jobMatcherFeatures } from './landingPageData';
-
+  Explore,
+} from "@mui/icons-material";
+import { Link } from "react-router-dom";
+import { jobMatcherFeatures } from "./landingPageData";
 
 const AIJobMatcherSection = () => {
   const theme = useTheme();
@@ -43,8 +42,8 @@ const AIJobMatcherSection = () => {
       },
       {
         threshold: 0.2,
-        rootMargin: '-50px 0px -50px 0px'
-      }
+        rootMargin: "-50px 0px -50px 0px",
+      },
     );
 
     if (sectionRef.current) {
@@ -58,24 +57,22 @@ const AIJobMatcherSection = () => {
     };
   }, []);
 
-  
-
   return (
     <Box
       ref={sectionRef}
       sx={{
-        position: 'relative',
+        position: "relative",
         py: 12,
-        background: 'inherit',
-        color: 'inherit',
-        overflow: 'hidden',
-        minHeight: '100vh'
+        background: "inherit",
+        color: "inherit",
+        overflow: "hidden",
+        minHeight: "100vh",
       }}
     >
       {/* Background Pattern */}
       <Box
         sx={{
-          position: 'absolute',
+          position: "absolute",
           top: 0,
           left: 0,
           right: 0,
@@ -86,20 +83,20 @@ const AIJobMatcherSection = () => {
           `,
           zIndex: 0,
           opacity: isVisible ? 1 : 0,
-          transition: 'opacity 0.8s ease-in-out'
+          transition: "opacity 0.8s ease-in-out",
         }}
       />
-      
-      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
+
+      <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }}>
         <Grid container spacing={4} alignItems="center">
           {/* Main Content */}
           <Grid item xs={6}>
             <Fade in={isVisible} timeout={1000}>
               <Box
                 sx={{
-                  transform: isVisible ? 'translateY(0)' : 'translateY(50px)',
+                  transform: isVisible ? "translateY(0)" : "translateY(50px)",
                   opacity: isVisible ? 1 : 0,
-                  transition: 'all 0.8s ease-out'
+                  transition: "all 0.8s ease-out",
                 }}
               >
                 {/* Problem Statement */}
@@ -108,16 +105,19 @@ const AIJobMatcherSection = () => {
                   component="h1"
                   sx={{
                     fontWeight: 700,
-                    fontSize: '3.5rem',
+                    fontSize: "3.5rem",
                     lineHeight: 1.2,
                     mb: 2,
-                    background: 'linear-gradient(135deg, currentColor 0%, rgba(59, 130, 246, 0.8) 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                    transform: isVisible ? 'translateX(0)' : 'translateX(-100px)',
+                    background:
+                      "linear-gradient(135deg, currentColor 0%, rgba(59, 130, 246, 0.8) 100%)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                    transform: isVisible
+                      ? "translateX(0)"
+                      : "translateX(-100px)",
                     opacity: isVisible ? 1 : 0,
-                    transition: 'all 1s ease-out 0.2s'
+                    transition: "all 1s ease-out 0.2s",
                   }}
                 >
                   Stop the Endless Job Hunt
@@ -128,28 +128,30 @@ const AIJobMatcherSection = () => {
                   variant="h5"
                   sx={{
                     mb: 4,
-                    fontSize: '1.5rem',
+                    fontSize: "1.5rem",
                     fontWeight: 400,
                     opacity: isVisible ? 0.9 : 0,
                     lineHeight: 1.4,
-                    transform: isVisible ? 'translateX(0)' : 'translateX(-80px)',
-                    transition: 'all 1s ease-out 0.4s'
+                    transform: isVisible
+                      ? "translateX(0)"
+                      : "translateX(-80px)",
+                    transition: "all 1s ease-out 0.4s",
                   }}
                 >
                   Stop searching for Talents or Jobs, let AI do it.
                 </Typography>
 
                 {/* Call to Action Buttons */}
-                <Box 
-                  sx={{ 
-                    display: 'flex',
+                <Box
+                  sx={{
+                    display: "flex",
                     gap: 2,
                     mb: 4,
-                    transform: isVisible ? 'translateY(0)' : 'translateY(40px)',
+                    transform: isVisible ? "translateY(0)" : "translateY(40px)",
                     opacity: isVisible ? 1 : 0,
-                    transition: 'all 1s ease-out 0.6s'
+                    transition: "all 1s ease-out 0.6s",
                   }}
-                >                  
+                >
                   <Button
                     component={Link}
                     to="/discover"
@@ -160,70 +162,74 @@ const AIJobMatcherSection = () => {
                     sx={{
                       py: 2,
                       px: 4,
-                      fontSize: '1.1rem',
+                      fontSize: "1.1rem",
                       fontWeight: 600,
                       borderRadius: 3,
                       borderWidth: 2,
-                      borderColor: 'rgba(16, 185, 129, 0.6)',
-                      color: 'inherit',
-                      textTransform: 'none',
-                      background: 'rgba(16, 185, 129, 0.1)',
-                      backdropFilter: 'blur(10px)',
-                      '&:hover': {
-                        borderColor: '#10b981',
-                        background: 'rgba(16, 185, 129, 0.2)',
-                        transform: 'translateY(-2px)',
-                        boxShadow: '0 4px 15px rgba(16, 185, 129, 0.2)'
+                      borderColor: "rgba(16, 185, 129, 0.6)",
+                      color: "inherit",
+                      textTransform: "none",
+                      background: "rgba(16, 185, 129, 0.1)",
+                      backdropFilter: "blur(10px)",
+                      "&:hover": {
+                        borderColor: "#10b981",
+                        background: "rgba(16, 185, 129, 0.2)",
+                        transform: "translateY(-2px)",
+                        boxShadow: "0 4px 15px rgba(16, 185, 129, 0.2)",
                       },
-                      transition: 'all 0.3s ease'
+                      transition: "all 0.3s ease",
                     }}
                   >
                     Try it now.
                   </Button>
                 </Box>
-                
+
                 {/* Value Proposition */}
                 <Typography
                   variant="body1"
                   sx={{
                     mb: 4,
-                    fontSize: '1.1rem',
+                    fontSize: "1.1rem",
                     lineHeight: 1.6,
                     opacity: isVisible ? 0.8 : 0,
-                    transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
-                    transition: 'all 1s ease-out 0.7s'
+                    transform: isVisible ? "translateY(0)" : "translateY(30px)",
+                    transition: "all 1s ease-out 0.7s",
                   }}
                 >
-                  Join thousands who've ditched job boards for intelligent matching. 
-                  Our AI learns your preferences and delivers curated opportunities 
-                  directly to your inbox - no more scrolling, no more guessing.
+                  Join thousands who've ditched job boards for intelligent
+                  matching. Our AI learns your preferences and delivers curated
+                  opportunities directly to your inbox - no more scrolling, no
+                  more guessing.
                 </Typography>
 
                 {/* Features */}
                 <Grid container spacing={2} sx={{ mb: 4 }}>
                   {jobMatcherFeatures.map((feature, index) => (
                     <Grid item xs={4} key={index}>
-                      <Box 
-                        sx={{ 
-                          textAlign: 'center',
-                          transform: isVisible ? 'scale(1) translateY(0)' : 'scale(0.8) translateY(40px)',
+                      <Box
+                        sx={{
+                          textAlign: "center",
+                          transform: isVisible
+                            ? "scale(1) translateY(0)"
+                            : "scale(0.8) translateY(40px)",
                           opacity: isVisible ? 1 : 0,
-                          transition: `all 0.6s ease-out ${0.8 + index * 0.2}s`
+                          transition: `all 0.6s ease-out ${0.8 + index * 0.2}s`,
                         }}
                       >
-                        <Box sx={{ mb: 1 }}>
-                          {feature.icon}
-                        </Box>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5 }}>
+                        <Box sx={{ mb: 1 }}>{feature.icon}</Box>
+                        <Typography
+                          variant="subtitle2"
+                          sx={{ fontWeight: 600, mb: 0.5 }}
+                        >
                           {feature.title}
                         </Typography>
-                        <Typography 
-                          variant="caption" 
-                          sx={{ 
+                        <Typography
+                          variant="caption"
+                          sx={{
                             opacity: 0.7,
-                            fontSize: '0.75rem',
-                            display: 'block',
-                            lineHeight: 1.3
+                            fontSize: "0.75rem",
+                            display: "block",
+                            lineHeight: 1.3,
                           }}
                         >
                           {feature.description}
@@ -234,45 +240,45 @@ const AIJobMatcherSection = () => {
                 </Grid>
 
                 {/* Trust Indicators */}
-                <Box 
-                  sx={{ 
-                    display: 'flex', 
-                    flexWrap: 'wrap', 
-                    gap: 1, 
-                    alignItems: 'center', 
-                    justifyContent: 'center',
-                    '& > *': {
-                      transform: isVisible ? 'scale(1)' : 'scale(0)',
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 1,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    "& > *": {
+                      transform: isVisible ? "scale(1)" : "scale(0)",
                       opacity: isVisible ? 1 : 0,
-                      transition: 'all 0.5s ease-out 1.6s'
-                    }
+                      transition: "all 0.5s ease-out 1.6s",
+                    },
                   }}
                 >
                   <Chip
                     icon={<TrendingUp />}
                     label="10,000+ Successful Matches"
                     size="small"
-                    sx={{ 
-                      backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                      fontSize: '0.8125rem'
+                    sx={{
+                      backgroundColor: "rgba(16, 185, 129, 0.1)",
+                      fontSize: "0.8125rem",
                     }}
                   />
                   <Chip
                     icon={<Notifications />}
                     label="Real-time Alerts"
                     size="small"
-                    sx={{ 
-                      backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                      fontSize: '0.8125rem'
+                    sx={{
+                      backgroundColor: "rgba(59, 130, 246, 0.1)",
+                      fontSize: "0.8125rem",
                     }}
                   />
                   <Chip
                     icon={<Work />}
                     label="All Industries"
                     size="small"
-                    sx={{ 
-                      backgroundColor: 'rgba(147, 51, 234, 0.1)',
-                      fontSize: '0.8125rem'
+                    sx={{
+                      backgroundColor: "rgba(147, 51, 234, 0.1)",
+                      fontSize: "0.8125rem",
                     }}
                   />
                 </Box>
@@ -282,84 +288,84 @@ const AIJobMatcherSection = () => {
 
           {/* Visual Elements */}
           <Grid item xs={6}>
-            <Box 
-              sx={{ 
+            <Box
+              sx={{
                 pl: 4,
-                transform: isVisible ? 'translateX(0)' : 'translateX(100px)',
+                transform: isVisible ? "translateX(0)" : "translateX(100px)",
                 opacity: isVisible ? 1 : 0,
-                transition: 'all 1s ease-out 0.5s'
+                transition: "all 1s ease-out 0.5s",
               }}
             >
               {/* Success Stats */}
               <Card
                 sx={{
                   mb: 3,
-                  background: 'rgba(255,255,255,0.1)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  transform: isVisible ? 'rotateY(0deg)' : 'rotateY(-15deg)',
-                  transformOrigin: 'left center',
-                  transition: 'all 0.8s ease-out 0.8s'
+                  background: "rgba(255,255,255,0.1)",
+                  backdropFilter: "blur(10px)",
+                  border: "1px solid rgba(255,255,255,0.2)",
+                  transform: isVisible ? "rotateY(0deg)" : "rotateY(-15deg)",
+                  transformOrigin: "left center",
+                  transition: "all 0.8s ease-out 0.8s",
                 }}
               >
                 <CardContent sx={{ p: 3 }}>
                   <Grid container spacing={3} textAlign="center">
                     <Grid item xs={4}>
-                      <Typography 
-                        variant="h4" 
-                        sx={{ 
-                          fontWeight: 700, 
-                          color: 'primary.main',
-                          fontSize: '2.125rem',
-                          transform: isVisible ? 'scale(1)' : 'scale(0)',
-                          transition: 'all 0.6s ease-out 1.2s'
+                      <Typography
+                        variant="h4"
+                        sx={{
+                          fontWeight: 700,
+                          color: "primary.main",
+                          fontSize: "2.125rem",
+                          transform: isVisible ? "scale(1)" : "scale(0)",
+                          transition: "all 0.6s ease-out 1.2s",
                         }}
                       >
                         94%
                       </Typography>
-                      <Typography 
+                      <Typography
                         variant="caption"
-                        sx={{ fontSize: '0.75rem' }}
+                        sx={{ fontSize: "0.75rem" }}
                       >
                         Match Success
                       </Typography>
                     </Grid>
                     <Grid item xs={4}>
-                      <Typography 
-                        variant="h4" 
-                        sx={{ 
-                          fontWeight: 700, 
-                          color: 'success.main',
-                          fontSize: '2.125rem',
-                          transform: isVisible ? 'scale(1)' : 'scale(0)',
-                          transition: 'all 0.6s ease-out 1.4s'
+                      <Typography
+                        variant="h4"
+                        sx={{
+                          fontWeight: 700,
+                          color: "success.main",
+                          fontSize: "2.125rem",
+                          transform: isVisible ? "scale(1)" : "scale(0)",
+                          transition: "all 0.6s ease-out 1.4s",
                         }}
                       >
                         3.2x
                       </Typography>
-                      <Typography 
+                      <Typography
                         variant="caption"
-                        sx={{ fontSize: '0.75rem' }}
+                        sx={{ fontSize: "0.75rem" }}
                       >
                         Faster Hiring
                       </Typography>
                     </Grid>
                     <Grid item xs={4}>
-                      <Typography 
-                        variant="h4" 
-                        sx={{ 
-                          fontWeight: 700, 
-                          color: 'warning.main',
-                          fontSize: '2.125rem',
-                          transform: isVisible ? 'scale(1)' : 'scale(0)',
-                          transition: 'all 0.6s ease-out 1.6s'
+                      <Typography
+                        variant="h4"
+                        sx={{
+                          fontWeight: 700,
+                          color: "warning.main",
+                          fontSize: "2.125rem",
+                          transform: isVisible ? "scale(1)" : "scale(0)",
+                          transition: "all 0.6s ease-out 1.6s",
                         }}
                       >
                         5min
                       </Typography>
-                      <Typography 
+                      <Typography
                         variant="caption"
-                        sx={{ fontSize: '0.75rem' }}
+                        sx={{ fontSize: "0.75rem" }}
                       >
                         Setup Time
                       </Typography>
@@ -369,91 +375,103 @@ const AIJobMatcherSection = () => {
               </Card>
 
               {/* Feature Highlight Cards */}
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 <Card
                   sx={{
-                    background: 'rgba(255,255,255,0.05)',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: '0 8px 25px rgba(0,0,0,0.1)'
+                    background: "rgba(255,255,255,0.05)",
+                    backdropFilter: "blur(10px)",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    "&:hover": {
+                      transform: "translateY(-4px)",
+                      boxShadow: "0 8px 25px rgba(0,0,0,0.1)",
                     },
-                    transform: isVisible ? 'translateY(0) rotateX(0deg)' : 'translateY(50px) rotateX(-10deg)',
+                    transform: isVisible
+                      ? "translateY(0) rotateX(0deg)"
+                      : "translateY(50px) rotateX(-10deg)",
                     opacity: isVisible ? 1 : 0,
-                    transition: 'all 0.8s ease-out 1.2s'
+                    transition: "all 0.8s ease-out 1.2s",
                   }}
                 >
                   <CardContent sx={{ p: 3 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <Psychology sx={{ 
-                        mr: 2, 
-                        color: 'primary.main', 
-                        fontSize: 32
-                      }} />
-                      <Typography 
-                        variant="h6" 
-                        sx={{ 
+                    <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                      <Psychology
+                        sx={{
+                          mr: 2,
+                          color: "primary.main",
+                          fontSize: 32,
+                        }}
+                      />
+                      <Typography
+                        variant="h6"
+                        sx={{
                           fontWeight: 600,
-                          fontSize: '1.25rem'
+                          fontSize: "1.25rem",
                         }}
                       >
                         Smart AI Matching
                       </Typography>
                     </Box>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ 
-                        opacity: 0.9, 
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        opacity: 0.9,
                         lineHeight: 1.6,
-                        fontSize: '0.875rem'
+                        fontSize: "0.875rem",
                       }}
                     >
-                      Our advanced AI analyzes your skills, preferences, and career goals to find opportunities that truly match your aspirations.
+                      Our advanced AI analyzes your skills, preferences, and
+                      career goals to find opportunities that truly match your
+                      aspirations.
                     </Typography>
                   </CardContent>
                 </Card>
 
                 <Card
                   sx={{
-                    background: 'rgba(255,255,255,0.05)',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: '0 8px 25px rgba(0,0,0,0.1)'
+                    background: "rgba(255,255,255,0.05)",
+                    backdropFilter: "blur(10px)",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    "&:hover": {
+                      transform: "translateY(-4px)",
+                      boxShadow: "0 8px 25px rgba(0,0,0,0.1)",
                     },
-                    transform: isVisible ? 'translateY(0) rotateX(0deg)' : 'translateY(70px) rotateX(-15deg)',
+                    transform: isVisible
+                      ? "translateY(0) rotateX(0deg)"
+                      : "translateY(70px) rotateX(-15deg)",
                     opacity: isVisible ? 1 : 0,
-                    transition: 'all 0.8s ease-out 1.4s'
+                    transition: "all 0.8s ease-out 1.4s",
                   }}
                 >
                   <CardContent sx={{ p: 3 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <Notifications sx={{ 
-                        mr: 2, 
-                        color: 'success.main', 
-                        fontSize: 32
-                      }} />
-                      <Typography 
-                        variant="h6" 
-                        sx={{ 
+                    <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                      <Notifications
+                        sx={{
+                          mr: 2,
+                          color: "success.main",
+                          fontSize: 32,
+                        }}
+                      />
+                      <Typography
+                        variant="h6"
+                        sx={{
                           fontWeight: 600,
-                          fontSize: '1.25rem'
+                          fontSize: "1.25rem",
                         }}
                       >
                         Instant Notifications
                       </Typography>
                     </Box>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ 
-                        opacity: 0.9, 
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        opacity: 0.9,
                         lineHeight: 1.6,
-                        fontSize: '0.875rem'
+                        fontSize: "0.875rem",
                       }}
                     >
-                      Never miss a perfect opportunity. Get real-time alerts delivered straight to your inbox when ideal matches become available.
+                      Never miss a perfect opportunity. Get real-time alerts
+                      delivered straight to your inbox when ideal matches become
+                      available.
                     </Typography>
                   </CardContent>
                 </Card>

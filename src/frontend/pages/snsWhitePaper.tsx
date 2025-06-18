@@ -160,7 +160,7 @@ const MarkdownRenderer = () => {
 
     // Table components - these were missing in your original code
     table: ({ children }) => (
-      <TableContainer component={Paper} sx={{ my: 3, overflow: 'auto' }}>
+      <TableContainer component={Paper} sx={{ my: 3, overflow: "auto" }}>
         <Table sx={{ minWidth: 650 }}>{children}</Table>
       </TableContainer>
     ),
@@ -170,9 +170,9 @@ const MarkdownRenderer = () => {
     th: ({ children }) => (
       <TableCell
         sx={{
-          fontWeight: 'bold',
+          fontWeight: "bold",
           backgroundColor: theme.palette.primary.light,
-          color: theme.palette.primary.contrastText
+          color: theme.palette.primary.contrastText,
         }}
       >
         {children}

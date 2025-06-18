@@ -29,18 +29,18 @@ const isWithinScheduleType = (event, scheduleType) => {
   const eventDate = event.date;
 
   switch (Object.keys(scheduleType)[0]) {
-    case 'DateRange': {
+    case "DateRange": {
       const { start_date, end_date } = scheduleType.DateRange;
       return eventDate >= start_date && eventDate <= end_date;
     }
-    case 'WeeklyRecurring': {
+    case "WeeklyRecurring": {
       const { days, valid_until } = scheduleType.WeeklyRecurring;
       const eventDay = new Date(eventDate / 1e6).getUTCDay();
       if (!days.includes(eventDay)) return false;
       if (valid_until && eventDate > valid_until) return false;
       return true;
     }
-    case 'SpecificDates': {
+    case "SpecificDates": {
       return scheduleType.SpecificDates.includes(eventDate);
     }
     default:
@@ -58,65 +58,70 @@ const checkAvailabilityOverlap = (event, availability) => {
   }
 
   // Then check if any time slots overlap
-  return availability.time_slots.some(slot =>
+  return availability.time_slots.some((slot) =>
     doTimeRangesOverlap(
       event.start_time,
       event.end_time,
       slot.start_time,
-      slot.end_time
-    )
+      slot.end_time,
+    ),
   );
 };
 
 /**
  * Comprehensive event validation against calendar
  */
-const validateEventAgainstCalendar = (calendar, newEvent, excludeEventId = null) => {
+const validateEventAgainstCalendar = (
+  calendar,
+  newEvent,
+  excludeEventId = null,
+) => {
   // 1. Check overlap with other events
-  const hasEventOverlap = calendar.events.some(existingEvent =>
-    existingEvent.id !== excludeEventId &&
-    existingEvent.date === newEvent.date &&
-    doTimeRangesOverlap(
-      newEvent.start_time,
-      newEvent.end_time,
-      existingEvent.start_time,
-      existingEvent.end_time
-    )
+  const hasEventOverlap = calendar.events.some(
+    (existingEvent) =>
+      existingEvent.id !== excludeEventId &&
+      existingEvent.date === newEvent.date &&
+      doTimeRangesOverlap(
+        newEvent.start_time,
+        newEvent.end_time,
+        existingEvent.start_time,
+        existingEvent.end_time,
+      ),
   );
 
   if (hasEventOverlap) {
     return {
       isValid: false,
-      reason: "Event overlaps with an existing event"
+      reason: "Event overlaps with an existing event",
     };
   }
 
   // 2. Check overlap with blocked availabilities
   const overlapsBlockedTime = calendar.availabilities
-    .filter(a => a.is_blocked)
-    .some(blockedAvail => checkAvailabilityOverlap(newEvent, blockedAvail));
+    .filter((a) => a.is_blocked)
+    .some((blockedAvail) => checkAvailabilityOverlap(newEvent, blockedAvail));
 
   if (overlapsBlockedTime) {
     return {
       isValid: false,
-      reason: "Event overlaps with blocked time"
+      reason: "Event overlaps with blocked time",
     };
   }
 
   // 3. Verify event falls within at least one available time slot
   const hasValidAvailability = calendar.availabilities
-    .filter(a => !a.is_blocked)
-    .some(avail => checkAvailabilityOverlap(newEvent, avail));
+    .filter((a) => !a.is_blocked)
+    .some((avail) => checkAvailabilityOverlap(newEvent, avail));
 
   if (!hasValidAvailability && calendar.availabilities.length > 0) {
     return {
       isValid: false,
-      reason: "Event does not fall within any available time slot"
+      reason: "Event does not fall within any available time slot",
     };
   }
 
   return {
-    isValid: true
+    isValid: true,
   };
 };
 

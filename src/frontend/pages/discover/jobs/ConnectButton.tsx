@@ -1,26 +1,28 @@
-import React, { useState } from 'react';
-import { Button, CircularProgress, Tooltip, Box } from '@mui/material';
-import { useSnackbar } from 'notistack';
-import sendEmail from './utils/sendEmail';
-import { useDispatch, useSelector } from 'react-redux';
-import DoneAllIcon from '@mui/icons-material/DoneAll';
-import { useBackendContext } from '@/contexts/BackendContext';
-import { Calendar, Job, Match } from '$/declarations/backend/backend.did';
+import React, { useState } from "react";
+import { Button, CircularProgress, Tooltip, Box } from "@mui/material";
+import { useSnackbar } from "notistack";
+import sendEmail from "./utils/sendEmail";
+import { useDispatch, useSelector } from "react-redux";
+import DoneAllIcon from "@mui/icons-material/DoneAll";
+import { useBackendContext } from "@/contexts/BackendContext";
+import { Calendar, Job, Match } from "$/declarations/backend/backend.did";
 
 interface ConnectButtonProps {
   jobId: string;
 }
 
 const ConnectButton: React.FC<ConnectButtonProps> = ({ jobId }) => {
-  
   const { calendar } = useSelector((state: any) => state.calendarState);
   const { backendActor } = useBackendContext();
 
-
-  const { currentJobId, jobs,matchingJobs, matches } = useSelector((state: any) => state.jobState);
+  const { currentJobId, jobs, matchingJobs, matches } = useSelector(
+    (state: any) => state.jobState,
+  );
   const currentJob: Job = jobs?.find((job: any) => job.id === currentJobId);
   const matchJob: Job = matchingJobs?.find((job: any) => job.id === jobId);
-  let match: Match = currentJob.matches?.find((match: any) => match.job_id === jobId);
+  let match: Match = currentJob.matches?.find(
+    (match: any) => match.job_id === jobId,
+  );
 
   const dispatch = useDispatch();
   const [connecting, setConnecting] = useState(false);
@@ -28,42 +30,57 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({ jobId }) => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   let bookEvent = `${window.location.origin}/calendar?id=${calendar.id}&jobid=${currentJob.id}`;
   let category = Object.keys(currentJob.category)[0];
-  let message = category == "Job" ? 'We find a new job opertunity for you.' : 'We found a new talent that may meets your requrments.';
+  let message =
+    category == "Job"
+      ? "We find a new job opertunity for you."
+      : "We found a new talent that may meets your requrments.";
 
   const handleConnect = async (e: React.MouseEvent) => {
     setConnecting(true);
     e.stopPropagation();
-    if (match?.score <= 6){
-      if (!window.confirm("Are you sure you want to connect? This will send an email to them despite the matching score is not that good.")){
+    if (match?.score <= 6) {
+      if (
+        !window.confirm(
+          "Are you sure you want to connect? This will send an email to them despite the matching score is not that good.",
+        )
+      ) {
         setConnecting(false);
         return;
       }
-    };
+    }
 
-    let res: [Calendar] = await backendActor.get_calendar_by_author(matchJob?.user_id);
+    let res: [Calendar] = await backendActor.get_calendar_by_author(
+      matchJob?.user_id,
+    );
     let calendar = res[0];
     let emails = calendar?.googleIds || [];
     emails.push(...matchJob.emails);
-    if (emails.length == 0){
-      alert("User did not set thier email yet, try to contact them via oDoc.")
+    if (emails.length == 0) {
+      alert("User did not set thier email yet, try to contact them via oDoc.");
     }
     for (let email of emails) {
       let jobData = {
-        job: {...currentJob,category},
-        match:{...match, score: match?.score * 10 },
+        job: { ...currentJob, category },
+        match: { ...match, score: match?.score * 10 },
         bookEvent,
-      }
-      let isEmailSent = await sendEmail("oDoc AI job matcher",message ,[email],jobData,"odoc_job_match")
-      
-      if (isEmailSent== true){
+      };
+      let isEmailSent = await sendEmail(
+        "oDoc AI job matcher",
+        message,
+        [email],
+        jobData,
+        "odoc_job_match",
+      );
+
+      if (isEmailSent == true) {
         dispatch({
           type: "UPDATE_MATCHES",
-          matches: [{...match,is_connected:true}]
-        });    
-        
+          matches: [{ ...match, is_connected: true }],
+        });
+
         enqueueSnackbar("Email sent.", {
-          variant: 'success',
-        })
+          variant: "success",
+        });
         break;
       }
     }
@@ -75,15 +92,21 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({ jobId }) => {
 
   return (
     <>
-    <Button
+      <Button
         variant="contained"
         color={match?.is_connected ? "success" : "primary"}
         size="small"
         onClick={handleConnect}
         disabled={connecting || match?.is_connected}
-        sx={{ minWidth: '100px' }}
+        sx={{ minWidth: "100px" }}
       >
-        {connecting ? <CircularProgress size={24} /> : match?.is_connected ? "Connected" : "Connect"}
+        {connecting ? (
+          <CircularProgress size={24} />
+        ) : match?.is_connected ? (
+          "Connected"
+        ) : (
+          "Connect"
+        )}
       </Button>
     </>
   );

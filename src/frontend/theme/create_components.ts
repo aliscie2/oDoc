@@ -6,7 +6,7 @@ import {
   paperClasses,
   tableCellClasses,
 } from "@mui/material";
-import {theme} from "flowbite-react";
+import { theme } from "flowbite-react";
 
 // Used only to create transitions
 const muiTheme = createTheme();
@@ -57,17 +57,21 @@ export function createComponents(config) {
           backdropFilter: "blur(20px)",
           transition: "all 0.3s ease-in-out",
           [`&.${paperClasses.elevation1}`]: {
-            boxShadow: palette.mode === "dark" 
-              ? "0px 4px 20px rgba(0, 0, 0, 0.08)"
-              : "0px 4px 20px rgba(0, 0, 0, 0.15)",
-            border: `1px solid ${palette.mode === "dark" 
-              ? "rgba(139, 92, 246, 0.2)"
-              : "rgba(79, 70, 229, 0.15)"}`,
+            boxShadow:
+              palette.mode === "dark"
+                ? "0px 4px 20px rgba(0, 0, 0, 0.08)"
+                : "0px 4px 20px rgba(0, 0, 0, 0.15)",
+            border: `1px solid ${
+              palette.mode === "dark"
+                ? "rgba(139, 92, 246, 0.2)"
+                : "rgba(79, 70, 229, 0.15)"
+            }`,
             "&:hover": {
               transform: "translateY(-2px)",
-              boxShadow: palette.mode === "dark"
-                ? "0px 8px 25px rgba(0, 0, 0, 0.12)"
-                : "0px 8px 25px rgba(0, 0, 0, 0.2)",
+              boxShadow:
+                palette.mode === "dark"
+                  ? "0px 8px 25px rgba(0, 0, 0, 0.12)"
+                  : "0px 8px 25px rgba(0, 0, 0, 0.2)",
             },
           },
         },

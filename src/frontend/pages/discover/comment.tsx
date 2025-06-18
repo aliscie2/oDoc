@@ -1,5 +1,5 @@
 // components/Comment.tsx
-import React, {useRef, useState} from "react";
+import React, { useRef, useState } from "react";
 import {
   Box,
   Button,
@@ -12,20 +12,20 @@ import {
   MenuItem,
   Typography,
 } from "@mui/material";
-import {Heart, MoreVertical, Reply, ThumbsDown} from "lucide-react";
-import {styled} from "@mui/material/styles";
-import {useDispatch, useSelector} from "react-redux";
-import {useSnackbar} from "notistack";
-import {formatRelativeTime} from "../../utils/time";
+import { Heart, MoreVertical, Reply, ThumbsDown } from "lucide-react";
+import { styled } from "@mui/material/styles";
+import { useDispatch, useSelector } from "react-redux";
+import { useSnackbar } from "notistack";
+import { formatRelativeTime } from "../../utils/time";
 import EditorComponent from "../../components/EditorComponent";
-import {deserializeContentTree} from "../../DataProcessing/deserlize/deserializeContents";
+import { deserializeContentTree } from "../../DataProcessing/deserlize/deserializeContents";
 import UserAvatarMenu from "../../components/MainComponents/UserAvatarMenu";
-import {useBackendContext} from "../../contexts/BackendContext";
+import { useBackendContext } from "../../contexts/BackendContext";
 import serializeFileContents from "../../DataProcessing/serialize/serializeFileContents";
-import {Post, PostUser} from "../../../declarations/backend/backend.did";
+import { Post, PostUser } from "../../../declarations/backend/backend.did";
 import CommentForm from "./CommentForm";
-import {handleRedux} from "../../redux/store/handleRedux";
-import {RootState} from "../../redux/reducers";
+import { handleRedux } from "../../redux/store/handleRedux";
+import { RootState } from "../../redux/reducers";
 
 const CommentContainer = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2),
@@ -171,8 +171,7 @@ const Comment: React.FC<ICommentProps> = ({ post, onUpdate }) => {
         <Box>
           <Typography variant="caption" sx={{ color: "#9CA3AF" }}>
             {post.creator.name}
-            {""}·
-            {formatRelativeTime(Number(post.date_created))}
+            {""}·{formatRelativeTime(Number(post.date_created))}
           </Typography>
         </Box>
         {profile?.id === post.creator.id && (

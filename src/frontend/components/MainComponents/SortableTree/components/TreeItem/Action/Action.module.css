@@ -1,4 +1,3 @@
-
 .Action {
   display: flex;
   width: 12px;
@@ -43,6 +42,6 @@
 
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0)
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0);
   }
 }

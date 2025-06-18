@@ -1,10 +1,17 @@
-import {Divider, List, ListItem, ListItemIcon, ListItemSecondaryAction, ListItemText, useTheme} from "@mui/material";
-import {useSelector} from "react-redux";
+import {
+  Divider,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemSecondaryAction,
+  ListItemText,
+  useTheme,
+} from "@mui/material";
+import { useSelector } from "react-redux";
 import React from "react";
 import PlayCircleFilledIcon from "@mui/icons-material/PlayCircleFilled";
 import PlayCircleOutlineIcon from "@mui/icons-material/PlayCircleOutline";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-
 
 const VideoList = ({ videos, selectedIndex, onSelect }: any) => {
   const theme = useTheme();

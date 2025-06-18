@@ -21,25 +21,20 @@ import AffiliateRedirect from "./affiliateRedirect";
 import RegistrationForm from "../components/MainComponents/RegistrationForm";
 import ContractPage from "./profile/ContractPage";
 import Scheduler from "./dashBoardPage/calindarView";
-import { useNavigate, Link, Navigate } from 'react-router-dom';
+import { useNavigate, Link, Navigate } from "react-router-dom";
 import Dashboard from "./dash_board_v1";
 
 function Pages() {
   const navigate = useNavigate();
   const location = useLocation();
 
-
   const { profile, profile_history, wallet, friends } = useSelector(
     (state: any) => state.filesState,
   );
-  
-  const { isLoggedIn } = useSelector(
-    (state: any) => state.uiState,
-  );
-  
-  const MainPage = () => {
 
-    
+  const { isLoggedIn } = useSelector((state: any) => state.uiState);
+
+  const MainPage = () => {
     if (isLoggedIn) {
       return <Discover />;
     }
@@ -51,10 +46,7 @@ function Pages() {
       <Route path="/" element={<MainPage />} />
       {/* <Route path="/dashboard" element={<ProductManagerDashboard />} /> */}
       <Route path="/dashboard" element={<Dashboard />} />
-      <Route
-        path="/about"
-        element={<LandingPage />}
-      />
+      <Route path="/about" element={<LandingPage />} />
       <Route path="/discover" element={<Discover />} />
       <Route path="/wallet" element={<Web3WalletUI wallet={wallet} />} />
       <Route
@@ -73,10 +65,7 @@ function Pages() {
 
       <Route path="/contract*" element={<ContractPage />} />
       <Route path="/contracts/*" element={<ContractsHistory />} />
-      <Route
-        path="/offer"
-        element={<OfferPage />}
-      />
+      <Route path="/offer" element={<OfferPage />} />
 
       <Route path="/subscriptions" element={<SubscriptionPlans />} />
       <Route path="/white_paper" element={<SNSWhitepaper />} />

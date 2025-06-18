@@ -61,21 +61,21 @@ const ScrollableContent = styled(Box)({
   flex: 1,
   overflow: "auto", // Enable scrolling here
   padding: "16px",
-  '& > *': {
-    marginBottom: '16px', // Add spacing between children
+  "& > *": {
+    marginBottom: "16px", // Add spacing between children
   },
-  '&::-webkit-scrollbar': {
-    width: '8px',
+  "&::-webkit-scrollbar": {
+    width: "8px",
   },
-  '&::-webkit-scrollbar-track': {
-    background: '#f1f1f1',
-    borderRadius: '4px',
+  "&::-webkit-scrollbar-track": {
+    background: "#f1f1f1",
+    borderRadius: "4px",
   },
-  '&::-webkit-scrollbar-thumb': {
-    background: '#888',
-    borderRadius: '4px',
-    '&:hover': {
-      background: '#555',
+  "&::-webkit-scrollbar-thumb": {
+    background: "#888",
+    borderRadius: "4px",
+    "&:hover": {
+      background: "#555",
     },
   },
 });
@@ -89,14 +89,11 @@ export const FloatingFineTune = () => {
     setIsOpen((prev) => !prev);
   }, []);
 
-  const handleClickOutside = useCallback(
-    (event) => {
-      if (event.target === event.currentTarget) {
-        setIsOpen(false);
-      }
-    },
-    [],
-  );
+  const handleClickOutside = useCallback((event) => {
+    if (event.target === event.currentTarget) {
+      setIsOpen(false);
+    }
+  }, []);
 
   return (
     <>

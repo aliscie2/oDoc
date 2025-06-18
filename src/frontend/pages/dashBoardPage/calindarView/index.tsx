@@ -24,9 +24,6 @@ interface RootState {
 }
 
 const Scheduler = React.memo(() => {
-
-
-
   const currentPage = window.location.pathname;
   const isCalendarPage = currentPage === "/calendar";
   const calendarID = window.location.search.split("id=")[1];
@@ -39,67 +36,64 @@ const Scheduler = React.memo(() => {
 
   // Hooks
   const profile = useSelector((state: RootState) => state.filesState.profile);
-  const { calendar ,isInitlized} = useSelector((state: any) => state.calendarState);
+  const { calendar, isInitlized } = useSelector(
+    (state: any) => state.calendarState,
+  );
   const { enqueueSnackbar } = useSnackbar();
   const dispatch = useDispatch();
   const theme = useTheme();
   const { backendActor } = useBackendContext();
 
-
-
-  /// --------------------handle google calendar 
+  /// --------------------handle google calendar
   const {
     isConnected,
     getEvents,
     getBusyEventsForUser,
     allowViewBusy,
-    calendarId
+    calendarId,
   } = useGoogleCalendar();
 
-  
   useEffect(() => {
-
     const initialize = async () => {
+      let res = await allowViewBusy();
+      let all_events = [];
 
-        let res = await allowViewBusy();
-        let all_events = []
-        
-        let futureEvents = await getEvents();
-        all_events = futureEvents.map(event=>({...googleToODOC(event), created_by:calendar.owner}))
-        const isMyCal = profile?.id == calendar.owner;
-        
-        if (!isMyCal&&calendar.googleIds){          
-          const busy = await getBusyEventsForUser(calendar.googleIds[0]);
-          const serlizedBusy = busy.map(event => ({
-            ...googleToODOC(event),
-            created_by: calendar.owner
-          }));
+      let futureEvents = await getEvents();
+      all_events = futureEvents.map((event) => ({
+        ...googleToODOC(event),
+        created_by: calendar.owner,
+      }));
+      const isMyCal = profile?.id == calendar.owner;
 
-          all_events = all_events.concat(serlizedBusy)
+      if (!isMyCal && calendar.googleIds) {
+        const busy = await getBusyEventsForUser(calendar.googleIds[0]);
+        const serlizedBusy = busy.map((event) => ({
+          ...googleToODOC(event),
+          created_by: calendar.owner,
+        }));
+
+        all_events = all_events.concat(serlizedBusy);
+      }
+
+      dispatch({
+        type: "SET_GOOGLE_CALENDAR",
+        events: all_events,
+      });
+
+      if (isMyCal && !calendar.googleIds.includes(calendarId)) {
+        let res = await backendActor.add_google_calendar_id(calendar.id, [
+          calendarId,
+        ]);
+        if (res.Err) {
+          console.log({ error_add_google_calendar_id: res.Err });
         }
-        
-        dispatch({
-          type: "SET_GOOGLE_CALENDAR",
-          events: all_events
-        });
-
-        if (isMyCal&& !calendar.googleIds.includes(calendarId)){
-          let res = await backendActor.add_google_calendar_id(calendar.id, [calendarId])
-          if (res.Err){
-            console.log({error_add_google_calendar_id: res.Err})
-          }
-        }
-        
-
+      }
     };
 
     if (isConnected) {
       initialize();
     }
-    
-  }, [isConnected,isInitlized,dispatch]); // Add dispatch to dependencies
-
-
+  }, [isConnected, isInitlized, dispatch]); // Add dispatch to dependencies
 
   // Memoized handlers
   // const handleFetchCalendar = useCallback(async () => {
@@ -128,7 +122,7 @@ const Scheduler = React.memo(() => {
   //         type: "SET_CALENDAR",
   //         calendar: fetchedCalendar,
   //       });
-  //     } 
+  //     }
   //     // else if (profile) {
   //     //   let res = await backendActor.get_my_calendar();
   //     //   // console.log({ res });

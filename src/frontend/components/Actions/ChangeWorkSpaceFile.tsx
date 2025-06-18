@@ -8,7 +8,6 @@ import { handleRedux } from "../../redux/store/handleRedux";
 const ChangeWorkSpace = (props: any) => {
   const dispatch = useDispatch();
 
-
   const { workspaces, files } = useSelector((state: any) => state.filesState);
   const fileId = window.location.pathname.split("/")[1];
   const current_file = files.find((file: any) => file.id === fileId);

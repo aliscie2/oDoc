@@ -72,6 +72,3 @@ export const initialState: InitialState = {
   isLoggedIn: null,
   isFetching: false,
 };
-
-
-

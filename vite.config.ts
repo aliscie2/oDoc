@@ -79,13 +79,12 @@ export default defineConfig({
   build: {
     outDir: "build",
     include: ["src/frontend/.well-known"],
-    external: ['@excalidraw/excalidraw'],
+    external: ["@excalidraw/excalidraw"],
   },
   resolve: {
-    
     alias: {
-       '@': path.resolve(__dirname, 'src/frontend'),
-       '$': path.resolve(__dirname, 'src'),
+      "@": path.resolve(__dirname, "src/frontend"),
+      $: path.resolve(__dirname, "src"),
       // Here we tell Vite the "fake" modules that we want to define
       ...aliases,
     },

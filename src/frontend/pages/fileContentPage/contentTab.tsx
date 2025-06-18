@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 import {
   Box,
   Tab,
@@ -8,8 +8,8 @@ import {
   useTheme,
   alpha,
   IconButton,
-} from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 
 interface ContentData {
   data: unknown[];
@@ -46,11 +46,11 @@ interface HierarchyItem {
 type Hierarchy = { [key: string]: HierarchyItem };
 
 const NavigationWrapper = styled(Box)(({ theme }) => ({
-  position: 'fixed',
+  position: "fixed",
   left: theme.spacing(2.5),
   top: theme.spacing(10),
   zIndex: theme.zIndex.drawer,
-  transition: theme.transitions.create(['transform', 'opacity'], {
+  transition: theme.transitions.create(["transform", "opacity"], {
     duration: theme.transitions.duration.standard,
     easing: theme.transitions.easing.easeInOut,
   }),
@@ -59,25 +59,25 @@ const NavigationWrapper = styled(Box)(({ theme }) => ({
 
 const FloatingCard = styled(Paper)(({ theme }) => ({
   borderRadius: theme.shape.borderRadius * 1.5,
-  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
-  overflow: 'hidden',
-  backdropFilter: 'blur(8px)',
+  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
+  overflow: "hidden",
+  backdropFilter: "blur(8px)",
   backgroundColor: alpha(
     theme.palette.background.paper,
-    theme.palette.mode === 'dark' ? 0.85 : 0.95
+    theme.palette.mode === "dark" ? 0.85 : 0.95,
   ),
-  '& ::-webkit-scrollbar': { display: 'none' },
-  '-ms-overflow-style': 'none',
-  'scrollbarWidth': 'none',
+  "& ::-webkit-scrollbar": { display: "none" },
+  "-ms-overflow-style": "none",
+  scrollbarWidth: "none",
   border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
 }));
 
 const StyledTabs = styled(Tabs)(({ theme }) => ({
-  minHeight: 'unset',
-  '& .MuiTabs-indicator': {
-    display: 'none',
+  minHeight: "unset",
+  "& .MuiTabs-indicator": {
+    display: "none",
   },
-  '& .MuiTabs-flexContainer': {
+  "& .MuiTabs-flexContainer": {
     gap: theme.spacing(0.25),
   },
 }));
@@ -85,43 +85,44 @@ const StyledTabs = styled(Tabs)(({ theme }) => ({
 const StyledTab = styled(Tab)(({ theme }) => ({
   minHeight: 32,
   padding: theme.spacing(0.5, 1),
-  textTransform: 'none',
+  textTransform: "none",
   fontWeight: theme.typography.fontWeightRegular,
-  fontSize: '0.9rem',
+  fontSize: "0.9rem",
   color: theme.palette.text.secondary,
-  alignItems: 'flex-start',
-  textAlign: 'left',
-  width: '100%',
-  maxWidth: 'none',
-  justifyContent: 'flex-start',
+  alignItems: "flex-start",
+  textAlign: "left",
+  width: "100%",
+  maxWidth: "none",
+  justifyContent: "flex-start",
   borderRadius: theme.shape.borderRadius,
-  transition: theme.transitions.create(['background-color', 'color'], {
+  transition: theme.transitions.create(["background-color", "color"], {
     duration: theme.transitions.duration.shortest,
   }),
-  '&.Mui-selected': {
-    color: theme.palette.mode === 'dark'
-      ? theme.palette.grey[100]
-      : theme.palette.grey[900],
+  "&.Mui-selected": {
+    color:
+      theme.palette.mode === "dark"
+        ? theme.palette.grey[100]
+        : theme.palette.grey[900],
     backgroundColor: alpha(theme.palette.action.selected, 0.08),
     fontWeight: theme.typography.fontWeightMedium,
   },
-  '&:hover:not(.Mui-selected)': {
+  "&:hover:not(.Mui-selected)": {
     backgroundColor: alpha(theme.palette.action.hover, 0.04),
     color: theme.palette.text.primary,
   },
 }));
 
 const CloseButton = styled(IconButton)(({ theme }) => ({
-  position: 'absolute',
+  position: "absolute",
   right: theme.spacing(1),
   top: theme.spacing(1),
   padding: theme.spacing(0.5),
   color: theme.palette.text.secondary,
-  backgroundColor: 'transparent',
-  transition: theme.transitions.create(['background-color', 'color'], {
+  backgroundColor: "transparent",
+  transition: theme.transitions.create(["background-color", "color"], {
     duration: theme.transitions.duration.shortest,
   }),
-  '&:hover': {
+  "&:hover": {
     backgroundColor: alpha(theme.palette.action.hover, 0.1),
     color: theme.palette.text.primary,
   },
@@ -129,14 +130,14 @@ const CloseButton = styled(IconButton)(({ theme }) => ({
 }));
 
 const MainContent = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'isOpen',
+  shouldForwardProp: (prop) => prop !== "isOpen",
 })<{ isOpen?: boolean }>(({ theme, isOpen }) => ({
-  transition: theme.transitions.create('margin', {
+  transition: theme.transitions.create("margin", {
     duration: theme.transitions.duration.standard,
     easing: theme.transitions.easing.easeInOut,
   }),
-  marginLeft: isOpen ? '320px' : 0,
-  width: isOpen ? 'calc(100% - 320px)' : '100%',
+  marginLeft: isOpen ? "320px" : 0,
+  width: isOpen ? "calc(100% - 320px)" : "100%",
 }));
 
 const getHeaderLevel = (type: string): number => {
@@ -146,27 +147,29 @@ const getHeaderLevel = (type: string): number => {
 
 const getTabStyle = (level: number, theme: any) => ({
   paddingLeft: theme.spacing(1.5 + level * 1.5),
-  fontSize: {
-    1: '0.95rem',
-    2: '0.9rem',
-    3: '0.85rem',
-    4: '0.8rem'
-  }[level] || '0.9rem',
-  fontWeight: {
-    1: 500,
-    2: 450,
-    3: 400,
-    4: 400
-  }[level] || 400,
-  color: level === 1
-    ? theme.palette.text.primary
-    : theme.palette.text.secondary,
-  opacity: {
-    1: 1,
-    2: 0.95,
-    3: 0.9,
-    4: 0.85
-  }[level] || 1,
+  fontSize:
+    {
+      1: "0.95rem",
+      2: "0.9rem",
+      3: "0.85rem",
+      4: "0.8rem",
+    }[level] || "0.9rem",
+  fontWeight:
+    {
+      1: 500,
+      2: 450,
+      3: 400,
+      4: 400,
+    }[level] || 400,
+  color:
+    level === 1 ? theme.palette.text.primary : theme.palette.text.secondary,
+  opacity:
+    {
+      1: 1,
+      2: 0.95,
+      3: 0.9,
+      4: 0.85,
+    }[level] || 1,
   marginTop: level === 1 ? theme.spacing(1) : 0,
 });
 
@@ -174,16 +177,16 @@ const createHierarchy = (content: ContentNode[]): Hierarchy => {
   const hierarchy: Hierarchy = {};
   let currentLevels: { [key: number]: string } = {};
   content?.forEach((node) => {
-    if (node.type?.toLowerCase().startsWith('h')) {
+    if (node.type?.toLowerCase().startsWith("h")) {
       const level = getHeaderLevel(node.type);
       if (level < 1 || level > 4) return;
 
-      const text = node.children?.[0]?.text || '';
+      const text = node.children?.[0]?.text || "";
       const item = {
         text,
         children: {},
         level,
-        nodeId: node.id
+        nodeId: node.id,
       };
 
       if (level === 1) {
@@ -229,7 +232,7 @@ const NavigationMenu = ({
   children,
 }: NavigationProps) => {
   const theme = useTheme();
-  const [value, setValue] = useState<string>('');
+  const [value, setValue] = useState<string>("");
   const [hierarchy, setHierarchy] = useState<Hierarchy>({});
 
   useEffect(() => {
@@ -243,21 +246,21 @@ const NavigationMenu = ({
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const element = entry.target as HTMLElement;
-            const id = element.getAttribute('data-key');
+            const id = element.getAttribute("data-key");
             if (id) setValue(id);
           }
         });
       },
       {
-        rootMargin: '-100px 0px -80% 0px',
+        rootMargin: "-100px 0px -80% 0px",
         threshold: 0,
-      }
+      },
     );
 
     const headers = document.querySelectorAll(
-      '#editor-playground h1, #editor-playground h2, #editor-playground h3, #editor-playground h4'
+      "#editor-playground h1, #editor-playground h2, #editor-playground h3, #editor-playground h4",
     );
-    headers.forEach(header => observer.observe(header));
+    headers.forEach((header) => observer.observe(header));
 
     return () => observer.disconnect();
   }, [content]);
@@ -266,22 +269,27 @@ const NavigationMenu = ({
     const targetElement = document.querySelector(`[data-key="${nodeId}"]`);
     if (!targetElement) return;
 
-    const headerElement = targetElement.closest('h1, h2, h3, h4');
+    const headerElement = targetElement.closest("h1, h2, h3, h4");
     if (!headerElement) return;
 
-    const elementPosition = headerElement.getBoundingClientRect().top + window.scrollY;
+    const elementPosition =
+      headerElement.getBoundingClientRect().top + window.scrollY;
 
     window.scrollTo({
       top: elementPosition - 100,
-      behavior: 'smooth',
+      behavior: "smooth",
     });
 
     setValue(nodeId);
 
-    headerElement.style.transition = theme.transitions.create('background-color');
-    headerElement.style.backgroundColor = alpha(theme.palette.primary.main, 0.08);
+    headerElement.style.transition =
+      theme.transitions.create("background-color");
+    headerElement.style.backgroundColor = alpha(
+      theme.palette.primary.main,
+      0.08,
+    );
     setTimeout(() => {
-      headerElement.style.backgroundColor = 'transparent';
+      headerElement.style.backgroundColor = "transparent";
     }, theme.transitions.duration.standard);
   };
 
@@ -304,9 +312,9 @@ const NavigationMenu = ({
     <>
       <NavigationWrapper
         sx={{
-          transform: open ? 'translateX(0)' : 'translateX(-300px)',
+          transform: open ? "translateX(0)" : "translateX(-300px)",
           opacity: open ? 1 : 0,
-          pointerEvents: open ? 'auto' : 'none',
+          pointerEvents: open ? "auto" : "none",
         }}
       >
         <FloatingCard>
@@ -319,8 +327,8 @@ const NavigationMenu = ({
           </CloseButton>
           <Box
             sx={{
-              height: 'calc(100vh - 100px)',
-              overflow: 'auto',
+              height: "calc(100vh - 100px)",
+              overflow: "auto",
               padding: theme.spacing(1),
               paddingTop: theme.spacing(6),
             }}
@@ -337,9 +345,7 @@ const NavigationMenu = ({
           </Box>
         </FloatingCard>
       </NavigationWrapper>
-      <MainContent isOpen={open}>
-        {children}
-      </MainContent>
+      <MainContent isOpen={open}>{children}</MainContent>
     </>
   );
 };

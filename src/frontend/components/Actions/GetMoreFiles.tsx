@@ -7,7 +7,10 @@ import {
   fileContentSample,
   randomString,
 } from "../../DataProcessing/dataSamples";
-import {ContentNode, FileNode} from "../../../declarations/backend/backend.did";
+import {
+  ContentNode,
+  FileNode,
+} from "../../../declarations/backend/backend.did";
 import { useSnackbar } from "notistack";
 import { useBackendContext } from "../../contexts/BackendContext";
 

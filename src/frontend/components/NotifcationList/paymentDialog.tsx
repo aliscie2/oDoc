@@ -53,20 +53,24 @@ const PaymentDialog = ({ payment, onClose }) => {
 
   const { sender, receiver } = useMemo(() => {
     const senderData = all_friends.find(
-      (f) => f.id === payment.sender.toText()
+      (f) => f.id === payment.sender.toText(),
     );
     const receiverData = all_friends.find(
-      (f) => f.id === payment.receiver.toText()
+      (f) => f.id === payment.receiver.toText(),
     );
 
     return {
       sender: {
         ...senderData,
-        name: senderData?.id === profile.id ? "You" : senderData?.name || "Unknown",
+        name:
+          senderData?.id === profile.id ? "You" : senderData?.name || "Unknown",
       },
       receiver: {
         ...receiverData,
-        name: receiverData?.id === profile.id ? "You" : receiverData?.name || "Unknown",
+        name:
+          receiverData?.id === profile.id
+            ? "You"
+            : receiverData?.name || "Unknown",
       },
     };
   }, [all_friends, payment, profile.id]);
@@ -79,9 +83,10 @@ const PaymentDialog = ({ payment, onClose }) => {
       isRequestingCancellation: paymentStatus === "RequestCancellation",
       isHighPromise: paymentStatus === "HighPromise",
       isConfirmed: paymentStatus === "Confirmed",
-      canClaimPayment: paymentStatus !== "Confirmed" && paymentStatus !== "Released",
+      canClaimPayment:
+        paymentStatus !== "Confirmed" && paymentStatus !== "Released",
     }),
-    [payment, profile?.id, paymentStatus]
+    [payment, profile?.id, paymentStatus],
   );
 
   const handleAction = async (actionFn, ...args) => {
@@ -105,9 +110,11 @@ const PaymentDialog = ({ payment, onClose }) => {
 
   const handleObjection = () => {
     if (!objectionReason.trim()) return;
-    handleAction(backendActor.object_on_cancel, payment, objectionReason).then(() => {
-      payment.status = { Objected: objectionReason };
-    });
+    handleAction(backendActor.object_on_cancel, payment, objectionReason).then(
+      () => {
+        payment.status = { Objected: objectionReason };
+      },
+    );
   };
 
   const handleApproveHighPromise = () => {
@@ -289,13 +296,17 @@ const PaymentDialog = ({ payment, onClose }) => {
           variant="contained"
           color="primary"
           onClick={handleSubmitAction}
-          disabled={isLoading || (selectedAction === "object" && !objectionReason.trim()) || !selectedAction}
+          disabled={
+            isLoading ||
+            (selectedAction === "object" && !objectionReason.trim()) ||
+            !selectedAction
+          }
           fullWidth
         >
           {isLoading ? (
             <CircularProgress size={24} />
           ) : (
-            `Submit ${availableActions.find(a => a.value === selectedAction)?.label || 'Action'}`
+            `Submit ${availableActions.find((a) => a.value === selectedAction)?.label || "Action"}`
           )}
         </Button>
       </ActionSection>

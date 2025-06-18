@@ -24,16 +24,13 @@ import EditProfile from "./editeProfile";
 import CopyButton from "../../components/MuiComponents/copyButton";
 import EmailComposer from "./sendEmail";
 
-
 const ProfilePage = ({ profile, history, friends, friendButton }) => {
   const { isDarkMode } = useSelector((state: any) => state.uiState);
   const currentUser = useSelector((state: any) => state.filesState.profile);
 
   const [isEditing, setIsEditing] = useState(false);
 
-
   const canEdit = currentUser?.id === profile?.id;
-
 
   const safeProfile = profile || {};
   const safeHistory = history || {};
@@ -167,7 +164,6 @@ const ProfilePage = ({ profile, history, friends, friendButton }) => {
     },
   };
 
- 
   let founderOfOdoc =
     "tgwpc-6xuon-k3a6y-ey7lt-xksjs-qx22h-ikhbt-4yp3a-6stco-rymbe-pqe";
   return (
@@ -183,11 +179,13 @@ const ProfilePage = ({ profile, history, friends, friendButton }) => {
             alignItems="flex-start"
           >
             <Box display="flex" alignItems="flex-start" gap={3}>
-              {profile&&!isEditing&&<UserAvatarMenu
-                hide={["Profile"]}
-                sx={{ width: 96, height: 96 }}
-                user={profile}
-              />}
+              {profile && !isEditing && (
+                <UserAvatarMenu
+                  hide={["Profile"]}
+                  sx={{ width: 96, height: 96 }}
+                  user={profile}
+                />
+              )}
 
               <Box>
                 {isEditing ? (

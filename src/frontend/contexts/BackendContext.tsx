@@ -1,7 +1,19 @@
-
-import React, { createContext, ReactNode, useCallback, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { AuthClient } from "@dfinity/auth-client";
-import { Actor, ActorMethod, ActorSubclass, HttpAgent, Identity } from "@dfinity/agent";
+import {
+  Actor,
+  ActorMethod,
+  ActorSubclass,
+  HttpAgent,
+  Identity,
+} from "@dfinity/agent";
 import { canisterId, idlFactory } from "../../declarations/backend";
 import { _SERVICE } from "../../declarations/backend/backend.did";
 import { useDispatch, useSelector } from "react-redux";
@@ -10,11 +22,13 @@ import getLedgerActor from "./ckudc_ledger_actor";
 interface State {
   principal: string | null;
   identity: Identity | null;
-  backendActor: ActorSubclass<Record<string, ActorMethod<unknown[], unknown>>> | null;
+  backendActor: ActorSubclass<
+    Record<string, ActorMethod<unknown[], unknown>>
+  > | null;
   agent: HttpAgent | null;
   isAuthenticating?: boolean;
   ckUSDCActor?: any;
-  loginMethod?: 'internet-identity' | 'ethereum';
+  loginMethod?: "internet-identity" | "ethereum";
 }
 
 interface BackendContextProps extends State {
@@ -24,7 +38,9 @@ interface BackendContextProps extends State {
   logout: () => void;
 }
 
-const BackendContext = createContext<BackendContextProps | undefined>(undefined);
+const BackendContext = createContext<BackendContextProps | undefined>(
+  undefined,
+);
 
 export const useBackendContext = (): BackendContextProps => {
   const context = useContext(BackendContext);
@@ -38,14 +54,18 @@ const createAuthClient = async (): Promise<AuthClient> => {
   return await AuthClient.create();
 };
 
-const createHttpAgent = async (identity: Identity, host: string): Promise<HttpAgent> => {
+const createHttpAgent = async (
+  identity: Identity,
+  host: string,
+): Promise<HttpAgent> => {
   const agent = new HttpAgent({
     identity, //TODO  if siwe is conncted use siweIdentity
     host,
   });
 
   if (import.meta.env.VITE_DFX_NETWORK === "local") {
-    await agent.fetchRootKey()
+    await agent
+      .fetchRootKey()
       .then(() => console.log("Successfully fetched root key"))
       .catch((err) => console.log("Error fetching root key: ", err));
   }
@@ -53,7 +73,9 @@ const createHttpAgent = async (identity: Identity, host: string): Promise<HttpAg
   return agent;
 };
 
-const createBackendActor = (agent: HttpAgent): ActorSubclass<Record<string, ActorMethod<unknown[], unknown>>> => {
+const createBackendActor = (
+  agent: HttpAgent,
+): ActorSubclass<Record<string, ActorMethod<unknown[], unknown>>> => {
   return Actor.createActor<_SERVICE>(idlFactory, {
     agent,
     canisterId,
@@ -68,8 +90,8 @@ const getIdentityProvider = (port: string): string => {
 };
 
 const getHost = (): string => {
-  return import.meta.env.VITE_DFX_NETWORK === "local" 
-    ? import.meta.env.VITE_IC_HOST 
+  return import.meta.env.VITE_DFX_NETWORK === "local"
+    ? import.meta.env.VITE_IC_HOST
     : "https://ic0.app";
 };
 
@@ -78,12 +100,12 @@ async function handleAgent(client: AuthClient) {
 
   let principal: string;
 
-  let identity = await client.getIdentity()
-    principal = identity.getPrincipal().toString();
+  let identity = await client.getIdentity();
+  principal = identity.getPrincipal().toString();
 
   const agent = await createHttpAgent(identity, host);
   const actor = createBackendActor(agent);
-  
+
   return { actor, agent, principal, identity, client };
 }
 
@@ -91,11 +113,13 @@ interface BackendProviderProps {
   children: ReactNode;
 }
 
-export const BackendProvider: React.FC<BackendProviderProps> = ({ children }) => {
+export const BackendProvider: React.FC<BackendProviderProps> = ({
+  children,
+}) => {
   const dispatch = useDispatch();
 
   const port = import.meta.env.VITE_DFX_PORT;
-  
+
   const [state, setState] = useState<State>({
     principal: null,
     identity: null,
@@ -118,52 +142,49 @@ export const BackendProvider: React.FC<BackendProviderProps> = ({ children }) =>
       // dispatch({type:'LOGIN'});
     } else {
       const identityProvider = getIdentityProvider(port);
-      setState(prevState => ({ ...prevState, isAuthenticating: true }));
-      
+      setState((prevState) => ({ ...prevState, isAuthenticating: true }));
+
       await authClient.login({
         identityProvider,
         onSuccess: async () => {
-          dispatch({type:"LOGIN"});
+          dispatch({ type: "LOGIN" });
         },
       });
     }
-  }
+  };
 
   const loginWithEth = async () => {
     try {
-      setState(prevState => ({ ...prevState, isAuthenticating: true }));
-      
-
+      setState((prevState) => ({ ...prevState, isAuthenticating: true }));
 
       const { actor, agent, principal } = await handleAgent(authClient!);
-      
-      setState(prevState => ({
+
+      setState((prevState) => ({
         ...prevState,
         backendActor: actor,
         agent,
         principal,
-        loginMethod: 'ethereum',
-        isAuthenticating: false
+        loginMethod: "ethereum",
+        isAuthenticating: false,
       }));
 
-      dispatch({type: "LOGIN"});
+      dispatch({ type: "LOGIN" });
     } catch (error) {
-      setState(prevState => ({ ...prevState, isAuthenticating: false }));
-      console.error('Ethereum login error:', error);
+      setState((prevState) => ({ ...prevState, isAuthenticating: false }));
+      console.error("Ethereum login error:", error);
       throw error;
     }
-  }
+  };
 
   const logout = useCallback(() => {
-
-    dispatch({type:"LOGOUT"});
-      authClient?.logout({ returnTo: "/" });
+    dispatch({ type: "LOGOUT" });
+    authClient?.logout({ returnTo: "/" });
     setState({
       principal: null,
       identity: null,
       backendActor: null,
       agent: null,
-      loginMethod: undefined
+      loginMethod: undefined,
     });
   }, [dispatch, authClient, state.loginMethod]);
 
@@ -174,7 +195,7 @@ export const BackendProvider: React.FC<BackendProviderProps> = ({ children }) =>
       const { actor, agent, principal, identity } = await handleAgent(client);
       const ckUSDCActor = await getLedgerActor(agent);
       console.log("ckUSDCActor:");
-      setState(prevState => ({
+      setState((prevState) => ({
         ...prevState,
         ckUSDCActor,
         backendActor: actor,
@@ -186,7 +207,7 @@ export const BackendProvider: React.FC<BackendProviderProps> = ({ children }) =>
 
       const alreadyAuthenticated = await client.isAuthenticated();
       if (alreadyAuthenticated) {
-        dispatch({type:'LOGIN'});
+        dispatch({ type: "LOGIN" });
       }
     };
 
@@ -194,7 +215,6 @@ export const BackendProvider: React.FC<BackendProviderProps> = ({ children }) =>
       console.log("Failed to initialize auth client:", error);
     });
   }, [isLoggedIn]);
-
 
   const contextValue = {
     ...state,

@@ -16,7 +16,7 @@ export function createPalette(isDarkMode) {
       background: {
         default: "#0F0F13",
         paper: "#18181F",
-        alternate: "#13131A"
+        alternate: "#13131A",
       },
       divider: "rgba(139, 92, 246, 0.15)",
       error,
@@ -52,7 +52,7 @@ export function createPalette(isDarkMode) {
       background: {
         default: "#FAFBFC",
         paper: "#F5F6F8",
-        alternate: "#F0F1F4"
+        alternate: "#F0F1F4",
       },
       divider: "rgba(79, 70, 229, 0.25)",
       error,

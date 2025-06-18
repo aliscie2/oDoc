@@ -1,10 +1,10 @@
-import React, { useCallback, useMemo } from 'react';
-import { Theme, useTheme, styled } from '@mui/material';
-import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import dayjs from 'dayjs';
+import React, { useCallback, useMemo } from "react";
+import { Theme, useTheme, styled } from "@mui/material";
+import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { TimePicker } from "@mui/x-date-pickers/TimePicker";
+import dayjs from "dayjs";
 
 // Types
 interface TimePickerProps {
@@ -17,11 +17,11 @@ interface TimePickerProps {
 
 // Styled Components
 const StyledContainer = styled(DemoContainer)(({ theme }) => ({
-  width: '100%',
-  maxWidth: '300px',
-  margin: '0 auto',
-  [theme.breakpoints.down('sm')]: {
-    maxWidth: '100%',
+  width: "100%",
+  maxWidth: "300px",
+  margin: "0 auto",
+  [theme.breakpoints.down("sm")]: {
+    maxWidth: "100%",
   },
 }));
 
@@ -48,7 +48,7 @@ const convertFromNanoseconds = (nanoseconds: bigint): Date => {
 // Custom Hook
 const useTimePickerLogic = (
   onChange?: (value: bigint | null) => void,
-  defaultValue?: bigint
+  defaultValue?: bigint,
 ) => {
   const handleTimeChange = useCallback(
     (newValue: any) => {
@@ -63,7 +63,7 @@ const useTimePickerLogic = (
       const nanoseconds = convertToNanoseconds(date);
       onChange(nanoseconds);
     },
-    [onChange]
+    [onChange],
   );
 
   const initialValue = useMemo(() => {
@@ -82,28 +82,31 @@ const useTimePickerLogic = (
 const EnhancedTimePicker: React.FC<TimePickerProps> = ({
   onChange,
   defaultValue,
-  label = 'Select Time',
+  label = "Select Time",
   disabled = false,
   sx = {},
 }) => {
   const theme = useTheme();
-  const { handleTimeChange, initialValue } = useTimePickerLogic(onChange, defaultValue);
+  const { handleTimeChange, initialValue } = useTimePickerLogic(
+    onChange,
+    defaultValue,
+  );
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <StyledContainer components={['TimePicker']}>
+      <StyledContainer components={["TimePicker"]}>
         <TimePicker
           disabled={disabled}
           label={label}
           value={initialValue}
           onChange={handleTimeChange}
-          views={['hours', 'minutes']}
+          views={["hours", "minutes"]}
           format="HH:mm"
           ampm={false}
           sx={{
-            width: '100%',
-            '& .MuiOutlinedInput-root': {
-              '&:hover fieldset': {
+            width: "100%",
+            "& .MuiOutlinedInput-root": {
+              "&:hover fieldset": {
                 borderColor: theme.palette.primary.main,
               },
             },

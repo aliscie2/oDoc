@@ -12,7 +12,6 @@ import VideoPlayer from "./videoPlayer";
 import VideoList from "./videoList";
 import { tutorials } from "../LandingPage/landingPageData";
 
-
 const GettingStarted = () => {
   const theme = useTheme();
   const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
@@ -20,12 +19,7 @@ const GettingStarted = () => {
   return (
     <Container maxWidth="lg">
       <Box sx={{ py: 4 }}>
-        <Typography
-          variant="h3"
-          gutterBottom
-          align="center"
-          sx={{ mb: 4 }}
-        >
+        <Typography variant="h3" gutterBottom align="center" sx={{ mb: 4 }}>
           Getting Started with ODOC
         </Typography>
 
@@ -45,9 +39,9 @@ const GettingStarted = () => {
                 />
               </Grid>
               <Grid item xs={8}>
-                <VideoPlayer 
-                  startTime={tutorials[selectedVideoIndex].startTime} 
-                  video={tutorials[selectedVideoIndex]} 
+                <VideoPlayer
+                  startTime={tutorials[selectedVideoIndex].startTime}
+                  video={tutorials[selectedVideoIndex]}
                 />
               </Grid>
             </Grid>

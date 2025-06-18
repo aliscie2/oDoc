@@ -17,23 +17,22 @@ if (!rootElement) {
 
 const root = createRoot(rootElement);
 
-
 root.render(
   <StrictMode>
-              <Provider store={store}>
-                <ThemeProvider>
-                    <BackendProvider>
-                      <SnackbarProvider
-                        anchorOrigin={{
-                          vertical: "bottom",
-                          horizontal: "right",
-                        }}
-                        maxSnack={3}
-                      >
-                        <App />
-                      </SnackbarProvider>
-                    </BackendProvider>
-                </ThemeProvider>
-              </Provider>      
-  </StrictMode>
+    <Provider store={store}>
+      <ThemeProvider>
+        <BackendProvider>
+          <SnackbarProvider
+            anchorOrigin={{
+              vertical: "bottom",
+              horizontal: "right",
+            }}
+            maxSnack={3}
+          >
+            <App />
+          </SnackbarProvider>
+        </BackendProvider>
+      </ThemeProvider>
+    </Provider>
+  </StrictMode>,
 );

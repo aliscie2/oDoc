@@ -142,7 +142,7 @@ function FileContentPage() {
   if (files.length === 0 && isLoggedIn) {
     return <CircularProgress />;
   }
-  
+
   const editable =
     currentFile.author === profile.id ||
     Object.keys(currentFile.permission)[0] === "CanUpdate" ||

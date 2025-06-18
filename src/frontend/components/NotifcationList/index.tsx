@@ -33,13 +33,12 @@ const NotificationsButton = () => {
   const [hasMoreNotifications, setHasMoreNotifications] = useState(false);
   const [isMarkingAllRead, setIsMarkingAllRead] = useState(false);
 
-
-  useEffect(()=>{
-    if (hasMoreNotifications!=notifications.length > 14){
+  useEffect(() => {
+    if (hasMoreNotifications != notifications.length > 14) {
       setHasMoreNotifications(notifications.length > 14);
     }
-  },[notifications.length])
-  
+  }, [notifications.length]);
+
   const open = Boolean(anchorEl);
   const { backendActor } = useBackendContext();
   const dispatch = useDispatch();
@@ -57,9 +56,10 @@ const NotificationsButton = () => {
 
     setIsLoadingMore(true);
     try {
+      let notificationRes = await backendActor.get_user_notifications(
+        notifications.length,
+      );
 
-      let notificationRes = await backendActor.get_user_notifications(notifications.length);
-      
       if (notificationRes.length === 0) {
         setHasMoreNotifications(false);
       } else {
@@ -288,17 +288,17 @@ const NotificationsButton = () => {
                 </Box>
               ))}
             </List>
-            
+
             {/* Load More Button */}
             {hasMoreNotifications && (
-              <MenuItem 
-                onClick={handleLoadMore} 
+              <MenuItem
+                onClick={handleLoadMore}
                 disabled={isLoadingMore}
-                sx={{ 
-                  justifyContent: "center", 
+                sx={{
+                  justifyContent: "center",
                   borderTop: 1,
                   borderColor: "divider",
-                  py: 1.5
+                  py: 1.5,
                 }}
               >
                 {isLoadingMore ? (

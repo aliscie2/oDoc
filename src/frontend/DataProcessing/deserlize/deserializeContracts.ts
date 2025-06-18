@@ -1,4 +1,7 @@
-import {CustomContract, StoredContract,} from "../../../declarations/backend/backend.did";
+import {
+  CustomContract,
+  StoredContract,
+} from "../../../declarations/backend/backend.did";
 
 // type ContractType = CustomContract;
 

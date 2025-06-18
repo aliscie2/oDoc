@@ -239,7 +239,6 @@ const NavBar = (props: any) => {
                   <CreateFile />
                   <GetMoreFiles />
                 </Box>
-
               </>
             )}
           </ContentWrapper>

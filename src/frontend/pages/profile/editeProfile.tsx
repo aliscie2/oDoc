@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Stack, TextField, Button, Box, useTheme, Avatar, Input } from "@mui/material";
+import {
+  Stack,
+  TextField,
+  Button,
+  Box,
+  useTheme,
+  Avatar,
+  Input,
+} from "@mui/material";
 import { useSnackbar } from "notistack";
 import { useBackendContext } from "@/contexts/BackendContext";
 import { RegisterUser } from "$/declarations/backend/backend.did";
@@ -28,10 +36,12 @@ const EditProfile = ({ setIsEditing, profile, onCancel = false }) => {
         description: profile.description || "",
         email: profile.email || "",
       });
-      
+
       // Set existing photo preview if available
       if (profile.photo && profile.photo.length > 0) {
-        const blob = new Blob([new Uint8Array(profile.photo)], { type: 'image/jpeg' });
+        const blob = new Blob([new Uint8Array(profile.photo)], {
+          type: "image/jpeg",
+        });
         const url = URL.createObjectURL(blob);
         setPhotoPreview(url);
       }
@@ -47,7 +57,7 @@ const EditProfile = ({ setIsEditing, profile, onCancel = false }) => {
         const uint8Array = new Uint8Array(arrayBuffer);
         resolve(Array.from(uint8Array)); // Convert to regular array for Candid
       };
-      reader.onerror = () => reject(new Error('File reading failed'));
+      reader.onerror = () => reject(new Error("File reading failed"));
       reader.readAsArrayBuffer(file);
     });
   };
@@ -56,19 +66,18 @@ const EditProfile = ({ setIsEditing, profile, onCancel = false }) => {
     const image = e.target.files?.[0];
     if (image) {
       // const sizeInMB = image.size / (1024 * 1024);
-      
+
       try {
         let processedImage = image;
-          processedImage = await compressImage(image);;
+        processedImage = await compressImage(image);
         setPhoto(processedImage);
-        
+
         // Create preview URL
         const previewUrl = URL.createObjectURL(processedImage);
         setPhotoPreview(previewUrl);
-        
       } catch (error) {
-        console.error('Error processing image:', error);
-        enqueueSnackbar('Error processing image', { variant: 'error' });
+        console.error("Error processing image:", error);
+        enqueueSnackbar("Error processing image", { variant: "error" });
         setPhoto(image); // Fallback to original
         const previewUrl = URL.createObjectURL(image);
         setPhotoPreview(previewUrl);
@@ -106,7 +115,7 @@ const EditProfile = ({ setIsEditing, profile, onCancel = false }) => {
 
       if (result.Ok) {
         enqueueSnackbar("Profile updated successfully", { variant: "success" });
-        dispatch( {type:'UPDATE_PROFILE', profile: result.Ok });
+        dispatch({ type: "UPDATE_PROFILE", profile: result.Ok });
         setIsUpdating(false);
         setIsEditing(false);
       } else if (result.Err) {
@@ -123,7 +132,7 @@ const EditProfile = ({ setIsEditing, profile, onCancel = false }) => {
   // Cleanup preview URL on unmount
   useEffect(() => {
     return () => {
-      if (photoPreview && photoPreview.startsWith('blob:')) {
+      if (photoPreview && photoPreview.startsWith("blob:")) {
         URL.revokeObjectURL(photoPreview);
       }
     };
@@ -139,11 +148,15 @@ const EditProfile = ({ setIsEditing, profile, onCancel = false }) => {
       }}
     >
       {/* Profile Photo Section */}
-      <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
-        <Avatar
-          src={photoPreview}
-          sx={{ width: 100, height: 100 }}
-        />
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 2,
+        }}
+      >
+        <Avatar src={photoPreview} sx={{ width: 100, height: 100 }} />
         <Input
           type="file"
           accept="image/*"
