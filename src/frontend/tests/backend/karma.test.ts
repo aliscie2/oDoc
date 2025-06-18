@@ -7,6 +7,8 @@ import test, { describe, beforeEach, afterEach } from "node:test";
 import { expect } from "chai";
 import * as fs from "fs";
 import * as path from "path";
+import {  idlFactory } from '../../../declarations/backend';
+import { _SERVICE } from "$/declarations/backend/backend.did";
 
 interface TestContext {
   pic: PocketIc;
@@ -25,7 +27,7 @@ declare global {
 describe("Karma/Action Score Tests", () => {
   beforeEach(async () => {
     // Setup test environment
-    global.pic = new PocketIc();
+    global.pic = await PocketIc.create();
     
     // Create a subnet for the canister
     const subnet = await global.pic.createSubnet({
@@ -33,80 +35,26 @@ describe("Karma/Action Score Tests", () => {
     });
     
     // Install your canister
-    const canisterId = await global.pic.createCanister(subnet);
+    const canisterId = await global.pic.createCanister();
     
     // TODO: Replace these paths with your actual canister files
     const wasmPath = path.join(__dirname, "canister.wasm");
-    const candidPath = path.join(__dirname, "canister.did");
+    // const candidPath = path.join(__dirname, "canister.did");
     
     // Check if files exist before trying to read them
     if (!fs.existsSync(wasmPath)) {
       throw new Error(`WASM file not found: ${wasmPath}. Please update the path in the test.`);
     }
     
-    await global.pic.installCode({
+    await global.pic.installCode(
       canisterId,
-      wasmModule: fs.readFileSync(wasmPath),
-      candidPath: candidPath
-    });
+       fs.readFileSync(wasmPath),
+      );
     
     // Create actor instance with your canister interface
-    global.actor = global.pic.createActor({
-      canisterId,
-      interfaceFactory: ({ IDL }) => {
-        // TODO: Update this interface to match the actual canister
-       
-        
-        const Promise = IDL.Record({
-          id: IDL.Text,
-          amount: IDL.Nat,
-          sender: IDL.Principal,
-          receiver: IDL.Opt(IDL.Principal),
-          status: IDL.Variant({
-            None: IDL.Null,
-            ConfirmedCancellation: IDL.Null,
-            Released: IDL.Null,
-            // Add other status variants as needed
-          }),
-          date_created: IDL.Nat64
-        });
-        
-        const CustomContract = IDL.Record({
-          id: IDL.Text,
-          creator: IDL.Principal,
-          promises: IDL.Vec(Promise),
-          date_created: IDL.Nat64
-        });
-        
-        const UserProfile = IDL.Record({
-          users_interacted: IDL.Nat,
-          actions_rate: IDL.Float64,
-          staking_end_time: IDL.Opt(IDL.Nat64),
-          // Add other profile fields from your backend
-        });
-        
-        return IDL.Service({
-          multi_updates: IDL.Func(
-            [
-              IDL.Vec(IDL.Text), // Update these parameter types to match your actual function
-              IDL.Vec(IDL.Text),
-              IDL.Vec(IDL.Variant({ CustomContract: CustomContract })),
-              IDL.Vec(IDL.Text),
-              IDL.Vec(IDL.Text)
-            ],
-            [IDL.Variant({ Ok: IDL.Text, Err: IDL.Text })]
-          ),
-          get_user_profile: IDL.Func(
-            [IDL.Principal],
-            [IDL.Variant({ Ok: UserProfile, Err: IDL.Text })]
-          ),
-          // Add other canister methods you need for testing
-        });
-      }
-    });
-    
+    global.actor = global.pic.createActor<_SERVICE>(idlFactory, canisterId);
     // Create main test user
-    const userIdentity = global.pic.createIdentity();
+    const userIdentity = global.pic.generateRandomIdentity();
     global.user = {
       identity: userIdentity,
       getPrincipal: () => userIdentity.getPrincipal()
