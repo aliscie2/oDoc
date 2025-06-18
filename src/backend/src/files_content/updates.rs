@@ -84,20 +84,20 @@ fn multi_updates(
     }
     
     for contract_update in contracts_updates{
-        let mut old_contract: StoredContract = Contract::get_contract(caller().to_string(),contract_update.id.clone())?;
-        if let StoredContract::CustomContract(mut old_contract) = old_contract {
+        let mut old_contract: Option<StoredContract> = Contract::get_contract(caller().to_string(),contract_update.id.clone());
+        if let Some(StoredContract::CustomContract(mut old_contract)) = old_contract {
             for promise in contract_update.promises {
-                let res = old_contract.updaet_or_create_promise(promise.clone())?;
+                let res: crate::CustomContract = old_contract.clone().update_or_create_promise(promise.clone())?;
                 // if let Err(errors) = res {
                 //     messages.push_str(&errors.to_string());
                 // }
             }
-            // for delete_promise in contract_update.delete_promises {
-            //     let res = old_contract.delete_promise(delete_promise.clone())?;
-            //     if let Err(errors) = res {
-            //         messages.push_str(&errors.to_string());
-            //     }
-            // }
+            for delete_promise in contract_update.delete_promises {
+                let res = old_contract.clone().delete_promise(delete_promise.clone())?;
+                // if let Err(errors) = res {
+                //     messages.push_str(&errors.to_string());
+                // }
+            }
         }
         
     }
