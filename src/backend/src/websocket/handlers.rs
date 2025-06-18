@@ -1,9 +1,9 @@
-use candid::{decode_one, encode_one, CandidType};
+use candid::{encode_one, CandidType};
 use ic_cdk::{api::time, caller, print, println};
 use ic_websocket_cdk::{
     send, ClientPrincipal, OnCloseCallbackArgs, OnMessageCallbackArgs, OnOpenCallbackArgs,
 };
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 use crate::websocket::Notification;
 

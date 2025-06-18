@@ -1,18 +1,14 @@
 use std::borrow::Cow;
 use std::collections::HashMap;
-use std::sync::atomic::{AtomicU64, Ordering};
 
-use candid::{CandidType, Decode, Deserialize, Encode, Principal};
+use candid::{CandidType, Decode, Deserialize, Encode};
 use ic_cdk::{caller, print};
 use ic_stable_structures::storable::Bound;
 use ic_stable_structures::Storable;
 
-use crate::files::FileNode;
 use crate::storage_schema::{ContentId, ContentTree, FileId};
 use crate::tables::Table;
-use crate::{ShareFile, FILE_CONTENTS, USER_FILES};
-
-static COUNTER: AtomicU64 = AtomicU64::new(0);
+use crate::{ShareFile, FILE_CONTENTS};
 
 #[derive(Clone, Debug, Deserialize, CandidType)]
 pub enum ContentData {
@@ -32,8 +28,8 @@ pub struct OldContentNode {
     pub language: String,
     pub indent: u64,
     pub data: Option<ContentData>,
-    pub listStyleType: String,
-    pub listStart: u64,
+    pub list_style_type: String,
+    pub list_start: u64,
     #[serde(default)]
     pub children: Vec<ContentId>,
 }
@@ -49,8 +45,8 @@ pub struct ContentNode {
     pub language: String,
     pub indent: u64,
     pub data: Option<ContentData>,
-    pub listStyleType: String,
-    pub listStart: u64,
+    pub list_style_type: String,
+    pub list_start: u64,
     #[serde(default)]
     pub children: Vec<ContentId>,
 }

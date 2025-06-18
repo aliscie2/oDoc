@@ -23,17 +23,19 @@ impl CContract {
     fn update_column_permission(
         &self,
         new_column: CColumn,
-        old_column: CColumn,
+        _old_column: CColumn,
     ) -> Result<CColumn, String> {
         self.check_creator_permission()?;
         Ok(new_column.clone())
     }
 
+    #[allow(dead_code)]
     fn delete_column_permission(&self, deleted_column: CColumn) -> Result<CColumn, String> {
         self.check_creator_permission()?;
         Ok(deleted_column.clone())
     }
 
+    #[allow(dead_code)]
     fn create_column_permission(&self, new_column: CColumn) -> Result<CColumn, String> {
         self.check_creator_permission()?;
         Ok(new_column.clone())
@@ -62,7 +64,7 @@ impl CContract {
         old_c_contract: &CContract,
         contract_errors: &mut Vec<ContractError>,
     ) -> Result<CRow, String> {
-        let mut updated_cells: Vec<CCell> = new_row
+        let updated_cells: Vec<CCell> = new_row
             .cells
             .iter()
             .map(|cell| {

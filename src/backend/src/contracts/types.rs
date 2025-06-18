@@ -3,12 +3,10 @@ use std::collections::HashMap;
 
 use crate::{CustomContract, CONTRACTS_STORE};
 use candid::{CandidType, Decode, Deserialize, Encode, Principal};
-use ic_cdk::caller;
-use ic_stable_structures::{storable::Bound, DefaultMemoryImpl, StableBTreeMap, Storable};
+use ic_stable_structures::{storable::Bound, Storable};
 use serde::Serialize;
 
 use crate::storage_schema::ContractId;
-use crate::tables::Table;
 
 #[derive(Eq, PartialOrd, PartialEq, Clone, Debug, CandidType, Serialize, Deserialize)]
 pub enum Contract {
@@ -69,10 +67,9 @@ impl StoredContract {
             let caller_contracts = contracts_store.borrow();
             for contracts in caller_contracts.values() {
                 for contract in &contracts.stored_contracts {
-                    if let StoredContract::CustomContract(custom_contract) = contract {
-                        if custom_contract.creator == owner.to_string() {
-                            result.push(StoredContract::CustomContract(custom_contract.clone()));
-                        }
+                    let StoredContract::CustomContract(custom_contract) = contract;
+                    if custom_contract.creator == owner.to_string() {
+                        result.push(StoredContract::CustomContract(custom_contract.clone()));
                     }
                 }
             }
@@ -92,10 +89,9 @@ impl Contract {
             let caller_contracts = contracts_store.borrow();
             if let Some(contracts) = caller_contracts.get(&author) {
                 for contract in &contracts.stored_contracts {
-                    if let StoredContract::CustomContract(custom_contract) = contract {
-                        if custom_contract.id == contract_id {
-                            return Some(StoredContract::CustomContract(custom_contract.clone()));
-                        }
+                    let StoredContract::CustomContract(custom_contract) = contract;
+                    if custom_contract.id == contract_id {
+                        return Some(StoredContract::CustomContract(custom_contract.clone()));
                     }
                 }
             }
@@ -107,11 +103,10 @@ impl Contract {
         let mut contract_map = HashMap::new();
         CONTRACTS_STORE.with(|contracts_store| {
             let caller_contracts = contracts_store.borrow();
-            for (author, contracts) in caller_contracts.iter() {
+            for (_author, contracts) in caller_contracts.iter() {
                 for contract in &contracts.stored_contracts {
-                    if let StoredContract::CustomContract(custom_contract) = contract {
-                        contract_map.insert(custom_contract.id.clone(), StoredContract::CustomContract(custom_contract.clone()));
-                    }
+                    let StoredContract::CustomContract(custom_contract) = contract;
+                    contract_map.insert(custom_contract.id.clone(), StoredContract::CustomContract(custom_contract.clone()));
                 }
             }
         });

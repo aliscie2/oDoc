@@ -2,12 +2,9 @@
 // extern crate ic_cdk;
 use ic_cdk_macros::query;
 use ic_cdk_macros::update;
-use std::cell::RefCell;
 
 use crate::CK_USDC_STATE;
 use candid::{candid_method, CandidType, Nat, Principal};
-use ic_cdk::caller;
-use ic_ledger_types::Tokens;
 use icrc_ledger_types::{
     icrc1::{
         account::Account,

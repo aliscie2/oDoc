@@ -2,9 +2,9 @@ use ic_cdk::caller;
 use ic_cdk_macros::update;
 use std::collections::HashMap;
 
-use crate::files::{FileNode, FileNodeVector};
-use crate::storage_schema::{ContentTree, FileId};
-use crate::{ShareFile, ShareFilePermission, SHARED_USER_FILES};
+use crate::files::FileNode;
+use crate::storage_schema::ContentTree;
+use crate::{ShareFile, ShareFilePermission};
 use candid::{CandidType, Deserialize, Principal};
 
 #[update]

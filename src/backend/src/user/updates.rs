@@ -3,7 +3,6 @@ use crate::chat::send_welcome_message;
 use crate::user_state::create_user_state;
 use ic_cdk::caller;
 use ic_cdk_macros::update;
-use candid::{CandidType, Deserialize, Principal};
 
 use crate::user::{RegisterUser, User};
 

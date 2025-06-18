@@ -1,9 +1,9 @@
 use super::pallet::{Job, Match, Category};
 use std::time::{SystemTime, UNIX_EPOCH};
-use ethers_core::abi::token::LenientTokenizer;
 use ic_cdk::caller;
 
 impl Job {
+    #[allow(dead_code)]
     pub fn new() -> Result<Self, String> {
         let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)

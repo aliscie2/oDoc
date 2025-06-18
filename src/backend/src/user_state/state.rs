@@ -20,6 +20,7 @@ impl UserState {
         }
     }
 
+    #[allow(dead_code)]
     pub fn with_subscription(subscription: String) -> Self {
         Self {
             last_active: ic_cdk::api::time(),

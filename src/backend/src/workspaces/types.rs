@@ -1,31 +1,20 @@
 use crate::WORK_SPACES;
 use ic_cdk::caller;
-use ic_websocket_cdk::{
-    CanisterWsCloseResult, CanisterWsGetMessagesArguments, CanisterWsGetMessagesResult,
-    CanisterWsMessageArguments, CanisterWsMessageResult, CanisterWsOpenArguments,
-    CanisterWsOpenResult, WsHandlers, WsInitParams,
-};
 use num::ToPrimitive;
 use std::borrow::Cow;
 
 // use crate::state::{init_state, read_state};
-use alloy_consensus::{SignableTransaction, TxEip1559, TxEnvelope};
-use alloy_primitives::{hex, Signature, TxKind, U256};
+use alloy_primitives::U256;
 use candid::{CandidType, Decode, Deserialize, Encode, Nat, Principal};
-use evm_rpc_canister_types::{
-    BlockTag, EthMainnetService, EthSepoliaService, EvmRpcCanister, GetTransactionCountArgs,
-    GetTransactionCountResult, MultiGetTransactionCountResult, RequestResult, RpcService,
-};
+use evm_rpc_canister_types::EvmRpcCanister;
 use ic_cdk::api::management_canister::ecdsa::{EcdsaCurve, EcdsaKeyId};
-use ic_cdk::{init, update};
-use ic_ethereum_types::Address;
 use ic_stable_structures::storable::Bound;
 use ic_stable_structures::Storable;
-use num::{BigUint, Num};
-use std::str::FromStr;
 
+#[allow(dead_code)]
 pub const EVM_RPC_CANISTER_ID: Principal = Principal::from_slice(b"7hfb6-caaaa-aaaar-qadga-cai");
 // 7hfb6-caaaa-aaaar-qadga-cai
+#[allow(dead_code)]
 pub const EVM_RPC: EvmRpcCanister = EvmRpcCanister(EVM_RPC_CANISTER_ID);
 
 #[derive(Clone, Debug, Deserialize, CandidType)]
@@ -60,6 +49,7 @@ impl Storable for WorkSpaceVec {
 }
 
 impl WorkSpace {
+    #[allow(dead_code)]
     pub fn new(name: String, id: String) -> Result<Self, String> {
         let new_work_space = WorkSpace {
             id,
@@ -126,6 +116,7 @@ impl WorkSpace {
     }
 }
 
+#[allow(dead_code)]
 pub fn estimate_transaction_fees() -> (u128, u128, u128) {
     /// Standard gas limit for an Ethereum transfer to an EOA.
     /// Other transactions, in particular ones interacting with a smart contract (e.g., ERC-20), would require a higher gas limit.
@@ -151,15 +142,6 @@ pub enum EthereumNetwork {
     Sepolia,
 }
 
-impl EthereumNetwork {
-    pub fn chain_id(&self) -> u64 {
-        match self {
-            EthereumNetwork::Mainnet => 1,
-            EthereumNetwork::Sepolia => 11155111,
-        }
-    }
-}
-
 #[derive(CandidType, Deserialize, Debug, Default, PartialEq, Eq, Clone)]
 pub enum EcdsaKeyName {
     #[default]
@@ -182,6 +164,7 @@ impl From<&EcdsaKeyName> for EcdsaKeyId {
     }
 }
 
+#[allow(dead_code)]
 pub fn validate_caller_not_anonymous() -> Principal {
     let principal = ic_cdk::caller();
     if principal == Principal::anonymous() {
@@ -196,6 +179,7 @@ pub fn nat_to_u64(nat: Nat) -> u64 {
         .unwrap_or_else(|| ic_cdk::trap(&format!("Nat {} doesn't fit into a u64", nat)))
 }
 
+#[allow(dead_code)]
 pub fn nat_to_u256(value: Nat) -> U256 {
     let value_bytes = value.0.to_bytes_be();
     assert!(

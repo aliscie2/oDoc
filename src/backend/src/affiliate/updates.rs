@@ -1,19 +1,10 @@
-use std::borrow::Cow;
-use std::collections::HashSet;
-
-use candid::{CandidType, Decode, Deserialize, Encode, Principal};
+use candid::Principal;
 use ic_cdk::caller;
 use ic_cdk_macros::*;
-use ic_cdk_macros::*;
-use ic_stable_structures::{storable::Bound, DefaultMemoryImpl, StableBTreeMap, Storable};
-use serde::Serialize;
 
 use crate::affiliate::{Affiliate, ReferredUser};
-use crate::AFFILIATE;
 // Import user history related types and traits
-use crate::discover::time_diff;
 use crate::user_history::UserHistory;
-use crate::websocket::Notification;
 
 // Only have this one update function as the public API
 #[update]

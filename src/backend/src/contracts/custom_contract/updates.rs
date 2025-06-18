@@ -1,10 +1,9 @@
-use candid::Error::Custom;
 use ic_cdk::caller;
 use ic_cdk_macros::update;
 
 use crate::contracts::custom_contract::utils::notify_about_promise;
 use crate::user_history::UserHistory;
-use crate::websocket::{NoteContent, Notification, PaymentAction};
+use crate::websocket::PaymentAction;
 use crate::CustomContract;
 use crate::{CPayment, PaymentStatus, Wallet};
 
@@ -26,7 +25,7 @@ fn confirmed_c_payment(promise: CPayment) -> Result<(), String> {
         contract.promises = contract
             .promises
             .iter_mut()
-            .map(|mut payment| {
+            .map(|payment| {
                 if payment.id == promise.id {
                     if payment.status == PaymentStatus::Confirmed {
                         return Err("Already confirmed".to_string());
@@ -79,7 +78,7 @@ fn confirmed_cancellation(c_payment: CPayment) -> Result<(), String> {
                     //     not.save();
                     // };
                     let wallet = Wallet::get(c_payment.sender);
-                    wallet.remove_dept(payment.id.clone());
+                    let _ = wallet.remove_dept(c_payment.id.clone());
 
                     let mut user_history = UserHistory::get(c_payment.sender);
                     user_history.confirm_cancellation(payment.clone());
@@ -118,7 +117,7 @@ fn approve_high_promise(c_payment: CPayment) -> Result<(), String> {
                     //     not.save();
                     // };
                     let wallet = Wallet::get(c_payment.sender);
-                    wallet.add_dept(payment.amount.clone(), payment.id.clone());
+                    let _ = wallet.add_dept(payment.amount.clone(), payment.id.clone());
                     // wallet.remove_dept(payment.id.clone());
                     let mut user_history = UserHistory::get(c_payment.sender);
                     user_history.payment_action(payment.clone());

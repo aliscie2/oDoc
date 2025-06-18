@@ -1,13 +1,11 @@
-use std::collections::HashMap;
-
 use candid::Principal;
 use candid::{CandidType, Deserialize};
-use ic_cdk::{call, caller};
+use ic_cdk::caller;
 use serde::Serialize;
 
 use crate::contracts::custom_contract::utils::notify_about_promise;
 use crate::storage_schema::ContractId;
-use crate::tables::{Column, ContractPermissionType, Execute, Filter, Formula, PermissionType};
+use crate::tables::{ContractPermissionType, Execute, Filter, Formula, PermissionType};
 use crate::user_history::UserHistory;
 use crate::websocket::{NoteContent, Notification, PaymentAction};
 use crate::{ExchangeType, StoredContract, StoredContractVec, Wallet, CONTRACTS_STORE};
@@ -28,7 +26,7 @@ pub struct CColumn {
 }
 
 #[derive(Eq, PartialOrd, PartialEq, Clone, Debug, CandidType, Deserialize, Serialize)]
-pub(crate) struct CCell {
+pub struct CCell {
     pub value: String,
     pub field: String,
     pub id: String,
@@ -305,10 +303,10 @@ impl CustomContract {
     // }
 
     pub fn can_update_cell(&self, cell: &CCell) -> bool {
-        if let Some(column) = self.get_column(&cell.field.clone()) {
-            column.can_update()
-        } else {
+        if let Some(_column) = self.get_column(&cell.field.clone()) {
             true
+        } else {
+            false
         }
     }
 
@@ -334,7 +332,7 @@ impl CustomContract {
                 .iter()
                 .find(|column| column.field == field)
                 .map(|column| column.clone());
-            if let Some(column) = column {
+            if let Some(_column) = column {
                 return Some(contract.clone());
             }
         }
@@ -357,14 +355,12 @@ impl CustomContract {
         CONTRACTS_STORE.with(|contracts_store| {
             let caller_contracts = contracts_store.borrow();
             let stored_contract_vec = caller_contracts.get(&creator)?.stored_contracts.clone();
-            if let Some(contract) = stored_contract_vec.iter().find(|contract| match contract {
-                StoredContract::CustomContract(contract) => contract.id == *id,
-                _ => false,
+            if let Some(contract) = stored_contract_vec.iter().find(|contract| {
+                let StoredContract::CustomContract(contract) = contract;
+                contract.id == *id
             }) {
-                match contract {
-                    StoredContract::CustomContract(contract) => Some(contract.clone()),
-                    _ => None,
-                }
+                let StoredContract::CustomContract(contract) = contract;
+                Some(contract.clone())
             } else {
                 None
             }
@@ -413,7 +409,7 @@ impl CustomContract {
             let mut new_map = StoredContractVec {
                 stored_contracts: vec![StoredContract::CustomContract(self.clone())],
             };
-            if let Some(mut caller_contracts_map) = caller_contracts.get(&self.creator) {
+            if let Some(caller_contracts_map) = caller_contracts.get(&self.creator) {
                 new_map
                     .stored_contracts
                     .extend(caller_contracts_map.stored_contracts.clone());
@@ -421,7 +417,6 @@ impl CustomContract {
             // new_map.stored_contracts.push(StoredContract::CustomContract(self.clone()));
             new_map.stored_contracts.retain(|contract| match contract {
                 StoredContract::CustomContract(contract) => contract.id != self.id,
-                _ => true,
             });
             caller_contracts.insert(self.creator, new_map);
         });
@@ -434,7 +429,7 @@ impl CustomContract {
             let mut new_map = StoredContractVec {
                 stored_contracts: vec![StoredContract::CustomContract(self.clone())],
             };
-            if let Some(mut caller_contracts_map) = caller_contracts.get(&self.creator) {
+            if let Some(caller_contracts_map) = caller_contracts.get(&self.creator) {
                 new_map
                     .stored_contracts
                     .extend(caller_contracts_map.stored_contracts.clone());
@@ -443,7 +438,6 @@ impl CustomContract {
             }
             new_map.stored_contracts.retain(|contract| match contract {
                 StoredContract::CustomContract(contract) => contract.id != self.id,
-                _ => true,
             });
             new_map
                 .stored_contracts

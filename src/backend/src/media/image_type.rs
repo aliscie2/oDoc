@@ -2,6 +2,7 @@
 // use web_sys::Blob;
 // use web_sys::{BlobPropertyBag, File, Url};
 
+#[allow(dead_code)]
 pub struct Image {
     pub name: String,
     pub format: String,

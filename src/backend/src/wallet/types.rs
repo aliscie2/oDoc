@@ -1,12 +1,11 @@
 use crate::user_history::UserHistory;
-use crate::{CPayment, PaymentStatus, WALLETS_STORE};
+use crate::WALLETS_STORE;
 use candid::{CandidType, Decode, Deserialize, Encode, Principal};
 use ethers_core::abi::ethereum_types::H160;
-use ic_cdk::caller;
 use ic_stable_structures::{storable::Bound, Storable};
 use serde::Serialize;
 use std::collections::HashMap;
-use std::{borrow::Cow, cell::RefCell};
+use std::borrow::Cow;
 
 pub const MAX_SYMBOL_LENGTH: usize = 20;
 

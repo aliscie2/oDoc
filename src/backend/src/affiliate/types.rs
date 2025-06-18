@@ -1,14 +1,10 @@
 use candid::{CandidType, Decode, Deserialize, Encode, Principal};
 use ic_cdk::caller;
-use ic_cdk_macros::*;
-use ic_stable_structures::{storable::Bound, DefaultMemoryImpl, StableBTreeMap, Storable};
+use ic_stable_structures::{storable::Bound, Storable};
 use serde::Serialize;
 use std::borrow::Cow;
-use std::collections::HashSet;
 
 // Import user history related types and traits
-use crate::discover::time_diff;
-use crate::websocket::Notification;
 // use crate::{CPayment, PaymentStatus, Wallet, PROFILE_HISTORY, AFFILIATE};
 // use crate::wallet::{CPayment};
 
@@ -162,14 +158,4 @@ impl Affiliate {
         self.save();
     }
     // Add a new referral with trust calculation
-
-    // Calculate total earnings
-    pub fn total_earnings(&self) -> f64 {
-        self.earnings.iter().map(|payment| payment.amount).sum()
-    }
-
-    // Get number of referrals
-    pub fn referral_count(&self) -> usize {
-        self.users.len()
-    }
 }

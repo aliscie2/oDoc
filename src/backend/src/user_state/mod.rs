@@ -11,6 +11,7 @@ thread_local! {
     );
 }
 
+#[allow(dead_code)]
 pub fn update_user_state(principal: Principal, is_online: bool) {
     USER_STATE_STORE.with(|store| {
         let mut store = store.borrow_mut();
@@ -21,12 +22,14 @@ pub fn update_user_state(principal: Principal, is_online: bool) {
     });
 }
 
+#[allow(dead_code)]
 pub fn get_user_state(principal: Principal) -> Option<UserState> {
     USER_STATE_STORE.with(|store| {
         store.borrow().get(&principal)
     })
 }
 
+#[allow(dead_code)]
 pub fn record_user_cycles(principal: Principal, operation: &str, cycles: u64) -> Result<(), String> {
     USER_STATE_STORE.with(|store| {
         let mut store = store.borrow_mut();
@@ -37,6 +40,7 @@ pub fn record_user_cycles(principal: Principal, operation: &str, cycles: u64) ->
     Ok(())
 }
 
+#[allow(dead_code)]
 pub fn get_user_total_cycles(principal: Principal) -> Result<u64, String> {
     USER_STATE_STORE.with(|store| {
         let store = store.borrow();
@@ -45,6 +49,7 @@ pub fn get_user_total_cycles(principal: Principal) -> Result<u64, String> {
     })
 }
 
+#[allow(dead_code)]
 pub fn get_user_operation_cycles(principal: Principal, operation: &str) -> Result<u64, String> {
     USER_STATE_STORE.with(|store| {
         let store = store.borrow();

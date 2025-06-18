@@ -1,34 +1,21 @@
-use candid::{decode_one, encode_one, Principal};
-use evm_rpc_canister_types::{
-    BlockTag, EthMainnetService, EthSepoliaService, EvmRpcCanister, GetTransactionCountArgs,
-    GetTransactionCountResult, MultiGetTransactionCountResult, RequestResult, RpcService,
-};
+use candid::Principal;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::sync::atomic::AtomicU64;
 // use ic_ledger_types::BlockIndex;
 use candid::Nat;
 use chat::*;
-use contracts::StoredContractVec;
 pub use contracts::*;
-use contracts::*;
 use discover::*;
 use files::*;
 use files_content::*;
 use friends::*;
-use ic_cdk::api::management_canister::provisional::CanisterId;
 use ic_cdk_macros;
 use ic_websocket_cdk::*;
-use ic_websocket_cdk::*;
-use icrc_ledger_types::icrc1::transfer::BlockIndex;
-use init::*;
 use job_matcher::pallet::{Category,Job};
 use queries::*;
 pub use share_files::*;
-use share_files::*;
 use storage_schema::*;
-use timer::*;
-use updates::*;
 use user::*;
 use user_history::*;
 pub use wallet::*;
@@ -39,7 +26,7 @@ use job_matcher::*;
 use ic_stable_structures::memory_manager::{MemoryId, MemoryManager, VirtualMemory};
 
 use ic_stable_structures::{
-    storable::Bound, DefaultMemoryImpl, StableBTreeMap, StableVec, Storable,
+    DefaultMemoryImpl, StableBTreeMap,
 };
 
 mod contracts;
@@ -70,12 +57,7 @@ mod user_state;
 use calendar::*;
 
 use crate::ckusdc_index_types::*;
-use crate::LogLevel::Debug;
 use affiliate::*;
-use ic_cdk::api::management_canister::bitcoin::{
-    BitcoinNetwork, GetUtxosResponse, MillisatoshiPerByte,
-};
-use icrc_ledger_types::icrc1::account::Account;
 use workspaces::*;
 
 type Memory = VirtualMemory<DefaultMemoryImpl>;
@@ -242,19 +224,14 @@ pub static COUNTER: AtomicU64 = AtomicU64::new(0);
 
 #[cfg(test)]
 mod tests {
-    use crate::friends::Friend;
-    use crate::user::User;
-    use ic_cdk::caller;
+    
+    
+    
 
     #[test]
     fn test_one() {
         // println!("test_one {}", caller().to_string());
     }
-}
-
-fn backend_wasm() -> Vec<u8> {
-    let wasm_path = std::env::var_os("backend_WASM").expect("Missing counter wasm file");
-    std::fs::read(wasm_path).unwrap()
 }
 
 ic_cdk_macros::export_candid!();

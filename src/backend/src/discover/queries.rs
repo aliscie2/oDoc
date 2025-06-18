@@ -2,10 +2,7 @@
 
 use crate::discover::{Post, PostUser, UserFE};
 use ic_cdk_macros::query;
-use std::collections::HashMap;
 
-use crate::files_content::ContentNode;
-use crate::storage_schema::FileId;
 use crate::user::User;
 use crate::POSTS;
 

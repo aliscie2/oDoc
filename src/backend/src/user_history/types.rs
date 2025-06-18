@@ -1,15 +1,12 @@
 use std::collections::HashSet;
-use std::time::Duration;
 
 use candid::{CandidType, Decode, Deserialize, Encode, Principal};
 use ic_cdk::caller;
 
-use crate::discover::time_diff;
 use crate::websocket::Notification;
-use crate::PROFILE_STORE;
 use crate::{CPayment, PaymentStatus, Wallet, PROFILE_HISTORY};
-use ic_stable_structures::{storable::Bound, DefaultMemoryImpl, StableBTreeMap, Storable};
-use std::{borrow::Cow, cell::RefCell};
+use ic_stable_structures::{storable::Bound, Storable};
+use std::borrow::Cow;
 
 // export::{
 //     candid::{CandidType, Deserialize},
@@ -17,7 +14,7 @@ use std::{borrow::Cow, cell::RefCell};
 // }
 
 #[derive(PartialOrd, PartialEq, Clone, Debug, CandidType, Deserialize)]
-enum ActionType {
+pub enum ActionType {
     Payment(CPayment),
     // Share(SharePayment),
 }
@@ -46,6 +43,7 @@ pub struct ActionRating {
 }
 
 // Function to calculate percentage
+#[allow(dead_code)]
 fn calculate_percentage(value: f64, total: f64) -> f64 {
     if total > 0.0 {
         value / total
