@@ -24,69 +24,72 @@ declare global {
   var newUser: () => Promise<any>;
 }
 
-// Test suite level variables
+// Test suite level variables - initialized once for all tests
 let testPic: PocketIc;
 let testActor: ActorSubclass;
 let testUser: any;
 let testNewUser: () => Promise<any>;
 
-describe("Karma/Action Score Tests", () => {
+describe("Karma/Action Score Tests - Improved", () => {
   beforeAll(async () => {
     // Setup test environment once for the entire test suite
+    console.log("Setting up PocketIc for test suite...");
     testPic = await PocketIc.create();
-
+    
     // Create a subnet for the canister
     const subnet = await testPic.createSubnet({
       kind: "Application"
     });
-
+    
     // Install your canister
     const canisterId = await testPic.createCanister();
-
+    
     // Use the correct WASM path from the build output
     const wasmPath = path.join(__dirname, "../../../target/wasm32-unknown-unknown/release/backend.wasm");
-
+    
     // Check if files exist before trying to read them
     if (!fs.existsSync(wasmPath)) {
       throw new Error(`WASM file not found: ${wasmPath}. Please build the project first with 'dfx build'`);
     }
-
+    
+    console.log(`Installing canister with WASM from: ${wasmPath}`);
     await testPic.installCode(
       canisterId,
       fs.readFileSync(wasmPath),
     );
-
+    
     // Create actor instance with your canister interface
     testActor = testPic.createActor<_SERVICE>(idlFactory, canisterId);
-
+    
     // Create main test user
     const userIdentity = testPic.generateRandomIdentity();
     testUser = {
       identity: userIdentity,
       getPrincipal: () => userIdentity.getPrincipal()
     };
-
+    
     // Helper function to create new users for testing
     testNewUser = async () => {
       const newIdentity = testPic.createIdentity();
       return {
-        identity: newIdentity,
+        identity: newIdentity,  
         getPrincipal: () => newIdentity.getPrincipal()
       };
     };
-
+    
     // Set global variables for backward compatibility
     global.pic = testPic;
     global.actor = testActor;
     global.user = testUser;
     global.newUser = testNewUser;
+    
+    console.log("Test suite setup complete");
   });
 
   beforeEach(async () => {
     // Reset test state before each test
-    // Clear any previous test data by resetting the canister state
     // This is more efficient than recreating PocketIc for each test
-
+    
     // Optional: Initialize user in the system if needed
     try {
       const profile = await testActor.get_user_profile(testUser.getPrincipal());
@@ -107,9 +110,11 @@ describe("Karma/Action Score Tests", () => {
 
   afterAll(async () => {
     // Clean up once after all tests
+    console.log("Tearing down test suite...");
     if (testPic) {
       await testPic.tearDown();
     }
+    console.log("Test suite cleanup complete");
   });
 
   test("Test karma increase after interacting with three users and releasing promises", async () => {
@@ -131,7 +136,7 @@ describe("Karma/Action Score Tests", () => {
     // Create promises with 3 different users
     const promises = [];
     const newUsers = [];
-
+    
     for (let i = 0; i < 3; i++) {
       const newUser = await testNewUser();
       newUsers.push(newUser);
@@ -177,7 +182,7 @@ describe("Karma/Action Score Tests", () => {
     const finalProfile = await testActor.get_user_profile(testUser.getPrincipal());
     expect(finalProfile.Ok.users_interacted).toEqual(initialInteractions + 3);
     expect(finalProfile.Ok.actions_rate).toBeGreaterThan(initialKarma);
-
+    
     console.log(`Initial karma: ${initialKarma}, Final karma: ${finalProfile.Ok.actions_rate}`);
   });
 
@@ -199,7 +204,7 @@ describe("Karma/Action Score Tests", () => {
     // Create promises with 7 different users (between 4-10)
     const promises = [];
     const newUsers = [];
-
+    
     for (let i = 0; i < 7; i++) {
       const newUser = await testNewUser();
       newUsers.push(newUser);
@@ -245,7 +250,7 @@ describe("Karma/Action Score Tests", () => {
     const finalProfile = await testActor.get_user_profile(testUser.getPrincipal());
     expect(finalProfile.Ok.users_interacted).toEqual(initialInteractions + 7);
     expect(finalProfile.Ok.actions_rate).toBeGreaterThan(initialKarma);
-
+    
     console.log(`Initial karma: ${initialKarma}, Final karma: ${finalProfile.Ok.actions_rate}`);
   });
 
@@ -286,7 +291,7 @@ describe("Karma/Action Score Tests", () => {
         ...promiseWithReceiver,
         status: { ConfirmedCancellation: null }
       };
-
+      
       const cancelStore = {
         CustomContract: {
           id: randomString(),
@@ -321,7 +326,7 @@ describe("Karma/Action Score Tests", () => {
     const res = await testActor.multi_updates([], [], [to_store], [], []);
     // This should fail when the cap is implemented
     expect("Err" in res).toBeTruthy();
-
+    
     // Test that smaller amounts still work
     const smallPromise = {
       ...promise,
@@ -379,7 +384,7 @@ describe("Karma/Action Score Tests", () => {
         ...promiseWithReceiver,
         status: { ConfirmedCancellation: null }
       };
-
+      
       const cancelStore = {
         CustomContract: {
           id: randomString(),
@@ -395,19 +400,19 @@ describe("Karma/Action Score Tests", () => {
     // Check if user is marked for staking (low karma score)
     const profile_history = await testActor.get_user_profile(testUser.getPrincipal());
     expect(profile_history.Ok.actions_rate).toBeLessThan(1.5); // Low karma indicates penalty
-
+    
     // The third cancellation should trigger staking
     // Check if staking period is set (this would be in user profile/history)
     expect(profile_history.Ok.staking_end_time).toBeDefined();
-
+    
     // Verify staking period is approximately 30 days from now
     const thirtyDaysInNs = 30 * 24 * 60 * 60 * 1e9; // 30 days in nanoseconds
     const currentTime = Date.now() * 1e6;
     const expectedStakingEnd = currentTime + thirtyDaysInNs;
-
+    
     // Allow for some variance in timing
     expect(profile_history.Ok.staking_end_time).toBeCloseTo(expectedStakingEnd, -7); // Within ~100ms
-
+    
     // Try to create a new promise during staking period (should fail)
     const newUser = await testNewUser();
     const stakedPromise = {
@@ -483,7 +488,7 @@ describe("Karma/Action Score Tests", () => {
     // This should fail due to bus down timeout
     const withdrawRes = await testActor.multi_updates([], [], [withdrawStore], [], []);
     expect("Err" in withdrawRes).toBeTruthy();
-
+    
     // Verify the error is related to bus down/timeout
     if ("Err" in withdrawRes) {
       const errorMessage = withdrawRes.Err;
@@ -493,7 +498,7 @@ describe("Karma/Action Score Tests", () => {
     // Test that immediate withdrawal (before bus down) would work
     // Reset time back to normal
     testPic.setTime(Date.now() * 1e6);
-
+    
     // Create another promise for immediate test
     const immediatePromise = {
       ...promise,
@@ -567,7 +572,7 @@ describe("Karma/Action Score Tests", () => {
         ...promiseWithReceiver,
         status: { ConfirmedCancellation: null }
       };
-
+      
       const cancelStore = {
         CustomContract: {
           id: randomString(),
@@ -627,7 +632,7 @@ describe("Karma/Action Score Tests", () => {
     // Check karma recovery
     const recoveredProfile = await testActor.get_user_profile(testUser.getPrincipal());
     expect(recoveredProfile.Ok.actions_rate).toBeGreaterThan(lowKarma);
-
+    
     console.log(`Low karma: ${lowKarma}, Recovered karma: ${recoveredProfile.Ok.actions_rate}`);
   });
-});
+}); 
