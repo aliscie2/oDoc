@@ -11,7 +11,6 @@ pub mod query;
 pub mod types;
 pub mod update;
 
-
 pub use query::*;
 pub use types::*;
 pub use update::*;
@@ -22,21 +21,20 @@ type DateTime = f32;
 #[derive(Clone, Debug, Deserialize, CandidType)]
 
 pub enum Subscprtion {
-    None, 
+    None,
     Basic(DateTime),
     Premium(DateTime),
-    Custom(DateTime)
+    Custom(DateTime),
 }
 
 #[derive(Clone, Debug, Deserialize, CandidType)]
 
 pub struct UserState {
     pub is_transfering: bool,
-    pub ai_credits : f32,
-    pub subscprtion : Subscprtion,
-    pub is_ai_free_tier : bool
+    pub ai_credits: f32,
+    pub subscprtion: Subscprtion,
+    pub is_ai_free_tier: bool,
 }
-
 
 impl Storable for UserState {
     fn to_bytes(&self) -> Cow<[u8]> {

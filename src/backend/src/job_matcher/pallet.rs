@@ -1,8 +1,8 @@
 use candid::{CandidType, Decode, Deserialize, Encode, Principal};
+use ic_stable_structures::storable::Bound;
 use ic_stable_structures::Storable;
 use serde::Serialize;
 use std::borrow::Cow;
-use ic_stable_structures::storable::Bound;
 
 #[derive(PartialOrd, PartialEq, Clone, Debug, Serialize, CandidType, Deserialize)]
 pub struct Match {
@@ -11,7 +11,7 @@ pub struct Match {
     pub user_id: String,
     pub missmatching_skills: Vec<String>,
     pub date_updated: f64,
-    pub is_connected :bool,
+    pub is_connected: bool,
     pub cover_letter: String,
 }
 

@@ -2,7 +2,6 @@ use candid::{CandidType, Decode, Deserialize, Encode, Principal};
 use ic_cdk::caller;
 use std::borrow::Cow;
 
-
 // #[macro_use]
 // extern crate macros; // This imports the macro for use
 

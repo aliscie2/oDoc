@@ -1,17 +1,13 @@
-use ic_cdk_macros::query;
 use ic_cdk::caller;
+use ic_cdk_macros::query;
 
-
-
-
-use super::pallet::{Job, Match, Category};
-use ic_cdk_macros::update;
+use super::pallet::{Category, Job, Match};
 use candid::{CandidType, Decode, Deserialize, Encode, Principal};
+use ic_cdk_macros::update;
 use serde::Serialize;
 
-
 #[derive(PartialOrd, PartialEq, Clone, Debug, Serialize, CandidType, Deserialize)]
-pub struct  GetJobs {
+pub struct GetJobs {
     pub jobs: Vec<Job>,
     pub matching_jobs: Vec<Job>,
 }
@@ -20,18 +16,19 @@ pub struct  GetJobs {
 fn get_my_jobs() -> GetJobs {
     let mut jobs = Job::get_my_jobs();
     let mut matching_jobs = Vec::new();
-    
+
     for job in jobs.iter() {
-        job.matches.iter()
+        job.matches
+            .iter()
             .filter_map(|m| Job::get(&m.job_id))
-            .filter(|job| job.active)  // Filter out inactive jobs
+            .filter(|job| job.active) // Filter out inactive jobs
             .for_each(|job| matching_jobs.push(job));
         // let category = match job.category { Category::Talent => Category::Job, _ => Category::Talent };
         // let matching_jobs = Job::get_matches(job.skills.clone(), category);
         // all_jobs.extend(matching_jobs);
     }
-    
-    GetJobs{
+
+    GetJobs {
         jobs,
         matching_jobs,
     }
@@ -40,18 +37,17 @@ fn get_my_jobs() -> GetJobs {
 // Don't get confused category is what you are looking for.
 // Not what you are now.
 #[query]
-fn get_matches(current_job_id:String, skills: Vec<String>, category: Category) -> Vec<Job> {
+fn get_matches(current_job_id: String, skills: Vec<String>, category: Category) -> Vec<Job> {
     let curr = Job::get(&current_job_id);
     let matching_jobs: Vec<Job> = Job::get_matches(skills, category);
 
     if curr.is_none() {
-        return matching_jobs.into_iter()
-        .take(10)
-        .collect();
+        return matching_jobs.into_iter().take(10).collect();
     }
-    
+
     let curr = curr.unwrap();
-    let mut filtered_jobs: Vec<Job> = matching_jobs.into_iter()
+    let mut filtered_jobs: Vec<Job> = matching_jobs
+        .into_iter()
         .filter(|job| {
             // Check if this job ID exists in matches
             if let Some(match_record) = curr.matches.iter().find(|m| m.job_id == job.id) {
@@ -60,7 +56,8 @@ fn get_matches(current_job_id:String, skills: Vec<String>, category: Category) -
                 // 1. The job was updated after the match, OR
                 // 2. The current job was updated after the match
                 // otherwise remove it
-                job.date_updated > match_record.date_updated || curr.date_updated > match_record.date_updated
+                job.date_updated > match_record.date_updated
+                    || curr.date_updated > match_record.date_updated
             } else {
                 // If job ID is not in matches, keep it
                 true
@@ -78,11 +75,7 @@ fn get_matches(current_job_id:String, skills: Vec<String>, category: Category) -
 //  In the future allow users to ignore some jobs Ignore { job_id, date}
 //  to filter out jobs that job.id == job_id && job.date_updated < date
 
-
-
 #[query]
-fn get_job(job_id:String) -> Option<Job>  {
-
+fn get_job(job_id: String) -> Option<Job> {
     Job::get(&job_id)
 }
-

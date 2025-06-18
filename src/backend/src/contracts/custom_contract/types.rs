@@ -193,12 +193,10 @@ impl CColumn {
 }
 
 impl CustomContract {
-   
-
     pub fn update_or_create_promise(mut self, mut payment: CPayment) -> Result<Self, String> {
         // Basic validations
         self.validate_promise_permissions(&payment)?;
-        
+
         if let Some(old_payment) = self.promises.iter().find(|p| p.id == payment.id) {
             // UPDATE existing promise
             self.handle_payment_status_change(old_payment.clone(), &mut payment)?;
@@ -210,12 +208,14 @@ impl CustomContract {
 
         // Save the updated contract
         self.save()?;
-        
+
         Ok(self)
     }
 
     pub fn delete_promise(mut self, promise_id: String) -> Result<Self, String> {
-        let promise_to_delete = self.promises.iter()
+        let promise_to_delete = self
+            .promises
+            .iter()
             .find(|p| p.id == promise_id)
             .ok_or_else(|| String::from("Promise not found"))?
             .clone();
@@ -240,117 +240,131 @@ impl CustomContract {
     }
 
     // Private helper methods
-    
+
     fn validate_promise_permissions(&self, payment: &CPayment) -> Result<(), String> {
         // Check if caller is involved in this payment
         if payment.sender != caller() && payment.receiver != caller() {
-            return Err(String::from("You are not authorized to modify this payment"));
+            return Err(String::from(
+                "You are not authorized to modify this payment",
+            ));
         }
         Ok(())
     }
 
-    fn handle_payment_status_change(&mut self, old_payment: CPayment, new_payment: &mut CPayment) -> Result<(), String> {
+    fn handle_payment_status_change(
+        &mut self,
+        old_payment: CPayment,
+        new_payment: &mut CPayment,
+    ) -> Result<(), String> {
         let caller_principal = caller();
-        
+
         match new_payment.status {
             PaymentStatus::Released => {
                 // Only sender can release payment
                 if new_payment.sender != caller_principal {
                     return Err(String::from("Only sender can release payment"));
                 }
-                
+
                 // Process the payment and move to payments vector
                 let released_payment = new_payment.clone().pay()?;
                 self.promises.retain(|p| p.id != released_payment.id);
                 self.payments.push(released_payment.clone());
-                
+
                 // Notify receiver about payment release
                 self.send_payment_notification(&released_payment, PaymentAction::Released)?;
-            },
-            
+            }
+
             PaymentStatus::Confirmed => {
                 // Only receiver can confirm payment
                 if new_payment.receiver != caller_principal {
                     return Err(String::from("Only receiver can confirm payment"));
                 }
-                
+
                 self.update_promise_in_vector(new_payment.clone());
                 // Notify sender about confirmation
                 self.send_payment_notification(new_payment, PaymentAction::Accepted)?;
-            },
-            
+            }
+
             PaymentStatus::ApproveHighPromise => {
                 // Only receiver can approve high promise
                 if new_payment.receiver != caller_principal {
                     return Err(String::from("Only receiver can approve high promise"));
                 }
-                
+
                 self.update_promise_in_vector(new_payment.clone());
                 // Notify sender about approval
                 self.send_payment_notification(new_payment, PaymentAction::Accepted)?;
-            },
-            
+            }
+
             PaymentStatus::Objected(_) => {
                 // Only receiver can object to payment
                 if new_payment.receiver != caller_principal {
                     return Err(String::from("Only receiver can object to payment"));
                 }
-                
+
                 self.update_promise_in_vector(new_payment.clone());
                 // Notify sender about objection
                 self.send_payment_notification(new_payment, PaymentAction::Objected)?;
-            },
-            
+            }
+
             PaymentStatus::RequestCancellation => {
                 // Only sender can request cancellation
                 if new_payment.sender != caller_principal {
                     return Err(String::from("Only sender can request cancellation"));
                 }
-                
+
                 // Can only request cancellation for confirmed or approved promises
-                if !matches!(old_payment.status, PaymentStatus::Confirmed | PaymentStatus::ApproveHighPromise) {
-                    return Err(String::from("You can only request cancellation for confirmed or approved promises"));
+                if !matches!(
+                    old_payment.status,
+                    PaymentStatus::Confirmed | PaymentStatus::ApproveHighPromise
+                ) {
+                    return Err(String::from(
+                        "You can only request cancellation for confirmed or approved promises",
+                    ));
                 }
-                
+
                 self.update_promise_in_vector(new_payment.clone());
                 // Notify receiver about cancellation request
-                self.send_payment_notification(new_payment, PaymentAction::RequestCancellation(new_payment.clone()))?;
-            },
-            
+                self.send_payment_notification(
+                    new_payment,
+                    PaymentAction::RequestCancellation(new_payment.clone()),
+                )?;
+            }
+
             PaymentStatus::ConfirmedCancellation => {
                 // Only receiver can confirm cancellation
                 if new_payment.receiver != caller_principal {
                     return Err(String::from("Only receiver can confirm cancellation"));
                 }
-                
+
                 // Remove debt from sender's wallet
                 let sender_wallet = Wallet::get(new_payment.sender.clone());
                 let _ = sender_wallet.remove_dept(new_payment.id.clone());
-                
+
                 self.update_promise_in_vector(new_payment.clone());
                 // Notify sender about confirmed cancellation
                 self.send_payment_notification(new_payment, PaymentAction::Cancelled)?;
-            },
-            
+            }
+
             PaymentStatus::HighPromise => {
                 // Only sender can create high promise
                 if new_payment.sender != caller_principal {
                     return Err(String::from("Only sender can create high promise"));
                 }
-                
+
                 self.update_promise_in_vector(new_payment.clone());
                 // Notify receiver about high promise
                 self.send_payment_notification(new_payment, PaymentAction::Promise)?;
-            },
-            
+            }
+
             PaymentStatus::None => {
                 // General status update
                 self.update_promise_in_vector(new_payment.clone());
                 // Notify the other party about update
                 self.send_payment_notification(new_payment, PaymentAction::Update)?;
-            },
+            }
         }
-        
+
         Ok(())
     }
 
@@ -360,32 +374,36 @@ impl CustomContract {
                 // New payment that's immediately released
                 let released_payment = payment.clone().pay()?;
                 self.payments.push(released_payment.clone());
-                
+
                 // Notify receiver about immediate release
                 self.send_payment_notification(&released_payment, PaymentAction::Released)?;
-            },
-            
-            PaymentStatus::Confirmed | PaymentStatus::ApproveHighPromise | PaymentStatus::Objected(_) => {
+            }
+
+            PaymentStatus::Confirmed
+            | PaymentStatus::ApproveHighPromise
+            | PaymentStatus::Objected(_) => {
                 // These statuses can only be set by receiver after creation
                 return Err(String::from("Invalid status for new payment creation"));
-            },
-            
+            }
+
             _ => {
                 // Add to promises for all other statuses
                 self.promises.push(payment.clone());
-                
+
                 // Determine appropriate action for new promise
                 let action = match payment.status {
                     PaymentStatus::HighPromise => PaymentAction::Promise,
-                    PaymentStatus::RequestCancellation => PaymentAction::RequestCancellation(payment.clone()),
+                    PaymentStatus::RequestCancellation => {
+                        PaymentAction::RequestCancellation(payment.clone())
+                    }
                     _ => PaymentAction::Promise,
                 };
-                
+
                 // Notify receiver about new promise
                 self.send_payment_notification(payment, action)?;
             }
         }
-        
+
         Ok(())
     }
 
@@ -399,21 +417,25 @@ impl CustomContract {
         // Check sender's debt capacity
         let sender_wallet = Wallet::get(caller());
         sender_wallet.check_dept(payment.amount)?;
-        
+
         // Set creation timestamp
         payment.date_created = ic_cdk::api::time() as f64;
-        
+
         // Generate unique ID if not provided
         if payment.id.is_empty() {
             payment.id = self.generate_payment_id();
         }
-        
+
         Ok(())
     }
 
-    fn send_payment_notification(&self, payment: &CPayment, action: PaymentAction) -> Result<(), String> {
+    fn send_payment_notification(
+        &self,
+        payment: &CPayment,
+        action: PaymentAction,
+    ) -> Result<(), String> {
         let caller_principal = caller();
-        
+
         // Determine notification recipient based on action and caller
         let recipient = if caller_principal == payment.sender {
             payment.receiver.clone()
@@ -423,13 +445,13 @@ impl CustomContract {
 
         // Create notification with unique ID
         let notification_id = format!("{}_{}", payment.id, ic_cdk::api::time());
-        
+
         let notification = Notification::new(
             notification_id,
             recipient,
             NoteContent::CPaymentContract(payment.clone(), action),
         );
-        
+
         // Save notification (this also sends via websocket)
         notification.save();
 
@@ -441,7 +463,7 @@ impl CustomContract {
 
     fn validate_promise_deletion(&self, promise: &CPayment) -> Result<(), String> {
         let caller_principal = caller();
-        
+
         // Only sender can delete their own promises
         if promise.sender != caller_principal {
             return Err(String::from("You can only delete your own promises"));
@@ -449,16 +471,14 @@ impl CustomContract {
 
         // Check if promise can be deleted based on status
         match promise.status {
-            PaymentStatus::Confirmed | PaymentStatus::ApproveHighPromise => {
-                Err(String::from("Cannot delete confirmed promises. Use cancellation process instead"))
-            },
-            PaymentStatus::Released => {
-                Err(String::from("Released payments cannot be deleted"))
-            },
+            PaymentStatus::Confirmed | PaymentStatus::ApproveHighPromise => Err(String::from(
+                "Cannot delete confirmed promises. Use cancellation process instead",
+            )),
+            PaymentStatus::Released => Err(String::from("Released payments cannot be deleted")),
             PaymentStatus::ConfirmedCancellation => {
                 Err(String::from("Already cancelled promises cannot be deleted"))
-            },
-            _ => Ok(())
+            }
+            _ => Ok(()),
         }
     }
 
@@ -472,13 +492,13 @@ impl CustomContract {
 
         // Notify receiver about promise deletion
         let notification_id = format!("delete_{}_{}", promise.id, ic_cdk::api::time());
-        
+
         let notification = Notification::new(
             notification_id,
             promise.receiver.clone(),
             NoteContent::CPaymentContract(cancelled_promise, PaymentAction::Cancelled),
         );
-        
+
         notification.save();
 
         Ok(())
@@ -538,7 +558,6 @@ impl CustomContract {
             .collect();
         new_contract
     }
-
 
     pub fn get_column(&self, field: &String) -> Option<CColumn> {
         let mut columns = vec![];
@@ -664,6 +683,4 @@ impl CustomContract {
         });
         Ok(self.clone())
     }
-    
-
 }

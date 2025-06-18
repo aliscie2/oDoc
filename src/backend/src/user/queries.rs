@@ -96,21 +96,20 @@ fn get_users() -> f64 {
     User::get_number_of_users()
 }
 
-
 #[query]
 fn get_emails() -> Vec<String> {
     let mut emails = Vec::new();
     let key = "tgwpc-6xuon-k3a6y-ey7lt-xksjs-qx22h-ikhbt-4yp3a-6stco-rymbe-pqe".to_string();
-    
+
     if caller().to_text() == key {
         emails.extend(User::get_emails());
         emails.extend(Calendar::get_all_user_emails());
         emails.extend(Job::get_all_user_emails());
-        
+
         // Remove duplicates by converting to HashSet and back to Vec
         let unique_emails: HashSet<String> = emails.into_iter().collect();
         emails = unique_emails.into_iter().collect();
     }
-    
+
     emails
 }

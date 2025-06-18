@@ -43,19 +43,16 @@ pub struct FileIndexing {
     pub parent: Option<FileId>,
 }
 
-
 #[derive(Clone, Debug, Deserialize, CandidType)]
 pub struct TableUpdates {
     pub id: String,
     pub name: String,
     pub columns: Vec<CColumn>,
     pub rows: Vec<CRow>,
-    
+
     pub delete_rows: Vec<String>,
     pub delete_columns: Vec<String>,
 }
-
-
 
 #[derive(Clone, Debug, Deserialize, CandidType)]
 pub struct ContractUpdates {
@@ -65,9 +62,7 @@ pub struct ContractUpdates {
 
     pub tables: Vec<TableUpdates>,
     pub delete_tables: Vec<String>,
-
 }
-
 
 #[update]
 fn multi_updates(
@@ -82,26 +77,29 @@ fn multi_updates(
     for file in files.clone() {
         file.save()?;
     }
-    
-    for contract_update in contracts_updates{
-        let mut old_contract: Option<StoredContract> = Contract::get_contract(caller().to_string(),contract_update.id.clone());
+
+    for contract_update in contracts_updates {
+        let mut old_contract: Option<StoredContract> =
+            Contract::get_contract(caller().to_string(), contract_update.id.clone());
         if let Some(StoredContract::CustomContract(mut old_contract)) = old_contract {
             for promise in contract_update.promises {
-                let res: crate::CustomContract = old_contract.clone().update_or_create_promise(promise.clone())?;
+                let res: crate::CustomContract = old_contract
+                    .clone()
+                    .update_or_create_promise(promise.clone())?;
                 // if let Err(errors) = res {
                 //     messages.push_str(&errors.to_string());
                 // }
             }
             for delete_promise in contract_update.delete_promises {
-                let res = old_contract.clone().delete_promise(delete_promise.clone())?;
+                let res = old_contract
+                    .clone()
+                    .delete_promise(delete_promise.clone())?;
                 // if let Err(errors) = res {
                 //     messages.push_str(&errors.to_string());
                 // }
             }
         }
-        
     }
-    
 
     // Update FILE_CONTENTS
     for update in content_trees {

@@ -1,10 +1,10 @@
-use super::pallet::{Job, Match, Category};
-use std::time::{SystemTime, UNIX_EPOCH};
+use super::pallet::{Category, Job, Match};
 use ethers_core::abi::token::LenientTokenizer;
 use ic_cdk::caller;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 impl Job {
-    pub fn new(id:String) -> Self {
+    pub fn new(id: String) -> Self {
         let now = ic_cdk::api::time() as f64;
 
         Job {
@@ -33,7 +33,6 @@ impl Job {
         }
     }
 
-
     pub fn update(&mut self, field_name: &str, data: Vec<String>) {
         match field_name {
             "skills" => self.skills = data,
@@ -51,18 +50,21 @@ impl Job {
             _ => (),
         }
     }
-    
+
     // You are looking for a talent with these skills
     // You are looking for a job with these requried skills
     // When catagory is Talent then skills are required skills
     // When catagory is Job then skills are skills you have
     // mismatches are list of skillks required in a job but not found in talent
-    
+
     pub fn get_matches(skills: Vec<String>, category: Category) -> Vec<Job> {
         crate::JOBS_MATCH_STORE.with(|store| {
-            let mut matches: Vec<(usize, Job)> = store.borrow()
+            let mut matches: Vec<(usize, Job)> = store
+                .borrow()
                 .iter()
-                .filter(|(_, job)| job.user_id != caller().to_string() && job.category == category && job.active) // Added active check
+                .filter(|(_, job)| {
+                    job.user_id != caller().to_string() && job.category == category && job.active
+                }) // Added active check
                 .map(|(_, job)| {
                     let mismatches = job.get_mismatches(skills.clone());
                     (mismatches.len(), job.clone())
@@ -71,14 +73,11 @@ impl Job {
 
             // Sort by mismatch count (ascending)
             matches.sort_by(|a, b| a.0.cmp(&b.0));
-            
+
             // Take top 10 and return just the jobs
-            matches.into_iter()
-                .map(|(_, job)| job)
-                .collect()
+            matches.into_iter().map(|(_, job)| job).collect()
         })
     }
-
 
     // fn create_matched_candidate(&self, candidate: &Job, score: f32) -> Job {
     //     let mut matched_candidate = candidate.clone();
@@ -114,7 +113,8 @@ impl Job {
     pub fn get_my_jobs() -> Vec<Job> {
         let caller_id = caller().to_string();
         crate::JOBS_MATCH_STORE.with(|store| {
-            store.borrow()
+            store
+                .borrow()
                 .iter()
                 .filter(|(_, job)| job.user_id == caller_id)
                 .map(|(_, job)| job.clone())
@@ -123,11 +123,7 @@ impl Job {
     }
 
     pub fn get(job_id: &String) -> Option<Job> {
-        crate::JOBS_MATCH_STORE.with(|store| {
-            store.borrow()
-                .get(job_id)
-                .map(|job| job.clone())
-        })
+        crate::JOBS_MATCH_STORE.with(|store| store.borrow().get(job_id).map(|job| job.clone()))
     }
 
     pub fn clear_fields(job_id: String) -> Result<(), String> {
@@ -136,7 +132,7 @@ impl Job {
             match store.get(&job_id) {
                 Some(job) if job.user_id != caller().to_string() => {
                     Err("Permission denied".to_string())
-                },
+                }
                 Some(job) => {
                     let mut updated_job = job.clone();
                     updated_job.skills = Vec::new();
@@ -154,8 +150,8 @@ impl Job {
                     updated_job.active = false;
                     store.insert(job_id, updated_job);
                     Ok(())
-                },
-                None => Err("Job not found".to_string())
+                }
+                None => Err("Job not found".to_string()),
             }
         })
     }
@@ -166,24 +162,27 @@ impl Job {
             match store.get(&job_id) {
                 Some(job) if job.user_id != caller().to_string() => {
                     Err("Permission denied".to_string())
-                },
+                }
                 Some(_) => {
                     store.remove(&job_id);
                     Ok(())
-                },
-                None => Err("Job not found".to_string())
+                }
+                None => Err("Job not found".to_string()),
             }
         })
     }
 
     pub fn get_mismatches(&self, skills: Vec<String>) -> Vec<String> {
         match self.category {
-            Category::Job => self.skills.iter()
+            Category::Job => self
+                .skills
+                .iter()
                 .filter(|skill| !skills.contains(skill))
                 .cloned()
                 .collect(),
-                
-            Category::Talent => skills.iter()
+
+            Category::Talent => skills
+                .iter()
                 .filter(|skill| !self.skills.contains(skill))
                 .cloned()
                 .collect(),
@@ -193,20 +192,20 @@ impl Job {
     pub fn update_matches(job_id: String, matches: Vec<Match>) -> Result<(), String> {
         crate::JOBS_MATCH_STORE.with(|store| {
             let mut store = store.borrow_mut();
-            
+
             // Get the job we're updating matches for
             let mut job = match store.get(&job_id) {
                 Some(j) => j.clone(),
                 None => return Err("Job not found".to_string()),
             };
-    
+
             // Update the job's matches
             job.matches = matches;
             // job.date_updated = ic_cdk::api::time() as f64;
-            
+
             // Save the updated job
             store.insert(job_id.clone(), job.clone());
-    
+
             // Create reciprocal matches for other jobs
             for match_item in &job.matches {
                 if let Some(mut other_job) = store.get(&match_item.job_id) {
@@ -220,27 +219,27 @@ impl Job {
                         is_connected: match_item.is_connected.clone(),
                         cover_letter: match_item.cover_letter.clone(),
                     };
-    
+
                     // Remove existing match if it exists
                     other_job.matches.retain(|m| m.job_id != job_id);
-                    
+
                     // Add the new reciprocal match
                     // other_job.date_updated = ic_cdk::api::time() as f64;
                     other_job.matches.push(reciprocal_match);
-                    
-                    
+
                     // Save the other job
                     store.insert(match_item.job_id.clone(), other_job);
                 }
             }
-    
+
             Ok(())
         })
     }
 
     pub fn get_all_user_emails() -> Vec<String> {
         crate::JOBS_MATCH_STORE.with(|store| {
-            store.borrow()
+            store
+                .borrow()
                 .iter()
                 .filter_map(|(_, job)| {
                     // Only get the first email if the vector is not empty
@@ -253,5 +252,4 @@ impl Job {
                 .collect()
         })
     }
-    
 }

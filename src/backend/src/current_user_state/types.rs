@@ -1,3 +1,4 @@
+use super::{Subscprtion, UserState};
 use candid::{CandidType, Decode, Deserialize, Encode, Principal};
 use ic_cdk::{caller, print};
 use ic_stable_structures::storable::Bound;
@@ -6,11 +7,7 @@ use std::borrow::Cow;
 use std::cell::{Ref, RefCell};
 use std::collections::HashMap;
 use std::sync::atomic::Ordering;
-use super::{UserState,Subscprtion};
 type DateTime = f32;
-
-
-
 
 impl Default for UserState {
     fn default() -> Self {
@@ -28,7 +25,8 @@ impl UserState {
         let current_user = caller().to_string();
         crate::CURRENT_USER_STATE_STORE.with(|store| {
             let states = store.borrow();
-            states.get(&current_user)
+            states
+                .get(&current_user)
                 .map(|state| state.is_transfering)
                 .unwrap_or(false)
         })
@@ -88,7 +86,8 @@ impl UserState {
         let current_user = caller().to_string();
         crate::CURRENT_USER_STATE_STORE.with(|store| {
             let states = store.borrow();
-            states.get(&current_user)
+            states
+                .get(&current_user)
                 .map(|state| state.ai_credits)
                 .unwrap_or(0.0)
         })
@@ -124,12 +123,13 @@ impl UserState {
             is_free
         })
     }
-    
+
     pub fn is_free_ai() -> bool {
         let current_user = caller().to_string();
         crate::CURRENT_USER_STATE_STORE.with(|store| {
             let states = store.borrow();
-            states.get(&current_user)
+            states
+                .get(&current_user)
                 .map(|state| state.is_ai_free_tier)
                 .unwrap_or(false)
         })

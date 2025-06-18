@@ -22,7 +22,6 @@ fn get_calendar(calendar_id: String) -> Option<Calendar> {
     }
 }
 
-
 #[query]
 fn get_calendar_by_author(author: String) -> Option<Calendar> {
     crate::CALENDAR_STORE.with(|store| {

@@ -22,7 +22,7 @@ use ic_websocket_cdk::*;
 use ic_websocket_cdk::*;
 use icrc_ledger_types::icrc1::transfer::BlockIndex;
 use init::*;
-use job_matcher::pallet::{Category,Job};
+use job_matcher::pallet::{Category, Job};
 use queries::*;
 pub use share_files::*;
 use share_files::*;
@@ -43,11 +43,11 @@ use ic_stable_structures::{
 };
 
 mod contracts;
+mod current_user_state;
 mod files;
 mod files_content;
 mod media;
 mod user;
-mod current_user_state;
 
 use current_user_state::*;
 mod friends;

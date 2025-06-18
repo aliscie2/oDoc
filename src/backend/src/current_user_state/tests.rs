@@ -5,7 +5,5 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_job_matching_scores() {
-
-    }
+    fn test_job_matching_scores() {}
 }

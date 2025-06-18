@@ -40,23 +40,17 @@ impl Storable for ChatsIdVec {
         Cow::Borrowed(&[])
     }
 
-    
-
-
     fn from_bytes(bytes: Cow<[u8]>) -> Self {
         println!("ChatsIdVec from_bytes",);
         match Decode!(bytes.as_ref(), Self) {
-            Ok(chats) => {
-                chats
-
-            }
+            Ok(chats) => chats,
             Err(decode_error) => {
                 println!("❌ DECODE ERROR: {:?}", decode_error);
                 println!("📊 Bytes length: {}", bytes.len());
                 ChatsIdVec { chats: vec![] }
             }
+        }
     }
- }
 
     const BOUND: Bound = Bound::Unbounded;
 }
@@ -75,7 +69,7 @@ impl Storable for Chat {
             Ok(chat) => chat,
             Err(decode_error) => {
                 println!("⚠️ Failed to decode as current Chat, attempting migration...");
-                
+
                 // Return a default/empty chat instead of panicking
                 Chat {
                     id: format!("migrated_{}", ic_cdk::api::time()),
@@ -89,9 +83,6 @@ impl Storable for Chat {
             }
         }
     }
-
-
-
 
     const BOUND: Bound = Bound::Unbounded;
 }
@@ -171,8 +162,6 @@ impl Chat {
         })
     }
 
-    
-    
     pub fn get_my_chats() -> Vec<Chat> {
         CHATS.with(|store| {
             let my_chats_ids = MY_CHATS.with(|my_chats_store| {
@@ -182,7 +171,7 @@ impl Chat {
                     .unwrap_or_else(|| ChatsIdVec { chats: vec![] })
                     .clone()
             });
-    
+
             let chats = store.borrow();
             let mut my_chats: Vec<Chat> = my_chats_ids
                 .chats
@@ -191,7 +180,7 @@ impl Chat {
                 .map(|mut chat| {
                     // Reverse messages so latest are first
                     chat.messages.reverse();
-                    
+
                     // Limit to first 30 (which are now the latest 30)
                     if chat.messages.len() > MESSAGES_PER_PAGE {
                         chat.messages = chat.messages.into_iter().take(MESSAGES_PER_PAGE).collect();
@@ -199,37 +188,36 @@ impl Chat {
                     chat
                 })
                 .collect();
-    
+
             // Sort chats by last message date (most recent first)
             my_chats.sort_by(|a, b| {
                 let a_last_date = a.messages.first().map(|msg| msg.date).unwrap_or(0);
                 let b_last_date = b.messages.first().map(|msg| msg.date).unwrap_or(0);
                 b_last_date.cmp(&a_last_date)
             });
-    
+
             my_chats
         })
     }
-    
-    
+
     pub fn load_more_messages(chat_id: String, messages_length: usize) -> Vec<Message> {
         Chat::get(&chat_id)
             .map(|chat| {
                 let total_messages = chat.messages.len();
-                
+
                 // If client already has all available messages, return empty
                 if messages_length >= total_messages {
                     return vec![];
                 }
-                
+
                 // Reverse messages so latest are first
                 let mut reversed_messages = chat.messages.clone();
                 reversed_messages.reverse();
-                
+
                 // Calculate how many messages to return
                 let start_index = messages_length;
                 let end_index = std::cmp::min(start_index + MESSAGES_PER_PAGE, total_messages);
-                
+
                 // Return the slice of messages starting from current length
                 reversed_messages[start_index..end_index].to_vec()
             })
@@ -264,7 +252,10 @@ impl Chat {
             let mut my_chats = store.borrow_mut();
             // get user or insert empty vec
             // let mut my_chats_store = my_chats.get(&user.to_string()).unwrap_or_default().clone();
-            let mut my_chats_store = my_chats.get(&user.to_string()).unwrap_or_else(|| ChatsIdVec { chats: vec![] }).clone();
+            let mut my_chats_store = my_chats
+                .get(&user.to_string())
+                .unwrap_or_else(|| ChatsIdVec { chats: vec![] })
+                .clone();
             if my_chats_store.chats.contains(&self.id) {
                 my_chats_store.chats.retain(|id| id != &self.id);
                 my_chats.insert(user.to_string(), my_chats_store);

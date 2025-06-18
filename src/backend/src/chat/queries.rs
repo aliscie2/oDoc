@@ -24,21 +24,21 @@ pub struct FEChat {
 #[query]
 fn get_my_chats(chats_length: usize) -> Vec<FEChat> {
     const PAGE_SIZE: usize = 15;
-    
+
     let chats: Vec<Chat> = Chat::get_my_chats();
-    
+
     // If client already has all available chats, return empty
     if chats_length >= chats.len() {
         return Vec::new();
     }
-    
+
     // Calculate how many chats to return
     let start_index = chats_length;
     let end_index = std::cmp::min(start_index + PAGE_SIZE, chats.len());
-    
+
     // Get the slice starting from current length
     let page_chats = &chats[start_index..end_index];
-    
+
     let mut fe_chats: Vec<FEChat> = Vec::new();
 
     for chat in page_chats {
@@ -81,7 +81,6 @@ fn get_my_chats(chats_length: usize) -> Vec<FEChat> {
 fn load_more_messages(chat_id: String, messages_length: usize) -> Vec<Message> {
     Chat::load_more_messages(chat_id, messages_length)
 }
-
 
 // #[query]
 // fn get_chats_notifications() -> Vec<Message> {

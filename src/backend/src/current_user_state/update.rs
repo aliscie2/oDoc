@@ -1,39 +1,29 @@
 use ic_cdk::caller;
 
-
-
-
-
-use ic_cdk_macros::update;
+use super::{Subscprtion, UserState};
 use candid::{CandidType, Decode, Deserialize, Encode, Principal};
+use ic_cdk_macros::update;
 use serde::Serialize;
-use super::{UserState,Subscprtion};
 
-
-use crate::contracts::{PaymentStatus,CPayment};
-
-
-
+use crate::contracts::{CPayment, PaymentStatus};
 
 #[update]
 fn buy_ai_credits(amount: f64) -> Result<(), String> {
-
     if caller().to_string() == Principal::anonymous().to_string() {
         return Err("Permission denied (anonymous)".to_string());
     }
 
-   if (amount > 5.0 || amount < 1.0) {
-    return Err("Amount must be in range 1 to 5".to_string());
-   }
+    if (amount > 5.0 || amount < 1.0) {
+        return Err("Amount must be in range 1 to 5".to_string());
+    }
 
+    let receiver = Principal::from_text(
+        "tgwpc-6xuon-k3a6y-ey7lt-xksjs-qx22h-ikhbt-4yp3a-6stco-rymbe-pqe".to_string(),
+    );
 
-
-   let receiver = Principal::from_text("tgwpc-6xuon-k3a6y-ey7lt-xksjs-qx22h-ikhbt-4yp3a-6stco-rymbe-pqe".to_string());
-   
-   if receiver.is_err() {
+    if receiver.is_err() {
         return Err("Invalid receiver".to_string());
-   }
-
+    }
 
     let payment = CPayment {
         contract_id: "none".to_string(),
@@ -48,12 +38,11 @@ fn buy_ai_credits(amount: f64) -> Result<(), String> {
     };
     payment.pay()?;
     let added_amount = amount * 0.8;
-    UserState::add_credits( added_amount as f32); // we take 2%
-    UserState::set_free_ai( false); // we take 2%
+    UserState::add_credits(added_amount as f32); // we take 2%
+    UserState::set_free_ai(false); // we take 2%
 
     Ok(())
 }
-
 
 #[update]
 fn drop_free_credits() -> Result<(), String> {
@@ -63,4 +52,3 @@ fn drop_free_credits() -> Result<(), String> {
     UserState::add_credits(1.0);
     Ok(())
 }
-
