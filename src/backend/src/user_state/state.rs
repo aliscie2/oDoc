@@ -7,6 +7,7 @@ pub struct UserState {
     pub last_active: u64,
     pub is_online: bool,
     pub cycles_consumed: HashMap<String, u64>,  // operation -> cycles
+    pub cycles_used: u64, // total cycles used
     pub subscription: Option<String>,  // Add subscription field
 }
 
@@ -16,6 +17,7 @@ impl UserState {
             last_active: ic_cdk::api::time(),
             is_online: false,
             cycles_consumed: HashMap::new(),
+            cycles_used: 0,
             subscription: None,
         }
     }
@@ -26,16 +28,18 @@ impl UserState {
             last_active: ic_cdk::api::time(),
             is_online: false,
             cycles_consumed: HashMap::new(),
+            cycles_used: 0,
             subscription: Some(subscription),
         }
     }
 
     pub fn record_cycles(&mut self, operation: String, cycles: u64) {
         self.cycles_consumed.insert(operation, cycles);
+        self.cycles_used = self.cycles_consumed.values().sum();
     }
 
     pub fn get_total_cycles_consumed(&self) -> u64 {
-        self.cycles_consumed.values().sum()
+        self.cycles_used
     }
 
     pub fn get_operation_cycles(&self, operation: String) -> u64 {

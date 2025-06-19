@@ -66,7 +66,8 @@ impl UserState {
 
     pub fn record_cycles(&mut self, operation: &str, cycles: u64) {
         self.cycle_ledger.total_cycles_consumed += cycles;
-        self.cycle_ledger.operation_cycles.insert(operation.to_string(), cycles);
+        let entry = self.cycle_ledger.operation_cycles.entry(operation.to_string()).or_insert(0);
+        *entry += cycles;
         self.cycle_ledger.last_updated = ic_cdk::api::time();
     }
 
