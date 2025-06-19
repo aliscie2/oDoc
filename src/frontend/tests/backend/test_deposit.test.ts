@@ -10,7 +10,7 @@ test("Test deposit", async () => {
     photo: [[]],
   };
   // register user 1
-  let res = await global.actor.register(input);
+  let res = await global.actor.register("", input);
   expect("Ok" in res).toBeTruthy();
 
   // deposit_usdt

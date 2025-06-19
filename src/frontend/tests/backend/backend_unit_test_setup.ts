@@ -8,6 +8,22 @@ import { Identity } from "@dfinity/agent";
 import { RegisterUser, User } from "../../../declarations/backend/backend.did";
 import { randomString } from "../../DataProcessing/dataSamples";
 
+declare global {
+  var __PIC__: PocketIcServer;
+  var pic: PocketIc;
+  var user: Identity;
+  var actor: _SERVICE;
+  var is_global_set: boolean;
+  var loginAs: (user: Identity) => Promise<_SERVICE>;
+  var register: () => Promise<void>;
+  var newUser: (login?: boolean, name?: string) => Promise<Identity>;
+
+  namespace NodeJS {
+    interface ProcessEnv {
+      PIC_URL: string;
+    }
+  }
+}
 vi.stubGlobal("matchMedia", () => ({
   addEventListener: () => {},
 }));
@@ -27,18 +43,23 @@ const setupTestEnvironment = async () => {
   });
 
   const url = picIcServer.getUrl();
-  const pic = await PocketIc.create(url);
+
+  const pic = await PocketIc.create();
+  const fixture = await pic.setupCanister<_SERVICE>(idlFactory, WASM_PATH);
+  // const { actor } = fixture;
+
+  // const pic = await PocketIc.create(url);
 
   process.env.PIC_URL = url;
   global.__PIC__ = picIcServer;
 
-  const fixture = await pic.setupCanister<_SERVICE>(idlFactory);
+  // const fixture = await pic.setupCanister<_SERVICE>(idlFactory);
   fixture.actor.setIdentity(alice);
 
-  global.pic = pic;
-  global.user = alice;
-  global.actor = fixture.actor;
-  global.is_global_set = true;
+  global["pic"] = pic;
+  global["user"] = alice;
+  global["actor"] = fixture.actor;
+  global["is_global_set"] = true;
 
   const loginAs = async (user: Identity) => {
     fixture.actor.setIdentity(user);

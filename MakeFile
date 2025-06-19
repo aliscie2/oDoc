@@ -83,3 +83,8 @@ upgrade-backend:
 	sh scripts/did.sh backend
 	dfx generate backend
 	dfx deploy backend
+
+# call it before each commit please.
+format:
+	prettier --write .
+	cargo fmt
