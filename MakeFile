@@ -88,3 +88,6 @@ upgrade-backend:
 format:
 	prettier --write .
 	cargo fmt
+
+getting_pulls:
+	git fetch origin pull/<pr_number>/head:pr-<pr_number>
