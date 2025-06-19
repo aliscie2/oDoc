@@ -1941,9 +1941,9 @@ dependencies = [
 
 [[package]]
 name = "ic-llm"
-version = "1.0.1"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "609b6a1e0a8ce2bd4661360e4219d07c972b917cd54eb2bfad1d347805eea8c4"
+checksum = "fa0e74462ec292f110b27f9c50d7b152f9172be2326053cc1290d58bcf438c2c"
 dependencies = [
  "candid",
  "ic-cdk 0.17.2",
