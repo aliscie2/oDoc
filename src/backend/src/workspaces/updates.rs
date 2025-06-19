@@ -1,6 +1,5 @@
 use ic_cdk_macros::update;
 
-use crate::user::User;
 use crate::workspaces::WorkSpace;
 
 #[update]

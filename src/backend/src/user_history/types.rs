@@ -1,15 +1,12 @@
 use std::collections::HashSet;
-use std::time::Duration;
 
 use candid::{CandidType, Decode, Deserialize, Encode, Principal};
 use ic_cdk::caller;
 
-use crate::discover::time_diff;
 use crate::websocket::Notification;
-use crate::PROFILE_STORE;
 use crate::{CPayment, PaymentStatus, Wallet, PROFILE_HISTORY};
-use ic_stable_structures::{storable::Bound, DefaultMemoryImpl, StableBTreeMap, Storable};
-use std::{borrow::Cow, cell::RefCell};
+use ic_stable_structures::{storable::Bound, Storable};
+use std::borrow::Cow;
 
 // export::{
 //     candid::{CandidType, Deserialize},
@@ -17,7 +14,7 @@ use std::{borrow::Cow, cell::RefCell};
 // }
 
 #[derive(PartialOrd, PartialEq, Clone, Debug, CandidType, Deserialize)]
-enum ActionType {
+pub enum ActionType {
     Payment(CPayment),
     // Share(SharePayment),
 }
@@ -46,6 +43,7 @@ pub struct ActionRating {
 }
 
 // Function to calculate percentage
+#[allow(dead_code)]
 fn calculate_percentage(value: f64, total: f64) -> f64 {
     if total > 0.0 {
         value / total
@@ -114,13 +112,12 @@ impl UserHistory {
         self.rates_by_actions
             .iter()
             .filter(|r| {
-                if let ActionType::Payment(payment) = &r.action_type {
-                    payment.status != PaymentStatus::Released
-                        || payment.status != PaymentStatus::None
-                            && payment.status != PaymentStatus::ConfirmedCancellation
-                } else {
-                    false
-                }
+                let payment = match &r.action_type {
+                    ActionType::Payment(p) => p,
+                };
+                payment.status != PaymentStatus::Released
+                    || payment.status != PaymentStatus::None
+                        && payment.status != PaymentStatus::ConfirmedCancellation
             })
             .cloned()
             .collect()
@@ -132,13 +129,12 @@ impl UserHistory {
         self.rates_by_actions
             .iter()
             .filter(|r| {
-                if let ActionType::Payment(payment) = &r.action_type {
-                    if let PaymentStatus::Objected(_) = payment.status {
-                        let is_unique = unique_receivers.insert(payment.receiver.clone());
-                        is_unique
-                    } else {
-                        false
-                    }
+                let payment = match &r.action_type {
+                    ActionType::Payment(p) => p,
+                };
+                if let PaymentStatus::Objected(_) = payment.status {
+                    let is_unique = unique_receivers.insert(payment.receiver.clone());
+                    is_unique
                 } else {
                     false
                 }
@@ -150,10 +146,11 @@ impl UserHistory {
     pub fn get_promises_value(&self) -> f64 {
         let mut promises: Vec<CPayment> = vec![];
         self.get_promises().iter().for_each(|r| {
-            if let ActionType::Payment(payment) = &r.action_type {
-                if payment.sender == caller() {
-                    promises.push(payment.clone());
-                }
+            let payment = match &r.action_type {
+                ActionType::Payment(p) => p,
+            };
+            if payment.sender == caller() {
+                promises.push(payment.clone());
             }
         });
         promises.iter().map(|p| p.amount).sum()
@@ -213,7 +210,7 @@ impl UserHistory {
             );
         }
 
-        if let Some(rating) = self.get_your_rating() {
+        if let Some(_rating) = self.get_your_rating() {
             self.rates_by_others.retain(|r| r.user_id != caller());
             // return Err("You already rated this user short ago. Please, wait 5 minutes before you can relate them.".to_string());
             // let diff = time_diff(rating.date.clone(), ic_cdk::api::time());
@@ -253,17 +250,13 @@ impl UserHistory {
     // }
 
     pub fn calc_users_rate(&mut self) -> f64 {
-        let total_rate_sum: f64 = self.rates_by_others.iter_mut().map(|r| r.rating).sum();
-        let len_rate: f64 = self.rates_by_others.len() as f64;
-        let mut rate = total_rate_sum / len_rate; // get the mean (μ = (x₁ + x₂ + ... + xₙ)/n) ( out of 5 stars)
-        if len_rate < 5.0 {
-            // if less than 5 ratings, the have less whight
-            rate *= 0.3;
-        } else if len_rate < 10.0 {
-            rate *= 0.7;
+        if self.rates_by_others.is_empty() {
+            self.users_rate = 0.0;
+            return 0.0;
         }
-        self.users_rate = rate;
-        rate.clone()
+        let total: f64 = self.rates_by_others.iter().map(|r| r.rating).sum();
+        self.users_rate = total / self.rates_by_others.len() as f64;
+        self.users_rate
     }
 
     pub fn calc_actions_rate(&mut self) -> f64 {

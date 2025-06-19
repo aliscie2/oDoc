@@ -24,9 +24,7 @@ export const BeneficiariesTable: React.FC<BeneficiariesTableProps> = ({
   isCreator = false,
   onUpdate,
 }) => {
-  const {  all_friends } = useSelector(
-    (state: any) => state.filesState,
-  );
+  const { all_friends } = useSelector((state: any) => state.filesState);
   const theme = useTheme();
   const [remainingShares, setRemainingShares] = useState(100);
 
@@ -115,7 +113,6 @@ export const BeneficiariesTable: React.FC<BeneficiariesTableProps> = ({
         field: "receiver",
         headerName: "Beneficiary",
         editable: true,
-        cellEditor: "agSelectCellEditor",
         cellEditor: "agSelectCellEditor",
         onCellValueChanged: (params) => {
           const { data, newValue } = params;

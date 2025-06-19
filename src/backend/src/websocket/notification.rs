@@ -9,9 +9,9 @@ use serde::Serialize;
 
 use crate::chat::Message;
 use crate::friends::Friend;
-use crate::websocket::{notification, send_app_message, AppMessage};
+use crate::websocket::{send_app_message, AppMessage};
 use crate::COUNTER;
-use crate::{websocket, CPayment, NOTIFICATIONS, USER_FILES};
+use crate::{CPayment, NOTIFICATIONS};
 
 #[derive(PartialEq, Clone, Debug, CandidType, Deserialize)]
 pub struct FriendRequestNotification {
@@ -160,8 +160,8 @@ impl Notification {
     pub fn pure_save(&self) {
         NOTIFICATIONS.with(|notifications| {
             let mut notifications = notifications.borrow_mut();
-            let mut user_notifications = notifications.get(&self.receiver.to_text());
-            if let Some((mut user_notifications)) = user_notifications {
+            let user_notifications = notifications.get(&self.receiver.to_text());
+            if let Some(user_notifications) = user_notifications {
                 let mut notifications_list = user_notifications.notifications;
                 notifications_list.retain(|notification| notification.id != self.id);
                 notifications_list.push(self.clone());
@@ -191,6 +191,7 @@ impl Notification {
         send_app_message(self.receiver, msg.clone());
     }
 
+    #[allow(dead_code)]
     pub fn send_to(&self, to: Principal) {
         let msg: AppMessage = AppMessage {
             notification: Some(self.clone()),
@@ -213,9 +214,10 @@ impl Notification {
     //     // send_app_message(user, msg.clone());
     // }
 
+    #[allow(dead_code)]
     pub fn delete(&self) {
         NOTIFICATIONS.with(|notifications| {
-            let mut user_notifications = notifications.borrow_mut();
+            let user_notifications = notifications.borrow_mut();
             let mut user_notifications = user_notifications
                 .get(&caller().to_string())
                 .unwrap_or_else(|| NotificationVec {
@@ -231,9 +233,10 @@ impl Notification {
         });
     }
 
+    #[allow(dead_code)]
     pub fn seen(&self) {
         NOTIFICATIONS.with(|notifications| {
-            let mut user_notifications = notifications.borrow_mut();
+            let user_notifications = notifications.borrow_mut();
             let mut user_notifications = user_notifications
                 .get(&caller().to_string())
                 .unwrap_or_else(|| NotificationVec {
@@ -264,6 +267,7 @@ impl Notification {
     }
 }
 
+#[allow(dead_code)]
 pub fn get_friend_request_note(sender: Principal, receiver: Principal) -> Option<Notification> {
     NOTIFICATIONS.with(|notifications| {
         let user_notifications = notifications.borrow();
@@ -293,8 +297,10 @@ pub fn notify_friend_request(f: Friend) {
     new_notification.save();
 }
 
-type id = String;
+#[allow(dead_code)]
+type Id = String;
 
+#[allow(dead_code)]
 pub fn contract_notification(
     receiver: Principal,
     sender: Principal,

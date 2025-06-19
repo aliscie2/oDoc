@@ -1,7 +1,7 @@
 
 use super::pallet::{Job, Match, Category};
 use ic_cdk_macros::update;
-use candid::{CandidType, Decode, Deserialize, Encode, Principal};
+use candid::{CandidType, Deserialize};
 use serde::Serialize;
 
 

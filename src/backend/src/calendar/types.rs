@@ -1,14 +1,14 @@
 use crate::CALENDAR_STORE;
 use candid::{CandidType, Decode, Deserialize, Encode};
 use ic_cdk::caller;
-use ic_stable_structures::{storable::Bound, StableBTreeMap, Storable};
+use ic_stable_structures::{storable::Bound, Storable};
 use serde::Serialize;
 use std::borrow::Cow;
 
 #[derive(Clone, Debug, Serialize, CandidType, Deserialize)]
 pub struct Calendar {
     pub id: String,
-    pub googleIds: Vec<String>,
+    pub google_ids: Vec<String>,
     pub owner: String,
     pub availabilities: Vec<Availability>,
     pub events: Vec<Event>,
@@ -33,7 +33,7 @@ impl Storable for Calendar {
             match Decode!(bytes.as_ref(), OldCalendar) {
                 Ok(old_calendar) => Calendar {
                     id: old_calendar.id,
-                    googleIds: Vec::new(), // Default empty vector for new field
+                    google_ids: Vec::new(), // Default empty vector for new field
                     owner: old_calendar.owner,
                     availabilities: old_calendar.availabilities,
                     events: old_calendar.events,
@@ -111,10 +111,6 @@ impl Calendar {
         ((days_since_epoch as u32 + 3) % 7) as u32
     }
 
-    pub fn get_time_of_day(timestamp: f64) -> u64 {
-        (timestamp % Self::NANOS_PER_DAY) as u64
-    }
-
     pub fn start_of_day(timestamp: f64) -> f64 {
         (timestamp / Self::NANOS_PER_DAY).floor() * Self::NANOS_PER_DAY
     }
@@ -130,7 +126,7 @@ impl Calendar {
     pub fn default() -> Self {
         Calendar {
             id: ic_cdk::api::time().to_string(),
-            googleIds: Vec::new(), // Added missing field
+            google_ids: Vec::new(), // Added missing field
             owner: caller().to_text(),
             availabilities: Vec::new(),
             events: Vec::new(),
@@ -144,10 +140,11 @@ impl Calendar {
         })
     }
 
+    #[allow(dead_code)]
     pub fn new(calendar_id: &String) -> Self {
         let calendar = Calendar {
             id: calendar_id.clone(),
-            googleIds: Vec::new(), // Added missing field
+            google_ids: Vec::new(), // Added missing field
             owner: caller().to_text(),
             availabilities: Vec::new(),
             events: Vec::new(),
@@ -216,7 +213,7 @@ impl Calendar {
             None => {
                 let new_calendar = Calendar {
                     id: ic_cdk::api::time().to_string(),
-                    googleIds: Vec::new(), // Already present here
+                    google_ids: Vec::new(), // Already present here
                     owner: caller().to_text(),
                     availabilities: Vec::new(),
                     events: Vec::new(),
@@ -225,25 +222,6 @@ impl Calendar {
                 Ok(new_calendar)
             }
         }
-    }
-    pub fn cleanup_old_events(&mut self) -> Calendar {
-        let current_time = ic_cdk::api::time() as f64;
-        self.events.retain(|event| {
-            if let Some(recurrence) = &event.recurrence {
-                if let Some(until) = recurrence.until {
-                    until > current_time
-                } else {
-                    true
-                }
-            } else {
-                event.end_time > current_time
-            }
-        });
-
-        // Sort events chronologically
-        self.events
-            .sort_by(|a, b| a.start_time.partial_cmp(&b.start_time).unwrap());
-        self.clone()
     }
 
     pub fn get_events_by_week(&self, page: i32) -> Vec<Event> {
@@ -267,15 +245,5 @@ impl Calendar {
             .filter(|event| event.start_time >= week_start && event.start_time < week_end)
             .cloned()
             .collect()
-    }
-
-    pub fn get_next_seven_days_events(&self) -> Vec<Event> {
-        self.get_events_by_week(0)
-    }
-
-    pub fn has_event_conflict(&self, start_time: f64, end_time: f64) -> bool {
-        self.events
-            .iter()
-            .any(|event| start_time < event.end_time && end_time > event.start_time)
     }
 }

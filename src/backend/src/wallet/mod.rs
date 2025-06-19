@@ -19,6 +19,5 @@ pub use swaps::*;
 pub use token::*;
 
 pub use ck_usdc::*;
-pub use queries::*;
 pub use types::*;
 pub use updates::*;

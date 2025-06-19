@@ -523,6 +523,23 @@ type WorkSpace = record {
   name : text;
   admins : vec principal;
 };
+type CycleLedger = record {
+  total_cycles_consumed : nat64;
+  operation_cycles : vec record { text; nat64 };
+  last_updated : nat64;
+};
+type UserState = record {
+  is_transfering : bool;
+  ai_credits : float64;
+  subscription : Subscription;
+  is_ai_free_tier : bool;
+  cycle_ledger : CycleLedger;
+};
+type Subscription = record {
+  tier : text;
+  start_date : nat64;
+  end_date : nat64;
+};
 service : () -> {
   accept_friend_request : (text) -> (Result);
   add_google_calendar_id : (text, vec text) -> (Result_1);
@@ -613,4 +630,7 @@ service : () -> {
   ws_get_messages : (CanisterWsGetMessagesArguments) -> (Result_17) query;
   ws_message : (CanisterWsMessageArguments, opt AppMessage) -> (Result_3);
   ws_open : (CanisterWsOpenArguments) -> (Result_3);
+  record_cycles : (text, nat64) -> (Result);
+  get_total_cycles : () -> (Result_1);
+  get_operation_cycles : (text) -> (Result_1);
 }

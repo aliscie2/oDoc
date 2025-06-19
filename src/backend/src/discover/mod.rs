@@ -1,16 +1,13 @@
 use std::borrow::Cow;
-use std::cell::{Ref, RefCell};
+use std::cell::Ref;
 use std::collections::HashMap;
 use std::sync::atomic::Ordering;
 
 use candid::{CandidType, Decode, Deserialize, Encode, Principal};
-use ic_cdk::{caller, print};
+use ic_cdk::caller;
 use ic_stable_structures::storable::Bound;
 use ic_stable_structures::{BTreeMap, Storable};
 
-pub use queries::*;
-pub use types::*;
-pub use updates::*;
 
 use crate::files_content::{ContentNode, OldContentNode};
 use crate::storage_schema::ContentTree;
@@ -73,8 +70,8 @@ impl Storable for Post {
                             language: old_node.language,
                             indent: old_node.indent,
                             data: old_node.data,
-                            listStyleType: old_node.listStyleType,
-                            listStart: old_node.listStart,
+                            list_style_type: old_node.list_style_type,
+                            list_start: old_node.list_start,
                             children: old_node.children,
                         })
                         .collect(),
@@ -117,6 +114,7 @@ pub struct UserFE {
 }
 
 impl UserFE {
+    #[allow(dead_code)]
     pub fn from(id: Principal) -> Self {
         let user = User::get_user_from_principal(id).unwrap();
         UserFE {
@@ -141,7 +139,7 @@ pub struct PostUser {
 }
 
 impl Post {
-    // Constructor for creating a new Post
+    #[allow(dead_code)]
     pub fn new() -> Self {
         // Generate a unique ID for the post
         let id = COUNTER.fetch_add(1, Ordering::SeqCst).to_string();

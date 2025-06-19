@@ -1,6 +1,6 @@
 // use crate::websocket::{AppMessage, Notification};
 use crate::calendar::{Availability, Calendar, Event, ScheduleType};
-use candid::{CandidType, Decode, Deserialize, Encode, Principal};
+use candid::{CandidType, Deserialize, Principal};
 use ic_cdk::caller;
 use ic_cdk_macros::update;
 use serde::Serialize;
@@ -36,6 +36,7 @@ impl Calendar {
         Ok(())
     }
 
+    #[allow(dead_code)]
     fn check_event_conflicts(&self, new_event: &Event) -> Result<(), String> {
         let has_conflict = self
             .events
@@ -52,6 +53,7 @@ impl Calendar {
         Ok(())
     }
 
+    #[allow(dead_code)]
     fn check_blocked_time_overlap(&self, new_event: &Event) -> Result<(), String> {
         let overlaps_blocked = self
             .availabilities
@@ -68,6 +70,7 @@ impl Calendar {
         Ok(())
     }
 
+    #[allow(dead_code)]
     fn time_overlaps_availability(
         &self,
         start_time: f64,
@@ -282,7 +285,7 @@ fn update_calendar(calendar_id: String, actions: CalendarActions) -> Result<Cale
     match calendar.save() {
         Ok(_) => {
             // Send email notification if there's a Google Calendar ID
-            if let Some(google_id) = calendar.googleIds.first() {
+            if let Some(google_id) = calendar.google_ids.first() {
                 if !actions.events.is_empty() || !actions.delete_events.is_empty() {
                     send_google_calendar_notification(
                         &calendar_id,
@@ -316,10 +319,10 @@ fn add_google_calendar_id(calendar_id: String, ids: Vec<String>) -> Result<Strin
 
     // Add new IDs, skipping duplicates
     for id in ids {
-        if calendar.googleIds.contains(&id) {
+        if calendar.google_ids.contains(&id) {
             continue;
         }
-        calendar.googleIds.push(id);
+        calendar.google_ids.push(id);
     }
 
     calendar.save()?;

@@ -1,5 +1,4 @@
 use ic_cdk_macros::query;
-use std::collections::HashMap;
 
 use crate::files::FileNode;
 use crate::storage_schema::FileId;

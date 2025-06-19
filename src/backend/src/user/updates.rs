@@ -1,5 +1,6 @@
 use crate::affiliate::add_new_referral;
 use crate::chat::send_welcome_message;
+use crate::user_state::create_user_state;
 use ic_cdk::caller;
 use ic_cdk_macros::update;
 
@@ -20,6 +21,11 @@ fn register(affiliate_id: String, profile: RegisterUser) -> Result<User, String>
     }
 
     let user = User::new(profile.clone());
+    
+    // Create initial subscription and user state
+    let subscription = "basic".to_string();
+    let _ = create_user_state(caller(), subscription);
+    
     let _ = add_new_referral(affiliate_id, caller().to_text());
     send_welcome_message();
     Ok(user)

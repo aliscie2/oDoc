@@ -11,17 +11,17 @@ use crate::friends::Friend;
 use crate::storage_schema::{ContentTree, ContractId, FileId};
 use crate::user::User;
 use crate::user_history::UserHistory;
-use crate::{StoredContract, Wallet, PROFILE_STORE};
+use crate::{StoredContract, Wallet};
 
 #[derive(Clone, Debug, Default, CandidType, Deserialize)]
 pub struct InitialData {
-    Profile: User,
-    FilesContents: Option<HashMap<FileId, ContentTree>>,
-    Files: Vec<FileNode>,
-    Friends: Vec<Friend>,
+    profile: User,
+    files_contents: Option<HashMap<FileId, ContentTree>>,
+    files: Vec<FileNode>,
+    friends: Vec<Friend>,
     // DiscoverUsers: HashMap<String, User>,
-    Contracts: HashMap<ContractId, StoredContract>,
-    Wallet: Wallet,
+    contracts: HashMap<ContractId, StoredContract>,
+    wallet: Wallet,
 }
 
 #[derive(Clone, Debug, Default, CandidType, Deserialize)]
@@ -75,12 +75,12 @@ fn get_initial_data() -> Result<InitialData, String> {
         Contract::get_all_contracts().unwrap_or(HashMap::new());
 
     let initial_data = InitialData {
-        Profile: profile.unwrap(),
-        FilesContents: Some(files_contents),
-        Files: files,
-        Friends: Friend::get_list(caller()),
-        Contracts: contracts,
-        Wallet: Wallet::get(caller()),
+        profile: profile.unwrap(),
+        files_contents: Some(files_contents),
+        files: files,
+        friends: Friend::get_list(caller()),
+        contracts: contracts,
+        wallet: Wallet::get(caller()),
     };
     Ok(initial_data)
 }

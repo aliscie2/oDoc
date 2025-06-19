@@ -1,9 +1,9 @@
-use candid::{decode_one, encode_one, CandidType};
+use candid::{encode_one, CandidType};
 use ic_cdk::{api::time, caller, print, println};
 use ic_websocket_cdk::{
     send, ClientPrincipal, OnCloseCallbackArgs, OnMessageCallbackArgs, OnOpenCallbackArgs,
 };
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 use crate::websocket::Notification;
 
@@ -20,7 +20,7 @@ impl AppMessage {
     }
 }
 
-pub fn on_open(args: OnOpenCallbackArgs) {
+pub fn on_open(_args: OnOpenCallbackArgs) {
     let msg = AppMessage {
         notification: None,
         text: String::from("Connection is open"),

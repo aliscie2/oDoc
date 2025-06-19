@@ -1,28 +1,12 @@
-use crate::wallet::error::{Error, USDCResult};
-use crate::websocket::{NoteContent, Notification};
-use crate::workspaces::{
-    estimate_transaction_fees, nat_to_u256, nat_to_u64, validate_caller_not_anonymous,
-    EthereumNetwork, EVM_RPC,
-};
-use crate::{assert_token_symbol_length, parse_eth_address, wallet, Exchange, UserToken};
+use crate::wallet::error::Error;
+use crate::workspaces::nat_to_u64;
 use crate::{CPayment, ExchangeType, PaymentStatus, Wallet};
-use alloy_consensus::{SignableTransaction, TxEip1559, TxEnvelope};
-use alloy_primitives::{address, hex, Signature, TxKind, U256};
-use candid::CandidType;
-use candid::{func, Nat, Principal};
-use ethers_core::types::Res;
-use evm_rpc_canister_types::{
-    BlockTag, EthMainnetService, EthSepoliaService, EvmRpcCanister, GetTransactionCountArgs,
-    GetTransactionCountResult, MultiGetTransactionCountResult, RequestResult, RpcService,
-};
+use candid::{Nat, Principal};
 use ic_cdk::caller;
 use ic_cdk_macros::update;
 use icrc_ledger_types::icrc1::account::Account;
 use icrc_ledger_types::icrc1::transfer::BlockIndex;
-use icrc_ledger_types::icrc2::approve::{ApproveArgs, ApproveError};
 use icrc_ledger_types::icrc2::transfer_from::{TransferFromArgs, TransferFromError};
-use num::Num;
-use serde_json::{self};
 // use std::time;
 use crate::ckusdc_index_types::*;
 
@@ -62,7 +46,7 @@ async fn check_external_transactions(max_results: Nat) -> Result<GetTransactions
     let args = GetAccountTransactionsArgs {
         max_results,
         start: None,
-        account: Index_Account {
+        account: IndexAccount {
             owner: caller(),
             subaccount: None,
         },

@@ -18,7 +18,7 @@ pub fn notify_about_promise(payment: CPayment, action_type: PaymentAction) {
     }
     // If we have an existing notification
     if let Some(mut old_note) = Notification::get(receiver.to_text().clone(), payment.id.clone()) {
-        if let NoteContent::CPaymentContract(old_payment, old_action_type) =
+        if let NoteContent::CPaymentContract(old_payment, _old_action_type) =
             old_note.content.clone()
         {
             // Check if any relevant fields have changed

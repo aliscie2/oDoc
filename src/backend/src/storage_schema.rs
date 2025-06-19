@@ -17,11 +17,12 @@ use crate::websocket::Notification;
 use crate::workspaces::types::WorkSpace;
 
 use candid::{CandidType, Decode, Deserialize, Encode};
-use ic_stable_structures::memory_manager::{MemoryId, MemoryManager, VirtualMemory};
-use ic_stable_structures::{storable::Bound, DefaultMemoryImpl, StableBTreeMap, Storable};
+use ic_stable_structures::memory_manager::VirtualMemory;
+use ic_stable_structures::{storable::Bound, DefaultMemoryImpl, Storable};
 
-use std::{borrow::Cow, cell::RefCell};
+use std::borrow::Cow;
 
+#[allow(dead_code)]
 type Memory = VirtualMemory<DefaultMemoryImpl>;
 
 impl Storable for User {
@@ -67,31 +68,48 @@ impl Storable for User {
 //            pub type StringId = String;
 
 pub type FileId = String;
+#[allow(dead_code)]
 pub type PostId = String;
 pub type ContentId = String;
 pub type ContentTree = Vec<ContentNode>;
 pub type ContractId = String;
+#[allow(dead_code)]
 pub type ShareContractId = String;
+#[allow(dead_code)]
 pub type ShareRequestId = String;
+#[allow(dead_code)]
 pub type ShareId = String;
 pub type UserId = String;
 
 // Stores types
 // pub type IdStore = BTreeMap<String, Principal>;
 // pub type ProfileStore = BTreeMap<Principal, User>;
+#[allow(dead_code)]
 pub type ProfileHistoryStore = BTreeMap<String, UserHistory>;
+#[allow(dead_code)]
 pub type FriendsStore = BTreeMap<Principal, Vec<Friend>>;
 // pub type FilesStore = BTreeMap<Principal, HashMap<FileId, FileNode>>;
+#[allow(dead_code)]
 pub type FilesStore = BTreeMap<Principal, Vec<FileNode>>;
+#[allow(dead_code)]
 pub type FileContentsStore = BTreeMap<Principal, HashMap<FileId, ContentTree>>;
+#[allow(dead_code)]
 pub type ContractStore = BTreeMap<Principal, HashMap<ContractId, StoredContract>>;
 // pub type FilesShareStore = BTreeMap<ShareId, ShareFile>;
+#[allow(dead_code)]
 pub type WalletStore = BTreeMap<String, Wallet>;
+#[allow(dead_code)]
 pub type UserNotifications = BTreeMap<Principal, Vec<Notification>>;
+#[allow(dead_code)]
 pub type PostsStore = BTreeMap<PostId, Post>;
+#[allow(dead_code)]
 pub type SharedUserFiles = BTreeMap<Principal, Vec<ShareFile>>;
 
+#[allow(dead_code)]
 pub type ChatsStore = Vec<Chat>;
+#[allow(dead_code)]
 pub type ChatsNotificationStore = BTreeMap<Principal, Vec<Message>>;
+#[allow(dead_code)]
 pub type MyChatsStore = BTreeMap<Principal, Vec<String>>;
+#[allow(dead_code)]
 pub type WorkSpacesStore = Vec<WorkSpace>;

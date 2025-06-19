@@ -3,12 +3,10 @@ use std::collections::HashMap;
 
 use crate::{CustomContract, CONTRACTS_STORE};
 use candid::{CandidType, Decode, Deserialize, Encode, Principal};
-use ic_cdk::caller;
-use ic_stable_structures::{storable::Bound, DefaultMemoryImpl, StableBTreeMap, Storable};
+use ic_stable_structures::{storable::Bound, Storable};
 use serde::Serialize;
 
 use crate::storage_schema::ContractId;
-use crate::tables::Table;
 
 #[derive(Eq, PartialOrd, PartialEq, Clone, Debug, CandidType, Serialize, Deserialize)]
 pub enum Contract {
@@ -50,44 +48,68 @@ impl Storable for StoredContractVec {
     };
 }
 
-impl Contract {
-    pub fn get_all_contracts() -> Option<HashMap<ContractId, StoredContract>> {
-        let mut contract_map = HashMap::new();
+impl StoredContract {
+    pub fn get_contract_by_id(&self, id: String) -> Option<StoredContract> {
+        match self {
+            StoredContract::CustomContract(custom_contract) => {
+                if custom_contract.id == id {
+                    Some(StoredContract::CustomContract(custom_contract.clone()))
+                } else {
+                    None
+                }
+            }
+        }
+    }
 
+    pub fn get_contracts_by_owner(owner: Principal) -> Vec<StoredContract> {
+        let mut result = vec![];
         CONTRACTS_STORE.with(|contracts_store| {
             let caller_contracts = contracts_store.borrow();
-            if let Some(contracts) = caller_contracts.get(&caller().to_string()) {
-                for contract in contracts.stored_contracts.iter() {
-                    if let StoredContract::CustomContract(custom_contract) = contract {
-                        contract_map.insert(
-                            custom_contract.id.clone(),
-                            StoredContract::CustomContract(custom_contract.check_view_permission()),
-                        );
+            for contracts in caller_contracts.values() {
+                for contract in &contracts.stored_contracts {
+                    let StoredContract::CustomContract(custom_contract) = contract;
+                    if custom_contract.creator == owner.to_string() {
+                        result.push(StoredContract::CustomContract(custom_contract.clone()));
                     }
                 }
             }
         });
-        Some(contract_map)
+        result
     }
 
+    pub fn get_contracts_by_participant(_participant: Principal) -> Vec<StoredContract> {
+        // Implement logic if you have a way to define participants
+        vec![]
+    }
+}
+
+impl Contract {
     pub fn get_contract(author: String, contract_id: String) -> Option<StoredContract> {
         CONTRACTS_STORE.with(|contracts_store| {
             let caller_contracts = contracts_store.borrow();
-            let stored_contract_vec = caller_contracts.get(&author)?.stored_contracts.clone();
-
-            // Convert Vec<StoredContract> to HashMap<ContractId, StoredContract>
-            let mut contract_map = HashMap::new();
-            for (index, contract) in stored_contract_vec.into_iter().enumerate() {
-                contract_map.insert(index.to_string(), contract);
+            if let Some(contracts) = caller_contracts.get(&author) {
+                for contract in &contracts.stored_contracts {
+                    let StoredContract::CustomContract(custom_contract) = contract;
+                    if custom_contract.id == contract_id {
+                        return Some(StoredContract::CustomContract(custom_contract.clone()));
+                    }
+                }
             }
-
-            let contract = contract_map.get(&contract_id)?.clone();
-            if let StoredContract::CustomContract(custom_contract) = contract {
-                return Some(StoredContract::CustomContract(
-                    custom_contract.check_view_permission(),
-                ));
-            }
-            Some(contract.clone())
+            None
         })
+    }
+
+    pub fn get_all_contracts() -> Option<HashMap<String, StoredContract>> {
+        let mut contract_map = HashMap::new();
+        CONTRACTS_STORE.with(|contracts_store| {
+            let caller_contracts = contracts_store.borrow();
+            for (_author, contracts) in caller_contracts.iter() {
+                for contract in &contracts.stored_contracts {
+                    let StoredContract::CustomContract(custom_contract) = contract;
+                    contract_map.insert(custom_contract.id.clone(), StoredContract::CustomContract(custom_contract.clone()));
+                }
+            }
+        });
+        Some(contract_map)
     }
 }

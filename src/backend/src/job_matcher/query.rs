@@ -1,5 +1,4 @@
 use ic_cdk_macros::query;
-use ic_cdk::caller;
 use super::pallet::{Job, Category};
 
 #[query]

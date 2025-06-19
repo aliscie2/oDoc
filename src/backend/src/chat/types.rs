@@ -1,5 +1,4 @@
 use std::borrow::Cow;
-use std::sync::atomic::Ordering;
 
 use candid::{CandidType, Decode, Deserialize, Encode, Principal};
 use ic_cdk::caller;
@@ -7,9 +6,7 @@ use ic_stable_structures::storable::Bound;
 use ic_stable_structures::Storable;
 use serde::Serialize;
 
-use crate::storage_schema::MyChatsStore;
 use crate::websocket::{NoteContent, Notification};
-use crate::COUNTER;
 use crate::{CHATS, MY_CHATS};
 
 #[derive(Clone, Debug, Deserialize, CandidType)]
@@ -94,17 +91,7 @@ impl Chat {
             let chats = store.borrow();
             chats
                 .iter()
-                .find(|(chat_id, chat)| chat.id == id)
-                .map(|(_, chat)| chat.clone())
-        })
-    }
-
-    pub fn get_by_user(user: Principal) -> Option<Self> {
-        CHATS.with(|store| {
-            let chats = store.borrow();
-            chats
-                .iter()
-                .find(|(_, chat)| chat.admins.contains(&user) && chat.admins.contains(&caller()))
+                .find(|(_chat_id, chat)| chat.id == id)
                 .map(|(_, chat)| chat.clone())
         })
     }
@@ -126,6 +113,7 @@ impl Chat {
     //     })
     // }
 
+    #[allow(dead_code)]
     pub fn get_chats() -> Vec<Chat> {
         CHATS.with(|store| {
             let chats = store.borrow();

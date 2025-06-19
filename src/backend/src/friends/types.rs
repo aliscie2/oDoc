@@ -1,5 +1,4 @@
 use candid::{CandidType, Deserialize, Principal};
-use ic_cdk::caller;
 
 use crate::user::User;
 use crate::FRIENDS_STORE;
@@ -9,7 +8,6 @@ use ic_stable_structures::storable::Bound;
 use ic_stable_structures::Storable;
 use serde::Serialize;
 use std::borrow::Cow;
-use std::ptr::read_unaligned;
 
 #[derive(Eq, PartialOrd, PartialEq, Clone, Debug, CandidType, Serialize, Deserialize)]
 pub struct Friend {
@@ -82,14 +80,6 @@ impl Storable for Friend {
 }
 
 impl Friend {
-    pub fn new(sender: String, receiver: String) -> Self {
-        Self {
-            id: sender.clone() + &receiver.clone(),
-            sender: User::get_user_from_text_principal(&sender).unwrap(),
-            receiver: User::get_user_from_text_principal(&receiver).unwrap(),
-            confirmed: false,
-        }
-    }
     pub fn get(id: &String) -> Option<Self> {
         FRIENDS_STORE.with(|friends_store| {
             let store = friends_store.borrow();
