@@ -22,7 +22,10 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
-import whitepaperText from "./whitepaper.md";
+import whitepaperText from "./md/whitepaper.md";
+import promisePaper from "./md/promise.md";
+import roadMap from "./md/roadmap.md";
+import snsPaper from "./md/sns.md";
 
 function TabPanel({ children, value, index, ...other }) {
   return (
@@ -44,11 +47,26 @@ const MarkdownRenderer = () => {
   const [currentTab, setCurrentTab] = React.useState(0);
 
   React.useEffect(() => {
-    fetch(whitepaperText)
-      .then((response) => response.text())
-      .then((text) => {
-        setMarkdownContent(text);
-      });
+    const loadMarkdownFiles = async () => {
+      try {
+        // Fetch all files concurrently
+        const fetchPromises = [
+          whitepaperText,
+          promisePaper,
+          roadMap,
+          snsPaper,
+        ].map((paper) => fetch(paper).then((response) => response.text()));
+
+        const allTexts = await Promise.all(fetchPromises);
+        const totalText = allTexts.join("\n\n"); // Join with double newlines for separation
+
+        setMarkdownContent(totalText);
+      } catch (error) {
+        console.error("Error loading markdown files:", error);
+      }
+    };
+
+    loadMarkdownFiles();
   }, []);
 
   const sections = React.useMemo(() => {
@@ -145,7 +163,14 @@ const MarkdownRenderer = () => {
         <Typography
           component="code"
           sx={{
-            backgroundColor: theme.palette.grey[100],
+            backgroundColor:
+              theme.palette.mode === "dark"
+                ? theme.palette.grey[800]
+                : theme.palette.grey[100],
+            color:
+              theme.palette.mode === "dark"
+                ? theme.palette.grey[100]
+                : theme.palette.grey[900],
             padding: "2px 4px",
             borderRadius: 1,
             fontFamily: "monospace",
