@@ -55,7 +55,7 @@ export const AlertsCard = ({
           <Box key={idx}>
             <Typography
               variant="body2"
-              sx={{ color: "white", fontWeight: 500 }}
+              sx={{ fontWeight: 500 }}
             >
               {alert.title}
             </Typography>
@@ -70,8 +70,8 @@ export const AlertsCard = ({
       </Collapse>
 
       <Collapse in={isExpanded}>
-        <Divider sx={{ my: 2, borderColor: "rgba(255,255,255,0.1)" }} />
-        <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.8)" }}>
+        <Divider sx={{ my: 2,  }} />
+        <Typography variant="body2" >
           Client has disputed the third milestone payment citing incomplete
           deliverables. Resolution required within 7 days. Documentation and
           evidence have been submitted.

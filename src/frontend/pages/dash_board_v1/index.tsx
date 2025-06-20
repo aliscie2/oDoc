@@ -228,8 +228,6 @@ const Dashboard = () => {
     <Box
       sx={{
         minHeight: "100vh",
-        background:
-          "linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%)",
         p: 3,
       }}
     >

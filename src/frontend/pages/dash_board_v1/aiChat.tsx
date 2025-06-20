@@ -56,9 +56,7 @@ export const AIChatComponent = ({
   };
 
   const cardStyle = {
-    background:
-      "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)",
-    backdropFilter: "blur(20px)",
+
     border: "1px solid rgba(255,255,255,0.1)",
     borderRadius: "16px",
     transition: "all 0.3s ease",
@@ -97,7 +95,7 @@ export const AIChatComponent = ({
             >
               <Typography
                 variant="h6"
-                sx={{ color: "white", fontSize: "1rem" }}
+                sx={{ fontSize: "1rem" }}
               >
                 AI Assistant
               </Typography>
@@ -116,7 +114,6 @@ export const AIChatComponent = ({
                   <Typography
                     variant="body2"
                     sx={{
-                      color: msg.type === "user" ? "#00d4ff" : "white",
                       textAlign: msg.type === "user" ? "right" : "left",
                     }}
                   >
@@ -175,7 +172,6 @@ export const AIChatComponent = ({
                 placeholder="Type a message..."
                 sx={{
                   "& .MuiOutlinedInput-root": {
-                    color: "white",
                     "& fieldset": { borderColor: "rgba(255,255,255,0.3)" },
                     "&:hover fieldset": {
                       borderColor: "rgba(255,255,255,0.5)",
@@ -183,7 +179,7 @@ export const AIChatComponent = ({
                   },
                 }}
               />
-              <IconButton onClick={handleSend} sx={{ color: "#00d4ff" }}>
+              <IconButton onClick={handleSend} >
                 <Send />
               </IconButton>
             </Box>

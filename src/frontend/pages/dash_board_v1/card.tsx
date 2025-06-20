@@ -37,9 +37,7 @@ export const BaseCard = ({
   isVisible = true,
 }) => {
   const cardStyle = {
-    background:
-      "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)",
-    backdropFilter: "blur(20px)",
+    
     border: "1px solid rgba(255,255,255,0.1)",
     borderRadius: "16px",
     transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -68,10 +66,10 @@ export const BaseCard = ({
 };
 
 // Card Header Component
-export const CardHeader = ({ icon, title, color }) => (
+export const CardHeader = ({ icon, title, }) => (
   <Box display="flex" alignItems="center" mb={2}>
-    {React.cloneElement(icon, { sx: { mr: 2, color } })}
-    <Typography variant="h6" sx={{ color: "white", fontWeight: 600 }}>
+    {React.cloneElement(icon, { sx: { mr: 2 } })}
+    <Typography variant="h6" sx={{ fontWeight: 600 }}>
       {title}
     </Typography>
   </Box>

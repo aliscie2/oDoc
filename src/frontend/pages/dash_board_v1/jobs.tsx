@@ -50,11 +50,11 @@ export const JobMatchesCard = ({
       <Box display="flex" justifyContent="space-between" mb={2}>
         <Chip
           label="7 Matches"
-          sx={{ backgroundColor: "rgba(0,212,255,0.2)", color: "#00d4ff" }}
+
         />
         <Chip
           label="2 Reviewed"
-          sx={{ backgroundColor: "rgba(76,175,80,0.2)", color: "#4caf50" }}
+
         />
       </Box>
 
@@ -62,7 +62,7 @@ export const JobMatchesCard = ({
         <Box mt={2}>
           <Typography
             variant="body2"
-            sx={{ color: "rgba(255,255,255,0.7)", mb: 1 }}
+            sx={{  mb: 1 }}
           >
             Recent Matches:
           </Typography>
@@ -74,7 +74,7 @@ export const JobMatchesCard = ({
                 >
                   <Person fontSize="small" />
                 </Avatar>
-                <Typography variant="body2" sx={{ color: "white" }}>
+                <Typography variant="body2" sx={{  }}>
                   {match.name} - {match.rate}
                 </Typography>
               </Box>
@@ -84,8 +84,8 @@ export const JobMatchesCard = ({
       </Collapse>
 
       <Collapse in={isExpanded}>
-        <Divider sx={{ my: 2, borderColor: "rgba(255,255,255,0.1)" }} />
-        <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.8)" }}>
+        <Divider sx={{ my: 2,  }} />
+        <Typography variant="body2" >
           All 7 matches are highly qualified candidates with 5+ years experience
           in React, Node.js, and TypeScript. Average rate: $78/hr. 2 candidates
           have been reviewed and shortlisted.
