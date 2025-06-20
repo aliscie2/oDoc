@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from "react-redux";
 import { MenuItem, Select } from "@mui/material";
 import { Principal } from "@dfinity/principal";
-import { handleRedux } from "../../../redux/store/handleRedux";
+
 import { randomString } from "../../../DataProcessing/dataSamples";
 import { CPayment } from "../../../../declarations/backend/backend.did";
 
@@ -47,7 +47,7 @@ export function UserDropDown(props) {
       .filter((p) => p.id !== promise.id)
       .concat(promise);
     // console.log({ contract });
-    dispatch(handleRedux("UPDATE_CONTRACT", { contract }));
+    dispatch({ type: "UPDATE_CONTRACT", contract });
   }
   // console.log({ z: props.column.colId == "receiver" });
   // console.log({ x: props.column.colId == "sender" });

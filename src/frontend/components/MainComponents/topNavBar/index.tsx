@@ -44,7 +44,6 @@ import ChatsComponent from "../../Chat";
 import WorkspaceManager from "../Workspaces";
 import LoginButton from "./loginButton";
 
-import { handleRedux } from "../../../redux/store/handleRedux";
 import { useBackendContext } from "../../../contexts/BackendContext";
 import { convertToBlobLink } from "../../../DataProcessing/imageToVec";
 import { Z_INDEX_TOP_NAVBAR } from "../../../constants/zIndex";
@@ -110,7 +109,7 @@ export default function TopNavBar() {
 
   const handleLogout = async () => {
     logout();
-    dispatch(handleRedux("LOGOUT"));
+    dispatch({ type: "LOGOUT" });
     navigate("/");
   };
 
@@ -118,7 +117,7 @@ export default function TopNavBar() {
     {
       content: isDarkMode ? "Light Mode" : "Dark Mode",
       icon: isDarkMode ? <LightModeIcon /> : <DarkModeIcon />,
-      onClick: () => dispatch(handleRedux("TOGGLE_DARK")),
+      onClick: () => dispatch({ type: "TOGGLE_DARK" }),
     },
     { content: "Profile", to: "/profile", icon: <Person2Icon /> },
     { content: "Contracts", to: "/contracts", icon: <GavelIcon /> },
@@ -197,7 +196,7 @@ export default function TopNavBar() {
           <BottomNavigationAction
             label="Menu"
             icon={isNavOpen ? <MenuOpenIcon /> : <MenuIcon />}
-            onClick={() => dispatch(handleRedux("TOGGLE_NAV"))}
+            onClick={() => dispatch({ type: "TOGGLE_NAV" })}
           />
 
           {isLoggedIn ? renderActionButtons() : <LoginButton isMobile={true} />}
@@ -257,7 +256,7 @@ export default function TopNavBar() {
         <IconButton
           edge="start"
           color="inherit"
-          onClick={() => dispatch(handleRedux("TOGGLE_NAV"))}
+          onClick={() => dispatch({ type: "TOGGLE_NAV" })}
           sx={styles.iconButton}
         >
           {isNavOpen ? <MenuOpenIcon /> : <MenuIcon />}
@@ -272,7 +271,7 @@ export default function TopNavBar() {
         <Tooltip title={'You can press "Command+F"'} placement="top">
           <IconButton
             color="inherit"
-            onClick={() => dispatch(handleRedux("SEARCH_TOOL"))}
+            onClick={() => dispatch({ type: "SEARCH_TOOL" })}
             sx={styles.iconButton}
           >
             {searchTool ? <CloseIcon /> : <SearchIcon />}

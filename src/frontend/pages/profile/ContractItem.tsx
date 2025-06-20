@@ -1,6 +1,6 @@
 import { useSnackbar } from "notistack";
 import { useDispatch, useSelector } from "react-redux";
-import { handleRedux } from "../../redux/store/handleRedux";
+
 import ListItem from "@mui/material/ListItem";
 import ListItemText from "@mui/material/ListItemText";
 import * as React from "react";
@@ -65,7 +65,7 @@ const ContractItem: React.FC<ContractItemProps> = ({
   //   closeSnackbar(loader);
   //   if ("Ok" in res) {
   //     enqueueSnackbar("Deleted successfully", { variant: "success" });
-  //     dispatch(handleRedux("REMOVE_CONTRACT", { id }));
+  //     dispatch({type:"REMOVE_CONTRACT", id });
   //   } else {
   //     enqueueSnackbar(String(res.Err), { variant: "error" });
   //   }

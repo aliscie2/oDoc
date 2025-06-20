@@ -718,7 +718,7 @@ const SetupBanner = () => {
             variant="contained"
             fullWidth
             component={Link}
-            to="/dashboard"
+            to="/"
             onClick={() => setAvailabilityDialogOpen(false)}
             sx={{
               py: { xs: 1, sm: 1.5 },

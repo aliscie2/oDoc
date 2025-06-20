@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, Tooltip } from "@mui/material";
 import { AddBox } from "@mui/icons-material";
-import { handleRedux } from "../../redux/store/handleRedux";
+
 import {
   fileContentSample,
   randomString,
@@ -32,8 +32,9 @@ const GetMoreFiles: React.FC = () => {
     console.log(res[0]);
     let files = res[0];
     let contents: Array<[string, Array<ContentNode>]> = res[1];
-    dispatch(handleRedux("ADD_FILES_LIST", { files }));
-    dispatch(handleRedux("ADD_CONTENTS_LIST", { contents }));
+
+    dispatch({ type: "ADD_FILES_LIST", files });
+    dispatch({ type: "ADD_CONTENTS_LIST", contents });
     setPage(page + 1);
   };
 

@@ -4,7 +4,6 @@ import LoaderButton from "../../MuiComponents/LoaderButton";
 import { useRef, useState } from "react";
 import { useBackendContext } from "../../../contexts/BackendContext";
 import { useDispatch } from "react-redux";
-import { handleRedux } from "../../../redux/store/handleRedux";
 
 function RenameWorkspace(workspace: WorkSpace) {
   const dispatch = useDispatch();
@@ -25,11 +24,11 @@ function RenameWorkspace(workspace: WorkSpace) {
           onClick={() => {
             const name = ref.current;
             const res = backendActor?.save_work_space({ ...workspace, name });
-            dispatch(
-              handleRedux("UPDATE_WORKSPACE", {
-                workspace: { ...workspace, name },
-              }),
-            );
+            dispatch({
+              type: "UPDATE_WORKSPACE",
+              workspace: { ...workspace, name },
+            });
+
             return res;
           }}
         >

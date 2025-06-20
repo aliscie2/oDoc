@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
 import { TextField } from "@mui/material";
 import Autocomplete from "@mui/material/Autocomplete";
-import { handleRedux } from "../../redux/store/handleRedux";
 
 const ChangeWorkSpace = (props: any) => {
   const dispatch = useDispatch();
@@ -16,12 +15,11 @@ const ChangeWorkSpace = (props: any) => {
     let updatedWorkspaces = value.map((w) => {
       return w.id;
     });
-    dispatch(
-      handleRedux("UPDATE_FILE_WORKSPACES", {
-        id: current_file.id,
-        workspaces: updatedWorkspaces,
-      }),
-    );
+    dispatch({
+      type: "UPDATE_FILE_WORKSPACES",
+      id: current_file.id,
+      workspaces: updatedWorkspaces,
+    });
   };
   let theFile = current_file && files.find((f) => f.id == current_file.id);
 

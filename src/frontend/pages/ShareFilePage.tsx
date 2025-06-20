@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { ContentNode, FileNode } from "../../declarations/backend/backend.did";
 import { useSnackbar } from "notistack";
 import { useDispatch, useSelector } from "react-redux";
-import { handleRedux } from "../redux/store/handleRedux";
 import {
   deserializeContentTree,
   SlateNode,
@@ -58,14 +57,13 @@ function ShareFilePage(props: any) {
             deserializeContentTree(contentTree);
           setFile(file);
           setState(normalized_tree);
-          dispatch(handleRedux("CURRENT_FILE", { file }));
-          dispatch(
-            handleRedux("ADD_CONTENT", {
-              id: file.id,
-              content: normalized_tree,
-            }),
-          );
-          // dispatch(handleRedux("ADD_FILE", { data: file }));
+          dispatch({ type: "CURRENT_FILE", file });
+          dispatch({
+            type: "ADD_CONTENT",
+            id: file.id,
+            content: normalized_tree,
+          });
+          // dispatch({type:"ADD_FILE", data: file });
         } else {
           enqueueSnackbar(`Error: ${res.Err}`, { variant: "error" });
         }

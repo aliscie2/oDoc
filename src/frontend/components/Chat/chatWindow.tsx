@@ -32,7 +32,6 @@ import { Principal } from "@dfinity/principal";
 import formatTimestamp from "../../utils/time";
 import { Link } from "react-router-dom";
 import { Chat } from "../../../declarations/backend/backend.did";
-import { handleRedux } from "../../redux/store/handleRedux";
 
 const ChatWindow = memo(
   ({
@@ -121,15 +120,13 @@ const ChatWindow = memo(
             // Since backend returns messages in reverse order (latest first),
             // we need to reverse them to get chronological order for prepending
             const chronologicalMessages = [...olderMessages].reverse();
-
-            dispatch(
-              handleRedux("UPDATE_CHAT", {
-                chat: {
-                  ...chat,
-                  messages: [...chronologicalMessages, ...chat.messages],
-                },
-              }),
-            );
+            dispatch({
+              type: "UPDATE_CHAT",
+              chat: {
+                ...chat,
+                messages: [...chronologicalMessages, ...chat.messages],
+              },
+            });
           }
         } catch (error) {
           console.error("Error loading more messages:", error);
@@ -285,7 +282,7 @@ const ChatWindow = memo(
         .delete_chat(chat.id)
         .then((result) => {
           if ("Ok" in result) {
-            dispatch(handleRedux("DELETE_CHAT", { chat_id: chat.id }));
+            dispatch({ type: "DELETE_CHAT", chat_id: chat.id });
             onClose(chat.id);
           }
         })

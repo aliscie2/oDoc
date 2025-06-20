@@ -17,9 +17,9 @@ function ContractPage() {
   const onContractChange = (contract: CustomContract) => {
     if (contract.CustomContract) {
       if (contract.CustomContract.promises.some((p) => p.id === promise.id)) {
-        dispatch(handleRedux("UPDATE_PROMISE", { promise: contract }));
+        dispatch({ type: "UPDATE_PROMISE", promise: contract });
       } else {
-        dispatch(handleRedux("ADD_PROMISE", { promise: contract }));
+        dispatch({ type: "ADD_PROMISE", promise: contract });
       }
     }
   };

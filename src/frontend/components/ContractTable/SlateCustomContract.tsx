@@ -5,7 +5,7 @@ import {
   StoredContract,
 } from "../../../declarations/backend/backend.did";
 import { useBackendContext } from "../../contexts/BackendContext";
-import { handleRedux } from "../../redux/store/handleRedux";
+
 import CustomContractComponent from "./index";
 import { Typography } from "@mui/material";
 
@@ -32,7 +32,7 @@ export default function SlateCustomContract(props: any) {
         setLoading(false);
         if (contract && "Ok" in contract) {
           setContract(contract.Ok.CustomContract);
-          dispatch(handleRedux("UPDATE_CONTRACT", { contract: contract.Ok }));
+          dispatch({ type: "UPDATE_CONTRACT", contract: contract.Ok });
         }
       } else {
         setContract(contracts[props.id]);
@@ -53,7 +53,7 @@ export default function SlateCustomContract(props: any) {
   }
 
   const onContractChange = (contract: CustomContract) => {
-    dispatch(handleRedux("UPDATE_CONTRACT", { contract }));
+    dispatch({ type: "UPDATE_CONTRACT", contract });
   };
 
   return (

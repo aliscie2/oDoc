@@ -4,7 +4,6 @@ import ListItem from "@mui/material/ListItem";
 import Button from "@mui/material/Button";
 import CustomContractComponent from "../../components/ContractTable";
 import { custom_contract } from "../../DataProcessing/dataSamples";
-import { handleRedux } from "../../redux/store/handleRedux";
 import { CustomContract } from "../../../declarations/backend/backend.did";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -33,7 +32,7 @@ function ContractsHistory(props: any) {
         creator: profile.id,
         date_created: Date.now() * 1e6,
       };
-      dispatch(handleRedux("ADD_CONTRACT", { contract: newContract }));
+      dispatch({ type: "ADD_CONTRACT", contract: newContract });
     } catch (error) {
       console.error("Error creating new contract:", error);
       //we can display error for user with snack bar here
@@ -43,7 +42,7 @@ function ContractsHistory(props: any) {
     return <div>please login to see this page</div>;
   }
   const onContractChange = (contract: CustomContract) => {
-    dispatch(handleRedux("UPDATE_CONTRACT", { contract }));
+    dispatch({ type: "UPDATE_CONTRACT", contract });
   };
 
   return (

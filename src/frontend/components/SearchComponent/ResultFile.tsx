@@ -2,7 +2,7 @@ import { Divider } from "@mui/material";
 import * as React from "react";
 import { FileNode } from "../../../declarations/backend/backend.did";
 import { useDispatch, useSelector } from "react-redux";
-import { handleRedux } from "../../redux/store/handleRedux";
+
 import EditorComponent from "../EditorComponent";
 
 interface Props {
@@ -34,11 +34,7 @@ function ResultFile(props: Props) {
   return (
     <div
       onMouseDown={() => {
-        dispatch(
-          handleRedux("CURRENT_FILE", {
-            file: file,
-          }),
-        );
+        dispatch({ type: "CURRENT_FILE", file: file });
       }}
       style={resultFileContainerStyle}
     >

@@ -5,7 +5,7 @@ import createContractPlugin, {
   CONTRACT_KEY,
 } from "../ContractTable/ContractPlugin";
 import TableChartIcon from "@mui/icons-material/TableChart";
-import { handleRedux } from "../../redux/store/handleRedux";
+
 import { custom_contract } from "../../DataProcessing/dataSamples";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { DndProvider } from "react-dnd";
@@ -53,7 +53,7 @@ function EditorComponent(props: Props) {
             creator: profile.id,
             date_created: Date.now() * 1e6,
           };
-          dispatch(handleRedux("ADD_CONTRACT", { contract: newContract }));
+          dispatch({ type: "ADD_CONTRACT", contract: newContract });
           return null;
         case "data_grid":
         default:

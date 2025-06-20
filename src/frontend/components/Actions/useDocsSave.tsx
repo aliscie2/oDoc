@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
 import { useBackendContext } from "@/contexts/BackendContext";
-import { handleRedux } from "@/redux/store/handleRedux";
+
 import serializeFileContents from "@/DataProcessing/serialize/serializeFileContents";
 import { StoredContract } from "$/declarations/backend/backend.did";
 
@@ -61,7 +61,7 @@ export const useDocsSave = (): UseDocsSaveReturn => {
         enqueueSnackbar("Documents saved successfully!", {
           variant: "success",
         });
-        dispatch(handleRedux("RESOLVE_CHANGES"));
+        dispatch({ type: "RESOLVE_CHANGES" });
       }
     } catch (error) {
       console.error({ saveDocsError: error });
@@ -82,7 +82,7 @@ export const useDocsSave = (): UseDocsSaveReturn => {
   const reset = useCallback(async () => {
     try {
       // Reset all changes in the files state
-      dispatch(handleRedux("RESET_CHANGES"));
+      dispatch({ type: "RESET_CHANGES" });
       enqueueSnackbar("Document changes reset successfully!", {
         variant: "info",
       });

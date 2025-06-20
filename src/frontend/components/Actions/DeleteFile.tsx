@@ -2,7 +2,7 @@ import { MouseEvent } from "react";
 import { useDispatch } from "react-redux";
 import { useSnackbar } from "notistack";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { handleRedux } from "../../redux/store/handleRedux";
+
 import { useBackendContext } from "../../contexts/BackendContext";
 import ConformationMessage from "../MuiComponents/conformationButton";
 
@@ -36,7 +36,10 @@ const DeleteFile: React.FC<DeleteFileProps> = ({ item }) => {
     try {
       const res = await backendActor.delete_file(item.id);
 
-      dispatch(handleRedux("REMOVE", { id: item.id }));
+      dispatch({
+        type: "REMOVE",
+        id: item.id,
+      });
       enqueueSnackbar(`${item.name} is deleted`, { variant: "success" });
       return res;
     } catch (error) {

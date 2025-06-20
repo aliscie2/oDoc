@@ -2,7 +2,7 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, Tooltip, Box } from "@mui/material";
 import { AddBox } from "@mui/icons-material";
-import { handleRedux } from "../../redux/store/handleRedux";
+
 import {
   fileContentSample,
   randomString,
@@ -35,8 +35,15 @@ const CreateFile: React.FC = () => {
       parent: [],
     };
 
-    dispatch(handleRedux("ADD_FILE", { new_file }));
-    dispatch(handleRedux("ADD_CONTENT", { id, content: fileContentSample }));
+    dispatch({
+      type: "ADD_FILE",
+      new_file,
+    });
+    dispatch({
+      type: "ADD_CONTENT",
+      id,
+      content: fileContentSample,
+    });
     closeSnackbar();
     // enqueueSnackbar("New file is created!", { variant: "success" });
   };

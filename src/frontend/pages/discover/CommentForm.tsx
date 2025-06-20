@@ -7,7 +7,7 @@ import { deserializeContentTree } from "../../DataProcessing/deserlize/deseriali
 import serializeFileContents from "../../DataProcessing/serialize/serializeFileContents";
 import EditorComponent from "../../components/EditorComponent";
 import { randomString } from "../../DataProcessing/dataSamples";
-import { handleRedux } from "../../redux/store/handleRedux";
+
 import { RootState } from "../../redux/reducers";
 
 interface CommentFormProps {
@@ -55,13 +55,12 @@ const CommentForm: React.FC<CommentFormProps> = ({
 
       const result = await backendActor.save_post(comment);
       if (result.Ok == null) {
-        dispatch(
-          handleRedux("ADD_POST", { post: { ...comment, creator: profile } }),
-        );
+        dispatch({ type: "ADD_POST", post: { ...comment, creator: profile } });
+
         const parentPost = posts.find((p) => p.id === postId);
         if (parentPost) {
           parentPost.children.push(comment.id);
-          dispatch(handleRedux("UPDATE_POST", { post: parentPost }));
+          dispatch({ type: "UPDATE_POST", post: parentPost });
         }
         setChanged(false);
         contentTree.current = [];

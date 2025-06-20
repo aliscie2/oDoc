@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { handleRedux } from "../../../redux/store/handleRedux";
+
 import { useDispatch, useSelector } from "react-redux";
 import { TextField, Button, Tooltip, Input } from "@mui/material";
 import { WorkSpace } from "../../../../declarations/backend/backend.did";
@@ -51,7 +51,7 @@ function useCreateWorkSpace() {
       )) as Result_11;
 
       if ("Ok" in saveWorkSpace) {
-        dispatch(handleRedux("ADD_WORKSPACE", { newWorkSpace }));
+        dispatch({ type: "ADD_WORKSPACE", newWorkSpace });
         enqueueSnackbar("WorkSpace created", { variant: "success" });
       } else {
         enqueueSnackbar("Error: " + saveWorkSpace.Err, { variant: "error" });
@@ -66,7 +66,7 @@ function useCreateWorkSpace() {
   };
 
   const createNewWorkspace = async () => {
-    dispatch(handleRedux("TOP_DIALOG", top_dialog));
+    dispatch({ type: "TOP_DIALOG", top_dialog });
   };
 
   const [searchValue, setSearchValue] = useState("");

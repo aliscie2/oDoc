@@ -21,7 +21,7 @@ import HowToVoteIcon from "@mui/icons-material/HowToVote";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import CloseIcon from "@mui/icons-material/Close";
 import CreateFile from "../Actions/CreateFile";
-import { handleRedux } from "../../redux/store/handleRedux";
+
 import { Z_INDEX_SIDE_NAVBAR } from "../../constants/zIndex";
 import SortableTree from "./SortableTree";
 import { FileIndexing } from "../../../declarations/backend/backend.did";
@@ -95,7 +95,7 @@ const NavBar = (props: any) => {
 
   const navLinks = [
     { label: "About Us", to: "/about", icon: <InfoIcon /> },
-    { label: "Discover", to: "/discover", icon: <ExploreIcon /> },
+    // { label: "Discover", to: "/discover", icon: <ExploreIcon /> },
     {
       label: "Subscriptions",
       to: "/subscriptions",
@@ -105,19 +105,9 @@ const NavBar = (props: any) => {
     { label: "Vote", to: "/vote", icon: <HowToVoteIcon /> },
   ];
 
-  if (!(profile_history?.actions_rate >= 1)) {
-    navLinks.push({
-      label: "Dashboard",
-      to: "/dashboard",
-      icon: <DashboardIcon />,
-    });
-  } else {
-    navLinks.push({ label: "About Us", to: "/about", icon: <InfoIcon /> });
-  }
-
   const handleNavClose = () => {
-    dispatch(handleRedux("CURRENT_FILE", { file: null }));
-    dispatch(handleRedux("TOGGLE_NAV"));
+    dispatch({ type: "CURRENT_FILE", file: null });
+    dispatch({ type: "TOGGLE_NAV" });
   };
 
   const dragEnd = ({ active, over, newItems }) => {
@@ -152,14 +142,13 @@ const NavBar = (props: any) => {
       parent: updatedFile1.parent,
     };
 
-    dispatch(
-      handleRedux("CHANGE_FILE_PARENT", {
-        updatedFile1,
-        updatedFile2,
-        reIndexing,
-        flattenedFiles,
-      }),
-    );
+    dispatch({
+      type: "CHANGE_FILE_PARENT",
+      updatedFile1,
+      updatedFile2,
+      reIndexing,
+      flattenedFiles,
+    });
   };
 
   useEffect(() => {

@@ -37,7 +37,7 @@ function Pages() {
 
   const MainPage = () => {
     if (isLoggedIn) {
-      return <Discover />;
+      return <Dashboard />;
     }
 
     return <LandingPage />;
@@ -45,8 +45,6 @@ function Pages() {
   return (
     <Routes>
       <Route path="/" element={<MainPage />} />
-      <Route path="/dashboard" element={<ProjectDashboard />} />
-      {/* <Route path="/dashboard" element={<Dashboard />} /> */}
       <Route path="/about" element={<LandingPage />} />
       <Route path="/discover" element={<Discover />} />
       <Route path="/wallet" element={<Web3WalletUI wallet={wallet} />} />

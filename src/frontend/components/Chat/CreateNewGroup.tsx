@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { handleRedux } from "../../redux/store/handleRedux";
+
 import { useDispatch, useSelector } from "react-redux";
 import { Chat, Message } from "../../../declarations/backend/backend.did";
 import { Principal } from "@dfinity/principal";
@@ -47,8 +47,8 @@ function useCreateChatGroup() {
 
     const res = await backendActor?.make_new_chat_room(chat);
     chat.creator = profile;
-    dispatch(handleRedux(ADD_CHAT, { chat }));
-    dispatch(handleRedux(ADD_CHATS_NOTIFICATIONS, { message }));
+    dispatch({ type: ADD_CHAT, chat });
+    dispatch({ type: ADD_CHATS_NOTIFICATIONS, message });
     return res;
   }
   const GroupOptions = () => (

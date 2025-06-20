@@ -1,7 +1,7 @@
 import { RenderEditCellProps } from "react-data-grid";
 import convertCamelToTitle from "../../../utils/convertCamelToTitle";
 import { MenuItem, Select } from "@mui/material";
-import { handleRedux } from "../../../redux/store/handleRedux";
+
 import { useDispatch, useSelector } from "react-redux";
 import {
   CPayment,
@@ -53,7 +53,8 @@ export function StatusDropDown(props) {
     contract.promises = contract.promises
       .filter((p) => p.id !== promise.id)
       .concat(promise);
-    dispatch(handleRedux("UPDATE_CONTRACT", { contract }));
+
+    dispatch({ type: "UPDATE_CONTRACT", contract });
   };
 
   return (

@@ -11,7 +11,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { Principal } from "@dfinity/principal";
 import React from "react";
 import { useSnackbar } from "notistack";
-import { handleRedux } from "../../../redux/store/handleRedux";
 
 interface ParserValues {
   [key: string]: any;
@@ -93,7 +92,7 @@ function useParser(props: ParserProps) {
       let to_store: StoredContract = {
         CustomContract: updatedContract,
       };
-      dispatch(handleRedux("UPDATE_CONTRACT", { contract: to_store }));
+      dispatch({ type: "UPDATE_CONTRACT", contract: to_store });
     }
   }
 

@@ -9,7 +9,7 @@ import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import ContextMenu from "../../../../MuiComponents/ContextMenu";
 import DeleteFile from "../../../../Actions/DeleteFile";
 import ChangeWorkSpace from "../../../../Actions/ChangeWorkSpaceFile";
-import { handleRedux } from "../../../../../redux/store/handleRedux";
+
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { RootState } from "../../../../../redux/reducers";
@@ -61,7 +61,7 @@ export const TreeItem = forwardRef<HTMLDivElement, Props>(
     const handleItemClick = () => {
       navigate(id);
       let file = files.find((file) => file.id === id);
-      dispatch(handleRedux("CURRENT_FILE", { file }));
+      dispatch({ type: "CURRENT_FILE", file });
     };
 
     return (

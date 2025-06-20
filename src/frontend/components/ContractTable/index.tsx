@@ -36,7 +36,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import DialogComponent from "../MuiComponents/dialogComponent";
 import { useBackendContext } from "../../contexts/BackendContext";
 import { useSnackbar } from "notistack";
-import { handleRedux } from "../../redux/store/handleRedux";
+
 import { useDispatch, useSelector } from "react-redux";
 import ClearAllIcon from "@mui/icons-material/ClearAll";
 import { logger } from "../../DevUtils/logData";
@@ -124,7 +124,7 @@ const EditableTitle = ({ value, onChange, metadata }) => {
           <EditableInput value={value} onSave={handleSave} />
         ) : (
           <Typography
-            variant="h6"
+            variant="subtitle1"
             onClick={() => setIsEditing(true)}
             sx={{
               cursor: "pointer",
@@ -134,6 +134,7 @@ const EditableTitle = ({ value, onChange, metadata }) => {
                 px: 1,
               },
               px: 1,
+              fontWeight: 500,
             }}
           >
             {value}
@@ -476,27 +477,22 @@ const CustomContractViewer = ({ contractId, onContractChange }) => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const dispatch = useDispatch();
   return (
-    <Box
-      sx={{
-        width: "100%",
-        // height: "100%",
-        // position: "relative",
-        // left: "50%",
-        // right: "50%",
-        // marginLeft: "-50vw",
-        // marginRight: "-50vw",
-      }}
-    >
-      <AppBar
-        style={{
-          borderRadius: "50px",
+    <Box sx={{ width: "100%" }}>
+      <Box
+        sx={{
+          borderBottom: 1,
+          borderColor: "divider",
+          bgcolor: "background.paper",
+          px: 2,
+          py: 1,
         }}
-        position="static"
-        color="default"
-        elevation={1}
-        sx={{ p: 2 }}
       >
-        <Stack direction="row" spacing={2} alignItems="center">
+        <Stack
+          direction="row"
+          spacing={2}
+          alignItems="center"
+          sx={{ minHeight: 48 }}
+        >
           <EditableTitle
             value={currentContract.name}
             onChange={handleMainContractNameChange}
@@ -507,11 +503,11 @@ const CustomContractViewer = ({ contractId, onContractChange }) => {
             }}
           />
 
-          <FormControl sx={{ minWidth: 250 }}>
-            <InputLabel>Select Data</InputLabel>
+          <FormControl size="small" sx={{ minWidth: 200 }}>
+            <InputLabel>Data</InputLabel>
             <Select
               value={selectedDataType}
-              label="Select Data"
+              label="Data"
               onChange={handleDataTypeChange}
             >
               <MenuItem value={DataTypeSelection.PROMISE}>Promises</MenuItem>
@@ -519,7 +515,6 @@ const CustomContractViewer = ({ contractId, onContractChange }) => {
                 <MenuItem value={DataTypeSelection.PAYMENT}>Payments</MenuItem>
               )}
 
-              {/*<MenuItem sx={{ borderTop: 1, borderColor: 'divider', mt: 1, pt: 1 }}>Contracts</MenuItem>*/}
               {currentContract.contracts.map((contract) => (
                 <MenuItem
                   key={contract.id}
@@ -534,7 +529,7 @@ const CustomContractViewer = ({ contractId, onContractChange }) => {
                   <IconButton
                     size="small"
                     onClick={(e) => {
-                      e.stopPropagation(); // Prevent triggering the MenuItem
+                      e.stopPropagation();
                       if (
                         window.confirm(
                           `Are you sure you want to delete table "${contract.name}"?`,
@@ -546,7 +541,6 @@ const CustomContractViewer = ({ contractId, onContractChange }) => {
                             (c) => c.id !== contract.id,
                           ),
                         };
-                        // setContractsState([updatedContract]);
                         if (selectedContract?.id === contract.id) {
                           setSelectedContract(null);
                           setSelectedDataType(DataTypeSelection.PROMISE);
@@ -562,14 +556,16 @@ const CustomContractViewer = ({ contractId, onContractChange }) => {
               <MenuItem>
                 <Button
                   fullWidth
+                  size="small"
                   startIcon={<AddIcon />}
                   onClick={handleCreateNewContract}
                 >
-                  Create New Table
+                  New Table
                 </Button>
               </MenuItem>
             </Select>
           </FormControl>
+
           <Box sx={{ flexGrow: 1 }} />
 
           <DialogComponent
@@ -578,21 +574,23 @@ const CustomContractViewer = ({ contractId, onContractChange }) => {
                 currentContract.id,
               );
               if (res.Ok == null || res.Err === "Not found") {
-                dispatch(
-                  handleRedux("REMOVE_CONTRACT", { id: currentContract.id }),
-                );
+                dispatch({ type: "REMOVE_CONTRACT", id: currentContract.id });
               } else if (res.Err) {
                 enqueueSnackbar(res.Err, { variant: "error" });
               }
             }}
-            button={<Button color={"error"}>Delete</Button>}
-            title={"Delete post"}
-            content={"Are you sure you want to delete this contract?"}
+            button={
+              <Button color="error" size="small">
+                Delete
+              </Button>
+            }
+            title="Delete post"
+            content="Are you sure you want to delete this contract?"
           />
         </Stack>
-      </AppBar>
+      </Box>
 
-      <Box sx={{ mt: 2, px: 2 }}>
+      <Box sx={{ px: 2, py: 1 }}>
         {selectedDataType === DataTypeSelection.CONTRACT &&
           selectedContract && (
             <EditableTitle

@@ -9,7 +9,6 @@ import CloseIcon from "@mui/icons-material/Close";
 import TextField from "@mui/material/TextField";
 import { Resizable } from "react-resizable";
 import { useDispatch, useSelector } from "react-redux";
-import { handleRedux } from "../../redux/store/handleRedux";
 import OpenWithIcon from "@mui/icons-material/OpenWith";
 import { Box, Card, CardContent, Tooltip } from "@mui/material";
 import AbcIcon from "@mui/icons-material/Abc";
@@ -85,17 +84,17 @@ function SearchPopper() {
       (event.metaKey || event.ctrlKey) &&
       !event.shiftKey
     ) {
-      dispatch(handleRedux("SEARCH_TOOL"));
+      dispatch({ type: "SEARCH_TOOL" });
       event.preventDefault();
     }
   }, []);
 
   const handleClose = () => {
-    dispatch(handleRedux("SEARCH_TOOL"));
+    dispatch({ type: "SEARCH_TOOL" });
   };
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    dispatch(handleRedux("SEARCH", { searchValue: event.target.value }));
+    dispatch({ type: "SEARCH", searchValue: event.target.value });
   };
 
   const handleResize = (event: any, { size }: any) => {

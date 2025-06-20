@@ -9,7 +9,7 @@ import { randomString } from "../../DataProcessing/dataSamples";
 import serializeFileContents from "../../DataProcessing/serialize/serializeFileContents";
 import { useBackendContext } from "../../contexts/BackendContext";
 import { useSnackbar } from "notistack";
-import { handleRedux } from "../../redux/store/handleRedux";
+
 interface CreatePostProps {
   onPostSubmit: (post: any) => void;
 }
@@ -44,9 +44,8 @@ const CreatePost: React.FC<CreatePostProps> = () => {
       enqueueSnackbar(result.Err, { variant: "error" });
     }
     setLoading(false);
-    dispatch(
-      handleRedux("ADD_POST", { post: { ...newPostObj, creator: profile } }),
-    );
+    dispatch({ type: "ADD_POST", post: { ...newPostObj, creator: profile } });
+
     // onPostSubmit({ ...newPostObj, creator: profile });
   };
 

@@ -24,7 +24,7 @@ import { useBackendContext } from "../../contexts/BackendContext";
 import serializeFileContents from "../../DataProcessing/serialize/serializeFileContents";
 import { Post, PostUser } from "../../../declarations/backend/backend.did";
 import CommentForm from "./CommentForm";
-import { handleRedux } from "../../redux/store/handleRedux";
+
 import { RootState } from "../../redux/reducers";
 
 const CommentContainer = styled(Box)(({ theme }) => ({
@@ -91,7 +91,7 @@ const Comment: React.FC<ICommentProps> = ({ post, onUpdate }) => {
     try {
       const result = await backendActor.delete_post(post.id);
       if (result.Ok === null) {
-        dispatch(handleRedux("DELETE_POST", { id: post.id }));
+        dispatch({ type: "DELETE_POST", id: post.id });
       } else {
         enqueueSnackbar(JSON.stringify(result.Err), { variant: "error" });
       }

@@ -14,7 +14,7 @@ import {
   Typography,
 } from "@mui/material";
 import ViewListIcon from "@mui/icons-material/ViewList";
-import { handleRedux } from "../../redux/store/handleRedux";
+
 import EditorComponent from "../../components/EditorComponent";
 import NestedTabMenu from "./contentTab";
 import { Link } from "react-router-dom";
@@ -108,9 +108,7 @@ function FileContentPage() {
   const handleDispatchChange = useCallback(
     debounce((title: string) => {
       if (title !== currentFile?.name) {
-        dispatch(
-          handleRedux("UPDATE_FILE_TITLE", { id: currentFile.id, title }),
-        );
+        dispatch({ type: "UPDATE_FILE_TITLE", id: currentFile.id, title });
       }
     }, 250),
     [dispatch, currentFile],
@@ -127,12 +125,11 @@ function FileContentPage() {
     const newContent = JSON.stringify(changes);
 
     if (prevContent !== newContent) {
-      dispatch(
-        handleRedux("UPDATE_CONTENT", {
-          id: currentFile.id,
-          content: changes,
-        }),
-      );
+      dispatch({
+        type: "UPDATE_CONTENT",
+        id: currentFile.id,
+        content: changes,
+      });
     }
   }, 250);
 
