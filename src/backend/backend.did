@@ -135,7 +135,7 @@ type Column = record {
   field : text;
   filters : vec Filter;
   permissions : vec PermissionType;
-  dataValidator : opt text;
+  data_validator : opt text;
   editable : bool;
   formula : opt Formula;
 };

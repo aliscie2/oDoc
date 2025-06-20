@@ -9,20 +9,21 @@ import UserProfile from "./User";
 import ContractsHistory from "./Profile/ContractsHistory";
 import Web3WalletUI from "../components/MuiComponents/walletUi";
 import { useSelector } from "react-redux";
-import { useBackendContext } from "../contexts/BackendContext";
+
 import OfferPage from "./OfferPage";
 import SubscriptionPlans from "./subscrptions";
 import SNSWhitepaper from "./white_paper/markDownReader";
 import SNSVoting from "./white_paper";
-import ProductManagerDashboard from "./dashBoardPage";
+
 import DummyShares from "./sharesContract";
 import AffiliateDashboard from "./affiliate";
 import AffiliateRedirect from "./affiliateRedirect";
-import RegistrationForm from "../components/MainComponents/RegistrationForm";
+
 import ContractPage from "./profile/ContractPage";
 import Scheduler from "./dashBoardPage/calindarView";
 import { useNavigate, Link, Navigate } from "react-router-dom";
 import Dashboard from "./dash_board_v1";
+import ProjectDashboard from "./dashBoardPage";
 
 function Pages() {
   const navigate = useNavigate();
@@ -44,8 +45,8 @@ function Pages() {
   return (
     <Routes>
       <Route path="/" element={<MainPage />} />
-      {/* <Route path="/dashboard" element={<ProductManagerDashboard />} /> */}
-      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/dashboard" element={<ProjectDashboard />} />
+      {/* <Route path="/dashboard" element={<Dashboard />} /> */}
       <Route path="/about" element={<LandingPage />} />
       <Route path="/discover" element={<Discover />} />
       <Route path="/wallet" element={<Web3WalletUI wallet={wallet} />} />
