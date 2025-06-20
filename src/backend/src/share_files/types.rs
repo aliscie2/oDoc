@@ -1,13 +1,13 @@
-use crate::files::{FileNode, FileNodeVector};
-use crate::{FILES_SHARE_STORE, FILE_CONTENTS, SHARED_USER_FILES, USER_FILES};
+use crate::files::FileNode;
+use crate::{FILES_SHARE_STORE, SHARED_USER_FILES, USER_FILES};
 use ic_cdk::caller;
 
 use crate::storage_schema::ContentTree;
 use candid::{CandidType, Decode, Deserialize, Encode, Principal};
 
 use crate::files_content::ContentNode;
-use ic_stable_structures::{storable::Bound, DefaultMemoryImpl, StableBTreeMap, Storable};
-use std::{borrow::Cow, cell::RefCell};
+use ic_stable_structures::{storable::Bound, Storable};
+use std::borrow::Cow;
 
 #[derive(PartialEq, Clone, Debug, Deserialize, CandidType)]
 pub enum ShareFilePermission {

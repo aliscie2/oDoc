@@ -1,12 +1,11 @@
-use crate::storage_schema::{ContentTree, FileId};
+use crate::storage_schema::FileId;
 use crate::{ShareFile, ShareFilePermission, COUNTER, USER_FILES};
 use candid::{CandidType, Decode, Deserialize, Encode, Principal};
-use ic_cdk::{caller, print};
-use ic_stable_structures::{storable::Bound, DefaultMemoryImpl, StableBTreeMap, Storable};
-use std::collections::{HashMap, HashSet};
-use std::fs::File;
-use std::sync::atomic::{AtomicU64, Ordering};
-use std::{borrow::Cow, cell::RefCell};
+use ic_cdk::caller;
+use ic_stable_structures::{storable::Bound, Storable};
+use std::borrow::Cow;
+use std::collections::HashMap;
+use std::sync::atomic::Ordering;
 
 // #[derive(Debug, Serialize, Deserialize)]
 #[derive(Clone, Debug, Deserialize, CandidType)]
@@ -149,11 +148,9 @@ impl FileNode {
             }
 
             // First pass: Find and update the old parent
-            let mut old_parent_id = None;
             for file in user_files.files.iter_mut() {
                 if file.children.contains(&child_id) {
                     file.children.retain(|id| id != &child_id);
-                    old_parent_id = Some(file.id.clone());
                 }
             }
 

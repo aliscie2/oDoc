@@ -1,7 +1,7 @@
 use crate::CALENDAR_STORE;
 use candid::{CandidType, Decode, Deserialize, Encode};
 use ic_cdk::caller;
-use ic_stable_structures::{storable::Bound, StableBTreeMap, Storable};
+use ic_stable_structures::{storable::Bound, Storable};
 use serde::Serialize;
 use std::borrow::Cow;
 
@@ -142,18 +142,6 @@ impl Calendar {
             let store = store.borrow();
             store.get(user_id)
         })
-    }
-
-    pub fn new(calendar_id: &String) -> Self {
-        let calendar = Calendar {
-            id: calendar_id.clone(),
-            googleIds: Vec::new(), // Added missing field
-            owner: caller().to_text(),
-            availabilities: Vec::new(),
-            events: Vec::new(),
-        };
-        calendar.save().unwrap();
-        calendar
     }
 
     pub fn apply_privacy_filter(&self, viewer: String) -> Calendar {

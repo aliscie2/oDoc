@@ -1,7 +1,5 @@
 use super::pallet::{Category, Job, Match};
-use ethers_core::abi::token::LenientTokenizer;
 use ic_cdk::caller;
-use std::time::{SystemTime, UNIX_EPOCH};
 
 impl Job {
     pub fn new(id: String) -> Self {

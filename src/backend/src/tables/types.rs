@@ -1,15 +1,13 @@
 use std::collections::HashMap;
 
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::atomic::AtomicU64;
 
 use candid::{CandidType, Deserialize, Principal};
 
 use crate::contracts::Contract;
 
-use crate::{CColumn, CPayment};
+use crate::CPayment;
 use serde::Serialize;
-
-static COUNTER: AtomicU64 = AtomicU64::new(0);
 
 // #[derive(Eq, PartialOrd, PartialEq, Clone, Debug, CandidType, Serialize, Deserialize)]
 // pub enum ColumnTypes {
@@ -88,7 +86,7 @@ pub struct Column {
     pub(crate) field: String,
     pub(crate) _type: String,
     pub(crate) formula: Option<Formula>,
-    pub(crate) dataValidator: Option<String>,
+    pub(crate) data_validator: Option<String>,
     pub(crate) filters: Vec<Filter>,
     pub(crate) permissions: Vec<PermissionType>,
 }

@@ -2,11 +2,11 @@
 // use web_sys::Blob;
 // use web_sys::{BlobPropertyBag, File, Url};
 
-pub struct Image {
-    pub name: String,
-    pub format: String,
-    pub data: Vec<u8>,
-}
+// pub struct Image {
+//     pub name: String,
+//     pub format: String,
+//     pub data: Vec<u8>,
+// }
 
 // fn decode_image(image: &Vec<u8>) -> Option<String> {
 //     let uint8arr = js_sys::Uint8Array::new(&unsafe { js_sys::Uint8Array::view(&image) }.into());

@@ -2,10 +2,7 @@
 
 use crate::discover::{Post, PostUser, UserFE};
 use ic_cdk_macros::query;
-use std::collections::HashMap;
 
-use crate::files_content::ContentNode;
-use crate::storage_schema::FileId;
 use crate::user::User;
 use crate::POSTS;
 
@@ -40,7 +37,7 @@ fn search_posts(text_to_find: String) -> Vec<PostUser> {
                 content_tree
                     .iter()
                     .filter(|node| node.text.contains(&text_to_find))
-                    .map(move |node| {
+                    .map(move |_| {
                         let user = User::get_user_from_text_principal(&post.creator).unwrap();
                         let creator = UserFE {
                             id: user.id.clone(),

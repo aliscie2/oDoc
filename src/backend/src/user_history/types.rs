@@ -1,15 +1,12 @@
 use std::collections::HashSet;
-use std::time::Duration;
 
 use candid::{CandidType, Decode, Deserialize, Encode, Principal};
 use ic_cdk::caller;
 
-use crate::discover::time_diff;
 use crate::websocket::Notification;
-use crate::PROFILE_STORE;
 use crate::{CPayment, PaymentStatus, Wallet, PROFILE_HISTORY};
-use ic_stable_structures::{storable::Bound, DefaultMemoryImpl, StableBTreeMap, Storable};
-use std::{borrow::Cow, cell::RefCell};
+use ic_stable_structures::{storable::Bound, Storable};
+use std::borrow::Cow;
 
 // export::{
 //     candid::{CandidType, Deserialize},
@@ -46,13 +43,13 @@ pub struct ActionRating {
 }
 
 // Function to calculate percentage
-fn calculate_percentage(value: f64, total: f64) -> f64 {
-    if total > 0.0 {
-        value / total
-    } else {
-        0.0 as f64
-    }
-}
+// fn calculate_percentage(value: f64, total: f64) -> f64 {
+//     if total > 0.0 {
+//         value / total
+//     } else {
+//         0.0 as f64
+//     }
+// }
 
 // This is to help others evaulaute wather to trust you.
 #[derive(PartialEq, Clone, Debug, CandidType, Deserialize)]
@@ -114,13 +111,11 @@ impl UserHistory {
         self.rates_by_actions
             .iter()
             .filter(|r| {
-                if let ActionType::Payment(payment) = &r.action_type {
-                    payment.status != PaymentStatus::Released
-                        || payment.status != PaymentStatus::None
-                            && payment.status != PaymentStatus::ConfirmedCancellation
-                } else {
-                    false
-                }
+                let ActionType::Payment(payment) = &r.action_type;
+                // Fixed logic: status is NOT any of these three values
+                !(payment.status == PaymentStatus::Released
+                    || payment.status == PaymentStatus::None
+                    || payment.status == PaymentStatus::ConfirmedCancellation)
             })
             .cloned()
             .collect()
@@ -128,35 +123,32 @@ impl UserHistory {
 
     pub fn get_objections(&self) -> Vec<ActionRating> {
         let mut unique_receivers: HashSet<Principal> = HashSet::new();
+        let mut result = Vec::new();
 
-        self.rates_by_actions
-            .iter()
-            .filter(|r| {
-                if let ActionType::Payment(payment) = &r.action_type {
-                    if let PaymentStatus::Objected(_) = payment.status {
-                        let is_unique = unique_receivers.insert(payment.receiver.clone());
-                        is_unique
-                    } else {
-                        false
-                    }
-                } else {
-                    false
+        for rating in &self.rates_by_actions {
+            let ActionType::Payment(payment) = &rating.action_type;
+            if let PaymentStatus::Objected(_) = payment.status {
+                if unique_receivers.insert(payment.receiver.clone()) {
+                    result.push(rating.clone());
                 }
-            })
-            .cloned()
-            .collect()
+            }
+        }
+
+        result
     }
 
     pub fn get_promises_value(&self) -> f64 {
-        let mut promises: Vec<CPayment> = vec![];
-        self.get_promises().iter().for_each(|r| {
-            if let ActionType::Payment(payment) = &r.action_type {
+        self.get_promises()
+            .iter()
+            .filter_map(|r| {
+                let ActionType::Payment(payment) = &r.action_type;
                 if payment.sender == caller() {
-                    promises.push(payment.clone());
+                    Some(payment.amount)
+                } else {
+                    None
                 }
-            }
-        });
-        promises.iter().map(|p| p.amount).sum()
+            })
+            .sum()
     }
     // Stable structure
     // pub fn get(id: Principal) -> Self {

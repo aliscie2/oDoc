@@ -1,9 +1,7 @@
-use ic_cdk::caller;
 use ic_cdk_macros::query;
 
-use super::pallet::{Category, Job, Match};
-use candid::{CandidType, Decode, Deserialize, Encode, Principal};
-use ic_cdk_macros::update;
+use super::pallet::{Category, Job};
+use candid::{CandidType, Deserialize};
 use serde::Serialize;
 
 #[derive(PartialOrd, PartialEq, Clone, Debug, Serialize, CandidType, Deserialize)]
@@ -14,7 +12,7 @@ pub struct GetJobs {
 
 #[query]
 fn get_my_jobs() -> GetJobs {
-    let mut jobs = Job::get_my_jobs();
+    let jobs = Job::get_my_jobs();
     let mut matching_jobs = Vec::new();
 
     for job in jobs.iter() {

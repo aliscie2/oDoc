@@ -1,19 +1,12 @@
-use candid::{CandidType, Decode, Deserialize, Encode, Principal};
-use ic_cdk::{caller, print};
+use candid::{CandidType, Decode, Deserialize, Encode};
 use ic_stable_structures::storable::Bound;
-use ic_stable_structures::{BTreeMap, Storable};
+use ic_stable_structures::Storable;
 use std::borrow::Cow;
-use std::cell::{Ref, RefCell};
-use std::collections::HashMap;
-use std::sync::atomic::Ordering;
 
 pub mod query;
 pub mod types;
 pub mod update;
 
-pub use query::*;
-pub use types::*;
-pub use update::*;
 mod tests;
 
 type DateTime = f32;

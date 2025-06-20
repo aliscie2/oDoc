@@ -1,7 +1,7 @@
 use crate::current_user_state::UserState;
 
 use super::pallet::{Category, Job, Match};
-use candid::{CandidType, Decode, Deserialize, Encode, Principal};
+use candid::{CandidType, Deserialize, Principal};
 use ic_cdk_macros::update;
 use serde::Serialize;
 

@@ -1,14 +1,10 @@
-use std::fmt::format;
-use std::sync::atomic::Ordering;
-
 use candid::Principal;
-use ic_cdk::{call, caller, println};
+use ic_cdk::caller;
 use ic_cdk_macros::update;
 
 use crate::friends::Friend;
 use crate::user::User;
 use crate::websocket::{FriendRequestNotification, NoteContent, Notification};
-use crate::COUNTER;
 use crate::{websocket, FRIENDS_STORE};
 
 #[update]

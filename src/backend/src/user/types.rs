@@ -1,6 +1,5 @@
-use candid::{CandidType, Decode, Deserialize, Encode, Principal};
+use candid::{CandidType, Deserialize, Principal};
 use ic_cdk::caller;
-use std::borrow::Cow;
 
 // #[macro_use]
 // extern crate macros; // This imports the macro for use
@@ -71,28 +70,23 @@ impl User {
 
         user
     }
-    pub fn principal(self: &Self) -> Principal {
-        Principal::from_text(self.id.clone()).unwrap()
-    }
+
     // Get a user from their principal
     pub fn get_user_from_text_principal(principal_str: &String) -> Option<User> {
         let principal = Principal::from_text(principal_str).ok()?;
         PROFILE_STORE.with(|profile_store| {
-            let mut store = profile_store.borrow();
+            let store = profile_store.borrow();
             store.get(&principal.to_string())
         })
     }
 
     pub fn get_user_from_principal(id: Principal) -> Option<User> {
         PROFILE_STORE.with(|profile_store| {
-            let mut store = profile_store.borrow();
+            let store = profile_store.borrow();
             store.get(&id.to_string())
         })
     }
 
-    pub fn user_id() -> Principal {
-        ic_cdk::api::id()
-    }
     pub fn user_profile() -> Option<Self> {
         let principal_id = ic_cdk::api::caller();
 

@@ -2,13 +2,12 @@ use std::borrow::Cow;
 use std::collections::HashMap;
 
 use crate::{CustomContract, CONTRACTS_STORE};
-use candid::{CandidType, Decode, Deserialize, Encode, Principal};
+use candid::{CandidType, Decode, Deserialize, Encode};
 use ic_cdk::caller;
-use ic_stable_structures::{storable::Bound, DefaultMemoryImpl, StableBTreeMap, Storable};
+use ic_stable_structures::{storable::Bound, Storable};
 use serde::Serialize;
 
 use crate::storage_schema::ContractId;
-use crate::tables::Table;
 
 #[derive(Eq, PartialOrd, PartialEq, Clone, Debug, CandidType, Serialize, Deserialize)]
 pub enum Contract {

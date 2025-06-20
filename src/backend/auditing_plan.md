@@ -248,6 +248,24 @@ This document outlines the comprehensive auditing plan for the custom payment co
 - Final security assessment
 - SNS readiness certification
 
+### Cycles
+
+The SNS framework handles cycles management automatically through its built-in mechanisms. When you deploy an SNS, it creates several standard canisters including governance, ledger, and root canisters that work together to manage the decentralized service.
+
+However, your dapp canisters (the actual application canisters controlled by the SNS) will need cycles to operate. The common approaches are:
+
+**Automatic cycles management**: The SNS can be configured to automatically top up controlled canisters when their cycles run low. This is handled through the root canister's cycle management functionality.
+
+**Cycles wallet integration**: Users can send cycles directly to your dapp canisters, or you can implement mechanisms for users to contribute cycles.
+
+**Revenue-based cycles**: If your dapp generates revenue (through fees, tokens, etc.), you can use that to purchase cycles programmatically.
+
+The key is that cycles management becomes part of your dapp's economic model rather than requiring a separate ledger canister. The SNS governance system can vote on cycles-related proposals and manage the sustainability of the service.
+
+Are you working on a specific SNS implementation where you're concerned about cycles sustainability? I can provide more targeted advice based on your particular use case.
+
+
 ## Conclusion
 
 This comprehensive audit plan addresses the critical security concerns for the pre-SNS deployment. The focus on reentrancy attacks, authorization controls, and state consistency reflects the most significant risks in decentralized financial systems. Successful completion of this audit will ensure the system is ready for community governance and long-term operation.
+

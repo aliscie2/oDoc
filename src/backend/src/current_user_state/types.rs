@@ -1,13 +1,5 @@
 use super::{Subscprtion, UserState};
-use candid::{CandidType, Decode, Deserialize, Encode, Principal};
-use ic_cdk::{caller, print};
-use ic_stable_structures::storable::Bound;
-use ic_stable_structures::{BTreeMap, Storable};
-use std::borrow::Cow;
-use std::cell::{Ref, RefCell};
-use std::collections::HashMap;
-use std::sync::atomic::Ordering;
-type DateTime = f32;
+use ic_cdk::caller;
 
 impl Default for UserState {
     fn default() -> Self {

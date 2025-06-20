@@ -1,5 +1,4 @@
 use std::borrow::Cow;
-use std::sync::atomic::Ordering;
 
 use candid::{CandidType, Decode, Deserialize, Encode, Principal};
 use ic_cdk::caller;
@@ -7,9 +6,7 @@ use ic_stable_structures::storable::Bound;
 use ic_stable_structures::Storable;
 use serde::Serialize;
 
-use crate::storage_schema::MyChatsStore;
 use crate::websocket::{NoteContent, Notification};
-use crate::COUNTER;
 use crate::{CHATS, MY_CHATS};
 pub const MESSAGES_PER_PAGE: usize = 10;
 #[derive(Clone, Debug, Deserialize, CandidType)]
@@ -67,7 +64,7 @@ impl Storable for Chat {
     fn from_bytes(bytes: Cow<[u8]>) -> Self {
         match Decode!(bytes.as_ref(), Self) {
             Ok(chat) => chat,
-            Err(decode_error) => {
+            Err(_) => {
                 println!("⚠️ Failed to decode as current Chat, attempting migration...");
 
                 // Return a default/empty chat instead of panicking
@@ -120,20 +117,20 @@ impl Chat {
             let chats = store.borrow();
             chats
                 .iter()
-                .find(|(chat_id, chat)| chat.id == id)
+                .find(|(_, chat)| chat.id == id)
                 .map(|(_, chat)| chat.clone())
         })
     }
 
-    pub fn get_by_user(user: Principal) -> Option<Self> {
-        CHATS.with(|store| {
-            let chats = store.borrow();
-            chats
-                .iter()
-                .find(|(_, chat)| chat.admins.contains(&user) && chat.admins.contains(&caller()))
-                .map(|(_, chat)| chat.clone())
-        })
-    }
+    // pub fn get_by_user(user: Principal) -> Option<Self> {
+    //     CHATS.with(|store| {
+    //         let chats = store.borrow();
+    //         chats
+    //             .iter()
+    //             .find(|(_, chat)| chat.admins.contains(&user) && chat.admins.contains(&caller()))
+    //             .map(|(_, chat)| chat.clone())
+    //     })
+    // }
 
     pub fn save(&self) -> Self {
         CHATS.with(|store| {
@@ -152,15 +149,15 @@ impl Chat {
     //     })
     // }
 
-    pub fn get_chats() -> Vec<Chat> {
-        CHATS.with(|store| {
-            let chats = store.borrow();
-            chats
-                .iter()
-                .map(|(_, chat)| chat.clone())
-                .collect::<Vec<Chat>>()
-        })
-    }
+    // pub fn get_chats() -> Vec<Chat> {
+    //     CHATS.with(|store| {
+    //         let chats = store.borrow();
+    //         chats
+    //             .iter()
+    //             .map(|(_, chat)| chat.clone())
+    //             .collect::<Vec<Chat>>()
+    //     })
+    // }
 
     pub fn get_my_chats() -> Vec<Chat> {
         CHATS.with(|store| {

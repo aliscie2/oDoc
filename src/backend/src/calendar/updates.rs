@@ -1,6 +1,6 @@
 // use crate::websocket::{AppMessage, Notification};
 use crate::calendar::{Availability, Calendar, Event, ScheduleType};
-use candid::{CandidType, Decode, Deserialize, Encode, Principal};
+use candid::{CandidType, Deserialize, Principal};
 use ic_cdk::caller;
 use ic_cdk_macros::update;
 use serde::Serialize;

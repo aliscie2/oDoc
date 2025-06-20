@@ -1,8 +1,6 @@
 use candid::types::principal::PrincipalError;
 use candid::Principal;
 use ic_cdk::caller;
-use std::collections::HashMap;
-use std::fmt::format;
 
 // use ic_cdk_macros::query;
 use ic_cdk_macros::query;
@@ -10,7 +8,6 @@ use ic_cdk_macros::query;
 use crate::calendar::Calendar;
 use crate::job_matcher::pallet::Job;
 use crate::user::User;
-use crate::user_history::UserHistory;
 use crate::PROFILE_STORE;
 use std::collections::HashSet;
 

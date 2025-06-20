@@ -1,18 +1,15 @@
 use std::borrow::Cow;
 use std::collections::HashMap;
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::atomic::AtomicU64;
 
-use candid::{CandidType, Decode, Deserialize, Encode, Principal};
+use candid::{CandidType, Decode, Deserialize, Encode};
 use ic_cdk::{caller, print};
 use ic_stable_structures::storable::Bound;
 use ic_stable_structures::Storable;
 
-use crate::files::FileNode;
 use crate::storage_schema::{ContentId, ContentTree, FileId};
 use crate::tables::Table;
-use crate::{ShareFile, FILE_CONTENTS, USER_FILES};
-
-static COUNTER: AtomicU64 = AtomicU64::new(0);
+use crate::{ShareFile, FILE_CONTENTS};
 
 #[derive(Clone, Debug, Deserialize, CandidType)]
 pub enum ContentData {
@@ -174,7 +171,7 @@ impl ContentNode {
     pub fn delete_file_contents(file_id: FileId) {
         let current_user = caller().to_string();
         FILE_CONTENTS.with(|file_contents| {
-            let mut contents = file_contents.borrow_mut();
+            let contents = file_contents.borrow_mut();
             if let Some(mut content_node_vec) = contents.get(&current_user) {
                 content_node_vec.contents.remove(&file_id);
             }
@@ -184,7 +181,7 @@ impl ContentNode {
     pub fn delete_file_content(file_id: FileId) {
         let current_user = caller().to_string();
         FILE_CONTENTS.with(|file_contents| {
-            let mut contents = file_contents.borrow_mut();
+            let contents = file_contents.borrow_mut();
             if let Some(mut content_node_vec) = contents.get(&current_user) {
                 content_node_vec.contents.remove(&file_id);
             }

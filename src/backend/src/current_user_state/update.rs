@@ -1,9 +1,8 @@
 use ic_cdk::caller;
 
-use super::{Subscprtion, UserState};
-use candid::{CandidType, Decode, Deserialize, Encode, Principal};
+use super::UserState;
+use candid::Principal;
 use ic_cdk_macros::update;
-use serde::Serialize;
 
 use crate::contracts::{CPayment, PaymentStatus};
 
@@ -13,7 +12,7 @@ fn buy_ai_credits(amount: f64) -> Result<(), String> {
         return Err("Permission denied (anonymous)".to_string());
     }
 
-    if (amount > 5.0 || amount < 1.0) {
+    if amount > 5.0 || amount < 1.0 {
         return Err("Amount must be in range 1 to 5".to_string());
     }
 

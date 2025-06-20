@@ -10,6 +10,9 @@ fn register(affiliate_id: String, profile: RegisterUser) -> Result<User, String>
     if User::is_anonymous() {
         return Err("Anonymous users are not allowed to register.".to_string());
     }
+    if User::user_is_registered() {
+        return Err("You already registered".to_string());
+    }
 
     if let Some(user) = User::user_profile() {
         return Ok(user);

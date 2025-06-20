@@ -1,8 +1,6 @@
 use crate::chat::{Chat, Message};
 use crate::discover::UserFE;
 use crate::user::User;
-use crate::websocket::{AppMessage, Notification};
-use crate::workspaces::WorkSpace;
 use candid::{CandidType, Deserialize, Principal};
 use ic_cdk_macros::query;
 

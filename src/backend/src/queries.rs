@@ -11,7 +11,7 @@ use crate::friends::Friend;
 use crate::storage_schema::{ContentTree, ContractId, FileId};
 use crate::user::User;
 use crate::user_history::UserHistory;
-use crate::{StoredContract, Wallet, PROFILE_STORE};
+use crate::{StoredContract, Wallet};
 
 #[derive(Clone, Debug, Default, CandidType, Deserialize)]
 pub struct InitialData {
@@ -77,7 +77,7 @@ fn get_initial_data() -> Result<InitialData, String> {
     if profile.photo.len() > 500000 {
         profile.photo = Vec::new()
     };
-    let mut friends: Vec<Friend> = Friend::get_list(caller());
+    let friends: Vec<Friend> = Friend::get_list(caller());
 
     let friends: Vec<Friend> = friends
         .into_iter()

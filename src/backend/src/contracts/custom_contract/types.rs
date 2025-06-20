@@ -1,13 +1,10 @@
-use std::collections::HashMap;
-
 use candid::Principal;
 use candid::{CandidType, Deserialize};
-use ic_cdk::{call, caller};
+use ic_cdk::caller;
 use serde::Serialize;
 
-use crate::contracts::custom_contract::utils::notify_about_promise;
 use crate::storage_schema::ContractId;
-use crate::tables::{Column, ContractPermissionType, Execute, Filter, Formula, PermissionType};
+use crate::tables::{ContractPermissionType, Filter, Formula, PermissionType};
 use crate::user_history::UserHistory;
 use crate::websocket::{NoteContent, Notification, PaymentAction};
 use crate::{ExchangeType, StoredContract, StoredContractVec, Wallet, CONTRACTS_STORE};
@@ -630,7 +627,7 @@ impl CustomContract {
             let mut new_map = StoredContractVec {
                 stored_contracts: vec![StoredContract::CustomContract(self.clone())],
             };
-            if let Some(mut caller_contracts_map) = caller_contracts.get(&self.creator) {
+            if let Some(caller_contracts_map) = caller_contracts.get(&self.creator) {
                 new_map
                     .stored_contracts
                     .extend(caller_contracts_map.stored_contracts.clone());
@@ -651,7 +648,7 @@ impl CustomContract {
             let mut new_map = StoredContractVec {
                 stored_contracts: vec![StoredContract::CustomContract(self.clone())],
             };
-            if let Some(mut caller_contracts_map) = caller_contracts.get(&self.creator) {
+            if let Some(caller_contracts_map) = caller_contracts.get(&self.creator) {
                 new_map
                     .stored_contracts
                     .extend(caller_contracts_map.stored_contracts.clone());

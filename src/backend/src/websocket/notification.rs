@@ -1,5 +1,4 @@
 use std::borrow::Cow;
-use std::sync::atomic::Ordering;
 
 use candid::{CandidType, Decode, Deserialize, Encode, Principal};
 use ic_cdk::caller;
@@ -9,9 +8,9 @@ use serde::Serialize;
 
 use crate::chat::Message;
 use crate::friends::Friend;
-use crate::websocket::{notification, send_app_message, AppMessage};
-use crate::COUNTER;
-use crate::{websocket, CPayment, NOTIFICATIONS, USER_FILES};
+use crate::websocket::{send_app_message, AppMessage};
+
+use crate::{CPayment, NOTIFICATIONS};
 
 #[derive(PartialEq, Clone, Debug, CandidType, Deserialize)]
 pub struct FriendRequestNotification {
@@ -160,8 +159,8 @@ impl Notification {
     pub fn pure_save(&self) {
         NOTIFICATIONS.with(|notifications| {
             let mut notifications = notifications.borrow_mut();
-            let mut user_notifications = notifications.get(&self.receiver.to_text());
-            if let Some((mut user_notifications)) = user_notifications {
+            let user_notifications = notifications.get(&self.receiver.to_text());
+            if let Some(user_notifications) = user_notifications {
                 let mut notifications_list = user_notifications.notifications;
                 notifications_list.retain(|notification| notification.id != self.id);
                 notifications_list.push(self.clone());
@@ -191,64 +190,6 @@ impl Notification {
         send_app_message(self.receiver, msg.clone());
     }
 
-    pub fn send_to(&self, to: Principal) {
-        let msg: AppMessage = AppMessage {
-            notification: Some(self.clone()),
-            text: self.id.clone(),
-            timestamp: ic_cdk::api::time(),
-        };
-        send_app_message(to, msg.clone());
-    }
-    // pub fn undo(user: Principal, id: String) {
-    //     // let msg: AppMessage = AppMessage {
-    //     //     notification: None,
-    //     //     text: "Unfriend".to_string(),
-    //     //     timestamp: ic_cdk::api::time(),
-    //     // };
-    //
-    //     let notification = Notification::get(id);
-    //     if let Some(notification) = notification {
-    //         notification.delete();
-    //     }
-    //     // send_app_message(user, msg.clone());
-    // }
-
-    pub fn delete(&self) {
-        NOTIFICATIONS.with(|notifications| {
-            let mut user_notifications = notifications.borrow_mut();
-            let mut user_notifications = user_notifications
-                .get(&caller().to_string())
-                .unwrap_or_else(|| NotificationVec {
-                    notifications: vec![],
-                });
-            user_notifications.notifications.retain(|n| n.id != self.id);
-            let msg: AppMessage = AppMessage {
-                notification: Some(self.clone()),
-                text: "Delete".to_string(),
-                timestamp: ic_cdk::api::time(),
-            };
-            send_app_message(self.receiver, msg.clone());
-        });
-    }
-
-    pub fn seen(&self) {
-        NOTIFICATIONS.with(|notifications| {
-            let mut user_notifications = notifications.borrow_mut();
-            let mut user_notifications = user_notifications
-                .get(&caller().to_string())
-                .unwrap_or_else(|| NotificationVec {
-                    notifications: vec![],
-                });
-
-            // Update the is_seen field of the relevant notifications
-            for notification in &mut user_notifications.notifications {
-                if notification.id == self.id {
-                    notification.is_seen = true;
-                }
-            }
-        });
-    }
-
     pub fn get(receiver: String, id: String) -> Option<Self> {
         NOTIFICATIONS.with(|notifications| {
             let user_notifications = notifications.borrow();
@@ -263,21 +204,6 @@ impl Notification {
         })
     }
 }
-
-pub fn get_friend_request_note(sender: Principal, receiver: Principal) -> Option<Notification> {
-    NOTIFICATIONS.with(|notifications| {
-        let user_notifications = notifications.borrow();
-        if let Some(user_notifications) = user_notifications.get(&receiver.to_text()) {
-            for notification in &user_notifications.notifications {
-                if notification.sender == sender {
-                    return Some(notification.clone());
-                }
-            }
-        }
-        None
-    })
-}
-
 pub fn notify_friend_request(f: Friend) {
     let friend_request_notification = FriendRequestNotification { friend: f.clone() };
     // Example of creating a new Notification with the FriendRequest content
@@ -287,28 +213,6 @@ pub fn notify_friend_request(f: Friend) {
         sender: caller(),
         receiver,
         content: NoteContent::FriendRequest(friend_request_notification),
-        is_seen: false,
-        time: ic_cdk::api::time() as f64,
-    };
-    new_notification.save();
-}
-
-type id = String;
-
-pub fn contract_notification(
-    receiver: Principal,
-    sender: Principal,
-    contract_type: String,
-    contract_id: String,
-) {
-    let new_notification = Notification {
-        id: COUNTER.fetch_add(1, Ordering::SeqCst).to_string(),
-        sender,
-        receiver,
-        content: NoteContent::ContractUpdate(ContractNotification {
-            contract_type,
-            contract_id,
-        }),
         is_seen: false,
         time: ic_cdk::api::time() as f64,
     };

@@ -28,7 +28,7 @@ impl UserProfile {
     pub fn get(user_id: Principal) -> Result<Self, String> {
         let user: Option<User> =
             PROFILE_STORE.with(|profile_store| profile_store.borrow().get(&user_id.to_string()));
-        let mut user_profile = UserHistory::get(user_id);
+        let user_profile = UserHistory::get(user_id);
         let wallet = Wallet::get(user_id);
         if let Some(user) = user {
             Ok(UserProfile {

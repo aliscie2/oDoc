@@ -1,19 +1,10 @@
-use std::borrow::Cow;
-use std::collections::HashSet;
-
-use candid::{CandidType, Decode, Deserialize, Encode, Principal};
+use candid::Principal;
 use ic_cdk::caller;
 use ic_cdk_macros::*;
-use ic_cdk_macros::*;
-use ic_stable_structures::{storable::Bound, DefaultMemoryImpl, StableBTreeMap, Storable};
-use serde::Serialize;
 
 use crate::affiliate::{Affiliate, ReferredUser};
-use crate::AFFILIATE;
 // Import user history related types and traits
-use crate::discover::time_diff;
 use crate::user_history::UserHistory;
-use crate::websocket::Notification;
 
 // Only have this one update function as the public API
 #[update]
@@ -63,16 +54,16 @@ fn process_user(principal: &Principal, user: &mut ReferredUser) -> Option<f64> {
     user.trust_score = user_history.actions_rate;
 
     if user_history.actions_rate >= 3.0 {
-        let mut should_pay = false;
+        // let mut should_pay = false;
 
         if !user.verified {
             user.verified = true;
-            should_pay = true;
+            // should_pay = true;
         }
 
         if !user.payment_processed {
             user.payment_processed = true;
-            should_pay = true;
+            // should_pay = true;
             return Some(Affiliate::TRUSTED_USER_REWARD);
         }
     }
@@ -80,7 +71,6 @@ fn process_user(principal: &Principal, user: &mut ReferredUser) -> Option<f64> {
 }
 
 pub fn add_new_referral(affiliate_id: String, user_id: String) -> Result<(), String> {
-    let caller_id = caller().to_text();
     let mut affiliate = Affiliate::get(&affiliate_id).ok_or("affiliate_id not found")?;
     if affiliate.users.iter().any(|user| user.id == user_id) {
         return Err("User already referred".to_string());

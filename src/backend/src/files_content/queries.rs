@@ -1,7 +1,6 @@
 use ic_cdk::caller;
 use std::collections::HashMap;
 
-use crate::{FILE_CONTENTS, USER_FILES};
 use ic_cdk_macros::query;
 
 use crate::files_content::ContentNode;

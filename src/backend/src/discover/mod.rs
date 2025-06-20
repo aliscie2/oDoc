@@ -1,22 +1,17 @@
 use std::borrow::Cow;
-use std::cell::{Ref, RefCell};
+use std::cell::Ref;
 use std::collections::HashMap;
-use std::sync::atomic::Ordering;
 
 use candid::{CandidType, Decode, Deserialize, Encode, Principal};
-use ic_cdk::{caller, print};
+use ic_cdk::caller;
 use ic_stable_structures::storable::Bound;
 use ic_stable_structures::{BTreeMap, Storable};
-
-pub use queries::*;
-pub use types::*;
-pub use updates::*;
 
 use crate::files_content::{ContentNode, OldContentNode};
 use crate::storage_schema::ContentTree;
 use crate::user::User;
+use crate::Memory;
 use crate::POSTS;
-use crate::{Memory, COUNTER};
 
 mod queries;
 mod types;
@@ -116,15 +111,15 @@ pub struct UserFE {
     pub name: String,
 }
 
-impl UserFE {
-    pub fn from(id: Principal) -> Self {
-        let user = User::get_user_from_principal(id).unwrap();
-        UserFE {
-            id: user.id,
-            name: user.name,
-        }
-    }
-}
+// impl UserFE {
+//     pub fn from(id: Principal) -> Self {
+//         let user = User::get_user_from_principal(id).unwrap();
+//         UserFE {
+//             id: user.id,
+//             name: user.name,
+//         }
+//     }
+// }
 
 #[derive(Clone, Debug, Deserialize, CandidType)]
 pub struct PostUser {
@@ -142,26 +137,26 @@ pub struct PostUser {
 
 impl Post {
     // Constructor for creating a new Post
-    pub fn new() -> Self {
-        // Generate a unique ID for the post
-        let id = COUNTER.fetch_add(1, Ordering::SeqCst).to_string();
+    // pub fn new() -> Self {
+    //     // Generate a unique ID for the post
+    //     let id = COUNTER.fetch_add(1, Ordering::SeqCst).to_string();
 
-        // Get the current timestamp
-        let date_created = ic_cdk::api::time();
+    //     // Get the current timestamp
+    //     let date_created = ic_cdk::api::time();
 
-        Post {
-            id,
-            content_tree: Default::default(), // Assuming ContentTree has a default implementation
-            tags: Default::default(),         // Assuming Vec<String> has a default implementation
-            creator: String::new(),           // Assuming String has a default implementation
-            date_created,
-            votes_up: vec![],
-            votes_down: vec![],
-            is_comment: false,
-            parent: "".to_string(),
-            children: vec![],
-        }
-    }
+    //     Post {
+    //         id,
+    //         content_tree: Default::default(), // Assuming ContentTree has a default implementation
+    //         tags: Default::default(),         // Assuming Vec<String> has a default implementation
+    //         creator: String::new(),           // Assuming String has a default implementation
+    //         date_created,
+    //         votes_up: vec![],
+    //         votes_down: vec![],
+    //         is_comment: false,
+    //         parent: "".to_string(),
+    //         children: vec![],
+    //     }
+    // }
 
     // Save the post to the thread-local storage
     pub fn save(&self) {

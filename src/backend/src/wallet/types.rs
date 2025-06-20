@@ -1,13 +1,11 @@
 use crate::user_history::UserHistory;
-use crate::{CPayment, PaymentStatus, WALLETS_STORE};
+use crate::WALLETS_STORE;
 use candid::{CandidType, Decode, Deserialize, Encode, Principal};
 use ethers_core::abi::ethereum_types::H160;
-use ic_cdk::caller;
-use ic_stable_structures::{storable::Bound, DefaultMemoryImpl, StableBTreeMap, Storable};
+use ic_stable_structures::{storable::Bound, Storable};
 use serde::Serialize;
-use serde_bytes::ByteBuf;
+use std::borrow::Cow;
 use std::collections::HashMap;
-use std::{borrow::Cow, cell::RefCell};
 
 pub const MAX_SYMBOL_LENGTH: usize = 20;
 
@@ -102,7 +100,7 @@ impl Wallet {
 
     pub fn calc_dept(&mut self) -> &mut Self {
         let mut total_debt = 0.0;
-        for (key, value) in self.debts.iter() {
+        for (_, value) in self.debts.iter() {
             total_debt += value;
         }
         self.total_debt = total_debt;
