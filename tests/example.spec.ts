@@ -14,7 +14,7 @@ test("Login with Internet Identity", async ({ browser }) => {
   await page.goto("http://localhost:5173/");
 
   await expect(
-    page.locator("text=Tell us are you looking for Job or talent?"),
+    page.locator("text=Job Matches"),
   ).toBeVisible();
 
   // No need to manually close the tab since it closes automatically
