@@ -1,7 +1,7 @@
 import React from "react";
 import { IconButton, Tooltip, useTheme } from "@mui/material";
 import GoogleIcon from "@mui/icons-material/Google";
-import sendEmail from "@/pages/discover/jobs/utils/sendEmail";
+import sendEmail from "@/utils/sendEmail";
 import { useSelector } from "react-redux";
 
 // Utility function to create Google Calendar URL

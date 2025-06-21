@@ -43,7 +43,7 @@ export const ProjectsCard = ({
       onMouseLeave={onMouseLeave}
       onClick={onClick}
     >
-      <CardHeader icon={<Folder />} title="Active Projects"  />
+      <CardHeader icon={<Folder />} title="Active Projects" />
 
       <Box display="flex" flexDirection="column" gap={2}>
         {projects.map((project, idx) => (
@@ -54,7 +54,7 @@ export const ProjectsCard = ({
               alignItems="center"
               mb={1}
             >
-              <Typography variant="body2" sx={{  }}>
+              <Typography variant="body2" sx={{}}>
                 {project.name}
               </Typography>
               <Typography variant="caption" sx={{ color: project.color }}>
@@ -74,8 +74,8 @@ export const ProjectsCard = ({
       </Box>
 
       <Collapse in={isExpanded}>
-        <Divider sx={{ my: 2,  }} />
-        <Typography variant="body2" sx={{ }}>
+        <Divider sx={{ my: 2 }} />
+        <Typography variant="body2" sx={{}}>
           Backend auditing is progressing well with security reviews completed.
           Unit testing framework is being implemented. AI automation project
           will begin next week with Selenium integration.

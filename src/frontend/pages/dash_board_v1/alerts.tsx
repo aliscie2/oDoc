@@ -53,10 +53,7 @@ export const AlertsCard = ({
       <Collapse in={isHovered || isExpanded}>
         {alerts.map((alert, idx) => (
           <Box key={idx}>
-            <Typography
-              variant="body2"
-              sx={{ fontWeight: 500 }}
-            >
+            <Typography variant="body2" sx={{ fontWeight: 500 }}>
               {alert.title}
             </Typography>
             <Typography
@@ -70,8 +67,8 @@ export const AlertsCard = ({
       </Collapse>
 
       <Collapse in={isExpanded}>
-        <Divider sx={{ my: 2,  }} />
-        <Typography variant="body2" >
+        <Divider sx={{ my: 2 }} />
+        <Typography variant="body2">
           Client has disputed the third milestone payment citing incomplete
           deliverables. Resolution required within 7 days. Documentation and
           evidence have been submitted.

@@ -31,6 +31,7 @@ import { ProjectsCard } from "./projects";
 import { AlertsCard } from "./alerts";
 import { AIChatComponent } from "./aiChat";
 import { CalendarCard } from "./calendar";
+import AchievementCard from "@/components/userBadges";
 
 // Main Dashboard Component
 
@@ -228,6 +229,7 @@ const Dashboard = () => {
     <Box
       sx={{
         minHeight: "100vh",
+
         p: 3,
       }}
     >
@@ -282,6 +284,7 @@ const Dashboard = () => {
           onMouseLeave={() => handleCardHover("alerts", false)}
           onClick={() => handleCardClick("alerts")}
         />
+        <AchievementCard />
       </Box>
 
       <AIChatComponent

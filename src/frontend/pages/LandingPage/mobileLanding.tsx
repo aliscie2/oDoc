@@ -49,7 +49,6 @@ import {
   trustIndicators,
   benefitsData,
   jobMatcherFeatures,
-  tutorials,
   securityFeatures,
   odocStrecutre,
   goodBehaviors,

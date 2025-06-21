@@ -68,12 +68,17 @@ const features = [
 const roadMap = [
   {
     is_done: true,
-    title: "USDT Payment System",
-    content:
-      "Secure off-chain USDT transactions between users on ICP canister with confirmation workflows",
+    title: "AI job matcher",
+    content: "Talk to AI to find jobs/talents, it will alert you by email.",
   },
   {
     is_done: true,
+    title: "AI sceduler/calenar",
+    content:
+      "Tell your calendar about your requrent avaiablitiy like `I am aviable every day from 9 AM to 6 PM` ",
+  },
+  {
+    is_done: false,
     title: "Smart Revenue Sharing",
     content:
       "Automated payment distribution with immutable approved contracts and change management system",

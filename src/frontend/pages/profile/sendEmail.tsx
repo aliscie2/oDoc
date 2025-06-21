@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import sanitizeHtml from "sanitize-html";
-import sendEmail from "../discover/jobs/utils/sendEmail";
+import sendEmail from "../../utils/sendEmail";
 import { useBackendContext } from "@/contexts/BackendContext";
 
 const EmailComposer = () => {

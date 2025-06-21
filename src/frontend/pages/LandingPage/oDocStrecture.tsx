@@ -68,8 +68,7 @@ const ODOCInfographic: React.FC = () => {
         justifyContent: "center",
         padding: "16px",
         overflow: "hidden",
-        background:
-          "radial-gradient(circle at center, #0a0a0a 0%, #000000 50%, #0a0a23 100%)",
+
         position: "relative",
       }}
     >
@@ -277,7 +276,7 @@ const ODOCInfographic: React.FC = () => {
                         height: "200px",
                         background:
                           "linear-gradient(135deg, rgba(26, 26, 26, 0.95), rgba(45, 45, 45, 0.9))",
-                        borderRadius: "16px",
+                        borderRadius: "100px",
                         border: `2px solid ${element.glowColor}`,
                         boxShadow: `0 0 40px ${element.glowColor}`,
                         backdropFilter: "blur(20px)",

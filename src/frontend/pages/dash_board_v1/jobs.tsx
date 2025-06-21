@@ -48,22 +48,13 @@ export const JobMatchesCard = ({
       <CardHeader icon={<Search />} title="Job Matches" color="#00d4ff" />
 
       <Box display="flex" justifyContent="space-between" mb={2}>
-        <Chip
-          label="7 Matches"
-
-        />
-        <Chip
-          label="2 Reviewed"
-
-        />
+        <Chip label="7 Matches" />
+        <Chip label="2 Reviewed" />
       </Box>
 
       <Collapse in={isHovered || isExpanded}>
         <Box mt={2}>
-          <Typography
-            variant="body2"
-            sx={{  mb: 1 }}
-          >
+          <Typography variant="body2" sx={{ mb: 1 }}>
             Recent Matches:
           </Typography>
           <Box display="flex" flexDirection="column" gap={1}>
@@ -74,7 +65,7 @@ export const JobMatchesCard = ({
                 >
                   <Person fontSize="small" />
                 </Avatar>
-                <Typography variant="body2" sx={{  }}>
+                <Typography variant="body2" sx={{}}>
                   {match.name} - {match.rate}
                 </Typography>
               </Box>
@@ -84,8 +75,8 @@ export const JobMatchesCard = ({
       </Collapse>
 
       <Collapse in={isExpanded}>
-        <Divider sx={{ my: 2,  }} />
-        <Typography variant="body2" >
+        <Divider sx={{ my: 2 }} />
+        <Typography variant="body2">
           All 7 matches are highly qualified candidates with 5+ years experience
           in React, Node.js, and TypeScript. Average rate: $78/hr. 2 candidates
           have been reviewed and shortlisted.

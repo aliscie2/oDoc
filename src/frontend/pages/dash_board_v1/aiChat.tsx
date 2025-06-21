@@ -4,32 +4,11 @@ import {
   Card,
   CardContent,
   Typography,
-  LinearProgress,
-  Chip,
   IconButton,
   TextField,
   Button,
-  Avatar,
-  Divider,
-  Collapse,
-  Fade,
 } from "@mui/material";
-import {
-  Search,
-  Event,
-  Folder,
-  Warning,
-  Chat,
-  Send,
-  Refresh,
-  Undo,
-  Redo,
-  Person,
-} from "@mui/icons-material";
-import { JobMatchesCard } from "./jobs";
-import { ProjectsCard } from "./projects";
-import { AlertsCard } from "./alerts";
-import { CalendarCard } from "./calendar";
+import { Chat, Send, Refresh, Undo, Redo } from "@mui/icons-material";
 
 // AI Chat Component
 export const AIChatComponent = ({
@@ -56,7 +35,6 @@ export const AIChatComponent = ({
   };
 
   const cardStyle = {
-
     border: "1px solid rgba(255,255,255,0.1)",
     borderRadius: "16px",
     transition: "all 0.3s ease",
@@ -93,10 +71,7 @@ export const AIChatComponent = ({
               alignItems="center"
               mb={2}
             >
-              <Typography
-                variant="h6"
-                sx={{ fontSize: "1rem" }}
-              >
+              <Typography variant="h6" sx={{ fontSize: "1rem" }}>
                 AI Assistant
               </Typography>
               <IconButton
@@ -179,7 +154,7 @@ export const AIChatComponent = ({
                   },
                 }}
               />
-              <IconButton onClick={handleSend} >
+              <IconButton onClick={handleSend}>
                 <Send />
               </IconButton>
             </Box>

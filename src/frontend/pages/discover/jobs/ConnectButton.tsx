@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Button, CircularProgress, Tooltip, Box } from "@mui/material";
 import { useSnackbar } from "notistack";
-import sendEmail from "./utils/sendEmail";
+import sendEmail from "../../../utils/sendEmail";
 import { useDispatch, useSelector } from "react-redux";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
 import { useBackendContext } from "@/contexts/BackendContext";

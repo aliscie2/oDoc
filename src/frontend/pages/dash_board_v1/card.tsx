@@ -37,7 +37,6 @@ export const BaseCard = ({
   isVisible = true,
 }) => {
   const cardStyle = {
-    
     border: "1px solid rgba(255,255,255,0.1)",
     borderRadius: "16px",
     transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -66,7 +65,7 @@ export const BaseCard = ({
 };
 
 // Card Header Component
-export const CardHeader = ({ icon, title, }) => (
+export const CardHeader = ({ icon, title }) => (
   <Box display="flex" alignItems="center" mb={2}>
     {React.cloneElement(icon, { sx: { mr: 2 } })}
     <Typography variant="h6" sx={{ fontWeight: 600 }}>

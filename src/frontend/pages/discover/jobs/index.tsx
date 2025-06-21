@@ -13,7 +13,6 @@ import JobSearchComponent from "./JobSearchComponent";
 import { useBackendContext } from "@/contexts/BackendContext";
 import LoginButton from "@/components/MainComponents/topNavBar/loginButton";
 import { Login } from "@mui/icons-material";
-import SetupBanner from "./setUpConnect";
 
 interface Message {
   id: string;
@@ -173,8 +172,6 @@ const JobsPage: React.FC = () => {
   };
   return (
     <Box className="jobs-page-container" sx={{ padding: 0, margin: "0 auto" }}>
-      <SetupBanner />
-
       <JobSelector />
       <AiChat
         key={geminiAgent}

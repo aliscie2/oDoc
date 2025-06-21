@@ -54,25 +54,17 @@ export const CalendarCard = ({
         <Box display="flex" flexDirection="column" gap={2}>
           {events.map((event, idx) => (
             <Box key={idx}>
-              <Typography
-                variant="body2"
-                sx={{  fontWeight: 500 }}
-              >
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>
                 {event.title}
               </Typography>
-              <Typography
-                variant="caption"
-
-              >
-                {event.time}
-              </Typography>
+              <Typography variant="caption">{event.time}</Typography>
             </Box>
           ))}
         </Box>
       </Collapse>
 
       <Collapse in={isExpanded}>
-        <Divider sx={{ my: 2, }} />
+        <Divider sx={{ my: 2 }} />
         <Typography variant="body2">
           All events are scheduled with calendar reminders. Client meeting
           includes project status review and next milestone planning.
