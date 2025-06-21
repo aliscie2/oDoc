@@ -24,6 +24,7 @@ import {
 import { RootState } from "./redux/reducers";
 
 import RegistrationForm from "./components/MainComponents/RegistrationForm";
+import Posts from "./pages/discover/posts";
 
 // Create a styled component for the main content
 const MainContent = styled(Box)(({ theme }) => ({
@@ -201,6 +202,39 @@ const App: React.FC = () => {
       throw error;
     }
   }, [backendActor]);
+
+  const { posts } = useSelector((state: RootState) => state.filesState);
+
+  useEffect(() => {
+    if (posts.length == 0) {
+      (async () => {
+        try {
+          // setLoading(true);
+
+          const fetchedPosts = await backendActor.get_posts(0, 10);
+
+          if (fetchedPosts.length === 0) {
+            // setHasMore(false);
+          } else {
+            dispatch({
+              type: "ADD_POSTS",
+              posts: fetchedPosts,
+            });
+          }
+        } catch (error) {
+          console.error("Error fetching more posts:", error);
+        } finally {
+          // setLoading(false);
+        }
+      })();
+    }
+
+    // return () => {
+    //   if (loadingRef.current) {
+    //     observer.unobserve(loadingRef.current);
+    //   }
+    // };
+  }, [dispatch, backendActor, posts]);
 
   // Main deposit flow
   useEffect(() => {

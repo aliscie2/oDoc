@@ -27,13 +27,11 @@ import {
   Person,
 } from "@mui/icons-material";
 import { JobMatchesCard } from "./jobs";
-import { ProjectsCard } from "./projects";
+import { PostsCard } from "./postsCard";
 import { AlertsCard } from "./alerts";
 import { AIChatComponent } from "./aiChat";
 import { CalendarCard } from "./calendar";
 import AchievementCard from "@/components/userBadges";
-
-// Main Dashboard Component
 
 // Main Dashboard Component
 const Dashboard = () => {
@@ -46,16 +44,6 @@ const Dashboard = () => {
 
   // State for different dashboard components
   const [showJobMatch, setShowJobMatch] = useState(true);
-  const [events, setEvents] = useState([
-    { title: "Client Meeting - TechCorp", time: "Tomorrow, 2:00 PM" },
-    { title: "Code Review Session", time: "Wednesday, 10:00 AM" },
-    { title: "Project Demo", time: "Friday, 4:00 PM" },
-  ]);
-  const [projects, setProjects] = useState([
-    { name: "Backend Auditing for ODOC", progress: 40, color: "#4caf50" },
-    { name: "Backend Unit Testing", progress: 60, color: "#ff9800" },
-    { name: "Automated Testing with AI", progress: 0, color: "#f44336" },
-  ]);
 
   // Store action history for each message
   const [actionHistory, setActionHistory] = useState({});
@@ -81,8 +69,6 @@ const Dashboard = () => {
     // Save current state before making changes
     const currentState = {
       showJobMatch,
-      events: [...events],
-      projects: [...projects],
     };
 
     setTimeout(() => {
@@ -93,7 +79,7 @@ const Dashboard = () => {
       let actionType = "";
       let newState = { ...currentState };
 
-      // Command 1: Hide/stop job search
+      // Command: Hide/stop job search
       if (
         lowerMessage.includes("stop") &&
         (lowerMessage.includes("search") || lowerMessage.includes("job"))
@@ -103,44 +89,10 @@ const Dashboard = () => {
         newState.showJobMatch = false;
         setShowJobMatch(false);
       }
-      // Command 2: Add new event with David
-      else if (
-        lowerMessage.includes("add") &&
-        lowerMessage.includes("event") &&
-        lowerMessage.includes("david")
-      ) {
-        const newEvent = {
-          title: "Meeting with David",
-          time: "June 15, 9:00 AM",
-        };
-        aiResponse = "Added a new event with David for June 15 at 9:00 AM";
-        actionType = "addEvent";
-        newState.events = [...newState.events, newEvent];
-        setEvents((prev) => [...prev, newEvent]);
-      }
-      // Command 3: Remove Automated Testing project
-      else if (
-        lowerMessage.includes("remove") &&
-        lowerMessage.includes("automated testing")
-      ) {
-        aiResponse =
-          'Removed the "Automated Testing with AI" project from your dashboard';
-        actionType = "removeProject";
-        newState.projects = newState.projects.filter(
-          (project) =>
-            !project.name.toLowerCase().includes("automated testing"),
-        );
-        setProjects((prev) =>
-          prev.filter(
-            (project) =>
-              !project.name.toLowerCase().includes("automated testing"),
-          ),
-        );
-      }
       // Default response for unrecognized commands
       else {
         aiResponse =
-          "I can help you with:\n• Stopping job searches\n• Adding events with people\n• Removing projects\nWhat would you like me to do?";
+          "I can help you with:\n• Stopping job searches\nWhat would you like me to do?";
         actionType = "info";
       }
 
@@ -177,8 +129,6 @@ const Dashboard = () => {
 
     // Restore the before state
     setShowJobMatch(action.beforeState.showJobMatch);
-    setEvents(action.beforeState.events);
-    setProjects(action.beforeState.projects);
 
     // Update action history
     setActionHistory((prev) => ({
@@ -202,8 +152,6 @@ const Dashboard = () => {
 
     // Restore the after state
     setShowJobMatch(action.afterState.showJobMatch);
-    setEvents(action.afterState.events);
-    setProjects(action.afterState.projects);
 
     // Update action history
     setActionHistory((prev) => ({
@@ -229,7 +177,6 @@ const Dashboard = () => {
     <Box
       sx={{
         minHeight: "100vh",
-
         p: 3,
       }}
     >
@@ -256,22 +203,20 @@ const Dashboard = () => {
           isVisible={showJobMatch}
         />
         <CalendarCard
-          events={events}
           isHovered={hoveredCard === "events"}
           isExpanded={expandedCard === "events"}
           onMouseEnter={() => handleCardHover("events", true)}
           onMouseLeave={() => handleCardHover("events", false)}
           onClick={() => handleCardClick("events")}
         />
-        <ProjectsCard
-          projects={projects}
-          isHovered={hoveredCard === "projects"}
-          isExpanded={expandedCard === "projects"}
-          onMouseEnter={() => handleCardHover("projects", true)}
-          onMouseLeave={() => handleCardHover("projects", false)}
-          onClick={() => handleCardClick("projects")}
+        <PostsCard
+          isHovered={hoveredCard === "PostsCard"}
+          isExpanded={expandedCard === "PostsCard"}
+          onMouseEnter={() => handleCardHover("PostsCard", true)}
+          onMouseLeave={() => handleCardHover("PostsCard", false)}
+          onClick={() => handleCardClick("PostsCard")}
         />
-        <AlertsCard
+        {/* <AlertsCard
           alerts={[
             {
               title: "Payment Dispute - Project Alpha",
@@ -283,7 +228,7 @@ const Dashboard = () => {
           onMouseEnter={() => handleCardHover("alerts", true)}
           onMouseLeave={() => handleCardHover("alerts", false)}
           onClick={() => handleCardClick("alerts")}
-        />
+        /> */}
         <AchievementCard />
       </Box>
 

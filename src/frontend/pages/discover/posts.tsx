@@ -3,6 +3,8 @@ import { Box } from "@mui/material";
 import CreatePost from "./createPost";
 import ViewPostComponent from "./viewPost";
 import LoadMorePosts from "./LoadMorePosts";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/reducers";
 
 interface PostsProps {
   posts: any[];
@@ -10,7 +12,14 @@ interface PostsProps {
   searchValue: string;
 }
 
-const Posts: React.FC<PostsProps> = ({ posts, isLoggedIn, searchValue }) => {
+const Posts: React.FC<PostsProps> = () => {
+  const { posts } = useSelector((state: RootState) => state.filesState);
+
+  const { isLoggedIn } = useSelector((state: any) => state.uiState);
+  const { searchValue, searchTool } = useSelector(
+    (state: any) => state.uiState,
+  );
+
   const filterPosts = React.useMemo(() => {
     const searchLower = searchValue.toLowerCase();
     return posts.filter((post) => {

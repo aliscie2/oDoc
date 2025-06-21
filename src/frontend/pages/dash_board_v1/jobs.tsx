@@ -13,6 +13,10 @@ import {
   Divider,
   Collapse,
   Fade,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import {
   Search,
@@ -25,8 +29,12 @@ import {
   Undo,
   Redo,
   Person,
+  Close,
+  MoreHoriz,
 } from "@mui/icons-material";
+import { useSelector } from "react-redux";
 import { BaseCard, CardHeader } from "./card";
+import JobsPage from "../discover/jobs";
 
 // Job Matches Component
 export const JobMatchesCard = ({
@@ -36,52 +44,163 @@ export const JobMatchesCard = ({
   onMouseLeave,
   onClick,
   isVisible,
-  matches,
 }) => {
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const { isChanged, currentJobId, jobs, matchingJobs } = useSelector(
+    (state: any) => state.jobState,
+  );
+
+  // Get latest 3 matches for preview
+  const previewMatches = matchingJobs?.slice(0, 3) || [];
+  const hasMoreMatches = matchingJobs?.length > 3;
+  const totalMatches = matchingJobs?.length || 0;
+
+  const handleCardClick = (e) => {
+    e.stopPropagation();
+    setDialogOpen(true);
+    if (onClick) onClick(e);
+  };
+
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+  };
+
+  // Helper function to get job category display name
+  const getJobCategoryName = (category) => {
+    if (!category) return "Unknown";
+    const categoryKey = Object.keys(category)[0];
+    return categoryKey || "Unknown";
+  };
+
+  // Helper function to extract skills from job
+  const getJobSkills = (job) => {
+    return job?.skills?.slice(0, 3) || [];
+  };
+
+  // Helper function to get job title or default
+  const getJobTitle = (job) => {
+    return job?.title || job?.role || "Untitled Position";
+  };
+
   return (
-    <BaseCard
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      onClick={onClick}
-      isVisible={isVisible}
-    >
-      <CardHeader icon={<Search />} title="Job Matches" color="#00d4ff" />
+    <>
+      <BaseCard
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        onClick={handleCardClick}
+        isVisible={isVisible}
+        sx={{ cursor: "pointer" }}
+      >
+        <CardHeader icon={<Search />} title="Job Matches" color="#00d4ff" />
 
-      <Box display="flex" justifyContent="space-between" mb={2}>
-        <Chip label="7 Matches" />
-        <Chip label="2 Reviewed" />
-      </Box>
-
-      <Collapse in={isHovered || isExpanded}>
-        <Box mt={2}>
-          <Typography variant="body2" sx={{ mb: 1 }}>
-            Recent Matches:
-          </Typography>
-          <Box display="flex" flexDirection="column" gap={1}>
-            {matches.map((match, idx) => (
-              <Box key={idx} display="flex" alignItems="center">
-                <Avatar
-                  sx={{ width: 24, height: 24, mr: 1, bgcolor: match.color }}
-                >
-                  <Person fontSize="small" />
-                </Avatar>
-                <Typography variant="body2" sx={{}}>
-                  {match.name} - {match.rate}
-                </Typography>
-              </Box>
-            ))}
-          </Box>
+        <Box display="flex" justifyContent="space-between" mb={2}>
+          <Chip
+            label={`${totalMatches} ${totalMatches === 1 ? "Match" : "Matches"}`}
+            size="small"
+            color="primary"
+          />
+          <Chip
+            label={`${jobs?.length || 0} ${jobs?.length === 1 ? "Job" : "Jobs"}`}
+            size="small"
+            variant="outlined"
+          />
         </Box>
-      </Collapse>
 
-      <Collapse in={isExpanded}>
-        <Divider sx={{ my: 2 }} />
-        <Typography variant="body2">
-          All 7 matches are highly qualified candidates with 5+ years experience
-          in React, Node.js, and TypeScript. Average rate: $78/hr. 2 candidates
-          have been reviewed and shortlisted.
-        </Typography>
-      </Collapse>
-    </BaseCard>
+        <Collapse in={isHovered || isExpanded}>
+          <Box mt={2}>
+            <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+              Latest Matches:
+            </Typography>
+            {previewMatches.length > 0 ? (
+              <Box display="flex" flexDirection="column" gap={1}>
+                {previewMatches.map((match, idx) => (
+                  <Box key={match.id || idx} display="flex" alignItems="center">
+                    <Avatar
+                      sx={{
+                        width: 24,
+                        height: 24,
+                        mr: 1,
+                        bgcolor: `hsl(${(idx * 120) % 360}, 70%, 50%)`,
+                        fontSize: "0.75rem",
+                      }}
+                    >
+                      {getJobCategoryName(match.category)[0]?.toUpperCase() ||
+                        "J"}
+                    </Avatar>
+                    <Box flex={1}>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        {getJobTitle(match)}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {getJobSkills(match).join(", ")}
+                        {match.skills?.length > 3 && "..."}
+                      </Typography>
+                    </Box>
+                  </Box>
+                ))}
+
+                {hasMoreMatches && (
+                  <Box display="flex" alignItems="center" mt={1}>
+                    <MoreHoriz sx={{ mr: 1, color: "text.secondary" }} />
+                    <Typography variant="caption" color="text.secondary">
+                      {matchingJobs.length - 3} more matches available
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
+            ) : (
+              <Typography variant="body2" color="text.secondary">
+                No matches found yet
+              </Typography>
+            )}
+          </Box>
+        </Collapse>
+
+        <Collapse in={isExpanded}>
+          <Divider sx={{ my: 2 }} />
+          <Typography variant="body2" color="text.secondary">
+            {totalMatches > 0
+              ? `Click to view all ${totalMatches} job matches and manage your job profiles.`
+              : "Create your first job profile to start finding matches."}
+          </Typography>
+        </Collapse>
+      </BaseCard>
+
+      {/* Full Jobs Page Dialog */}
+      <Dialog
+        open={dialogOpen}
+        onClose={handleCloseDialog}
+        maxWidth="lg"
+        fullWidth
+        sx={{
+          "& .MuiDialog-paper": {
+            height: "90vh",
+            maxHeight: "90vh",
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            pb: 1,
+          }}
+        >
+          <Typography variant="h6">Job Matches & Profiles</Typography>
+          <IconButton onClick={handleCloseDialog} size="small" sx={{ ml: 1 }}>
+            <Close />
+          </IconButton>
+        </DialogTitle>
+
+        <DialogContent sx={{ p: 0, overflow: "hidden" }}>
+          <Box sx={{ height: "100%", overflow: "auto" }}>
+            <JobsPage />
+          </Box>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
+
+export default JobMatchesCard;

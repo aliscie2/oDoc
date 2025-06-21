@@ -130,7 +130,6 @@ const badgeDefinitions: Omit<BadgeType, "unlocked" | "progress">[] = [
   //   videoUrl: tutorials.find((t) => t.title === "Internet identity")?.videoUrl,
   //   userType: "both",
   // },
-  
 
   {
     id: "reliable_freelancer",
@@ -170,8 +169,6 @@ const badgeDefinitions: Omit<BadgeType, "unlocked" | "progress">[] = [
       ?.videoUrl,
     userType: "both",
   },
-  
-  
 ];
 
 const useProgress = (): ProgressData => {
@@ -189,15 +186,15 @@ const useProgress = (): ProgressData => {
 
     // Improved user type detection - check both sent and received payments
     let userType: "freelancer" | "business_owner" | "unknown" = "unknown";
-    
+
     if (wallet?.exchanges?.length > 0) {
       const receivedPayments = wallet.exchanges.filter(
-        (ex: any) => ex.receiver === profile?.id
+        (ex: any) => ex.receiver === profile?.id,
       );
       const sentPayments = wallet.exchanges.filter(
-        (ex: any) => ex.sender === profile?.id
+        (ex: any) => ex.sender === profile?.id,
       );
-      
+
       // If user has both sent and received, prioritize recent activity
       if (receivedPayments.length > 0 && sentPayments.length > 0) {
         userType = "both"; // This will show badges for both types
@@ -225,138 +222,136 @@ const useProgress = (): ProgressData => {
       rewardTiers[rewardTiers.length - 1];
 
     // Calculate badge progress and unlock status - SHOW ALL BADGES
-    const badges: BadgeType[] = badgeDefinitions
-      .map((badgeDef) => {
-        let unlocked = false;
-        let progress = 0;
+    const badges: BadgeType[] = badgeDefinitions.map((badgeDef) => {
+      let unlocked = false;
+      let progress = 0;
 
-        switch (badgeDef.id) {
-          case "internet_identity":
-            unlocked = isLoggedIn;
-            progress = isLoggedIn ? 1 : 0;
-            break;
+      switch (badgeDef.id) {
+        case "internet_identity":
+          unlocked = isLoggedIn;
+          progress = isLoggedIn ? 1 : 0;
+          break;
 
-          case "first_friend":
-            const friendsCount =
-              all_friends?.filter((f: any) => f.id !== profile?.id).length || 0;
-            unlocked = friendsCount > 0;
-            progress = friendsCount > 0 ? 1 : 0;
-            break;
+        case "first_friend":
+          const friendsCount =
+            all_friends?.filter((f: any) => f.id !== profile?.id).length || 0;
+          unlocked = friendsCount > 0;
+          progress = friendsCount > 0 ? 1 : 0;
+          break;
 
-          case "social_butterfly":
-            const totalFriends =
-              all_friends?.filter((f: any) => f.id !== profile?.id).length || 0;
-            unlocked = totalFriends >= 10;
-            progress = Math.min(totalFriends / 10, 1);
-            break;
+        case "social_butterfly":
+          const totalFriends =
+            all_friends?.filter((f: any) => f.id !== profile?.id).length || 0;
+          unlocked = totalFriends >= 10;
+          progress = Math.min(totalFriends / 10, 1);
+          break;
 
-          case "first_payment":
-            const receivedPayments =
-              wallet?.exchanges?.filter(
-                (ex: any) => ex.receiver === profile?.id,
-              ) || [];
-            const sentPayments =
-              wallet?.exchanges?.filter(
-                (ex: any) => ex.sender === profile?.id,
-              ) || [];
-            
-            const hasReceivedPayment = receivedPayments.length > 0;
-            const hasSentPayment = sentPayments.length > 0;
-            
-            unlocked = hasReceivedPayment || hasSentPayment;
-            progress = unlocked ? 1 : 0;
-            
-            // Dynamically update title and description based on payment type
-            if (hasReceivedPayment && hasSentPayment) {
-              badgeDef.title = "Payment Pro";
-              badgeDef.description = "Both sent and received payments";
-            } else if (hasReceivedPayment) {
-              badgeDef.title = "First Payment Received";
-              badgeDef.description = "Received your first payment";
-            } else if (hasSentPayment) {
-              badgeDef.title = "First Payment Sent";
-              badgeDef.description = "Sent your first payment";
-            }
-            break;
+        case "first_payment":
+          const receivedPayments =
+            wallet?.exchanges?.filter(
+              (ex: any) => ex.receiver === profile?.id,
+            ) || [];
+          const sentPayments =
+            wallet?.exchanges?.filter((ex: any) => ex.sender === profile?.id) ||
+            [];
 
-          case "first_gig_completed":
-            const completedAsReceiver =
-              wallet?.exchanges?.filter(
-                (ex: any) =>
-                  ex.receiver === profile?.id && ex.status === "completed",
-              ).length || 0;
-            unlocked = completedAsReceiver > 0;
-            progress = completedAsReceiver > 0 ? 1 : 0;
-            break;
+          const hasReceivedPayment = receivedPayments.length > 0;
+          const hasSentPayment = sentPayments.length > 0;
 
-          case "first_hire":
-            const completedAsSender =
-              wallet?.exchanges?.filter(
-                (ex: any) =>
-                  ex.sender === profile?.id && ex.status === "completed",
-              ).length || 0;
-            unlocked = completedAsSender > 0;
-            progress = completedAsSender > 0 ? 1 : 0;
-            break;
+          unlocked = hasReceivedPayment || hasSentPayment;
+          progress = unlocked ? 1 : 0;
 
-          case "reliable_freelancer":
-            const completedGigs =
-              wallet?.exchanges?.filter(
-                (ex: any) =>
-                  ex.receiver === profile?.id && ex.status === "completed",
-              ).length || 0;
-            unlocked = completedGigs >= 5;
-            progress = Math.min(completedGigs / 5, 1);
-            break;
+          // Dynamically update title and description based on payment type
+          if (hasReceivedPayment && hasSentPayment) {
+            badgeDef.title = "Payment Pro";
+            badgeDef.description = "Both sent and received payments";
+          } else if (hasReceivedPayment) {
+            badgeDef.title = "First Payment Received";
+            badgeDef.description = "Received your first payment";
+          } else if (hasSentPayment) {
+            badgeDef.title = "First Payment Sent";
+            badgeDef.description = "Sent your first payment";
+          }
+          break;
 
-          case "trusted_employer":
-            const hiredFreelancers =
-              wallet?.exchanges?.filter(
-                (ex: any) =>
-                  ex.sender === profile?.id && ex.status === "completed",
-              ).length || 0;
-            unlocked = hiredFreelancers >= 5;
-            progress = Math.min(hiredFreelancers / 5, 1);
-            break;
+        case "first_gig_completed":
+          const completedAsReceiver =
+            wallet?.exchanges?.filter(
+              (ex: any) =>
+                ex.receiver === profile?.id && ex.status === "completed",
+            ).length || 0;
+          unlocked = completedAsReceiver > 0;
+          progress = completedAsReceiver > 0 ? 1 : 0;
+          break;
 
-          case "profile_complete":
-            const profileFields = [
-              profile?.name,
-              profile?.email,
-              profile?.bio,
-              profile?.avatar,
-            ];
-            const completedFields = profileFields.filter(
-              (field) => field && field.trim(),
-            ).length;
-            unlocked = completedFields >= 3;
-            progress = completedFields / 4;
-            break;
+        case "first_hire":
+          const completedAsSender =
+            wallet?.exchanges?.filter(
+              (ex: any) =>
+                ex.sender === profile?.id && ex.status === "completed",
+            ).length || 0;
+          unlocked = completedAsSender > 0;
+          progress = completedAsSender > 0 ? 1 : 0;
+          break;
 
-          case "odoc_explorer":
-            // Check if user has watched the intro video or has exchanges
-            unlocked = wallet?.exchanges?.length > 0;
-            progress = wallet?.exchanges?.length > 0 ? 1 : 0;
-            break;
+        case "reliable_freelancer":
+          const completedGigs =
+            wallet?.exchanges?.filter(
+              (ex: any) =>
+                ex.receiver === profile?.id && ex.status === "completed",
+            ).length || 0;
+          unlocked = completedGigs >= 5;
+          progress = Math.min(completedGigs / 5, 1);
+          break;
 
-          case "trust_master":
-            // Unlock after first successful payment
-            unlocked = wallet?.exchanges?.length > 0;
-            progress = wallet?.exchanges?.length > 0 ? 1 : 0;
-            break;
+        case "trusted_employer":
+          const hiredFreelancers =
+            wallet?.exchanges?.filter(
+              (ex: any) =>
+                ex.sender === profile?.id && ex.status === "completed",
+            ).length || 0;
+          unlocked = hiredFreelancers >= 5;
+          progress = Math.min(hiredFreelancers / 5, 1);
+          break;
 
-          default:
-            // Default logic for other badges
-            unlocked = false;
-            progress = 0;
-        }
+        case "profile_complete":
+          const profileFields = [
+            profile?.name,
+            profile?.email,
+            profile?.bio,
+            profile?.avatar,
+          ];
+          const completedFields = profileFields.filter(
+            (field) => field && field.trim(),
+          ).length;
+          unlocked = completedFields >= 3;
+          progress = completedFields / 4;
+          break;
 
-        return {
-          ...badgeDef,
-          unlocked,
-          progress,
-        };
-      });
+        case "odoc_explorer":
+          // Check if user has watched the intro video or has exchanges
+          unlocked = wallet?.exchanges?.length > 0;
+          progress = wallet?.exchanges?.length > 0 ? 1 : 0;
+          break;
+
+        case "trust_master":
+          // Unlock after first successful payment
+          unlocked = wallet?.exchanges?.length > 0;
+          progress = wallet?.exchanges?.length > 0 ? 1 : 0;
+          break;
+
+        default:
+          // Default logic for other badges
+          unlocked = false;
+          progress = 0;
+      }
+
+      return {
+        ...badgeDef,
+        unlocked,
+        progress,
+      };
+    });
 
     const unlockedBadges = badges.filter((badge) => badge.unlocked);
     const lockedBadges = badges.filter((badge) => !badge.unlocked);

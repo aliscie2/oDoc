@@ -418,7 +418,7 @@ const AchievementCard: React.FC = () => {
     },
   ];
 
-  const allBadges = [...createSetupBadges(),...badges ];
+  const allBadges = [...createSetupBadges(), ...badges];
   const allUnlockedBadges = allBadges.filter((badge) => badge.unlocked);
 
   // Calculate current level and reward tier

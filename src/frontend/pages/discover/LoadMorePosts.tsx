@@ -15,53 +15,6 @@ const LoadMorePosts = () => {
   const { posts } = useSelector((state: RootState) => state.filesState);
   const { backendActor } = useBackendContext();
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      async (entries) => {
-        const target = entries[0];
-
-        if (target.isIntersecting && !loading && hasMore) {
-          try {
-            setLoading(true);
-
-            const fetchedPosts = await backendActor.get_posts(
-              posts.length,
-              posts.length + POSTS_PER_PAGE,
-            );
-
-            if (fetchedPosts.length === 0) {
-              setHasMore(false);
-            } else {
-              dispatch({
-                type: "ADD_POSTS",
-                posts: fetchedPosts,
-              });
-            }
-          } catch (error) {
-            console.error("Error fetching more posts:", error);
-          } finally {
-            setLoading(false);
-          }
-        }
-      },
-      {
-        root: null,
-        rootMargin: "20px",
-        threshold: 1.0,
-      },
-    );
-
-    if (loadingRef.current) {
-      observer.observe(loadingRef.current);
-    }
-
-    return () => {
-      if (loadingRef.current) {
-        observer.unobserve(loadingRef.current);
-      }
-    };
-  }, [loading, hasMore, dispatch, backendActor]);
-
   return (
     <Box
       ref={loadingRef}
