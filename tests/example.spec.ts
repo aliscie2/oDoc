@@ -13,9 +13,7 @@ test("Login with Internet Identity", async ({ browser }) => {
   // const page = await adminContext.newPage();
   await page.goto("http://localhost:5173/");
 
-  await expect(
-    page.locator("text=Job Matches"),
-  ).toBeVisible();
+  await expect(page.locator("text=Job Matches")).toBeVisible();
 
   // No need to manually close the tab since it closes automatically
 });

@@ -1,5 +1,6 @@
 // types.ts
 import {
+  ContractUpdates,
   FileIndexing,
   FileNode,
   Friend,
@@ -22,7 +23,8 @@ export interface InitialState {
   changes: {
     files: FileNode[];
     contents: Record<string, any>;
-    contracts: Record<string, StoredContract>;
+    // contracts: Record<string, StoredContract>;
+    contracts: Array<ContractUpdates>;
     delete_contracts: string[];
     files_indexing: FileIndexing[];
   };

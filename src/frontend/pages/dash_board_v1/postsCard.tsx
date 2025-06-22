@@ -1,21 +1,10 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
-import {
-  Box,
-  Typography,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  Avatar,
-  Divider,
-  Collapse,
-  IconButton,
-} from "@mui/material";
-import { Chat, Close, Person, AccessTime } from "@mui/icons-material";
+import { Box, Typography, Avatar, Divider, Collapse } from "@mui/material";
+import { Chat, Person, AccessTime } from "@mui/icons-material";
 import { BaseCard, CardHeader } from "./card";
 import Posts from "../discover/posts";
+import FullscreenDialog from "./FullscreenDialog"; // Import the shared dialog
 import { formatRelativeTime } from "@/utils/time";
 import { RootState } from "@/redux/reducers";
 import { logger } from "@/DevUtils/logData";
@@ -46,6 +35,10 @@ export const PostsCard = ({
   const recentPosts = nonCommentPosts
     .sort((a, b) => Number(b.date_created) - Number(a.date_created))
     .slice(0, 3);
+
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+  };
 
   return (
     <>
@@ -131,39 +124,15 @@ export const PostsCard = ({
         </Collapse>
       </BaseCard>
 
-      <Dialog
+      {/* Use Shared Fullscreen Dialog */}
+      <FullscreenDialog
         open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-        maxWidth="md"
-        fullWidth
-        sx={{
-          "& .MuiDialog-paper": {
-            height: "80vh",
-            maxHeight: "800px",
-          },
-        }}
+        onClose={handleCloseDialog}
+        title={`All Posts (${totalPosts})`}
+        showTitle={true}
       >
-        <DialogTitle
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <Typography variant="h6">All Posts ({totalPosts})</Typography>
-          <IconButton onClick={() => setDialogOpen(false)} size="small">
-            <Close />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent sx={{ p: 0 }}>
-          <Box sx={{ p: 2, height: "100%", overflow: "auto" }}>
-            <Posts />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDialogOpen(false)}>Close</Button>
-        </DialogActions>
-      </Dialog>
+        <Posts />
+      </FullscreenDialog>
     </>
   );
 };

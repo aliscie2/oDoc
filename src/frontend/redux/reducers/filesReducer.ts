@@ -213,43 +213,27 @@ export function filesReducer(
       };
     }
 
+    // case "ADD_PROMISE"
+    // case "DELETE_PROMISE"
+    // case "UPDATE_PROMISE"
     // case "UPDATE_CONTRACT":
+    //   const { contract } = action;
+    //   let id = contract.id;
+    //   let toStoreContract = { CustomContract: contract };
     //   return {
     //     ...state,
     //     changes: {
     //       ...state.changes,
     //       contracts: {
     //         ...state.changes.contracts,
-    //         [action.contract.id]: {
-    //           ...state.changes.contracts[action.contract.id],
-    //           CustomContract: action.contract,
-    //         },
+    //         [id]: { ...toStoreContract },
     //       },
     //     },
     //     contracts: {
     //       ...state.contracts,
-    //       [action.contract.id]: action.contract,
+    //       [id]: contract,
     //     },
     //   };
-
-    case "UPDATE_CONTRACT":
-      const { contract } = action;
-      let id = contract.id;
-      let toStoreContract = { CustomContract: contract };
-      return {
-        ...state,
-        changes: {
-          ...state.changes,
-          contracts: {
-            ...state.changes.contracts,
-            [id]: { ...toStoreContract },
-          },
-        },
-        contracts: {
-          ...state.contracts,
-          [id]: contract,
-        },
-      };
 
     case "RESOLVE_CHANGES":
       state.changes = {

@@ -38,9 +38,7 @@ setup("authenticate", async ({ page, context }) => {
   await newPage.waitForEvent("close");
 
   // Verify we're back on original page and logged in
-  await expect(
-    page.locator("text=Job Matches"),
-  ).toBeVisible();
+  await expect(page.locator("text=Job Matches")).toBeVisible();
   await page.context().storageState({ path: authFile });
   // await newPage.context().storageState({ path: authFile });
 });

@@ -4,9 +4,6 @@ import {
   CardContent,
   Box,
   Typography,
-  Dialog,
-  DialogTitle,
-  DialogContent,
   IconButton,
   Grid,
   Chip,
@@ -35,6 +32,8 @@ import {
 } from "@mui/icons-material";
 import useProgress, { type BadgeType } from "./useProgress";
 import { useSetup } from "./setUpConnect";
+import FullscreenDialog from "@/pages/dash_board_v1/FullscreenDialog";
+
 
 // ODOC Reward Tier System
 const getRewardTier = (score: number) => {
@@ -563,23 +562,23 @@ const AchievementCard: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Detailed Achievement Dialog */}
-      <Dialog
+      {/* Detailed Achievement Fullscreen Dialog */}
+      <FullscreenDialog
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
-        maxWidth="md"
-        fullWidth
-        PaperProps={{ sx: { borderRadius: 3, maxHeight: "90vh" } }}
+        title="Your Achievements"
+        showTitle={true}
       >
-        <DialogTitle sx={{ pb: 1 }}>
-          <Box
+        <Box sx={{ p: 3, height: "100%", overflow: "auto" }}>
+          {/* Current Status Overview */}
+          <Paper
             sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
+              p: 3,
+              mb: 3,
+              background: `linear-gradient(135deg, ${currentLevel.color}20, ${currentLevel.color}10)`,
             }}
           >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
               <Avatar sx={{ width: 56, height: 56, fontSize: "1.8rem" }}>
                 {currentLevel.icon}
               </Avatar>
@@ -592,21 +591,7 @@ const AchievementCard: React.FC = () => {
                 </Typography>
               </Box>
             </Box>
-            <IconButton onClick={() => setDialogOpen(false)}>
-              <CloseIcon />
-            </IconButton>
-          </Box>
-        </DialogTitle>
-
-        <DialogContent>
-          {/* Current Status Overview */}
-          <Paper
-            sx={{
-              p: 3,
-              mb: 3,
-              background: `linear-gradient(135deg, ${currentLevel.color}20, ${currentLevel.color}10)`,
-            }}
-          >
+            
             <Grid container spacing={3}>
               <Grid item xs={6} md={3}>
                 <Box sx={{ textAlign: "center" }}>
@@ -685,36 +670,25 @@ const AchievementCard: React.FC = () => {
               ))}
             </Grid>
           </Box>
-        </DialogContent>
-      </Dialog>
+        </Box>
+      </FullscreenDialog>
 
-      {/* Video Tutorial Dialog */}
-      <Dialog
+      {/* Video Tutorial Fullscreen Dialog */}
+      <FullscreenDialog
         open={videoDialogOpen}
         onClose={() => setVideoDialogOpen(false)}
-        maxWidth="md"
-        fullWidth
+        title={`${selectedBadge?.title} - Tutorial`}
+        showTitle={true}
       >
-        <DialogTitle>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <Typography variant="h6">
-              {selectedBadge?.title} - Tutorial
-            </Typography>
-            <IconButton onClick={() => setVideoDialogOpen(false)}>
-              <CloseIcon />
-            </IconButton>
-          </Box>
-        </DialogTitle>
-        <DialogContent>
+        <Box sx={{ p: 3, height: "100%" }}>
           {selectedBadge?.videoUrl && (
             <Box
-              sx={{ position: "relative", paddingBottom: "56.25%", height: 0 }}
+              sx={{ 
+                position: "relative", 
+                paddingBottom: "56.25%", 
+                height: 0,
+                mb: 2
+              }}
             >
               <iframe
                 src={selectedBadge.videoUrl}
@@ -731,11 +705,11 @@ const AchievementCard: React.FC = () => {
               />
             </Box>
           )}
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+          <Typography variant="body2" color="text.secondary">
             {selectedBadge?.description}
           </Typography>
-        </DialogContent>
-      </Dialog>
+        </Box>
+      </FullscreenDialog>
     </>
   );
 };

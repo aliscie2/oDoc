@@ -9,6 +9,8 @@ import {
   Typography,
   useMediaQuery,
   useTheme,
+  Box,
+  Divider,
 } from "@mui/material";
 import CalendarManagement from "./AvailabilityComonent";
 import React, { useState } from "react";
@@ -16,10 +18,14 @@ import CopyButton from "../../../components/MuiComponents/copyButton";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../redux/reducers";
 
-import { MoreVert, NavigateBefore, NavigateNext } from "@mui/icons-material";
-import CircleIcon from "@mui/icons-material/Circle";
+import {
+  MoreVert,
+  NavigateBefore,
+  NavigateNext,
+  Today,
+} from "@mui/icons-material";
 import TimeZoneSelector from "./timezone";
-import GoogleCalendarIntegration from "./googleAccounts"; // Add this import
+import GoogleCalendarIntegration from "./googleAccounts";
 import GmailConnection from "./GmailConnection";
 
 const CustomToolbar = (toolbar) => {
@@ -33,7 +39,6 @@ const CustomToolbar = (toolbar) => {
 
   // Menu states
   const [actionMenuAnchor, setActionMenuAnchor] = useState(null);
-  const [viewMenuAnchor, setViewMenuAnchor] = useState(null);
 
   const navigate = (action) => {
     toolbar.onNavigate(action);
@@ -48,14 +53,6 @@ const CustomToolbar = (toolbar) => {
     setActionMenuAnchor(null);
   };
 
-  const handleViewMenuClick = (event) => {
-    setViewMenuAnchor(event.currentTarget);
-  };
-
-  const handleViewMenuClose = () => {
-    setViewMenuAnchor(null);
-  };
-
   const viewNames = toolbar.views;
   const view = toolbar.view;
   const currentPage = window.location.pathname;
@@ -64,81 +61,179 @@ const CustomToolbar = (toolbar) => {
     return `${window.location.href}calendar?id=${calendar?.id}`;
   }, [calendar?.id]);
 
-  // Mobile/Tablet Action Menu
+  // Mobile Action Menu
   const ActionMenu = () => (
     <Menu
       anchorEl={actionMenuAnchor}
       open={Boolean(actionMenuAnchor)}
       onClose={handleActionMenuClose}
+      PaperProps={{
+        sx: {
+          mt: 1,
+          borderRadius: 2,
+          minWidth: 200,
+          boxShadow: theme.shadows[8],
+        },
+      }}
     >
-      <TimeZoneSelector />
+      <MenuItem sx={{ py: 1.5 }}>
+        <TimeZoneSelector />
+      </MenuItem>
+      <Divider />
       {!isCalendarPage && (
-        <MenuItem>
-          <CopyButton title="Share" value={copyLink} />
+        <MenuItem sx={{ py: 1.5 }}>
+          <CopyButton title="Share Calendar" value={copyLink} />
         </MenuItem>
       )}
-      <MenuItem>
+      <MenuItem sx={{ py: 1.5 }}>
         <CalendarManagement />
       </MenuItem>
-      <MenuItem>
-        <GoogleCalendarIntegration /> {/* Add to mobile menu */}
+      <MenuItem sx={{ py: 1.5 }}>
+        <GoogleCalendarIntegration />
+      </MenuItem>
+      <MenuItem sx={{ py: 1.5 }}>
+        <GmailConnection />
       </MenuItem>
     </Menu>
   );
 
-  // Mobile/Tablet View Menu
-  const ViewMenu = () => (
-    <Menu
-      anchorEl={viewMenuAnchor}
-      open={Boolean(viewMenuAnchor)}
-      onClose={handleViewMenuClose}
-    >
-      {viewNames.map((name) => (
-        <MenuItem
-          key={name}
-          onClick={() => {
-            toolbar.onView(name);
-            handleViewMenuClose();
-          }}
-          selected={view === name}
+  if (isMobile) {
+    // Mobile Layout - Clean and minimal
+    return (
+      <Box
+        sx={{
+          backgroundColor: "inherit",
+          borderBottom: `1px solid ${theme.palette.divider}`,
+          px: 2,
+          py: 1.5,
+        }}
+      >
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
         >
-          <Typography sx={{ ml: 1 }}>{name}</Typography>
-        </MenuItem>
-      ))}
-    </Menu>
-  );
+          {/* Left: Menu button */}
+          <IconButton
+            onClick={handleActionMenuClick}
+            sx={{
+              backgroundColor: theme.palette.action.hover,
+              "&:hover": {
+                backgroundColor: theme.palette.action.focus,
+              },
+            }}
+          >
+            <MoreVert />
+          </IconButton>
 
+          {/* Center: Date and navigation */}
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <IconButton
+              onClick={() => navigate("PREV")}
+              size="small"
+              sx={{ color: "inherit" }}
+            >
+              <NavigateBefore />
+            </IconButton>
+
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 600,
+                minWidth: 140,
+                textAlign: "center",
+                color: "inherit",
+              }}
+            >
+              {toolbar.label}
+            </Typography>
+
+            <IconButton
+              onClick={() => navigate("NEXT")}
+              size="small"
+              sx={{ color: "inherit" }}
+            >
+              <NavigateNext />
+            </IconButton>
+          </Stack>
+
+          {/* Right: Today button */}
+          <IconButton
+            onClick={() => navigate("TODAY")}
+            sx={{
+              backgroundColor: theme.palette.primary.main,
+              color: theme.palette.primary.contrastText,
+              "&:hover": {
+                backgroundColor: theme.palette.primary.dark,
+              },
+            }}
+          >
+            <Today />
+          </IconButton>
+
+          <ActionMenu />
+        </Stack>
+      </Box>
+    );
+  }
+
+  // Desktop/Tablet Layout - More comprehensive
   return (
-    <Stack direction="column" spacing={2} sx={{ mb: 3, px: { xs: 1, sm: 2 } }}>
-      {/* Top row with navigation and current date */}
+    <Box
+      sx={{
+        backgroundColor: "inherit",
+        borderBottom: `1px solid ${theme.palette.divider}`,
+        px: 3,
+        py: 2,
+      }}
+    >
       <Stack
         direction="row"
-        spacing={1}
+        spacing={3}
         alignItems="center"
         justifyContent="space-between"
       >
-        {/* Navigation controls */}
+        {/* Left: Action buttons */}
         <Stack direction="row" spacing={1} alignItems="center">
-          {isMobile || isTablet ? (
-            <>
-              <IconButton onClick={handleActionMenuClick}>
-                <MoreVert />
-              </IconButton>
+          <ButtonGroup
+            variant="outlined"
+            size="small"
+            sx={{
+              "& .MuiButton-root": {
+                borderColor: theme.palette.divider,
+                color: "inherit",
+                "&:hover": {
+                  backgroundColor: theme.palette.action.hover,
+                  borderColor: theme.palette.divider,
+                },
+              },
+            }}
+          >
+            {!isCalendarPage && <CopyButton title="Share" value={copyLink} />}
+            <CalendarManagement />
+            <GoogleCalendarIntegration />
+            <GmailConnection />
+          </ButtonGroup>
+        </Stack>
 
-              <ActionMenu />
-            </>
-          ) : (
-            <ButtonGroup variant="contained" size="small">
-              {!isCalendarPage && <CopyButton title="Share" value={copyLink} />}
-              <CalendarManagement />
-
-              <GoogleCalendarIntegration />
-              <GmailConnection />
-            </ButtonGroup>
-          )}
-
-          {/* Navigation arrows - always visible */}
-          <ButtonGroup variant="contained" size="small">
+        {/* Center: Navigation and date */}
+        <Stack direction="row" spacing={2} alignItems="center">
+          <ButtonGroup
+            variant="outlined"
+            size="small"
+            sx={{
+              "& .MuiButton-root": {
+                borderColor: theme.palette.divider,
+                color: "inherit",
+                minWidth: "auto",
+                px: 1,
+                "&:hover": {
+                  backgroundColor: theme.palette.action.hover,
+                  borderColor: theme.palette.divider,
+                },
+              },
+            }}
+          >
             <Tooltip title="Previous">
               <IconButton onClick={() => navigate("PREV")} size="small">
                 <NavigateBefore />
@@ -146,7 +241,7 @@ const CustomToolbar = (toolbar) => {
             </Tooltip>
             <Tooltip title="Today">
               <IconButton onClick={() => navigate("TODAY")} size="small">
-                <CircleIcon />
+                <Today />
               </IconButton>
             </Tooltip>
             <Tooltip title="Next">
@@ -156,60 +251,71 @@ const CustomToolbar = (toolbar) => {
             </Tooltip>
           </ButtonGroup>
 
-          {isMobile || isTablet ? (
-            <>
-              <Button
-                variant="contained"
-                onClick={handleViewMenuClick}
-                endIcon={<MoreVert />}
-              >
-                {view}
-              </Button>
-              <ViewMenu />
-            </>
-          ) : (
-            <ButtonGroup variant="contained" size="small">
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: 600,
+              color: "inherit",
+              minWidth: 200,
+              textAlign: "center",
+            }}
+          >
+            {toolbar.label}
+          </Typography>
+        </Stack>
+
+        {/* Right: View controls and timezone (only show view controls if not mobile) */}
+        <Stack direction="row" spacing={1} alignItems="center">
+          {!isMobile && viewNames.length > 1 && (
+            <ButtonGroup
+              variant="outlined"
+              size="small"
+              sx={{
+                "& .MuiButton-root": {
+                  borderColor: theme.palette.divider,
+                  color: "inherit",
+                  "&:hover": {
+                    backgroundColor: theme.palette.action.hover,
+                    borderColor: theme.palette.divider,
+                  },
+                },
+              }}
+            >
               {viewNames.map((name) => (
-                <Tooltip key={name} title={name}>
-                  <Button
-                    onClick={() => toolbar.onView(name)}
-                    variant={view === name ? "contained" : "outlined"}
-                    sx={{
-                      bgcolor: view === name ? "primary.main" : "transparent",
-                      "&:hover": {
-                        bgcolor:
-                          view === name ? "primary.dark" : "action.hover",
-                      },
-                    }}
-                  >
-                    <Typography
-                      sx={{ ml: 1, display: { xs: "none", md: "block" } }}
-                    >
-                      {name}
-                    </Typography>
-                  </Button>
-                </Tooltip>
+                <Button
+                  key={name}
+                  onClick={() => toolbar.onView(name)}
+                  variant={view === name ? "contained" : "outlined"}
+                  sx={{
+                    bgcolor:
+                      view === name
+                        ? theme.palette.primary.main
+                        : "transparent",
+                    color:
+                      view === name
+                        ? theme.palette.primary.contrastText
+                        : "inherit",
+                    textTransform: "capitalize",
+                    "&:hover": {
+                      bgcolor:
+                        view === name
+                          ? theme.palette.primary.dark
+                          : theme.palette.action.hover,
+                    },
+                  }}
+                >
+                  {name}
+                </Button>
               ))}
             </ButtonGroup>
           )}
+
+          <Box sx={{ ml: 1 }}>
+            <TimeZoneSelector />
+          </Box>
         </Stack>
-
-        {/* Current Date Display */}
-        <Typography
-          variant={isMobile ? "subtitle1" : "h6"}
-          sx={{
-            fontWeight: 500,
-            textAlign: "center",
-            flex: 1,
-          }}
-        >
-          {toolbar.label} :
-          <TimeZoneSelector />
-        </Typography>
       </Stack>
-
-      {/* Bottom row with view selection */}
-    </Stack>
+    </Box>
   );
 };
 

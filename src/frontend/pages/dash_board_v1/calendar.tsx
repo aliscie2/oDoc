@@ -1,43 +1,10 @@
 import React, { useState } from "react";
-import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  LinearProgress,
-  Chip,
-  IconButton,
-  TextField,
-  Button,
-  Avatar,
-  Divider,
-  Collapse,
-  Fade,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  Alert,
-  AlertTitle,
-} from "@mui/material";
-import {
-  Search,
-  Event,
-  Folder,
-  Warning,
-  Chat,
-  Send,
-  Refresh,
-  Undo,
-  Redo,
-  Person,
-  Close,
-  Email,
-  Schedule,
-} from "@mui/icons-material";
+import { Box, Typography, Chip, Divider, Collapse, Alert } from "@mui/material";
+import { Event, Schedule, Email } from "@mui/icons-material";
 import { useSelector } from "react-redux";
 import { BaseCard, CardHeader } from "./card";
-import CalendarView from "../dashBoardPage/calindarView/calendar";
 import Scheduler from "../dashBoardPage/calindarView";
+import FullscreenDialog from "./FullscreenDialog"; // Import the shared dialog
 
 // Calendar/Events Component
 export const CalendarCard = ({
@@ -198,44 +165,15 @@ export const CalendarCard = ({
         </Collapse>
       </BaseCard>
 
-      {/* Full Calendar Dialog */}
-      <Dialog
+      {/* Use Shared Fullscreen Dialog */}
+      <FullscreenDialog
         open={dialogOpen}
         onClose={handleCloseDialog}
-        maxWidth="lg"
-        fullWidth
-        PaperProps={{
-          sx: {
-            height: "90vh",
-            maxHeight: "90vh",
-          },
-        }}
+        title="Calendar & Events"
+        showTitle={false} // Calendar doesn't show title, just close button
       >
-        <DialogTitle
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            pb: 1,
-          }}
-        >
-          <Typography variant="h6">Calendar View</Typography>
-          <IconButton
-            onClick={handleCloseDialog}
-            sx={{
-              color: "grey.500",
-              "&:hover": { color: "grey.700" },
-            }}
-          >
-            <Close />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent sx={{ p: 0, overflow: "hidden" }}>
-          <Box sx={{ height: "100%", p: 2 }}>
-            <Scheduler />
-          </Box>
-        </DialogContent>
-      </Dialog>
+        <Scheduler />
+      </FullscreenDialog>
     </>
   );
 };

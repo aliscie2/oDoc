@@ -74,11 +74,7 @@ export const AIChatComponent = ({
               <Typography variant="h6" sx={{ fontSize: "1rem" }}>
                 AI Assistant
               </Typography>
-              <IconButton
-                size="small"
-                onClick={onToggle}
-                sx={{ color: "rgba(255,255,255,0.6)" }}
-              >
+              <IconButton size="small" onClick={onToggle} sx={{}}>
                 ×
               </IconButton>
             </Box>

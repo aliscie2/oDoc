@@ -1,40 +1,17 @@
 import React, { useState } from "react";
 import {
   Box,
-  Card,
-  CardContent,
   Typography,
-  LinearProgress,
   Chip,
-  IconButton,
-  TextField,
-  Button,
   Avatar,
   Divider,
   Collapse,
-  Fade,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
 } from "@mui/material";
-import {
-  Search,
-  Event,
-  Folder,
-  Warning,
-  Chat,
-  Send,
-  Refresh,
-  Undo,
-  Redo,
-  Person,
-  Close,
-  MoreHoriz,
-} from "@mui/icons-material";
+import { Search, MoreHoriz } from "@mui/icons-material";
 import { useSelector } from "react-redux";
 import { BaseCard, CardHeader } from "./card";
 import JobsPage from "../discover/jobs";
+import FullscreenDialog from "./FullscreenDialog"; // Import the shared dialog
 
 // Job Matches Component
 export const JobMatchesCard = ({
@@ -166,39 +143,15 @@ export const JobMatchesCard = ({
         </Collapse>
       </BaseCard>
 
-      {/* Full Jobs Page Dialog */}
-      <Dialog
+      {/* Use Shared Fullscreen Dialog */}
+      <FullscreenDialog
         open={dialogOpen}
         onClose={handleCloseDialog}
-        maxWidth="lg"
-        fullWidth
-        sx={{
-          "& .MuiDialog-paper": {
-            height: "90vh",
-            maxHeight: "90vh",
-          },
-        }}
+        title="Job Matches & Profiles"
+        showTitle={true}
       >
-        <DialogTitle
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            pb: 1,
-          }}
-        >
-          <Typography variant="h6">Job Matches & Profiles</Typography>
-          <IconButton onClick={handleCloseDialog} size="small" sx={{ ml: 1 }}>
-            <Close />
-          </IconButton>
-        </DialogTitle>
-
-        <DialogContent sx={{ p: 0, overflow: "hidden" }}>
-          <Box sx={{ height: "100%", overflow: "auto" }}>
-            <JobsPage />
-          </Box>
-        </DialogContent>
-      </Dialog>
+        <JobsPage />
+      </FullscreenDialog>
     </>
   );
 };
