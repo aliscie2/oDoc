@@ -29,7 +29,11 @@ const CalendarView = () => {
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [currentView, setCurrentView] = useState(() => {
-    return localStorage.getItem("calendarView") || "month";
+    const savedView = localStorage.getItem("calendarView");
+    if (savedView) {
+      return savedView;
+    }
+    return isMobile ? "day" : "month";
   });
   const [showEventDialog, setShowEventDialog] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(null);
@@ -187,7 +191,7 @@ const CalendarView = () => {
     setSelectedEvent(null);
   }, []);
 
-  const views = isMobile ? ["month", "week"] : ["month", "week"];
+  const views = isMobile ? ["month", "day"] : ["month", "week", "day"];
   const components = { toolbar: CustomToolbar };
 
   //------- get earliestStart and latestEnd

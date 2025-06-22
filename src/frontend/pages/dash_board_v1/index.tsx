@@ -177,7 +177,8 @@ const Dashboard = () => {
     <Box
       sx={{
         minHeight: "100vh",
-        p: 3,
+        py: 3,
+        px: { xs: 0, sm: 3 },
       }}
     >
       <Box

@@ -195,7 +195,7 @@ const Scheduler = React.memo(() => {
         pb: "120px",
       }}
     >
-      <Box sx={{ p: theme.spacing(3) }}>
+      <Box sx={{ py: 3, px: { xs: 0, sm: 2 } }}>
         {/* Remove the Tabs component */}
         <Box sx={{ mb: 4 }}>
           <CalendarView />

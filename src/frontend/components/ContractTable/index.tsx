@@ -41,6 +41,13 @@ import { useDispatch, useSelector } from "react-redux";
 import ClearAllIcon from "@mui/icons-material/ClearAll";
 import { logger } from "../../DevUtils/logData";
 import { getAvailableStatusOptions } from "./statusOptions";
+import {
+  CColumn,
+  CPromise,
+  CustomContract,
+  StoredContract,
+} from "../../../declarations/backend/backend.did";
+
 export const PAYMENT_STATUSES = {
   None: null,
   RequestCancellation: null,
@@ -146,9 +153,8 @@ const EditableTitle = ({ value, onChange, metadata }) => {
 };
 
 const CustomContractViewer = ({ contractId, onContractChange }) => {
-  const { contracts, profile, all_friends, current_file } = useSelector(
-    (state: any) => state.filesState,
-  );
+  const { contracts, profile, all_friends, current_file, changes } =
+    useSelector((state: any) => state.filesState);
   const currentContract = contracts[contractId];
   if (!currentContract) {
     return <Typography>Contract not found</Typography>;
@@ -163,6 +169,11 @@ const CustomContractViewer = ({ contractId, onContractChange }) => {
     const id = localStorage.getItem(`contract-${contractId}-contract`);
     return contracts[contractId].contracts.find((c) => c.id == id);
   });
+
+  const { backendActor } = useBackendContext();
+  const { enqueueSnackbar } = useSnackbar();
+  const dispatch = useDispatch();
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     localStorage.setItem(`contract-${contractId}-dataType`, selectedDataType);
@@ -473,9 +484,46 @@ const CustomContractViewer = ({ contractId, onContractChange }) => {
     return baseMenuItems;
   };
 
-  const { login, logout, backendActor } = useBackendContext();
-  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-  const dispatch = useDispatch();
+  const handleSave = async () => {
+    if (!backendActor) return;
+
+    setIsSaving(true);
+    try {
+      const serializedContracts = Object.values(
+        changes.contracts,
+      ) as StoredContract[];
+
+      if (serializedContracts.length > 0) {
+        const res: any = await backendActor.multi_updates(
+          [],
+          [],
+          serializedContracts,
+          [],
+        );
+
+        if (res?.Ok && res.Ok.includes("Error")) {
+          enqueueSnackbar(res.Ok, { variant: "error" });
+          throw new Error(res.Ok);
+        } else if (res?.Err) {
+          enqueueSnackbar(res.Err, { variant: "error" });
+          throw new Error(res.Err);
+        } else {
+          enqueueSnackbar("Contract saved successfully!", {
+            variant: "success",
+          });
+          dispatch({ type: "RESOLVE_CHANGES" });
+        }
+      } else {
+        enqueueSnackbar("No changes to save.", { variant: "info" });
+      }
+    } catch (error) {
+      console.error({ saveContractError: error });
+      enqueueSnackbar("Failed to save contract.", { variant: "error" });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <Box sx={{ width: "100%" }}>
       <Box
@@ -684,6 +732,27 @@ const CustomContractViewer = ({ contractId, onContractChange }) => {
             )}
         </Box>
       </Box>
+      <AppBar
+        position="fixed"
+        color="default"
+        sx={{
+          top: "auto",
+          bottom: 0,
+          p: 1,
+          zIndex: (theme) => theme.zIndex.drawer + 2,
+        }}
+      >
+        <Stack direction="row" spacing={2} justifyContent="center">
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSave}
+            disabled={isSaving}
+          >
+            {isSaving ? "Saving..." : "Save Contract"}
+          </Button>
+        </Stack>
+      </AppBar>
     </Box>
   );
 };
