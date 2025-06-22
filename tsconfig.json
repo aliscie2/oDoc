@@ -28,7 +28,6 @@
       "@testing-library/jest-dom",
       "@testing-library/react",
       "vitest/globals",
-      "redux-thunk",
       "vite/client"
     ]
   },

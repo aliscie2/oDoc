@@ -8,14 +8,16 @@ import getDay from "date-fns/getDay";
 import enUS from "date-fns/locale/en-US";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { microsecondsToDate } from "./serializers";
-import EventDialog from "./EventDialog";
+import EventDialog from "./eventDialog";
 import CustomToolbar from "./toolsBar";
 import useCalendarStyles from "./style";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../redux/reducers";
 
 const CalendarView = () => {
-  const { calendar, google_events } = useSelector((state: RootState) => state.calendarState);
+  const { calendar, google_events } = useSelector(
+    (state: RootState) => state.calendarState,
+  );
 
   const availabilities = calendar?.availabilities || [];
 
@@ -32,7 +34,7 @@ const CalendarView = () => {
   const [showEventDialog, setShowEventDialog] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  
+
   useEffect(() => {
     localStorage.setItem("calendarView", currentView);
   }, [currentView]);
@@ -47,11 +49,8 @@ const CalendarView = () => {
   });
 
   const events = useMemo(() => {
-    const allEvents = [
-      ...(calendar?.events || []),
-      ...(google_events || [])
-    ];
-    
+    const allEvents = [...(calendar?.events || []), ...(google_events || [])];
+
     const colors = [
       "#FF2D55",
       "#5856D6",
@@ -170,7 +169,7 @@ const CalendarView = () => {
 
   const eventStyleGetter = useCallback(
     (event) => {
-      const isCreator = profile?.id === event?.created_by
+      const isCreator = profile?.id === event?.created_by;
       return {
         style: {
           backgroundColor: isCreator ? event.color : "#9e9e9e",
@@ -249,7 +248,7 @@ const CalendarView = () => {
       const child = React.Children.only(children);
       const status = getSlotStatus();
 
-      let className = child.props?.className || '';
+      let className = child.props?.className || "";
       let title = "";
 
       switch (status) {
@@ -272,7 +271,7 @@ const CalendarView = () => {
       });
     },
     [availabilities],
-  );  // console.log({ earliestStart });
+  ); // console.log({ earliestStart });
   let timeSpans = {};
   if (profile?.id === calendar?.owner) {
     const today = new Date();
