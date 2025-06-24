@@ -65,7 +65,18 @@ else
     II_ID="rdmx6-jaaaa-aaaaa-aaadq-cai"  # Remote IC instance
 fi
 
-# 8. Deploy ic_siwe_provider using the dedicated script
+
+# 8. Step 4 from README: sh scripts/deploy_ledger.sh
+log "Step 4: Deploying ledger..."
+if [ -f "scripts/deploy_ledger.sh" ]; then
+    chmod +x scripts/deploy_ledger.sh
+    bash scripts/deploy_ledger.sh || warn "Ledger deployment failed but continuing..."
+    success "Ledger deployment completed"
+else
+    warn "scripts/deploy_ledger.sh not found, skipping ledger deployment"
+fi
+
+# 9. Deploy ic_siwe_provider using the dedicated script
 log "Deploying ic_siwe_provider using deployment script..."
 if [ -f "scripts/deploy_ic_siwe_provider.sh" ]; then
     chmod +x scripts/deploy_ic_siwe_provider.sh
@@ -81,20 +92,11 @@ fi
 IC_SIWE_ID=$(dfx canister id ic_siwe_provider 2>/dev/null || echo "")
 log "ic_siwe_provider canister ID: $IC_SIWE_ID"
 
-# 9. Step 4 from README: sh scripts/deploy_ledger.sh
-log "Step 4: Deploying ledger..."
-if [ -f "scripts/deploy_ledger.sh" ]; then
-    chmod +x scripts/deploy_ledger.sh
-    bash scripts/deploy_ledger.sh || warn "Ledger deployment failed but continuing..."
-    success "Ledger deployment completed"
-else
-    warn "scripts/deploy_ledger.sh not found, skipping ledger deployment"
-fi
-
 # 10. Create and deploy frontend canister
 log "Creating and deploying frontend canister..."
 dfx canister create frontend || warn "Frontend canister creation failed"
 FRONTEND_ID=$(dfx canister id frontend 2>/dev/null || echo "")
+dfx deploy frontend
 
 # 11. Step 5 from README: dfx generate (for all deployed canisters)
 log "Step 5: Generating declarations for all canisters..."
@@ -121,16 +123,8 @@ log "Building frontend with all declarations..."
 yarn vite build || error "Frontend build failed"
 success "Frontend built successfully"
 
-# 14. Deploy frontend canister
-if [ -n "$FRONTEND_ID" ]; then
-    log "Deploying frontend canister..."
-    dfx deploy frontend || error "Frontend deployment failed"
-    success "Frontend deployed successfully"
-else
-    error "Frontend canister ID not found"
-fi
 
-# 15. Final verification and instructions
+# 14. Final verification and instructions
 echo -e "\n${GREEN}✅ Setup Complete - All Canisters Deployed!${NC}"
 echo ""
 echo "🌐 Access URLs:"
