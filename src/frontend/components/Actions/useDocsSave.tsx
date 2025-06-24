@@ -40,14 +40,12 @@ export const useDocsSave = (): UseDocsSaveReturn => {
 
     try {
       const serializedContent = serializeFileContents(changes.contents);
-      const serializedContracts = Object.values(
-        changes.contracts,
-      ) as StoredContract[];
 
+      console.log({ x: changes.contracts });
       const res: any = await backendActor.multi_updates(
         changes.files,
         serializedContent,
-        serializedContracts,
+        changes.contracts,
         changes.files_indexing || [],
       );
 

@@ -544,12 +544,17 @@ export const idlFactory = ({ IDL }) => {
     id: IDL.Text,
     name: IDL.Text,
     rows: IDL.Vec(CRow),
+    rows_indexes: IDL.Vec(IDL.Tuple(IDL.Nat64, IDL.Text)),
     delete_columns: IDL.Vec(IDL.Text),
+    columns_indexes: IDL.Vec(IDL.Tuple(IDL.Nat64, IDL.Text)),
     columns: IDL.Vec(CColumn),
     delete_rows: IDL.Vec(IDL.Text),
   });
   const ContractUpdates = IDL.Record({
     id: IDL.Text,
+    permissions: IDL.Vec(ContractPermissionType),
+    promises_indexes: IDL.Vec(IDL.Tuple(IDL.Nat64, IDL.Text)),
+    name: IDL.Opt(IDL.Text),
     delete_tables: IDL.Vec(IDL.Text),
     tables: IDL.Vec(TableUpdates),
     delete_promises: IDL.Vec(IDL.Text),

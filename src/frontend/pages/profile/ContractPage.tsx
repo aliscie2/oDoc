@@ -14,18 +14,9 @@ function ContractPage() {
     return;
   }
   const dispatch = useDispatch();
-  const onContractChange = (contract: CustomContract) => {
-    if (contract.CustomContract) {
-      if (contract.CustomContract.promises.some((p) => p.id === promise.id)) {
-        dispatch({ type: "UPDATE_PROMISE", promise: contract });
-      } else {
-        dispatch({ type: "ADD_PROMISE", promise: contract });
-      }
-    }
-  };
+
   return (
     <CustomContractComponent
-      onContractChange={onContractChange}
       profile={profile}
       all_friends={all_friends}
       contractId={contractId}

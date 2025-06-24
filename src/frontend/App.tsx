@@ -24,7 +24,9 @@ import {
 import { RootState } from "./redux/reducers";
 
 import RegistrationForm from "./components/MainComponents/RegistrationForm";
-import Posts from "./pages/discover/posts";
+
+// import LoaderComponent from "./components/creature";
+
 
 // Create a styled component for the main content
 const MainContent = styled(Box)(({ theme }) => ({
@@ -73,6 +75,7 @@ const App: React.FC = () => {
         dispatch({ type: "IS_FETCHING", isFetching: true });
 
         const res = await backendActor.get_initial_data();
+        console.log({ res });
         const workspaces = await backendActor.get_work_spaces();
         if ("Err" in res && res.Err == "Anonymous user.") {
           dispatch({ isRegistered: false, type: "IS_REGISTERED" });
@@ -343,6 +346,7 @@ const App: React.FC = () => {
         <DndProvider backend={HTML5Backend}>
           <NavBar>
             <PageContainer>
+              
               {isRegistered == false ? <RegistrationForm /> : <Pages />}
             </PageContainer>
           </NavBar>

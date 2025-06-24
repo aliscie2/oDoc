@@ -14,7 +14,7 @@ import {
 import SendIcon from "@mui/icons-material/Send";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import AiCreditsCircle from "./ContractTable/AiCreditsCircle";
-
+import LoaderComponent from '@/components/creature'
 export interface Message {
   id: string;
   content: string;
@@ -146,7 +146,7 @@ const AiChat: React.FC<AiChatProps> = ({
               flexWrap: "wrap",
             }}
           >
-            <CircularProgress size={12} />
+            <LoaderComponent size={12} />
             <Typography variant="caption" color="text.secondary">
               Sending...
             </Typography>
@@ -319,7 +319,7 @@ const AiChat: React.FC<AiChatProps> = ({
                   >
                     Assistant
                   </Typography>
-                  <CircularProgress size={16} />
+                  <LoaderComponent size={16} />
                 </Box>
               )}
             </>
@@ -418,7 +418,7 @@ const AiChat: React.FC<AiChatProps> = ({
                 }}
               >
                 {loading ? (
-                  <CircularProgress size={20} color="inherit" />
+                  <LoaderComponent size={20} color="inherit" />
                 ) : (
                   <SendIcon
                     sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem" } }}

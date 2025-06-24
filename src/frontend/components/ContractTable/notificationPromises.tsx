@@ -5,13 +5,24 @@ import {
   transformPromisesDataAndColumns,
 } from "./utils";
 import { formatRelativeTime } from "../../utils/time";
-import { PAYMENT_STATUSES } from "./index";
+// import { PAYMENT_STATUSES } from "./index";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/reducers";
 import { RowClassRules } from "ag-grid-community";
 import { Box, Divider, Typography, useTheme } from "@mui/material";
 import { getAvailableStatusOptions } from "./statusOptions";
 
+// Constants
+const PAYMENT_STATUSES = {
+  None: null,
+  RequestCancellation: null,
+  Released: null,
+  Objected: "",
+  Confirmed: null,
+  ConfirmedCancellation: null,
+  ApproveHighPromise: null,
+  HighPromise: null,
+};
 function NotificationPromises() {
   const theme = useTheme();
   const { contracts, profile, all_friends } = useSelector(

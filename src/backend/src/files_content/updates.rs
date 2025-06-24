@@ -7,7 +7,8 @@ use ic_cdk_macros::update;
 use crate::files::FileNode;
 use crate::files_content::ContentNode;
 use crate::storage_schema::{ContentTree, FileId};
-use crate::{CColumn, CPayment, CRow, Contract, StoredContract};
+use crate::tables::ContractPermissionType;
+use crate::{CColumn, CPayment, CRow, Contract, CustomContract, StoredContract};
 // #[update]
 // fn content_updates(file_id: FileId, content_parent_id: Option<ContentId>, new_text: String) -> Result<String, String> {
 //     if FileNode::get(&file_id).is_none() {
@@ -51,6 +52,9 @@ pub struct TableUpdates {
 
     pub delete_rows: Vec<String>,
     pub delete_columns: Vec<String>,
+
+    pub columns_indexes: Vec<(usize, String)>,
+    pub rows_indexes: Vec<(usize, String)>,
 }
 
 #[derive(Clone, Debug, Deserialize, CandidType)]
@@ -58,16 +62,16 @@ pub struct ContractUpdates {
     pub id: String,
     pub promises: Vec<CPayment>,
     pub delete_promises: Vec<String>,
-
+    pub name: Option<String>,
+    pub permissions: Vec<ContractPermissionType>,
+    pub promises_indexes: Vec<(usize, String)>, // id of each promise
     pub tables: Vec<TableUpdates>,
     pub delete_tables: Vec<String>,
 }
-
 #[update]
 fn multi_updates(
     files: Vec<FileNode>,
     content_trees: Vec<HashMap<FileId, ContentTree>>,
-    // contracts: Vec<StoredContract>,
     contracts_updates: Vec<ContractUpdates>,
     files_indexing: Vec<FileIndexing>,
 ) -> Result<String, String> {
@@ -77,27 +81,89 @@ fn multi_updates(
         file.save()?;
     }
 
+    // Update or create contract
     for contract_update in contracts_updates {
-        let old_contract: Option<StoredContract> =
-            Contract::get_contract(caller().to_string(), contract_update.id.clone());
-        if let Some(StoredContract::CustomContract(old_contract)) = old_contract {
-            for promise in contract_update.promises {
-                let res: crate::CustomContract = old_contract
-                    .clone()
-                    .update_or_create_promise(promise.clone())?;
-                // if let Err(errors) = res {
-                //     messages.push_str(&errors.to_string());
-                // }
+        // Try multiple ways to get the existing contract
+        let existing_contract = CustomContract::get(&contract_update.id, &caller().to_string())
+            .or_else(|| {
+                // Fallback: try the other get method
+                match Contract::get_contract(caller().to_string(), contract_update.id.clone()) {
+                    Some(StoredContract::CustomContract(contract)) => Some(contract),
+                    _ => None,
+                }
+            });
+
+        let mut curr_contract = if let Some(existing) = existing_contract {
+            existing
+        } else {
+            // Only create new if we're sure it doesn't exist
+            // AND we have promises to add (indicating this is a real new contract)
+            if !contract_update.promises.is_empty() || !contract_update.tables.is_empty() {
+                CustomContract {
+                    id: contract_update.id.clone(),
+                    name: contract_update
+                        .name
+                        .clone()
+                        .unwrap_or_else(|| "New Contract".to_string()),
+                    creator: caller().to_string(),
+                    date_created: ic_cdk::api::time() as f64,
+                    date_updated: ic_cdk::api::time() as f64,
+                    contracts: vec![],
+                    payments: vec![],
+                    promises: vec![],
+                    formulas: vec![],
+                    permissions: vec![],
+                }
+            } else {
+                // If we're just deleting things and can't find the contract, skip this update
+                messages.push_str(&format!(
+                    "Warning: Contract {} not found for update, skipping.\n",
+                    contract_update.id
+                ));
+                continue;
             }
-            for delete_promise in contract_update.delete_promises {
-                let res = old_contract
-                    .clone()
-                    .delete_promise(delete_promise.clone())?;
-                // if let Err(errors) = res {
-                //     messages.push_str(&errors.to_string());
-                // }
-            }
+        };
+
+        // Update the date_updated field
+        curr_contract.date_updated = ic_cdk::api::time() as f64;
+
+        // Process promises - update curr_contract with each result
+        for promise in contract_update.promises {
+            curr_contract = curr_contract.update_or_create_promise(promise)?;
         }
+
+        // Process promise deletions
+        for delete_promise in contract_update.delete_promises {
+            curr_contract = curr_contract.delete_promise(delete_promise)?;
+        }
+
+        // Process table updates
+        for table_update in contract_update.tables {
+            curr_contract = curr_contract.update_or_create_table(table_update)?;
+        }
+
+        // Process table deletions
+        for table_id in contract_update.delete_tables {
+            curr_contract = curr_contract.delete_table(table_id)?;
+        }
+
+        // Reorder promises
+        if !contract_update.promises_indexes.is_empty() {
+            curr_contract = curr_contract.reorder_promises(contract_update.promises_indexes)?;
+        }
+
+        // Update name if provided
+        if let Some(name) = contract_update.name {
+            curr_contract = curr_contract.update_name(name)?;
+        }
+
+        // Update permissions
+        if !contract_update.permissions.is_empty() {
+            curr_contract = curr_contract.update_permissions(contract_update.permissions)?;
+        }
+
+        // Final save to ensure everything is persisted
+        curr_contract.save()?;
     }
 
     // Update FILE_CONTENTS

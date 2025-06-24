@@ -19,7 +19,7 @@ import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
 import ReceiptIcon from "@mui/icons-material/Receipt";
 import HowToVoteIcon from "@mui/icons-material/HowToVote";
 import DashboardIcon from "@mui/icons-material/Dashboard";
-import CloseIcon from "@mui/icons-material/Close";
+
 import CreateFile from "../Actions/CreateFile";
 
 import { Z_INDEX_SIDE_NAVBAR } from "../../constants/zIndex";
@@ -29,6 +29,19 @@ import flattenTree from "../../DataProcessing/deserlize/flatenFiles";
 import GetMoreFiles from "../Actions/GetMoreFiles";
 import { buildTree } from "./SortableTree/utilities";
 
+import {
+  AccountBalanceWallet as AccountBalanceWalletIcon,
+  Close as CloseIcon,
+  DarkMode as DarkModeIcon,
+  Gavel as GavelIcon,
+  LightMode as LightModeIcon,
+  Logout as LogoutIcon,
+  Menu as MenuIcon,
+  MenuOpen as MenuOpenIcon,
+  Person2 as Person2Icon,
+  Search as SearchIcon,
+  Handshake as HandshakeIcon,
+} from "@mui/icons-material";
 // Styled components for theme-aware styling
 const StyledDrawerPaper = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
@@ -90,10 +103,17 @@ const NavBar = (props: any) => {
     (state: any) => state.filesState,
   );
   const dispatch = useDispatch();
-  const { isNavOpen, isLoggedIn } = useSelector((state: any) => state.uiState);
+  const { isNavOpen, isDarkMode, isLoggedIn } = useSelector(
+    (state: any) => state.uiState,
+  );
   const [defaultItems, setDefaultItems] = useState([]);
 
   const navLinks = [
+    {
+      label: isDarkMode ? "Light Mode" : "Dark Mode",
+      icon: isDarkMode ? <LightModeIcon /> : <DarkModeIcon />,
+      onClick: () => dispatch({ type: "TOGGLE_DARK" }),
+    },
     { label: "About Us", to: "/about", icon: <InfoIcon /> },
     // { label: "Discover", to: "/discover", icon: <ExploreIcon /> },
     {
@@ -184,7 +204,10 @@ const NavBar = (props: any) => {
               {navLinks.map((link) => (
                 <StyledListItemButton
                   key={link.label}
-                  onClick={handleNavClose}
+                  onClick={() => {
+                    link.onClick && link.onClick();
+                    handleNavClose();
+                  }}
                   component={Link}
                   to={link.to}
                   sx={{

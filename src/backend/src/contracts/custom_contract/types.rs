@@ -3,6 +3,7 @@ use candid::{CandidType, Deserialize};
 use ic_cdk::caller;
 use serde::Serialize;
 
+use crate::files_content::TableUpdates;
 use crate::storage_schema::ContractId;
 use crate::tables::{ContractPermissionType, Filter, Formula, PermissionType};
 use crate::user_history::UserHistory;
@@ -190,6 +191,359 @@ impl CColumn {
 }
 
 impl CustomContract {
+    pub fn update_name(mut self, new_name: String) -> Result<Self, String> {
+        // Only creator can update contract name
+        if self.creator != caller().to_string() {
+            return Err(String::from(
+                "Only contract creator can update contract name",
+            ));
+        }
+
+        // Update the contract name
+        self.name = new_name;
+
+        // Save the updated contract
+        // self.save()?;
+        Ok(self)
+    }
+
+    pub fn update_permissions(
+        mut self,
+        new_permissions: Vec<ContractPermissionType>,
+    ) -> Result<Self, String> {
+        // Only creator can update contract permissions
+        if self.creator != caller().to_string() {
+            return Err(String::from(
+                "Only contract creator can update contract permissions",
+            ));
+        }
+
+        // Update the contract permissions
+        self.permissions = new_permissions;
+
+        // Save the updated contract
+        // self.save()?;
+        Ok(self)
+    }
+
+    pub fn reorder_promises(
+        mut self,
+        promises_indexes: Vec<(usize, String)>,
+    ) -> Result<Self, String> {
+        // Only creator can reorder promises
+        if self.creator != caller().to_string() {
+            return Err(String::from("Only contract creator can reorder promises"));
+        }
+
+        // Create a new vector to hold reordered promises
+        let mut reordered_promises = vec![None; self.promises.len()];
+        let mut used_positions = std::collections::HashSet::new();
+
+        // First pass: place promises at specified indexes
+        for (new_index, promise_id) in &promises_indexes {
+            // Validate the new index
+            if *new_index >= self.promises.len() {
+                return Err(format!(
+                    "Index {} is out of bounds for promises vector of length {}",
+                    new_index,
+                    self.promises.len()
+                ));
+            }
+
+            // Check if position is already used
+            if used_positions.contains(new_index) {
+                return Err(format!("Index {} is specified multiple times", new_index));
+            }
+
+            // Find the promise with the given ID
+            if let Some(promise_index) = self.promises.iter().position(|p| p.id == *promise_id) {
+                let promise = self.promises[promise_index].clone();
+                reordered_promises[*new_index] = Some(promise);
+                used_positions.insert(*new_index);
+            } else {
+                return Err(format!("Promise with ID {} not found", promise_id));
+            }
+        }
+
+        // Second pass: fill remaining positions with unspecified promises
+        let specified_ids: std::collections::HashSet<String> =
+            promises_indexes.iter().map(|(_, id)| id.clone()).collect();
+
+        let remaining_promises: Vec<CPayment> = self
+            .promises
+            .into_iter()
+            .filter(|p| !specified_ids.contains(&p.id))
+            .collect();
+
+        let mut remaining_iter = remaining_promises.into_iter();
+
+        // Fill empty positions with remaining promises
+        for i in 0..reordered_promises.len() {
+            if reordered_promises[i].is_none() {
+                if let Some(promise) = remaining_iter.next() {
+                    reordered_promises[i] = Some(promise);
+                }
+            }
+        }
+
+        // Convert Option<CPayment> back to CPayment vector
+        self.promises = reordered_promises.into_iter().filter_map(|p| p).collect();
+
+        // Save the updated contract
+        // self.save()?;
+        Ok(self)
+    }
+
+    pub fn update_or_create_table(mut self, table_update: TableUpdates) -> Result<Self, String> {
+        let caller_principal = caller();
+
+        // Check permissions - creator always has access, otherwise check contract permissions
+        if self.creator != caller_principal.to_string() {
+            let has_permission = self.permissions.iter().any(|permission| match permission {
+                ContractPermissionType::Edit(principal) => principal == &caller_principal,
+                ContractPermissionType::AnyOneEdite => true,
+                _ => false,
+            });
+
+            if !has_permission {
+                return Err(String::from(
+                    "You don't have permission to update or create tables in this contract",
+                ));
+            }
+        }
+
+        // Find existing contract (table) or create new one
+        if let Some(index) = self.contracts.iter().position(|c| c.id == table_update.id) {
+            // Update existing table
+            self.update_existing_table(index, table_update)?;
+        } else {
+            // Create new table
+            self.create_new_table(table_update)?;
+        }
+
+        // Save the updated contract
+        // self.save()?;
+        Ok(self)
+    }
+
+    pub fn delete_table(mut self, table_id: String) -> Result<Self, String> {
+        // Only creator can delete tables
+        if self.creator != caller().to_string() {
+            return Err(String::from("Only contract creator can delete tables"));
+        }
+
+        // Check if table exists
+        if !self.contracts.iter().any(|c| c.id == table_id) {
+            return Err(String::from("Table not found"));
+        }
+
+        // Remove the table
+        self.contracts.retain(|c| c.id != table_id);
+
+        // Save the updated contract
+        // self.save()?;
+        Ok(self)
+    }
+
+    // Helper functions for table operations
+    fn update_existing_table(
+        &mut self,
+        table_index: usize,
+        table_update: TableUpdates,
+    ) -> Result<(), String> {
+        let table = &mut self.contracts[table_index];
+
+        // Update basic info
+        table.name = table_update.name;
+
+        // Process column deletions first
+        for column_id in &table_update.delete_columns {
+            // Get the field name before deletion
+            let field_name = table
+                .columns
+                .iter()
+                .find(|c| c.id == *column_id)
+                .map(|c| c.field.clone());
+
+            // Remove the column
+            table.columns.retain(|c| c.id != *column_id);
+
+            // Remove cells with this field from all rows
+            if let Some(field) = field_name {
+                for row in &mut table.rows {
+                    row.cells.retain(|cell| cell.field != field);
+                }
+            }
+        }
+
+        // Process row deletions
+        for row_id in &table_update.delete_rows {
+            table.rows.retain(|r| r.id != *row_id);
+        }
+
+        // Update or add columns
+        for new_column in table_update.columns {
+            if let Some(index) = table.columns.iter().position(|c| c.id == new_column.id) {
+                table.columns[index] = new_column;
+            } else {
+                table.columns.push(new_column);
+            }
+        }
+
+        // Update or add rows
+        for new_row in table_update.rows {
+            if let Some(index) = table.rows.iter().position(|r| r.id == new_row.id) {
+                table.rows[index] = new_row;
+            } else {
+                table.rows.push(new_row);
+            }
+        }
+
+        // Handle column reordering
+        if !table_update.columns_indexes.is_empty() {
+            // Create a new vector to hold reordered columns
+            let mut reordered_columns = vec![None; table.columns.len()];
+            let mut used_positions = std::collections::HashSet::new();
+
+            // First pass: place columns at specified indexes
+            for (new_index, column_id) in &table_update.columns_indexes {
+                // Validate the new index
+                if *new_index >= table.columns.len() {
+                    return Err(format!(
+                        "Index {} is out of bounds for columns vector of length {}",
+                        new_index,
+                        table.columns.len()
+                    ));
+                }
+
+                // Check if position is already used
+                if used_positions.contains(new_index) {
+                    return Err(format!(
+                        "Column index {} is specified multiple times",
+                        new_index
+                    ));
+                }
+
+                // Find the column with the given ID
+                if let Some(column_index) = table.columns.iter().position(|c| c.id == *column_id) {
+                    let column = table.columns[column_index].clone();
+                    reordered_columns[*new_index] = Some(column);
+                    used_positions.insert(*new_index);
+                } else {
+                    return Err(format!("Column with ID {} not found", column_id));
+                }
+            }
+
+            // Second pass: fill remaining positions with unspecified columns
+            let specified_ids: std::collections::HashSet<String> = table_update
+                .columns_indexes
+                .iter()
+                .map(|(_, id)| id.clone())
+                .collect();
+
+            let remaining_columns: Vec<CColumn> = table
+                .columns
+                .clone()
+                .into_iter()
+                .filter(|c| !specified_ids.contains(&c.id))
+                .collect();
+
+            let mut remaining_iter = remaining_columns.into_iter();
+
+            // Fill empty positions with remaining columns
+            for i in 0..reordered_columns.len() {
+                if reordered_columns[i].is_none() {
+                    if let Some(column) = remaining_iter.next() {
+                        reordered_columns[i] = Some(column);
+                    }
+                }
+            }
+
+            // Convert Option<CColumn> back to CColumn vector
+            table.columns = reordered_columns.into_iter().filter_map(|c| c).collect();
+        }
+
+        // Handle row reordering
+        if !table_update.rows_indexes.is_empty() {
+            // Create a new vector to hold reordered rows
+            let mut reordered_rows = vec![None; table.rows.len()];
+            let mut used_positions = std::collections::HashSet::new();
+
+            // First pass: place rows at specified indexes
+            for (new_index, row_id) in &table_update.rows_indexes {
+                // Validate the new index
+                if *new_index >= table.rows.len() {
+                    return Err(format!(
+                        "Index {} is out of bounds for rows vector of length {}",
+                        new_index,
+                        table.rows.len()
+                    ));
+                }
+
+                // Check if position is already used
+                if used_positions.contains(new_index) {
+                    return Err(format!(
+                        "Row index {} is specified multiple times",
+                        new_index
+                    ));
+                }
+
+                // Find the row with the given ID
+                if let Some(row_index) = table.rows.iter().position(|r| r.id == *row_id) {
+                    let row = table.rows[row_index].clone();
+                    reordered_rows[*new_index] = Some(row);
+                    used_positions.insert(*new_index);
+                } else {
+                    return Err(format!("Row with ID {} not found", row_id));
+                }
+            }
+
+            // Second pass: fill remaining positions with unspecified rows
+            let specified_ids: std::collections::HashSet<String> = table_update
+                .rows_indexes
+                .iter()
+                .map(|(_, id)| id.clone())
+                .collect();
+
+            let remaining_rows: Vec<CRow> = table
+                .rows
+                .clone()
+                .into_iter()
+                .filter(|r| !specified_ids.contains(&r.id))
+                .collect();
+
+            let mut remaining_iter = remaining_rows.into_iter();
+
+            // Fill empty positions with remaining rows
+            for i in 0..reordered_rows.len() {
+                if reordered_rows[i].is_none() {
+                    if let Some(row) = remaining_iter.next() {
+                        reordered_rows[i] = Some(row);
+                    }
+                }
+            }
+
+            // Convert Option<CRow> back to CRow vector
+            table.rows = reordered_rows.into_iter().filter_map(|r| r).collect();
+        }
+
+        Ok(())
+    }
+
+    fn create_new_table(&mut self, table_update: TableUpdates) -> Result<(), String> {
+        let new_contract = CContract {
+            id: table_update.id,
+            name: table_update.name,
+            columns: table_update.columns,
+            rows: table_update.rows,
+            creator: caller(),
+            date_created: ic_cdk::api::time() as f64,
+        };
+
+        self.contracts.push(new_contract);
+        Ok(())
+    }
+
     pub fn update_or_create_promise(mut self, mut payment: CPayment) -> Result<Self, String> {
         // Basic validations
         self.validate_promise_permissions(&payment)?;
@@ -199,12 +553,13 @@ impl CustomContract {
             self.handle_payment_status_change(old_payment.clone(), &mut payment)?;
         } else {
             // CREATE new promise
+            payment.id = ic_cdk::api::time().to_string();
             self.create_new_promise(&mut payment)?;
             self.handle_new_payment_status(&mut payment)?;
         }
 
         // Save the updated contract
-        self.save()?;
+        // self.save()?;
 
         Ok(self)
     }
@@ -231,7 +586,7 @@ impl CustomContract {
         self.notify_promise_deletion(&promise_to_delete)?;
 
         // Save the updated contract
-        self.save()?;
+        // self.save()?;
 
         Ok(self)
     }

@@ -145,7 +145,7 @@ export function serializeRowToPromise(
 
 export function createCColumn(field: string): CColumn {
   return {
-    id: randomString(),
+    id: "fresh_column" + randomString(),
     field,
     name: "Untitled",
     column_type: "string",
@@ -216,7 +216,7 @@ export function createNewPromis(sender): CPayment {
   let status = { None: null };
   let new_promise: CPayment = {
     contract_id: "", // the backend will handle this
-    id: randomString(),
+    id: "fresh_promise" + randomString(),
     date_created: Date.now() * 1e6,
     date_released: 0,
     sender,
@@ -265,13 +265,11 @@ export const handleCustomCellChange = (params) => {
     };
   });
 
-  const updatedContract = {
-    ...contract,
+  context.dispatch({
+    type: "UPDATE_PROMISES",
+    contract_id: contract.id,
     promises: updatedPromises,
-    date_updated: Date.now(),
-  };
-
-  context.onContractChange(updatedContract);
+  });
   return true;
 };
 
@@ -327,7 +325,7 @@ export const addColumnToContract = (
   contract: CustomContract,
   fieldName: string,
   defaultValue: string = "",
-): CustomContract => {
+): Array<CPayment> => {
   // Helper to add cell to a payment
   const addCellToPayment = (payment: CPayment): CPayment => {
     const newCell: CCell = {
@@ -361,17 +359,13 @@ export const addColumnToContract = (
 
   // Update promises array if not empty
   const updatedPromises = contract.promises.map(addCellToPayment);
-  return {
-    ...contract,
-    promises: updatedPromises,
-    // date_updated: Date.now() * 1e6,
-  };
+  return updatedPromises;
 };
 
 export const deleteColumnFromContract = (
   contract: CustomContract,
   fieldName: string,
-): CustomContract => {
+): Array<CPayment> => {
   // Helper to remove cell from a payment
   const removeCellFromPayment = (payment: CPayment): CPayment => ({
     ...payment,
@@ -380,20 +374,15 @@ export const deleteColumnFromContract = (
 
   // Update both promises and payments arrays
   const updatedPromises = contract.promises.map(removeCellFromPayment);
-  const updatedPayments = contract.payments.map(removeCellFromPayment);
+  // const updatedPayments = contract.payments.map(removeCellFromPayment);
 
-  return {
-    ...contract,
-    promises: updatedPromises,
-    payments: updatedPayments,
-    date_updated: Date.now(),
-  };
+  return updatedPromises;
 };
 
 export const handleAmountChange = (
   params,
   contract: CustomContract,
-  onContractChange: (contract: CustomContract) => void,
+  dispatch: (contract: CustomContract) => void,
 ) => {
   const newAmount = parseFloat(params.newValue);
 
@@ -406,14 +395,18 @@ export const handleAmountChange = (
   const updatedPromises = contract.promises.map((promise) =>
     promise.id === params.data.id ? { ...promise, amount: newAmount } : promise,
   );
-
-  const updatedContract = {
-    ...contract,
+  dispatch({
+    type: "UPDATE_PROMISES",
+    contract_id: contract.id,
     promises: updatedPromises,
-    date_updated: Date.now(),
-  };
+  });
 
-  onContractChange(updatedContract);
+  // const updatedContract = {
+  //   ...contract,
+  //   promises: updatedPromises,
+  //   date_updated: Date.now(),
+  // };
+
   return true;
 };
 
@@ -432,16 +425,13 @@ export const handleStatusChange = (params, contract: CustomContract) => {
 
     return { ...promise, status };
   });
-  return {
-    ...contract,
-    promises: updatedPromises,
-  };
+  return updatedPromises;
 };
 
 export const handleReceiverChange = (
   params,
   contract: CustomContract,
-  onContractChange: (contract: CustomContract) => void,
+  dispatch,
 ) => {
   const selectedName = params.newValue;
   const selectedUser = params.context.users.find(
@@ -458,14 +448,18 @@ export const handleReceiverChange = (
       ? { ...promise, receiver: Principal.fromText(selectedUser.id) }
       : promise,
   );
-
-  const updatedContract = {
-    ...contract,
+  dispatch({
+    type: "UPDATE_PROMISES",
+    contract_id: contract.id,
     promises: updatedPromises,
-    date_updated: Date.now(),
-  };
+  });
 
-  onContractChange(updatedContract);
+  // const updatedContract = {
+  //   ...contract,
+  //   promises: updatedPromises,
+  //   date_updated: Date.now(),
+  // };
+
   return true;
 };
 
@@ -473,7 +467,7 @@ export const renameColumnInContract = (
   contract: CustomContract,
   oldFieldName: string,
   newFieldName: string,
-): CustomContract => {
+): Array<CPayment> => {
   // Update both promises and payments arrays
   const updatedPromises = contract.promises.map((payment) => ({
     ...payment,
@@ -497,10 +491,7 @@ export const renameColumnInContract = (
   //   )
   // }));
 
-  return {
-    ...contract,
-    promises: updatedPromises,
-  };
+  return updatedPromises;
 };
 
 export const NotificationPromiesContextMenu = (params) => {
@@ -512,7 +503,7 @@ export const NotificationPromiesContextMenu = (params) => {
   ];
 };
 export const contractContextMenu = (params) => {
-  const { contractsState, onContractChange, selectedContract } = params.context;
+  const { contractsState, selectedContract, dispatch } = params.context;
 
   const baseMenuItems = [
     {
@@ -526,15 +517,20 @@ export const contractContextMenu = (params) => {
             value: "",
           })),
         };
-        const updatedContract = {
-          ...contractsState,
-          contracts: contractsState.contracts.map((c) =>
-            c.id === selectedContract.id
-              ? { ...c, rows: [...c.rows, newRow] }
-              : c,
-          ),
-        };
-        onContractChange(updatedContract);
+        // const updatedContract = {
+        //   ...contractsState,
+        //   contracts: contractsState.contracts.map((c) =>
+        //     c.id === selectedContract.id
+        //       ? { ...c, rows: [...c.rows, newRow] }
+        //       : c,
+        //   ),
+        // };
+        dispatch({
+          type: "ADD_ROW",
+          contract_id: contractsState.id,
+          row: newRow,
+          table_id: selectedContract.id,
+        });
       },
     },
     {
@@ -542,32 +538,24 @@ export const contractContextMenu = (params) => {
       action: () => {
         const newColumn = createCColumn(`untitled_${randomString()}`);
 
-        const updatedRows = selectedContract.rows.map((row) => ({
-          ...row,
-          cells: [
-            ...row.cells,
-            {
-              id: randomString(),
-              field: newColumn.field,
-              value: "",
-            },
-          ],
-        }));
+        // const updatedRows = selectedContract.rows.map((row) => ({
+        //   ...row,
+        //   cells: [
+        //     ...row.cells,
+        //     {
+        //       id: randomString(),
+        //       field: newColumn.field,
+        //       value: "",
+        //     },
+        //   ],
+        // }));
 
-        const updatedContract = {
-          ...contractsState,
-          contracts: contractsState.contracts.map((c) =>
-            c.id === selectedContract.id
-              ? {
-                  ...c,
-                  columns: [...c.columns, newColumn],
-                  rows: updatedRows,
-                }
-              : c,
-          ),
-        };
-
-        onContractChange(updatedContract);
+        dispatch({
+          type: "ADD_COLUMN",
+          contract_id: contractsState.id,
+          column: newColumn,
+          table_id: selectedContract.id,
+        });
       },
     },
   ];
@@ -576,19 +564,25 @@ export const contractContextMenu = (params) => {
     baseMenuItems.push({
       name: "Delete Row",
       action: () => {
-        const updatedContract = {
-          ...contractsState,
-          contracts: contractsState.contracts.map((c) =>
-            c.id === selectedContract.id
-              ? {
-                  ...c,
-                  rows: c.rows.filter((row) => row.id !== params.node.data.id),
-                }
-              : c,
-          ),
-        };
+        // const updatedContract = {
+        //   ...contractsState,
+        //   contracts: contractsState.contracts.map((c) =>
+        //     c.id === selectedContract.id
+        //       ? {
+        //           ...c,
+        //           rows: c.rows.filter((row) => row.id !== params.node.data.id),
+        //         }
+        //       : c,
+        //   ),
+        // };
+        // const { contract_id, table_id, row_id } = action;
 
-        onContractChange(updatedContract);
+        dispatch({
+          type: "DELETE_ROW",
+          contract_id: contractsState.id,
+          table_id: selectedContract.id,
+          row_id: params.node.data.id,
+        });
       },
     });
   }
@@ -604,57 +598,66 @@ export const contractContextMenu = (params) => {
         );
 
         if (!newFieldName || newFieldName === oldFieldName) return;
+        // TODO fix later
+        dispatch({
+          type: "UPDATE_COLUMN",
+          contract_id: contractsState.id,
+          column: { ...params.column.colDef, name: newFieldName },
+          table_id: selectedContract.id,
+        });
 
-        const updatedContract = {
-          ...contractsState,
-          contracts: contractsState.contracts.map((c) =>
-            c.id === selectedContract.id
-              ? {
-                  ...c,
-                  columns: c.columns.map((col) =>
-                    col.field === oldFieldName
-                      ? { ...col, field: newFieldName, name: newFieldName }
-                      : col,
-                  ),
-                  rows: c.rows.map((row) => ({
-                    ...row,
-                    cells: row.cells.map((cell) =>
-                      cell.field === oldFieldName
-                        ? { ...cell, field: newFieldName }
-                        : cell,
-                    ),
-                  })),
-                }
-              : c,
-          ),
-        };
-
-        onContractChange(updatedContract);
+        // const updatedContract = {
+        //   ...contractsState,
+        //   contracts: contractsState.contracts.map((c) =>
+        //     c.id === selectedContract.id
+        //       ? {
+        //           ...c,
+        //           columns: c.columns.map((col) =>
+        //             col.field === oldFieldName
+        //               ? { ...col, field: newFieldName, name: newFieldName }
+        //               : col,
+        //           ),
+        //           rows: c.rows.map((row) => ({
+        //             ...row,
+        //             cells: row.cells.map((cell) =>
+        //               cell.field === oldFieldName
+        //                 ? { ...cell, field: newFieldName }
+        //                 : cell,
+        //             ),
+        //           })),
+        //         }
+        //       : c,
+        //   ),
+        // };
       },
     });
 
     baseMenuItems.push({
       name: "Delete Column",
       action: () => {
-        const fieldName = params.column.getColId();
-
-        const updatedContract = {
-          ...contractsState,
-          contracts: contractsState.contracts.map((c) =>
-            c.id === selectedContract.id
-              ? {
-                  ...c,
-                  columns: c.columns.filter((col) => col.field !== fieldName),
-                  rows: c.rows.map((row) => ({
-                    ...row,
-                    cells: row.cells.filter((cell) => cell.field !== fieldName),
-                  })),
-                }
-              : c,
-          ),
-        };
-
-        onContractChange(updatedContract);
+       
+        // const fieldName = params.column.getColId();
+        dispatch({
+          type: "DELETE_COLUMN",
+          contract_id: contractsState.id,
+          column_id: params.column.colDef.id,
+          table_id: selectedContract.id,
+        });
+        // const updatedContract = {
+        //   ...contractsState,
+        //   contracts: contractsState.contracts.map((c) =>
+        //     c.id === selectedContract.id
+        //       ? {
+        //           ...c,
+        //           columns: c.columns.filter((col) => col.field !== fieldName),
+        //           rows: c.rows.map((row) => ({
+        //             ...row,
+        //             cells: row.cells.filter((cell) => cell.field !== fieldName),
+        //           })),
+        //         }
+        //       : c,
+        //   ),
+        // };
       },
     });
   }
@@ -707,18 +710,25 @@ export const getContractColumnDefs = (columns) => {
       onCellValueChanged: (params) => {
         const { data, context } = params;
         const { contractsState, selectedContract } = context;
-        const updatedContract = produce(contractsState, (draft) => {
-          const contract = draft.contracts.find(
-            (c) => c.id === selectedContract.id,
-          );
-          if (contract) {
-            const row = contract.rows.find((row) => row.id === data.id);
-            if (row) {
-              Object.assign(row, serializeRowCellsData(data)); // Mutate the draft safely
-            }
-          }
+        // const updatedContract = produce(contractsState, (draft) => {
+        //   const contract = draft.contracts.find(
+        //     (c) => c.id === selectedContract.id,
+        //   );
+        //   if (contract) {
+        //     const row = contract.rows.find((row) => row.id === data.id);
+        //     if (row) {
+        //       Object.assign(row, serializeRowCellsData(data)); // Mutate the draft safely
+        //     }
+        //   }
+        // });
+        // const row = contract.rows.find((row) => row.id === data.id);
+        // console.log({data})
+        params.context.dispatch({
+          type: "UPDATE_ROW",
+          contract_id: contractsState.id,
+          table_id: selectedContract.id,
+          row: serializeRowCellsData(data),
         });
-        params.context.onContractChange(updatedContract);
       },
     };
   });

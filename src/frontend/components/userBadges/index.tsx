@@ -34,7 +34,6 @@ import useProgress, { type BadgeType } from "./useProgress";
 import { useSetup } from "./setUpConnect";
 import FullscreenDialog from "@/pages/dash_board_v1/FullscreenDialog";
 
-
 // ODOC Reward Tier System
 const getRewardTier = (score: number) => {
   if (score >= 4.5) return { percentage: 0.2, level: "Platinum", icon: "💎" };
@@ -591,7 +590,7 @@ const AchievementCard: React.FC = () => {
                 </Typography>
               </Box>
             </Box>
-            
+
             <Grid container spacing={3}>
               <Grid item xs={6} md={3}>
                 <Box sx={{ textAlign: "center" }}>
@@ -683,11 +682,11 @@ const AchievementCard: React.FC = () => {
         <Box sx={{ p: 3, height: "100%" }}>
           {selectedBadge?.videoUrl && (
             <Box
-              sx={{ 
-                position: "relative", 
-                paddingBottom: "56.25%", 
+              sx={{
+                position: "relative",
+                paddingBottom: "56.25%",
                 height: 0,
-                mb: 2
+                mb: 2,
               }}
             >
               <iframe

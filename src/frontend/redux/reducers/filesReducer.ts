@@ -213,27 +213,1647 @@ export function filesReducer(
       };
     }
 
-    // case "ADD_PROMISE"
-    // case "DELETE_PROMISE"
-    // case "UPDATE_PROMISE"
-    // case "UPDATE_CONTRACT":
-    //   const { contract } = action;
-    //   let id = contract.id;
-    //   let toStoreContract = { CustomContract: contract };
-    //   return {
-    //     ...state,
-    //     changes: {
-    //       ...state.changes,
-    //       contracts: {
-    //         ...state.changes.contracts,
-    //         [id]: { ...toStoreContract },
-    //       },
-    //     },
-    //     contracts: {
-    //       ...state.contracts,
-    //       [id]: contract,
+    case "RENAME_TABLE": {
+      const { contract_id, table_id, new_name } = action;
+
+      // Update table name in the contract
+      const updatedContracts = {
+        ...state.contracts,
+        [contract_id]: {
+          ...state.contracts[contract_id],
+          contracts: state.contracts[contract_id].contracts.map((table) =>
+            table.id === table_id ? { ...table, name: new_name } : table,
+          ),
+        },
+      };
+
+      // Update changes
+      const contractsArray = Array.isArray(state.changes.contracts)
+        ? state.changes.contracts
+        : [];
+      const existingContractIndex = contractsArray.findIndex(
+        (c) => c.id === contract_id,
+      );
+      let updatedChangesContracts;
+
+      if (existingContractIndex !== -1) {
+        updatedChangesContracts = contractsArray.map((c, index) => {
+          if (index === existingContractIndex) {
+            const existingTableIndex = c.tables.findIndex(
+              (t) => t.id === table_id,
+            );
+            if (existingTableIndex !== -1) {
+              return {
+                ...c,
+                tables: c.tables.map((t, tIndex) =>
+                  tIndex === existingTableIndex ? { ...t, name: new_name } : t,
+                ),
+              };
+            } else {
+              return {
+                ...c,
+                tables: [
+                  ...c.tables,
+                  {
+                    id: table_id,
+                    name: new_name,
+                    rows: [],
+                    rows_indexes: [],
+                    delete_columns: [],
+                    columns_indexes: [],
+                    columns: [],
+                    delete_rows: [],
+                  },
+                ],
+              };
+            }
+          }
+          return c;
+        });
+      } else {
+        const newContractUpdate = {
+          id: contract_id,
+          permissions: [],
+          promises_indexes: [],
+          name: [],
+          delete_tables: [],
+          tables: [
+            {
+              id: table_id,
+              name: new_name,
+              rows: [],
+              rows_indexes: [],
+              delete_columns: [],
+              columns_indexes: [],
+              columns: [],
+              delete_rows: [],
+            },
+          ],
+          delete_promises: [],
+          promises: [],
+        };
+        updatedChangesContracts = [...contractsArray, newContractUpdate];
+      }
+
+      return {
+        ...state,
+        contracts: updatedContracts,
+        changes: {
+          ...state.changes,
+          contracts: updatedChangesContracts,
+        },
+      };
+    }
+
+    // case "RENAME_TABLE": {
+    //   const { contract_id, table_id, new_name } = action;
+
+    //   // Update table name in the contract
+    //   const updatedContracts = {
+    //     ...state.contracts,
+    //     [contract_id]: {
+    //       ...state.contracts[contract_id],
+    //       contracts: state.contracts[contract_id].contracts.map((table) =>
+    //         table.id === table_id ? { ...table, name: new_name } : table,
+    //       ),
     //     },
     //   };
+
+    //   // Update changes
+    //   const contractsArray = Array.isArray(state.changes.contracts)
+    //     ? state.changes.contracts
+    //     : [];
+    //   const existingContractIndex = contractsArray.findIndex(
+    //     (c) => c.id === contract_id,
+    //   );
+    //   let updatedChangesContracts;
+
+    //   if (existingContractIndex !== -1) {
+    //     updatedChangesContracts = contractsArray.map((c, index) => {
+    //       if (index === existingContractIndex) {
+    //         const existingTableIndex = c.tables.findIndex(
+    //           (t) => t.id === table_id,
+    //         );
+    //         if (existingTableIndex !== -1) {
+    //           return {
+    //             ...c,
+    //             tables: c.tables.map((t, tIndex) =>
+    //               tIndex === existingTableIndex ? { ...t, name: new_name } : t,
+    //             ),
+    //           };
+    //         } else {
+    //           return {
+    //             ...c,
+    //             tables: [
+    //               ...c.tables,
+    //               {
+    //                 id: table_id,
+    //                 name: new_name,
+    //                 rows: [],
+    //                 rows_indexes: [],
+    //                 delete_columns: [],
+    //                 columns_indexes: [],
+    //                 columns: [],
+    //                 delete_rows: [],
+    //               },
+    //             ],
+    //           };
+    //         }
+    //       }
+    //       return c;
+    //     });
+    //   } else {
+    //     const newContractUpdate = {
+    //       permissions: [],
+    //       promises_indexes: [],
+    //       id: contract_id,
+    //       name: [],
+    //       delete_tables: [],
+    //       tables: [
+    //         {
+    //           id: table_id,
+    //           name: new_name,
+    //           rows: [],
+    //           rows_indexes: [],
+    //           delete_columns: [],
+    //           columns_indexes: [],
+    //           columns: [],
+    //           delete_rows: [],
+    //         },
+    //       ],
+    //       delete_promises: [],
+    //       promises: [],
+    //     };
+    //     updatedChangesContracts = [...contractsArray, newContractUpdate];
+    //   }
+
+    //   return {
+    //     ...state,
+    //     contracts: updatedContracts,
+    //     changes: {
+    //       ...state.changes,
+    //       contracts: updatedChangesContracts,
+    //     },
+    //   };
+    // }
+
+    case "RENAME_SMART_CONTRACT": {
+      const { contract_id, new_name } = action;
+
+      // Update contract name
+      const updatedContracts = {
+        ...state.contracts,
+        [contract_id]: {
+          ...state.contracts[contract_id],
+          name: new_name,
+        },
+      };
+
+      // Update changes
+      const contractsArray = Array.isArray(state.changes.contracts)
+        ? state.changes.contracts
+        : [];
+      const existingContractIndex = contractsArray.findIndex(
+        (c) => c.id === contract_id,
+      );
+      let updatedChangesContracts;
+
+      if (existingContractIndex !== -1) {
+        updatedChangesContracts = contractsArray.map((c, index) =>
+          index === existingContractIndex ? { ...c, name: [new_name] } : c,
+        );
+      } else {
+        const newContractUpdate = {
+          permissions: [],
+          promises_indexes: [],
+          id: contract_id,
+          name: [new_name],
+          delete_tables: [],
+          tables: [],
+          delete_promises: [],
+          promises: [],
+        };
+        updatedChangesContracts = [...contractsArray, newContractUpdate];
+      }
+
+      return {
+        ...state,
+        contracts: updatedContracts,
+        changes: {
+          ...state.changes,
+          contracts: updatedChangesContracts,
+        },
+      };
+    }
+
+    case "ADD_TABLE": {
+      const { contract_id, table } = action;
+
+      // Add table to the contract's contracts array
+      const updatedContracts = {
+        ...state.contracts,
+        [contract_id]: {
+          ...state.contracts[contract_id],
+          contracts: [...state.contracts[contract_id].contracts, table],
+        },
+      };
+
+      // Ensure changes.contracts is an array
+      const contractsArray = Array.isArray(state.changes.contracts)
+        ? state.changes.contracts
+        : [];
+
+      // Find existing contract update in changes
+      const existingContractIndex = contractsArray.findIndex(
+        (c) => c.id === contract_id,
+      );
+      let updatedChangesContracts;
+
+      if (existingContractIndex !== -1) {
+        // Contract update exists, add table to it
+        updatedChangesContracts = contractsArray.map((c, index) => {
+          if (index === existingContractIndex) {
+            const existingTableIndex = c.tables.findIndex(
+              (t) => t.id === table.id,
+            );
+            if (existingTableIndex !== -1) {
+              // Update existing table
+              return {
+                ...c,
+                tables: c.tables.map((t, tIndex) =>
+                  tIndex === existingTableIndex
+                    ? {
+                        id: table.id,
+                        name: table.name,
+                        rows: table.rows,
+                        rows_indexes: table.rows_indexes || [],
+                        delete_columns: t.delete_columns || [],
+                        columns_indexes: table.columns_indexes || [],
+                        columns: table.columns,
+                        delete_rows: t.delete_rows || [],
+                      }
+                    : t,
+                ),
+              };
+            } else {
+              // Add new table
+              return {
+                ...c,
+                tables: [
+                  ...c.tables,
+                  {
+                    id: table.id,
+                    name: table.name,
+                    rows: table.rows,
+                    rows_indexes: table.rows_indexes || [],
+                    delete_columns: [],
+                    columns_indexes: table.columns_indexes || [],
+                    columns: table.columns,
+                    delete_rows: [],
+                  },
+                ],
+              };
+            }
+          }
+          return c;
+        });
+      } else {
+        // Contract update doesn't exist, create new one
+        const newContractUpdate = {
+          permissions: [],
+          promises_indexes: [],
+          id: contract_id,
+          name: [],
+          delete_tables: [],
+          tables: [
+            {
+              id: table.id,
+              name: table.name,
+              rows: table.rows,
+              rows_indexes: table.rows_indexes || [],
+              delete_columns: [],
+              columns_indexes: table.columns_indexes || [],
+              columns: table.columns,
+              delete_rows: [],
+            },
+          ],
+          delete_promises: [],
+          promises: [],
+        };
+        updatedChangesContracts = [...contractsArray, newContractUpdate];
+      }
+
+      return {
+        ...state,
+        contracts: updatedContracts,
+        changes: {
+          ...state.changes,
+          contracts: updatedChangesContracts,
+        },
+      };
+    }
+
+    case "DELETE_TABLE": {
+      const { contract_id, table_id } = action;
+
+      // Remove table from contract's contracts array
+      const updatedContracts = {
+        ...state.contracts,
+        [contract_id]: {
+          ...state.contracts[contract_id],
+          contracts: state.contracts[contract_id].contracts.filter(
+            (t) => t.id !== table_id,
+          ),
+        },
+      };
+
+      // Ensure changes.contracts is an array
+      const contractsArray = Array.isArray(state.changes.contracts)
+        ? state.changes.contracts
+        : [];
+
+      // Find existing contract update in changes
+      const existingContractIndex = contractsArray.findIndex(
+        (c) => c.id === contract_id,
+      );
+      let updatedChangesContracts;
+
+      if (existingContractIndex !== -1) {
+        // Contract update exists
+        updatedChangesContracts = contractsArray.map((c, index) => {
+          if (index === existingContractIndex) {
+            // Remove table from tables array
+            const updatedTables = c.tables.filter((t) => t.id !== table_id);
+            const updatedDeleteTables = !table_id.includes("fresh_table")
+              ? [...c.delete_tables, table_id]
+              : c.delete_tables;
+
+            return {
+              ...c,
+              tables: updatedTables,
+              delete_tables: updatedDeleteTables,
+            };
+          }
+          return c;
+        });
+      } else {
+        // Contract update doesn't exist, create new one
+        const newContractUpdate = {
+          permissions: [],
+          promises_indexes: [],
+          id: contract_id,
+          name: [],
+          delete_tables: !table_id.includes("fresh_table") ? [table_id] : [],
+          tables: [],
+          delete_promises: [],
+          promises: [],
+        };
+        updatedChangesContracts = [...contractsArray, newContractUpdate];
+      }
+
+      return {
+        ...state,
+        contracts: updatedContracts,
+        changes: {
+          ...state.changes,
+          contracts: updatedChangesContracts,
+        },
+      };
+    }
+
+    case "ADD_ROW": {
+      const { contract_id, table_id, row } = action;
+
+      // Add row to the specific table in contract
+      const updatedContracts = {
+        ...state.contracts,
+        [contract_id]: {
+          ...state.contracts[contract_id],
+          contracts: state.contracts[contract_id].contracts.map((table) =>
+            table.id === table_id
+              ? { ...table, rows: [...table.rows, row] }
+              : table,
+          ),
+        },
+      };
+
+      // Update changes
+      const contractsArray = Array.isArray(state.changes.contracts)
+        ? state.changes.contracts
+        : [];
+      const existingContractIndex = contractsArray.findIndex(
+        (c) => c.id === contract_id,
+      );
+      let updatedChangesContracts;
+
+      if (existingContractIndex !== -1) {
+        updatedChangesContracts = contractsArray.map((c, index) => {
+          if (index === existingContractIndex) {
+            const existingTableIndex = c.tables.findIndex(
+              (t) => t.id === table_id,
+            );
+            if (existingTableIndex !== -1) {
+              return {
+                ...c,
+                tables: c.tables.map((t, tIndex) =>
+                  tIndex === existingTableIndex
+                    ? { ...t, rows: [...t.rows, row] }
+                    : t,
+                ),
+              };
+            } else {
+              // Create new table update
+              return {
+                ...c,
+                tables: [
+                  ...c.tables,
+                  {
+                    id: table_id,
+                    name: "",
+                    rows: [row],
+                    rows_indexes: [],
+                    delete_columns: [],
+                    columns_indexes: [],
+                    columns: [],
+                    delete_rows: [],
+                  },
+                ],
+              };
+            }
+          }
+          return c;
+        });
+      } else {
+        const newContractUpdate = {
+          permissions: [],
+          promises_indexes: [],
+          id: contract_id,
+          name: [],
+          delete_tables: [],
+          tables: [
+            {
+              id: table_id,
+              name: "",
+              rows: [row],
+              rows_indexes: [],
+              delete_columns: [],
+              columns_indexes: [],
+              columns: [],
+              delete_rows: [],
+            },
+          ],
+          delete_promises: [],
+          promises: [],
+        };
+        updatedChangesContracts = [...contractsArray, newContractUpdate];
+      }
+
+      return {
+        ...state,
+        contracts: updatedContracts,
+        changes: {
+          ...state.changes,
+          contracts: updatedChangesContracts,
+        },
+      };
+    }
+
+    case "ADD_COLUMN": {
+      const { contract_id, table_id, column } = action;
+
+      // Add column to the specific table in contract
+      const updatedContracts = {
+        ...state.contracts,
+        [contract_id]: {
+          ...state.contracts[contract_id],
+          contracts: state.contracts[contract_id].contracts.map((table) =>
+            table.id === table_id
+              ? { ...table, columns: [...table.columns, column] }
+              : table,
+          ),
+        },
+      };
+
+      // Update changes
+      const contractsArray = Array.isArray(state.changes.contracts)
+        ? state.changes.contracts
+        : [];
+      const existingContractIndex = contractsArray.findIndex(
+        (c) => c.id === contract_id,
+      );
+      let updatedChangesContracts;
+
+      if (existingContractIndex !== -1) {
+        updatedChangesContracts = contractsArray.map((c, index) => {
+          if (index === existingContractIndex) {
+            const existingTableIndex = c.tables.findIndex(
+              (t) => t.id === table_id,
+            );
+            if (existingTableIndex !== -1) {
+              return {
+                ...c,
+                tables: c.tables.map((t, tIndex) =>
+                  tIndex === existingTableIndex
+                    ? { ...t, columns: [...t.columns, column] }
+                    : t,
+                ),
+              };
+            } else {
+              return {
+                ...c,
+                tables: [
+                  ...c.tables,
+                  {
+                    id: table_id,
+                    name: "",
+                    rows: [],
+                    rows_indexes: [],
+                    delete_columns: [],
+                    columns_indexes: [],
+                    columns: [column],
+                    delete_rows: [],
+                  },
+                ],
+              };
+            }
+          }
+          return c;
+        });
+      } else {
+        const newContractUpdate = {
+          permissions: [],
+          promises_indexes: [],
+          id: contract_id,
+          name: [],
+          delete_tables: [],
+          tables: [
+            {
+              id: table_id,
+              name: "",
+              rows: [],
+              rows_indexes: [],
+              delete_columns: [],
+              columns_indexes: [],
+              columns: [column],
+              delete_rows: [],
+            },
+          ],
+          delete_promises: [],
+          promises: [],
+        };
+        updatedChangesContracts = [...contractsArray, newContractUpdate];
+      }
+
+      return {
+        ...state,
+        contracts: updatedContracts,
+        changes: {
+          ...state.changes,
+          contracts: updatedChangesContracts,
+        },
+      };
+    }
+
+    case "UPDATE_COLUMN": {
+      const { contract_id, table_id, column } = action;
+
+      // Update column in the specific table in contract
+      const updatedContracts = {
+        ...state.contracts,
+        [contract_id]: {
+          ...state.contracts[contract_id],
+          contracts: state.contracts[contract_id].contracts.map((table) =>
+            table.id === table_id
+              ? {
+                  ...table,
+                  columns: table.columns.map((col) =>
+                    col.id === column.id ? column : col,
+                  ),
+                }
+              : table,
+          ),
+        },
+      };
+
+      // Update changes
+      const contractsArray = Array.isArray(state.changes.contracts)
+        ? state.changes.contracts
+        : [];
+      const existingContractIndex = contractsArray.findIndex(
+        (c) => c.id === contract_id,
+      );
+      let updatedChangesContracts;
+
+      if (existingContractIndex !== -1) {
+        updatedChangesContracts = contractsArray.map((c, index) => {
+          if (index === existingContractIndex) {
+            const existingTableIndex = c.tables.findIndex(
+              (t) => t.id === table_id,
+            );
+            if (existingTableIndex !== -1) {
+              return {
+                ...c,
+                tables: c.tables.map((t, tIndex) => {
+                  if (tIndex === existingTableIndex) {
+                    const existingColumnIndex = t.columns.findIndex(
+                      (col) => col.id === column.id,
+                    );
+                    if (existingColumnIndex !== -1) {
+                      return {
+                        ...t,
+                        columns: t.columns.map((col, colIndex) =>
+                          colIndex === existingColumnIndex ? column : col,
+                        ),
+                      };
+                    } else {
+                      return { ...t, columns: [...t.columns, column] };
+                    }
+                  }
+                  return t;
+                }),
+              };
+            } else {
+              return {
+                ...c,
+                tables: [
+                  ...c.tables,
+                  {
+                    id: table_id,
+                    name: "",
+                    rows: [],
+                    rows_indexes: [],
+                    delete_columns: [],
+                    columns_indexes: [],
+                    columns: [column],
+                    delete_rows: [],
+                  },
+                ],
+              };
+            }
+          }
+          return c;
+        });
+      } else {
+        const newContractUpdate = {
+          permissions: [],
+          promises_indexes: [],
+          id: contract_id,
+          name: [],
+          delete_tables: [],
+          tables: [
+            {
+              id: table_id,
+              name: "",
+              rows: [],
+              rows_indexes: [],
+              delete_columns: [],
+              columns_indexes: [],
+              columns: [column],
+              delete_rows: [],
+            },
+          ],
+          delete_promises: [],
+          promises: [],
+        };
+        updatedChangesContracts = [...contractsArray, newContractUpdate];
+      }
+
+      return {
+        ...state,
+        contracts: updatedContracts,
+        changes: {
+          ...state.changes,
+          contracts: updatedChangesContracts,
+        },
+      };
+    }
+
+    case "UPDATE_ROW": {
+      const { contract_id, table_id, row } = action;
+
+      // Update row in the specific table in contract
+      const updatedContracts = {
+        ...state.contracts,
+        [contract_id]: {
+          ...state.contracts[contract_id],
+          contracts: state.contracts[contract_id].contracts.map((table) =>
+            table.id === table_id
+              ? {
+                  ...table,
+                  rows: table.rows.map((r) => (r.id === row.id ? row : r)),
+                }
+              : table,
+          ),
+        },
+      };
+
+      // Update changes - similar logic to UPDATE_COLUMN but for rows
+      const contractsArray = Array.isArray(state.changes.contracts)
+        ? state.changes.contracts
+        : [];
+      const existingContractIndex = contractsArray.findIndex(
+        (c) => c.id === contract_id,
+      );
+      let updatedChangesContracts;
+
+      if (existingContractIndex !== -1) {
+        updatedChangesContracts = contractsArray.map((c, index) => {
+          if (index === existingContractIndex) {
+            const existingTableIndex = c.tables.findIndex(
+              (t) => t.id === table_id,
+            );
+            if (existingTableIndex !== -1) {
+              return {
+                ...c,
+                tables: c.tables.map((t, tIndex) => {
+                  if (tIndex === existingTableIndex) {
+                    const existingRowIndex = t.rows.findIndex(
+                      (r) => r.id === row.id,
+                    );
+                    if (existingRowIndex !== -1) {
+                      return {
+                        ...t,
+                        rows: t.rows.map((r, rIndex) =>
+                          rIndex === existingRowIndex ? row : r,
+                        ),
+                      };
+                    } else {
+                      return { ...t, rows: [...t.rows, row] };
+                    }
+                  }
+                  return t;
+                }),
+              };
+            } else {
+              return {
+                ...c,
+                tables: [
+                  ...c.tables,
+                  {
+                    id: table_id,
+                    name: "",
+                    rows: [row],
+                    rows_indexes: [],
+                    delete_columns: [],
+                    columns_indexes: [],
+                    columns: [],
+                    delete_rows: [],
+                  },
+                ],
+              };
+            }
+          }
+          return c;
+        });
+      } else {
+        const newContractUpdate = {
+          permissions: [],
+          promises_indexes: [],
+          id: contract_id,
+          name: [],
+          delete_tables: [],
+          tables: [
+            {
+              id: table_id,
+              name: "",
+              rows: [row],
+              rows_indexes: [],
+              delete_columns: [],
+              columns_indexes: [],
+              columns: [],
+              delete_rows: [],
+            },
+          ],
+          delete_promises: [],
+          promises: [],
+        };
+        updatedChangesContracts = [...contractsArray, newContractUpdate];
+      }
+
+      return {
+        ...state,
+        contracts: updatedContracts,
+        changes: {
+          ...state.changes,
+          contracts: updatedChangesContracts,
+        },
+      };
+    }
+
+    case "UPDATE_ROWS": {
+      const { contract_id, table_id, rows } = action;
+      console.log({ action });
+
+      // Update/add multiple rows in the specific table
+      const updatedContracts = {
+        ...state.contracts,
+        [contract_id]: {
+          ...state.contracts[contract_id],
+          contracts: state.contracts[contract_id].contracts.map((table) => {
+            if (table.id === table_id) {
+              const updatedRows = [...table.rows];
+              rows.forEach((newRow) => {
+                const existingIndex = updatedRows.findIndex(
+                  (r) => r.id === newRow.id,
+                );
+                if (existingIndex !== -1) {
+                  updatedRows[existingIndex] = newRow;
+                } else {
+                  updatedRows.push(newRow);
+                }
+              });
+              return { ...table, rows: updatedRows };
+            }
+            return table;
+          }),
+        },
+      };
+
+      // Update changes
+      const contractsArray = Array.isArray(state.changes.contracts)
+        ? state.changes.contracts
+        : [];
+      const existingContractIndex = contractsArray.findIndex(
+        (c) => c.id === contract_id,
+      );
+      let updatedChangesContracts;
+
+      if (existingContractIndex !== -1) {
+        updatedChangesContracts = contractsArray.map((c, index) => {
+          if (index === existingContractIndex) {
+            const existingTableIndex = c.tables.findIndex(
+              (t) => t.id === table_id,
+            );
+            if (existingTableIndex !== -1) {
+              return {
+                ...c,
+                tables: c.tables.map((t, tIndex) => {
+                  if (tIndex === existingTableIndex) {
+                    const updatedRows = [...t.rows];
+                    rows.forEach((newRow) => {
+                      const existingIndex = updatedRows.findIndex(
+                        (r) => r.id === newRow.id,
+                      );
+                      if (existingIndex !== -1) {
+                        updatedRows[existingIndex] = newRow;
+                      } else {
+                        updatedRows.push(newRow);
+                      }
+                    });
+                    return { ...t, rows: updatedRows };
+                  }
+                  return t;
+                }),
+              };
+            } else {
+              return {
+                ...c,
+                tables: [
+                  ...c.tables,
+                  {
+                    id: table_id,
+                    name: "",
+                    rows: rows,
+                    rows_indexes: [],
+                    delete_columns: [],
+                    columns_indexes: [],
+                    columns: [],
+                    delete_rows: [],
+                  },
+                ],
+              };
+            }
+          }
+          return c;
+        });
+      } else {
+        const newContractUpdate = {
+          permissions: [],
+          promises_indexes: [],
+          id: contract_id,
+          name: [],
+          delete_tables: [],
+          tables: [
+            {
+              id: table_id,
+              name: "",
+              rows: rows,
+              rows_indexes: [],
+              delete_columns: [],
+              columns_indexes: [],
+              columns: [],
+              delete_rows: [],
+            },
+          ],
+          delete_promises: [],
+          promises: [],
+        };
+        updatedChangesContracts = [...contractsArray, newContractUpdate];
+      }
+
+      return {
+        ...state,
+        contracts: updatedContracts,
+        changes: {
+          ...state.changes,
+          contracts: updatedChangesContracts,
+        },
+      };
+    }
+
+    case "DELETE_ROW": {
+      const { contract_id, table_id, row_id } = action;
+
+      // Remove row from the specific table in contract
+      const updatedContracts = {
+        ...state.contracts,
+        [contract_id]: {
+          ...state.contracts[contract_id],
+          contracts: state.contracts[contract_id].contracts.map((table) =>
+            table.id === table_id
+              ? { ...table, rows: table.rows.filter((r) => r.id !== row_id) }
+              : table,
+          ),
+        },
+      };
+
+      // Update changes
+      const contractsArray = Array.isArray(state.changes.contracts)
+        ? state.changes.contracts
+        : [];
+      const existingContractIndex = contractsArray.findIndex(
+        (c) => c.id === contract_id,
+      );
+      let updatedChangesContracts;
+
+      if (existingContractIndex !== -1) {
+        updatedChangesContracts = contractsArray.map((c, index) => {
+          if (index === existingContractIndex) {
+            const existingTableIndex = c.tables.findIndex(
+              (t) => t.id === table_id,
+            );
+            if (existingTableIndex !== -1) {
+              return {
+                ...c,
+                tables: c.tables.map((t, tIndex) => {
+                  if (tIndex === existingTableIndex) {
+                    const updatedRows = t.rows.filter((r) => r.id !== row_id);
+                    const updatedDeleteRows = !row_id.includes("fresh_row")
+                      ? [...t.delete_rows, row_id]
+                      : t.delete_rows;
+
+                    return {
+                      ...t,
+                      rows: updatedRows,
+                      delete_rows: updatedDeleteRows,
+                    };
+                  }
+                  return t;
+                }),
+              };
+            } else {
+              return {
+                ...c,
+                tables: [
+                  ...c.tables,
+                  {
+                    id: table_id,
+                    name: "",
+                    rows: [],
+                    rows_indexes: [],
+                    delete_columns: [],
+                    columns_indexes: [],
+                    columns: [],
+                    delete_rows: !row_id.includes("fresh_row") ? [row_id] : [],
+                  },
+                ],
+              };
+            }
+          }
+          return c;
+        });
+      } else {
+        const newContractUpdate = {
+          permissions: [],
+          promises_indexes: [],
+          id: contract_id,
+          name: [],
+          delete_tables: [],
+          tables: [
+            {
+              id: table_id,
+              name: "",
+              rows: [],
+              rows_indexes: [],
+              delete_columns: [],
+              columns_indexes: [],
+              columns: [],
+              delete_rows: !row_id.includes("fresh_row") ? [row_id] : [],
+            },
+          ],
+          delete_promises: [],
+          promises: [],
+        };
+        updatedChangesContracts = [...contractsArray, newContractUpdate];
+      }
+
+      return {
+        ...state,
+        contracts: updatedContracts,
+        changes: {
+          ...state.changes,
+          contracts: updatedChangesContracts,
+        },
+      };
+    }
+
+    case "DELETE_COLUMN": {
+      const { contract_id, table_id, column_id } = action;
+
+      // Remove column from the specific table in contract
+      const updatedContracts = {
+        ...state.contracts,
+        [contract_id]: {
+          ...state.contracts[contract_id],
+          contracts: state.contracts[contract_id].contracts.map((table) =>
+            table.id === table_id
+              ? {
+                  ...table,
+                  columns: table.columns.filter((col) => col.id !== column_id),
+                }
+              : table,
+          ),
+        },
+      };
+
+      // Update changes
+      const contractsArray = Array.isArray(state.changes.contracts)
+        ? state.changes.contracts
+        : [];
+      const existingContractIndex = contractsArray.findIndex(
+        (c) => c.id === contract_id,
+      );
+      let updatedChangesContracts;
+
+      if (existingContractIndex !== -1) {
+        updatedChangesContracts = contractsArray.map((c, index) => {
+          if (index === existingContractIndex) {
+            const existingTableIndex = c.tables.findIndex(
+              (t) => t.id === table_id,
+            );
+            if (existingTableIndex !== -1) {
+              return {
+                ...c,
+                tables: c.tables.map((t, tIndex) => {
+                  if (tIndex === existingTableIndex) {
+                    const updatedColumns = t.columns.filter(
+                      (col) => col.id !== column_id,
+                    );
+                    const updatedDeleteColumns = !column_id.includes(
+                      "fresh_column",
+                    )
+                      ? [...t.delete_columns, column_id]
+                      : t.delete_columns;
+
+                    return {
+                      ...t,
+                      columns: updatedColumns,
+                      delete_columns: updatedDeleteColumns,
+                    };
+                  }
+                  return t;
+                }),
+              };
+            } else {
+              return {
+                ...c,
+                tables: [
+                  ...c.tables,
+                  {
+                    id: table_id,
+                    name: "",
+                    rows: [],
+                    rows_indexes: [],
+                    delete_columns: !column_id.includes("fresh_column")
+                      ? [column_id]
+                      : [],
+                    columns_indexes: [],
+                    columns: [],
+                    delete_rows: [],
+                  },
+                ],
+              };
+            }
+          }
+          return c;
+        });
+      } else {
+        const newContractUpdate = {
+          permissions: [],
+          promises_indexes: [],
+          id: contract_id,
+          name: [],
+          delete_tables: [],
+          tables: [
+            {
+              id: table_id,
+              name: "",
+              rows: [],
+              rows_indexes: [],
+              delete_columns: !column_id.includes("fresh_column")
+                ? [column_id]
+                : [],
+              columns_indexes: [],
+              columns: [],
+              delete_rows: [],
+            },
+          ],
+          delete_promises: [],
+          promises: [],
+        };
+        updatedChangesContracts = [...contractsArray, newContractUpdate];
+      }
+
+      return {
+        ...state,
+        contracts: updatedContracts,
+        changes: {
+          ...state.changes,
+          contracts: updatedChangesContracts,
+        },
+      };
+    }
+
+    case "ADD_PROMISE": {
+      const { contract_id, promise } = action;
+
+      // Update the contract's promises
+      const updatedContracts = {
+        ...state.contracts,
+        [contract_id]: {
+          ...state.contracts[contract_id],
+          promises: [...state.contracts[contract_id].promises, promise],
+        },
+      };
+
+      // Ensure changes.contracts is an array
+      const contractsArray = Array.isArray(state.changes.contracts)
+        ? state.changes.contracts
+        : [];
+
+      // Find existing contract update in changes
+      const existingContractIndex = contractsArray.findIndex(
+        (c) => c.id === contract_id,
+      );
+      let updatedChangesContracts;
+
+      if (existingContractIndex !== -1) {
+        // Contract update exists, add promise to it
+        updatedChangesContracts = contractsArray.map((c, index) =>
+          index === existingContractIndex
+            ? { ...c, promises: [...c.promises, promise] }
+            : c,
+        );
+      } else {
+        // Contract update doesn't exist, create new one
+        const newContractUpdate = {
+          id: contract_id,
+          permissions: [],
+          promises_indexes: [],
+          name: [],
+          delete_tables: [],
+          tables: [],
+          delete_promises: [],
+          promises: [promise],
+        };
+        updatedChangesContracts = [...contractsArray, newContractUpdate];
+      }
+
+      return {
+        ...state,
+        contracts: updatedContracts,
+        changes: {
+          ...state.changes,
+          contracts: updatedChangesContracts,
+        },
+      };
+    }
+
+    case "UPDATE_PROMISE": {
+      const { contract_id, promise } = action;
+
+      // Update the contract's promises
+      const updatedContracts = {
+        ...state.contracts,
+        [contract_id]: {
+          ...state.contracts[contract_id],
+          promises: state.contracts[contract_id].promises.map((p) =>
+            p.id === promise.id ? promise : p,
+          ),
+        },
+      };
+
+      // Ensure changes.contracts is an array
+      const contractsArray = Array.isArray(state.changes.contracts)
+        ? state.changes.contracts
+        : [];
+
+      // Find existing contract update in changes
+      const existingContractIndex = contractsArray.findIndex(
+        (c) => c.id === contract_id,
+      );
+      let updatedChangesContracts;
+
+      if (existingContractIndex !== -1) {
+        // Contract update exists, update or add promise
+        updatedChangesContracts = contractsArray.map((c, index) => {
+          if (index === existingContractIndex) {
+            const existingPromiseIndex = c.promises.findIndex(
+              (p) => p.id === promise.id,
+            );
+            if (existingPromiseIndex !== -1) {
+              // Update existing promise
+              return {
+                ...c,
+                promises: c.promises.map((p, pIndex) =>
+                  pIndex === existingPromiseIndex ? promise : p,
+                ),
+              };
+            } else {
+              // Add new promise
+              return { ...c, promises: [...c.promises, promise] };
+            }
+          }
+          return c;
+        });
+      } else {
+        // Contract update doesn't exist, create new one
+        const newContractUpdate = {
+          id: contract_id,
+          permissions: [],
+          promises_indexes: [],
+          name: [],
+          delete_tables: [],
+          tables: [],
+          delete_promises: [],
+          promises: [promise],
+        };
+        updatedChangesContracts = [...contractsArray, newContractUpdate];
+      }
+
+      return {
+        ...state,
+        contracts: updatedContracts,
+        changes: {
+          ...state.changes,
+          contracts: updatedChangesContracts,
+        },
+      };
+    }
+
+    case "DELETE_PROMISE": {
+      const { contract_id, id } = action;
+
+      // Remove promise from contract
+      const updatedContracts = {
+        ...state.contracts,
+        [contract_id]: {
+          ...state.contracts[contract_id],
+          promises: state.contracts[contract_id].promises.filter(
+            (p) => p.id !== id,
+          ),
+        },
+      };
+
+      // Ensure changes.contracts is an array
+      const contractsArray = Array.isArray(state.changes.contracts)
+        ? state.changes.contracts
+        : [];
+
+      // Find existing contract update in changes
+      const existingContractIndex = contractsArray.findIndex(
+        (c) => c.id === contract_id,
+      );
+      let updatedChangesContracts;
+
+      if (existingContractIndex !== -1) {
+        // Contract update exists, remove promise and handle delete_promises
+        updatedChangesContracts = contractsArray.map((c, index) => {
+          if (index === existingContractIndex) {
+            const updatedPromises = c.promises.filter((p) => p.id !== id);
+            const updatedDeletePromises = !id.includes("fresh_promise")
+              ? [...c.delete_promises, id]
+              : c.delete_promises;
+
+            return {
+              ...c,
+              promises: updatedPromises,
+              delete_promises: updatedDeletePromises,
+            };
+          }
+          return c;
+        });
+      } else {
+        // Contract update doesn't exist, create new one
+        const newContractUpdate = {
+          id: contract_id,
+          permissions: [],
+          promises_indexes: [],
+          name: [],
+          delete_tables: [],
+          tables: [],
+          delete_promises: !id.includes("fresh_promise") ? [id] : [],
+          promises: [],
+        };
+        updatedChangesContracts = [...contractsArray, newContractUpdate];
+      }
+
+      return {
+        ...state,
+        contracts: updatedContracts,
+        changes: {
+          ...state.changes,
+          contracts: updatedChangesContracts,
+        },
+      };
+    }
+
+    case "UPDATE_PROMISES": {
+      const { contract_id, promises } = action;
+
+      // Replace all promises in the contract
+      const updatedContracts = {
+        ...state.contracts,
+        [contract_id]: {
+          ...state.contracts[contract_id],
+          promises: promises,
+        },
+      };
+
+      // Ensure changes.contracts is an array
+      const contractsArray = Array.isArray(state.changes.contracts)
+        ? state.changes.contracts
+        : [];
+
+      // Find existing contract update in changes
+      const existingContractIndex = contractsArray.findIndex(
+        (c) => c.id === contract_id,
+      );
+      let updatedChangesContracts;
+
+      if (existingContractIndex !== -1) {
+        // Contract update exists, replace all promises
+        updatedChangesContracts = contractsArray.map((c, index) =>
+          index === existingContractIndex ? { ...c, promises: promises } : c,
+        );
+      } else {
+        // Contract update doesn't exist, create new one
+        const newContractUpdate = {
+          id: contract_id,
+          permissions: [],
+          promises_indexes: [],
+          name: [],
+          delete_tables: [],
+          tables: [],
+          delete_promises: [],
+          promises: promises,
+        };
+        updatedChangesContracts = [...contractsArray, newContractUpdate];
+      }
+
+      return {
+        ...state,
+        contracts: updatedContracts,
+        changes: {
+          ...state.changes,
+          contracts: updatedChangesContracts,
+        },
+      };
+    }
+
+    case "RENAME_SMART_CONTRACT": {
+      const { contract_id, new_name } = action;
+
+      // Update contract name
+      const updatedContracts = {
+        ...state.contracts,
+        [contract_id]: {
+          ...state.contracts[contract_id],
+          name: new_name,
+        },
+      };
+
+      // Update changes
+      const contractsArray = Array.isArray(state.changes.contracts)
+        ? state.changes.contracts
+        : [];
+      const existingContractIndex = contractsArray.findIndex(
+        (c) => c.id === contract_id,
+      );
+      let updatedChangesContracts;
+
+      if (existingContractIndex !== -1) {
+        updatedChangesContracts = contractsArray.map((c, index) =>
+          index === existingContractIndex ? { ...c, name: [new_name] } : c,
+        );
+      } else {
+        const newContractUpdate = {
+          id: contract_id,
+          permissions: [],
+          promises_indexes: [],
+          name: [new_name],
+          delete_tables: [],
+          tables: [],
+          delete_promises: [],
+          promises: [],
+        };
+        updatedChangesContracts = [...contractsArray, newContractUpdate];
+      }
+
+      return {
+        ...state,
+        contracts: updatedContracts,
+        changes: {
+          ...state.changes,
+          contracts: updatedChangesContracts,
+        },
+      };
+    }
+
+    case "ADD_TABLE": {
+      const { contract_id, table } = action;
+
+      // Add table to the contract's contracts array
+      const updatedContracts = {
+        ...state.contracts,
+        [contract_id]: {
+          ...state.contracts[contract_id],
+          contracts: [...state.contracts[contract_id].contracts, table],
+        },
+      };
+
+      // Ensure changes.contracts is an array
+      const contractsArray = Array.isArray(state.changes.contracts)
+        ? state.changes.contracts
+        : [];
+
+      // Find existing contract update in changes
+      const existingContractIndex = contractsArray.findIndex(
+        (c) => c.id === contract_id,
+      );
+      let updatedChangesContracts;
+
+      if (existingContractIndex !== -1) {
+        // Contract update exists, add table to it
+        updatedChangesContracts = contractsArray.map((c, index) => {
+          if (index === existingContractIndex) {
+            const existingTableIndex = c.tables.findIndex(
+              (t) => t.id === table.id,
+            );
+            if (existingTableIndex !== -1) {
+              // Update existing table
+              return {
+                ...c,
+                tables: c.tables.map((t, tIndex) =>
+                  tIndex === existingTableIndex
+                    ? {
+                        id: table.id,
+                        name: table.name,
+                        rows: table.rows,
+                        rows_indexes: table.rows_indexes || [],
+                        delete_columns: t.delete_columns || [],
+                        columns_indexes: table.columns_indexes || [],
+                        columns: table.columns,
+                        delete_rows: t.delete_rows || [],
+                      }
+                    : t,
+                ),
+              };
+            } else {
+              // Add new table
+              return {
+                ...c,
+                tables: [
+                  ...c.tables,
+                  {
+                    id: table.id,
+                    name: table.name,
+                    rows: table.rows,
+                    rows_indexes: table.rows_indexes || [],
+                    delete_columns: [],
+                    columns_indexes: table.columns_indexes || [],
+                    columns: table.columns,
+                    delete_rows: [],
+                  },
+                ],
+              };
+            }
+          }
+          return c;
+        });
+      } else {
+        // Contract update doesn't exist, create new one
+        const newContractUpdate = {
+          id: contract_id,
+          permissions: [],
+          promises_indexes: [],
+          name: [],
+          delete_tables: [],
+          tables: [
+            {
+              id: table.id,
+              name: table.name,
+              rows: table.rows,
+              rows_indexes: table.rows_indexes || [],
+              delete_columns: [],
+              columns_indexes: table.columns_indexes || [],
+              columns: table.columns,
+              delete_rows: [],
+            },
+          ],
+          delete_promises: [],
+          promises: [],
+        };
+        updatedChangesContracts = [...contractsArray, newContractUpdate];
+      }
+
+      return {
+        ...state,
+        contracts: updatedContracts,
+        changes: {
+          ...state.changes,
+          contracts: updatedChangesContracts,
+        },
+      };
+    }
+
+    case "DELETE_TABLE": {
+      const { contract_id, table_id } = action;
+
+      // Remove table from contract's contracts array
+      const updatedContracts = {
+        ...state.contracts,
+        [contract_id]: {
+          ...state.contracts[contract_id],
+          contracts: state.contracts[contract_id].contracts.filter(
+            (t) => t.id !== table_id,
+          ),
+        },
+      };
+
+      // Ensure changes.contracts is an array
+      const contractsArray = Array.isArray(state.changes.contracts)
+        ? state.changes.contracts
+        : [];
+
+      // Find existing contract update in changes
+      const existingContractIndex = contractsArray.findIndex(
+        (c) => c.id === contract_id,
+      );
+      let updatedChangesContracts;
+
+      if (existingContractIndex !== -1) {
+        // Contract update exists
+        updatedChangesContracts = contractsArray.map((c, index) => {
+          if (index === existingContractIndex) {
+            // Remove table from tables array
+            const updatedTables = c.tables.filter((t) => t.id !== table_id);
+            const updatedDeleteTables = !table_id.includes("fresh_table")
+              ? [...c.delete_tables, table_id]
+              : c.delete_tables;
+
+            return {
+              ...c,
+              tables: updatedTables,
+              delete_tables: updatedDeleteTables,
+            };
+          }
+          return c;
+        });
+      } else {
+        // Contract update doesn't exist, create new one
+        const newContractUpdate = {
+          id: contract_id,
+          permissions: [],
+          promises_indexes: [],
+          name: [],
+          delete_tables: !table_id.includes("fresh_table") ? [table_id] : [],
+          tables: [],
+          delete_promises: [],
+          promises: [],
+        };
+        updatedChangesContracts = [...contractsArray, newContractUpdate];
+      }
+
+      return {
+        ...state,
+        contracts: updatedContracts,
+        changes: {
+          ...state.changes,
+          contracts: updatedChangesContracts,
+        },
+      };
+    }
 
     case "RESOLVE_CHANGES":
       state.changes = {

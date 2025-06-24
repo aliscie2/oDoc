@@ -30,7 +30,6 @@ interface SharesProps {
   profile?: User;
   onUpdateShares?: (shares: BeneficiaryShare[]) => void;
   onMakePayment?: (amount: number) => Promise<void>;
-  onContractChange?: (contract: CustomContract) => void;
   allFriends?: User[];
 }
 
@@ -57,7 +56,6 @@ export const Shares: React.FC<SharesProps> = ({
   profile,
   onUpdateShares,
   onMakePayment,
-  onContractChange,
   allFriends = [],
 }) => {
   const theme = useTheme();
@@ -126,7 +124,6 @@ export const Shares: React.FC<SharesProps> = ({
       };
 
       await onMakePayment(paymentDialog.amount);
-      onContractChange?.(updatedContract);
       handlePaymentDialogClose();
     } catch (err) {
       setError(
@@ -143,7 +140,6 @@ export const Shares: React.FC<SharesProps> = ({
       promises: updatedPromises,
       date_updated: Date.now(),
     };
-    onContractChange?.(updatedContract);
   };
 
   if (!contract) {
@@ -314,7 +310,6 @@ export const DummyShares: React.FC = () => {
         allFriends={all_friends}
         onUpdateShares={handleUpdateShares}
         onMakePayment={handleMakePayment}
-        onContractChange={handleContractChange}
       />
     </Box>
   );

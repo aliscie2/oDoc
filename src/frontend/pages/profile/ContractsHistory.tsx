@@ -41,30 +41,21 @@ function ContractsHistory(props: any) {
   if (!profile) {
     return <div>please login to see this page</div>;
   }
-  const onContractChange = (contract: CustomContract) => {
-    dispatch({ type: "UPDATE_CONTRACT", contract });
-  };
 
   return (
-    <Box sx={{ padding: 3, margin: 2 }}>
-      <Button
-        onClick={handleClick}
-        variant="contained"
-        color="primary"
-        sx={{ mb: 2 }}
-      >
+    <Box>
+      <Button onClick={handleClick} variant="contained" color="primary">
         Create New Contract
       </Button>
-      <Divider sx={{ mb: 2 }} />
+      <Divider />
       <List dense>
-        <ListItem sx={{ padding: 0, marginBottom: 2 }}>
+        <ListItem>
           <NotificationPromises />
         </ListItem>
 
         <Typography
           variant="h6"
           sx={{
-            py: 2,
             // color: theme.palette.text.primary,
             fontWeight: "large",
           }}
@@ -74,12 +65,10 @@ function ContractsHistory(props: any) {
         {Object.values(contracts).map((contract: CustomContract | any) => {
           if (contract) {
             return (
-              <ListItem key={contract.id} sx={{ padding: 0, marginBottom: 2 }}>
+              <ListItem key={contract.id}>
                 <Paper
                   elevation={3}
                   sx={{
-                    marginBottom: 2,
-                    paddingBottom: 2,
                     width: "100%",
                     "&:hover": {
                       boxShadow: 6,
@@ -87,7 +76,6 @@ function ContractsHistory(props: any) {
                   }}
                 >
                   <CustomContractComponent
-                    onContractChange={onContractChange}
                     profile={profile}
                     all_friends={all_friends}
                     contractId={contract.id}

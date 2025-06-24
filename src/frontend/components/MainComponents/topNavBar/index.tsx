@@ -114,11 +114,6 @@ export default function TopNavBar() {
   };
 
   const menuOptions = [
-    {
-      content: isDarkMode ? "Light Mode" : "Dark Mode",
-      icon: isDarkMode ? <LightModeIcon /> : <DarkModeIcon />,
-      onClick: () => dispatch({ type: "TOGGLE_DARK" }),
-    },
     { content: "Profile", to: "/profile", icon: <Person2Icon /> },
     { content: "Contracts", to: "/contracts", icon: <GavelIcon /> },
     { content: "Wallet", to: "/wallet", icon: <AccountBalanceWalletIcon /> },

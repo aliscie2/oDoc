@@ -193,6 +193,9 @@ export type ContractPermissionType =
   | { AnyOneAdd: null };
 export interface ContractUpdates {
   id: string;
+  permissions: Array<ContractPermissionType>;
+  promises_indexes: Array<[bigint, string]>;
+  name: [] | [string];
   delete_tables: Array<string>;
   tables: Array<TableUpdates>;
   delete_promises: Array<string>;
@@ -561,7 +564,9 @@ export interface TableUpdates {
   id: string;
   name: string;
   rows: Array<CRow>;
+  rows_indexes: Array<[bigint, string]>;
   delete_columns: Array<string>;
+  columns_indexes: Array<[bigint, string]>;
   columns: Array<CColumn>;
   delete_rows: Array<string>;
 }

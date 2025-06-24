@@ -52,18 +52,11 @@ export default function SlateCustomContract(props: any) {
     );
   }
 
-  const onContractChange = (contract: CustomContract) => {
-    dispatch({ type: "UPDATE_CONTRACT", contract });
-  };
-
   return (
     <div {...props.attributes} contentEditable={true}>
       <span>{props.children}</span>
       <span contentEditable={false}>
-        <CustomContractComponent
-          onContractChange={onContractChange}
-          contractId={id}
-        />
+        <CustomContractComponent contractId={id} />
       </span>
     </div>
   );

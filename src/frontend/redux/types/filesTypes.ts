@@ -101,7 +101,7 @@ export const initialState: InitialState = {
   changes: {
     files: [],
     contents: {},
-    contracts: {},
+    contracts: [],
     delete_contracts: [],
     files_indexing: [],
   },

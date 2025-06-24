@@ -166,6 +166,9 @@ type ContractPermissionType = variant {
 };
 type ContractUpdates = record {
   id : text;
+  permissions : vec ContractPermissionType;
+  promises_indexes : vec record { nat64; text };
+  name : opt text;
   delete_tables : vec text;
   tables : vec TableUpdates;
   delete_promises : vec text;
@@ -476,7 +479,9 @@ type TableUpdates = record {
   id : text;
   name : text;
   rows : vec CRow;
+  rows_indexes : vec record { nat64; text };
   delete_columns : vec text;
+  columns_indexes : vec record { nat64; text };
   columns : vec CColumn;
   delete_rows : vec text;
 };
