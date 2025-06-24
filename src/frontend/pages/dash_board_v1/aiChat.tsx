@@ -9,7 +9,8 @@ import {
   Button,
 } from "@mui/material";
 import { Chat, Send, Refresh, Undo, Redo } from "@mui/icons-material";
-
+import creature from '@/public/creature.gif';
+import LoaderComponent from "@/components/creature"
 // AI Chat Component
 export const AIChatComponent = ({
   isExpanded,
@@ -71,9 +72,13 @@ export const AIChatComponent = ({
               alignItems="center"
               mb={2}
             >
-              <Typography variant="h6" sx={{ fontSize: "1rem" }}>
-                AI Assistant
-              </Typography>
+              <Box display="flex" alignItems="center" gap={1}>
+              <LoaderComponent type={isLoading?"loading":"watching"} size={8} />
+                
+                <Typography variant="h6" sx={{ fontSize: "1rem" }}>
+                  AI Assistant
+                </Typography>
+              </Box>
               <IconButton size="small" onClick={onToggle} sx={{}}>
                 ×
               </IconButton>

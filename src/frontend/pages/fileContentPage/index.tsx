@@ -18,6 +18,7 @@ import ViewListIcon from "@mui/icons-material/ViewList";
 import EditorComponent from "../../components/EditorComponent";
 import NestedTabMenu from "./contentTab";
 import { Link } from "react-router-dom";
+import LoaderComponent from "@/components/creature";
 
 const ExpandingInput = styled(Input)(({ theme }) => ({
   "& input": {
@@ -134,7 +135,7 @@ function FileContentPage() {
   }, 250);
 
   if (inited && files.length === 0) {
-    return <span>404 content Not Found</span>;
+    return <span><LoaderComponent size={40} type="sad" />404 content Not Found</span>;
   }
   if (files.length === 0 && isLoggedIn) {
     return <CircularProgress />;
