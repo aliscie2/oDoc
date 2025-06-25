@@ -1,4 +1,4 @@
-use crate::current_user_state::UserState;
+use crate::{current_user_state::UserState, job_matcher::inverted_index};
 
 use super::pallet::{Category, Job, Match};
 use candid::{CandidType, Deserialize, Principal};
@@ -22,6 +22,27 @@ pub struct JobUpdate {
     pub matches: Option<Vec<Match>>,
 }
 
+fn delete_from_search(id: String){
+    let curr_job = Job::get(&id);
+    if let Some(job) = curr_job {
+        if job.category == Category::Job {
+            inverted_index::delete_job_search(job.skills, job.id)
+        } else {
+            inverted_index::delete_talent_search(job.skills, job.id)
+        }
+    }
+}
+
+fn add_to_search(skills: &Vec<String>, job_id: &String, category: &Category) {
+    if *category == Category::Job {
+        inverted_index::add_new_job(skills.clone(), job_id.clone())
+    } else {
+        inverted_index::add_new_talent(skills.clone(), job_id.clone())
+    }
+}
+
+
+
 #[update]
 fn update_job(updates: Vec<JobUpdate>, ai_credits: Option<f32>) -> Result<(), String> {
     if ic_cdk::caller().to_string() == Principal::anonymous().to_string() {
@@ -33,6 +54,8 @@ fn update_job(updates: Vec<JobUpdate>, ai_credits: Option<f32>) -> Result<(), St
     }
 
     for update in updates {
+
+        
         let mut job = match Job::get(&update.id) {
             Some(job) => job,
             None => Job::new(update.id.clone()),
@@ -46,6 +69,15 @@ fn update_job(updates: Vec<JobUpdate>, ai_credits: Option<f32>) -> Result<(), St
 
         // Handle regular field updates
         for d in update.updates {
+            if &d.field == &"skills".to_string() {
+                delete_from_search(job.id.clone());
+                let category: &Category = if let Some(category) = update.category.clone() {
+                    &category.clone()
+                } else {
+                    &job.category
+                };
+                add_to_search(&d.values, &job.id, category);
+            }
             job.update(&d.field, d.values);
         }
 
@@ -58,7 +90,7 @@ fn update_job(updates: Vec<JobUpdate>, ai_credits: Option<f32>) -> Result<(), St
             job.required_match_score = score;
             job_updated = true;
         }
-        if let Some(category) = update.category {
+        if let Some(category) = update.category.clone() {
             job.category = category;
             job_updated = true;
         }
@@ -79,8 +111,9 @@ fn update_job(updates: Vec<JobUpdate>, ai_credits: Option<f32>) -> Result<(), St
 #[update]
 fn delete_job(id: String) -> Result<(), String> {
     let jobs = Job::get_my_jobs();
+    delete_from_search(id.clone());
     if jobs.len() > 1 {
-        Job::delete(id)?
+        Job::delete(id.clone())?
     } else {
         Job::clear_fields(id)?
     }

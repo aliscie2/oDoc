@@ -224,6 +224,21 @@ thread_local! {
             MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(18))),
         )
     );
+
+
+    static JOBS_INVERTED_IDEX_STORE: RefCell<StableBTreeMap<String, StorableStringVec, Memory>> = RefCell::new(
+        StableBTreeMap::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(19))),
+        )
+    );
+    
+    static TALENTS_INVERTED_IDEX_STORE: RefCell<StableBTreeMap<String, StorableStringVec, Memory>> = RefCell::new(
+        StableBTreeMap::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(20))),
+        )
+    );
+
+    
 }
 
 pub static COUNTER: AtomicU64 = AtomicU64::new(0);

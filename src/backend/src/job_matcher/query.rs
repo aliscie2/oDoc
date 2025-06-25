@@ -1,5 +1,7 @@
 use ic_cdk_macros::query;
 
+use crate::job_matcher::inverted_index;
+
 use super::pallet::{Category, Job};
 use candid::{CandidType, Deserialize};
 use serde::Serialize;
@@ -32,12 +34,23 @@ fn get_my_jobs() -> GetJobs {
     }
 }
 
+
+fn search_matches(skills: Vec<String>,category:Category)-> Vec<Job> {
+    let mut ids: Vec<String> = Vec::new();
+    if category == Category::Job {
+        ids = inverted_index::search_for_job(skills)
+    } else {
+        ids = inverted_index::search_for_talent(skills)
+    }
+    return Job::get_jobs_by_ids(ids)
+}
 // Don't get confused category is what you are looking for.
 // Not what you are now.
 #[query]
 fn get_matches(current_job_id: String, skills: Vec<String>, category: Category) -> Vec<Job> {
     let curr = Job::get(&current_job_id);
-    let matching_jobs: Vec<Job> = Job::get_matches(skills, category);
+    // let matching_jobs: Vec<Job> = Job::get_matches(skills, category);
+    let matching_jobs: Vec<Job> = search_matches(skills, category);
 
     if curr.is_none() {
         return matching_jobs.into_iter().take(10).collect();
