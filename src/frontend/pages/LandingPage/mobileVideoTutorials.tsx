@@ -30,7 +30,7 @@ interface TutorialsSectionProps {
   // Remove state prop since we're using Redux selectors directly
 }
 
-const TutorialsSection: React.FC<TutorialsSectionProps> = () => {
+const MobileTutrials: React.FC<TutorialsSectionProps> = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [selectedTutorial, setSelectedTutorial] = useState(0);
@@ -169,205 +169,63 @@ const TutorialsSection: React.FC<TutorialsSectionProps> = () => {
 
   return (
     <>
-      {/* Header */}
-      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
-        <Box sx={{ mb: { xs: 2, md: 4 }, textAlign: "center" }}>
-          <Typography
-            variant="h4"
-            component="h2"
-            sx={{
-              fontWeight: 600,
-              mb: 1,
-              fontSize: { xs: "1.5rem", md: "2.125rem" },
-            }}
-          >
-            Tutorials
-          </Typography>
-          <Typography
-            variant="body1"
-            sx={{
-              color: "text.secondary",
-              maxWidth: "500px",
-              mx: "auto",
-              fontSize: { xs: "0.875rem", md: "1rem" },
-            }}
-          >
-            Swipe left or right to navigate through tutorials
-          </Typography>
-        </Box>
+      {/* Navigation Bar */}
+      <Box
+        sx={{
+          width: "100vw",
+          marginLeft: "calc(50% - 50vw)",
+          marginRight: "calc(50% - 50vw)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          px: 2,
+          py: 1,
+          bgcolor: theme.palette.background.paper,
+          borderBottom: `1px solid ${theme.palette.divider}`,
+        }}
+      >
+        <IconButton
+          onClick={goToPrevious}
+          disabled={selectedTutorial === 0}
+          sx={{ color: theme.palette.text.primary }}
+        >
+          <ChevronLeft />
+        </IconButton>
+        
+        <Typography
+          variant="h6"
+          sx={{
+            flex: 1,
+            textAlign: "center",
+            color: theme.palette.text.primary,
+            fontWeight: 500,
+          }}
+        >
+          {currentTutorial.title}
+        </Typography>
+        
+        <IconButton
+          onClick={goToNext}
+          disabled={selectedTutorial === tutorials.length - 1}
+          sx={{ color: theme.palette.text.primary }}
+        >
+          <ChevronRight />
+        </IconButton>
+      </Box>
 
-        {/* Current Video Info */}
-        <Fade in={true} key={selectedTutorial} timeout={300}>
-          <Box
-            sx={{
-              textAlign: "center",
-              mb: { xs: 3, md: 4 },
-              px: { xs: 2, md: 0 },
-            }}
-          >
-            <Paper
-              elevation={2}
-              sx={{
-                px: { xs: 3, md: 4 },
-                py: { xs: 2, md: 3 },
-                maxWidth: "600px",
-                mx: "auto",
-                backgroundColor: alpha(theme.palette.primary.main, 0.04),
-                borderLeft: `4px solid ${theme.palette.primary.main}`,
-                borderRadius: 2,
-                transition: "all 0.3s ease",
-                "&:hover": {
-                  backgroundColor: alpha(theme.palette.primary.main, 0.08),
-                  transform: "translateY(-2px)",
-                  boxShadow: theme.shadows[4],
-                },
-              }}
-            >
-              <Typography
-                variant="h5"
-                component="h3"
-                sx={{
-                  fontWeight: 600,
-                  mb: 1.5,
-                  color: theme.palette.primary.main,
-                  fontSize: { xs: "1.25rem", md: "1.5rem" },
-                  lineHeight: 1.3,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 1,
-                }}
-              >
-                {currentTutorial?.title}
-                {currentTutorial?.checkCondition &&
-                  currentTutorial.checkCondition(state) && (
-                    <CheckCircle
-                      color="success"
-                      sx={{
-                        fontSize: { xs: "1.25rem", md: "1.5rem" },
-                        animation: "fadeIn 0.5s ease-in",
-                        "@keyframes fadeIn": {
-                          "0%": {
-                            opacity: 0,
-                            transform: "scale(0.8)",
-                          },
-                          "100%": {
-                            opacity: 1,
-                            transform: "scale(1)",
-                          },
-                        },
-                      }}
-                    />
-                  )}
-              </Typography>
-              <Typography
-                variant="body1"
-                sx={{
-                  color: "text.secondary",
-                  lineHeight: 1.6,
-                  fontSize: { xs: "0.875rem", md: "1rem" },
-                  maxWidth: "500px",
-                  mx: "auto",
-                }}
-              >
-                {currentTutorial?.description}
-              </Typography>
-
-              {/* Tutorial counter with navigation arrows */}
-              <Box
-                sx={{
-                  mt: 2,
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  gap: 1,
-                }}
-              >
-                <IconButton
-                  onClick={goToPrevious}
-                  disabled={selectedTutorial === 0}
-                  sx={{
-                    color:
-                      selectedTutorial === 0
-                        ? "text.disabled"
-                        : theme.palette.primary.main,
-                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                    "&:hover": {
-                      backgroundColor: alpha(theme.palette.primary.main, 0.2),
-                    },
-                    "&:disabled": {
-                      backgroundColor: alpha(
-                        theme.palette.action.disabled,
-                        0.1,
-                      ),
-                    },
-                    width: { xs: 36, md: 40 },
-                    height: { xs: 36, md: 40 },
-                  }}
-                >
-                  <ChevronLeft sx={{ fontSize: { xs: 20, md: 24 } }} />
-                </IconButton>
-
-                <Typography
-                  variant="caption"
-                  sx={{
-                    color: "text.secondary",
-                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                    px: 2,
-                    py: 0.5,
-                    borderRadius: 2,
-                    fontSize: { xs: "0.75rem", md: "0.8rem" },
-                    fontWeight: 500,
-                    minWidth: { xs: "60px", md: "70px" },
-                    textAlign: "center",
-                  }}
-                >
-                  {selectedTutorial + 1} of {tutorials.length}
-                </Typography>
-
-                <IconButton
-                  onClick={goToNext}
-                  disabled={selectedTutorial === tutorials.length - 1}
-                  sx={{
-                    color:
-                      selectedTutorial === tutorials.length - 1
-                        ? "text.disabled"
-                        : theme.palette.primary.main,
-                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                    "&:hover": {
-                      backgroundColor: alpha(theme.palette.primary.main, 0.2),
-                    },
-                    "&:disabled": {
-                      backgroundColor: alpha(
-                        theme.palette.action.disabled,
-                        0.1,
-                      ),
-                    },
-                    width: { xs: 36, md: 40 },
-                    height: { xs: 36, md: 40 },
-                  }}
-                >
-                  <ChevronRight sx={{ fontSize: { xs: 20, md: 24 } }} />
-                </IconButton>
-              </Box>
-            </Paper>
-          </Box>
-        </Fade>
-      </Container>
-
-      {/* Full Width Video Player - Fixed positioning */}
+      {/* Full Width Video Player */}
       <Box
         sx={{
           width: "100vw",
           height: videoHeight || { xs: "60vh", sm: "70vh", md: "80vh" },
           position: "relative",
-          // Better approach to break out of container
           marginLeft: "calc(50% - 50vw)",
           marginRight: "calc(50% - 50vw)",
           mb: { xs: 2, md: 4 },
           overflow: "hidden",
         }}
       >
+
         <Box
           ref={videoContainerRef}
           onTouchStart={handleTouchStart}
@@ -581,8 +439,10 @@ const TutorialsSection: React.FC<TutorialsSectionProps> = () => {
           })}
         </Box>
       </Box>
+
+
     </>
   );
 };
 
-export default TutorialsSection;
+export default MobileTutrials;

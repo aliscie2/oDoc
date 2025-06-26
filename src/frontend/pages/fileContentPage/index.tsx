@@ -19,6 +19,7 @@ import EditorComponent from "../../components/EditorComponent";
 import NestedTabMenu from "./contentTab";
 import { Link } from "react-router-dom";
 import LoaderComponent from "@/components/creature";
+import EmotionalAnimation from "@/components/creature";
 
 const ExpandingInput = styled(Input)(({ theme }) => ({
   "& input": {
@@ -133,16 +134,26 @@ function FileContentPage() {
       });
     }
   }, 250);
-
+  
+  console.log({files,inited})
+  
+  // Check for 404 case first (when initialization is complete but no files exist)
   if (inited && files.length === 0) {
-    return <span><LoaderComponent size={40} type="sad" />404 content Not Found</span>;
+    return <EmotionalAnimation />
   }
+  
+  // Show loading spinner while files are being loaded (and user is logged in)
   if (files.length === 0 && isLoggedIn) {
     return <CircularProgress />;
   }
 
+  // If no current file is found, show 404
+  if (!currentFile) {
+    return <EmotionalAnimation type="404" description="Even our deep-sea explorer jellyfish couldn't find what you're looking for!"/>
+  }
+
   const editable =
-    currentFile.author === profile.id ||
+    currentFile?.author === profile.id ||
     Object.keys(currentFile.permission)[0] === "CanUpdate" ||
     currentFile.users_permissions.some(
       ([userId, permissions]) => userId === profile.id && permissions.CanUpdate,

@@ -1,19 +1,7 @@
-import React, { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  Button,
-  LinearProgress,
-  BottomNavigationAction,
-  Menu,
-  MenuItem,
-  ListItemText,
-  ListItemIcon,
-  Tooltip,
-} from "@mui/material";
-import {
-  Person2 as Person2Icon,
-  KeyboardArrowDown as KeyboardArrowDownIcon,
-} from "@mui/icons-material";
+import React from "react";
+import { useSelector } from "react-redux";
+import { Button, LinearProgress, BottomNavigationAction } from "@mui/material";
+import { Person2 as Person2Icon } from "@mui/icons-material";
 import { RootState } from "../../../redux/reducers";
 import { useBackendContext } from "../../../contexts/BackendContext";
 import DfnIcon from "@/assets/dfn.svg";
@@ -23,133 +11,74 @@ interface LoginButtonProps {
   sx?: React.CSSProperties | any;
 }
 
-const LoginButton: React.FC<LoginButtonProps> = (props) => {
-  const { isMobile = false, sx = {} } = props;
+const LoginButton: React.FC<LoginButtonProps> = ({ isMobile = false, sx = {} }) => {
   const { login } = useBackendContext();
   const { isFetching } = useSelector((state: RootState) => state.uiState);
 
-  // For dropdown menu
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
-
-  const styles = {
-    loginButton: {
-      fontWeight: "bold",
-      textTransform: "none",
-      marginLeft: 1,
-      borderRadius: 2,
-      ...sx,
-    },
-    progressBar: {
-      width: isMobile ? "100%" : 70,
-      borderRadius: 2,
-    },
-    menuIcon: {
-      width: 24,
-      height: 24,
-      marginRight: 1,
-    },
-    disabledMenuItem: {
-      opacity: 0.5,
-      cursor: "not-allowed",
-    },
-  };
-
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleInternetIdentityLogin = async () => {
+  const handleLogin = async () => {
     await login();
-    handleClose();
-  };
-
-  const handleMetaMaskLogin = async () => {
-    // Disabled - do nothing
-    return;
   };
 
   if (isFetching) {
-    return <LinearProgress sx={styles.progressBar} />;
+    return (
+      <LinearProgress 
+        sx={{ 
+          width: isMobile ? "100%" : 120, 
+          height: 10,
+          borderRadius: 2 
+        }} 
+      />
+    );
   }
 
   if (isMobile) {
     return (
-      <>
-        <BottomNavigationAction
-          label="Login"
-          icon={<Person2Icon />}
-          onClick={handleClick}
+      <BottomNavigationAction
+        label="Login"
+        icon={<><img
+          src={DfnIcon}
+          alt="Internet Identity"
+          style={{ width: 20, height: 20 }}
         />
-        <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-          <MenuItem onClick={handleInternetIdentityLogin}>
-            <ListItemIcon>
-              <img
-                src={DfnIcon}
-                alt="Internet Identity"
-                style={styles.menuIcon}
-              />
-            </ListItemIcon>
-            <ListItemText>Internet Identity</ListItemText>
-          </MenuItem>
-          <Tooltip title="This feature coming soon" placement="left">
-            <MenuItem disabled sx={styles.disabledMenuItem}>
-              <ListItemIcon>
-                <img
-                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Ethereum-icon-purple.svg/langfr-250px-Ethereum-icon-purple.svg.png"
-                  alt="Ethereum"
-                  style={styles.menuIcon}
-                />
-              </ListItemIcon>
-              <ListItemText>Ethereum</ListItemText>
-            </MenuItem>
-          </Tooltip>
-        </Menu>
-      </>
+        <Person2Icon />
+        </>}
+        onClick={handleLogin}
+        sx={{ height: "100%" }}
+      />
     );
   }
 
   return (
-    <>
-      <Button
-        variant="outlined"
-        className="login"
-        onClick={handleClick}
-        endIcon={<KeyboardArrowDownIcon />}
-        sx={styles.loginButton}
-        {...props}
-      >
-        Login
-      </Button>
-      <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-        <MenuItem onClick={handleInternetIdentityLogin}>
-          <ListItemIcon>
-            <img
-              src={DfnIcon}
-              alt="Internet Identity"
-              style={styles.menuIcon}
-            />
-          </ListItemIcon>
-          <ListItemText>Internet Identity</ListItemText>
-        </MenuItem>
-        <Tooltip title="This feature coming soon" placement="left">
-          <MenuItem disabled sx={styles.disabledMenuItem}>
-            <ListItemIcon>
-              <img
-                src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Ethereum-icon-purple.svg/langfr-250px-Ethereum-icon-purple.svg.png"
-                alt="Ethereum"
-                style={styles.menuIcon}
-              />
-            </ListItemIcon>
-            <ListItemText>Ethereum</ListItemText>
-          </MenuItem>
-        </Tooltip>
-      </Menu>
-    </>
+    <Button
+      variant="contained"
+      onClick={handleLogin}
+      startIcon={
+        <img
+          src={DfnIcon}
+          alt="Internet Identity"
+          style={{ width: 20, height: 20 }}
+        />
+      }
+      sx={{
+        fontWeight: 600,
+        textTransform: "none",
+        borderRadius: 3,
+        height: "100%",
+        minHeight: 48,
+        px: 3,
+        boxShadow: "0 4px 12px rgba(102, 126, 234, 0.3)",
+        "&:hover": {
+          background: "linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)",
+          boxShadow: "0 6px 16px rgba(102, 126, 234, 0.4)",
+          transform: "translateY(-1px)",
+        },
+        transition: "all 0.2s ease-in-out",
+        ...sx,
+      }}
+    >
+      Login with Internet Identity
+    </Button>
   );
 };
+
 export default LoginButton;

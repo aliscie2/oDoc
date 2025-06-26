@@ -278,7 +278,7 @@ export default function TopNavBar() {
         {isLoggedIn ? (
           renderActionButtons()
         ) : (
-          <LoginButton sx={styles.loginButton} />
+          <LoginButton  />
         )}
       </Box>
     </Toolbar>

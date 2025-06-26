@@ -10,7 +10,10 @@ import {
 } from "@mui/material";
 import { Chat, Send, Refresh, Undo, Redo } from "@mui/icons-material";
 import creature from '@/public/creature.gif';
-import LoaderComponent from "@/components/creature"
+
+import { useBackendContext } from "@/contexts/BackendContext";
+import EmotionalAnimation from "@/components/creature";
+
 // AI Chat Component
 export const AIChatComponent = ({
   isExpanded,
@@ -21,10 +24,17 @@ export const AIChatComponent = ({
   onUndoMessage,
   onRedoMessage,
 }) => {
+
+  const { backendActor } = useBackendContext();
   const [message, setMessage] = useState("");
 
-  const handleSend = () => {
+  const handleSend = async () => {
+
+    
     if (!message.trim()) return;
+
+    let res = await backendActor?.prompt(message)
+    console.log({res})
     onSendMessage(message);
     setMessage("");
   };
@@ -73,8 +83,8 @@ export const AIChatComponent = ({
               mb={2}
             >
               <Box display="flex" alignItems="center" gap={1}>
-              <LoaderComponent type={isLoading?"loading":"watching"} size={8} />
-                
+
+                <EmotionalAnimation type={isLoading?"Loading":"watch"} size="xs" />
                 <Typography variant="h6" sx={{ fontSize: "1rem" }}>
                   AI Assistant
                 </Typography>

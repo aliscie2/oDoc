@@ -13,7 +13,7 @@ interface Element {
   glowColor: string;
 }
 
-const ODOCInfographic: React.FC = () => {
+const OdocStrecture: React.FC = () => {
   const [hoveredElement, setHoveredElement] = useState<number | null>(null);
   const [coreActive, setCoreActive] = useState(false);
 
@@ -386,4 +386,4 @@ const ODOCInfographic: React.FC = () => {
   );
 };
 
-export default ODOCInfographic;
+export default OdocStrecture;

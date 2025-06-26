@@ -12,7 +12,7 @@ import VideoPlayer from "./videoPlayer";
 import VideoList from "./videoList";
 import { tutorials } from "../LandingPage/landingPageData";
 
-const GettingStarted = () => {
+const DeskTopTutorials = () => {
   const theme = useTheme();
   const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
 
@@ -52,4 +52,4 @@ const GettingStarted = () => {
   );
 };
 
-export default GettingStarted;
+export default DeskTopTutorials;
