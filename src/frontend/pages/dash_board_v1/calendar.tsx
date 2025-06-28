@@ -7,6 +7,7 @@ import { BaseCard, CardHeader } from "./card";
 import FullscreenDialog from "./FullscreenDialog"; // Import the shared dialog
 import CalendarView from "./calindarView/calendar";
 import CalendarFeedback from "./updateClaendarFeedback";
+import { logger } from "@/DevUtils/logData";
 
 // Calendar/Events Component
 export const CalendarCard = ({
@@ -20,15 +21,25 @@ export const CalendarCard = ({
 
   // Get calendar data from Redux store
   const { calendar } = useSelector((state) => state.calendarState);
+  logger({ calendar });
 
-  // Get the nearest 3 upcoming events
+  // Fixed version of getUpcomingEvents function
   const getUpcomingEvents = () => {
     if (!calendar?.events) return [];
 
     const now = new Date();
     const upcomingEvents = calendar.events
-      .filter((event) => new Date(event.start_time) > now)
-      .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))
+      .filter((event) => {
+        // Convert nanoseconds to milliseconds by dividing by 1,000,000
+        const eventStartTime = new Date(event.start_time / 1000000);
+        return eventStartTime > now;
+      })
+      .sort((a, b) => {
+        // Convert nanoseconds to milliseconds for both dates
+        const dateA = new Date(a.start_time / 1000000);
+        const dateB = new Date(b.start_time / 1000000);
+        return dateA - dateB;
+      })
       .slice(0, 3);
 
     return upcomingEvents;
@@ -37,10 +48,25 @@ export const CalendarCard = ({
   const upcomingEvents = getUpcomingEvents();
   const hasMoreEvents = calendar?.events?.length > 3;
 
-  // Format date and time for display
+  const getEventsThisWeek = () => {
+    if (!calendar?.events) return 0;
+
+    const now = new Date();
+    const nextWeek = new Date();
+    nextWeek.setDate(now.getDate() + 7);
+
+    const eventsThisWeek = calendar.events.filter((event) => {
+      const eventStartTime = new Date(event.start_time / 1000000);
+      return eventStartTime > now && eventStartTime <= nextWeek;
+    });
+
+    return eventsThisWeek.length;
+  };
+
   const formatEventTime = (startTime, endTime) => {
-    const start = new Date(startTime);
-    const end = new Date(endTime);
+    // Convert nanoseconds to milliseconds
+    const start = new Date(startTime / 1000000);
+    const end = new Date(endTime / 1000000);
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -58,7 +84,6 @@ export const CalendarCard = ({
 
     return `${dateStr}, ${timeStr}`;
   };
-
   const handleCardClick = () => {
     setDialogOpen(true);
   };
@@ -109,7 +134,7 @@ export const CalendarCard = ({
         )}
 
         <Chip
-          label={`${upcomingEvents.length} Upcoming Events`}
+          label={`${getEventsThisWeek()} Events This Week`}
           sx={{
             backgroundColor: "rgba(255,152,0,0.2)",
             color: "#ff9800",

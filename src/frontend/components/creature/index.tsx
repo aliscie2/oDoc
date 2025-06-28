@@ -51,7 +51,7 @@ const ICONS = {
 };
 
 export default function EmotionalAnimation({
-  absolute= false,
+  absolute = false,
   type = "404",
   title = "",
   description = "",
@@ -302,7 +302,7 @@ export default function EmotionalAnimation({
   return (
     <Box
       sx={{
-        position: absolute?"absolute":"relative",
+        position: absolute ? "absolute" : "relative",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -375,8 +375,7 @@ export default function EmotionalAnimation({
             ) : (
               <Box
                 sx={{
-                  
-                  position: absolute?"absolute":"relative",
+                  position: absolute ? "absolute" : "relative",
                   display: "block",
                   width: `${config.width}px`, // Set explicit width
                   height: `${config.width}px`, // Set explicit height to prevent collapse

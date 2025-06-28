@@ -81,7 +81,9 @@ fn multi_updates(
         // if  res not ok
         if Ok(res) = res {
         } else {
-            return Err("Please wait few second, there is already a transaction going.".to_string());
+            return Err(
+                "Please wait few second, there is already a transaction going.".to_string(),
+            );
         }
     }
 
