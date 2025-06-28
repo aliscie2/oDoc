@@ -61,7 +61,6 @@ export const JobMatchesCard = ({
   // };
 
   // If fullscreen mode, render JobsPage directly
-  
 
   return (
     <BaseCard

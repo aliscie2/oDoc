@@ -36,7 +36,7 @@ type JobAction =
     }
   | { type: "UPDATE_MATCHING_JOBS"; matchingJobs: Job[]; matches: Match[] }
   | { type: "UPDATE_MATCHES"; matches: Match[] }
-  | { type: "CLEAR_CHANGES" }
+  | { type: "CLEAR_JOB_CHANGES" }
   | { type: "INIT_JOBS"; matchingJobs: Job[]; jobs: Job[] }
   | { type: "TOGGLE_ACTIVE"; id: string };
 
@@ -301,7 +301,7 @@ export function jobReducer(
           : [...state.jobChanges, newChange],
       };
 
-    case "CLEAR_CHANGES":
+    case "CLEAR_JOB_CHANGES":
       return { ...state, jobChanges: [], isChanged: false };
 
     case "INIT_JOBS":

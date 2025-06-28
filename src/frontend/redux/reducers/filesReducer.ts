@@ -42,8 +42,8 @@ export function filesReducer(
         profile: action.data.Profile,
         friends: action.data.Friends,
         inited: true,
-        profile_history: action.data.ProfileHistory,
-        workspaces: action.data.workspaces,
+        profile_history: action.data.ProfileHistory || state.profile_history,
+        workspaces: action.data.workspaces || state.workspaces,
         // friends: action.data.Friends.map(friend => friend.id === action.id ? {...friend, ...action} : friend)
       };
 
@@ -1856,14 +1856,16 @@ export function filesReducer(
     }
 
     case "RESOLVE_CHANGES":
-      state.changes = {
-        files: [],
-        contents: {},
-        contracts: {},
-        delete_contracts: [],
-        files_indexing: [],
+      return {
+        ...state,
+        changes: {
+          files: [],
+          contents: {},
+          contracts: [],
+          delete_contracts: [],
+          files_indexing: [],
+        },
       };
-      return { ...state };
 
     case "UPDATE_FILE_WORKSPACES":
       let newFile = state.files.find((file) => file.id === action.id)!;

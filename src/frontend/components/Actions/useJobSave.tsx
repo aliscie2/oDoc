@@ -2,6 +2,7 @@ import { useCallback, useState, useRef, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
 import { useBackendContext } from "@/contexts/BackendContext";
+import { Job } from "$/declarations/backend/backend.did";
 
 interface UseJobsSaveReturn {
   isChanged: boolean;
@@ -50,7 +51,7 @@ export const useJobsSave = (): UseJobsSaveReturn => {
           variant: "success",
         });
         // Dispatch action to clear changes
-        dispatch({ type: "CLEAR_CHANGES" });
+        dispatch({ type: "CLEAR_JOB_CHANGES" });
       }
     } catch (error) {
       console.error({ saveJobsError: error });
@@ -81,7 +82,15 @@ export const useJobsSave = (): UseJobsSaveReturn => {
         }
         dispatch({ type: "RESET_AI_CREDITS", credits: remainingCredits });
       }
-      dispatch({ type: "CLEAR_CHANGES" });
+      dispatch({ type: "CLEAR_JOB_CHANGES" });
+
+      const res: { jobs: Job[]; matching_jobs: Job[] } =
+        await backendActor.get_my_jobs();
+      dispatch({
+        type: "INIT_JOBS",
+        jobs: res.jobs,
+        matchingJobs: res.matching_jobs,
+      });
 
       enqueueSnackbar("Job changes reset successfully!", { variant: "info" });
     } catch (error) {

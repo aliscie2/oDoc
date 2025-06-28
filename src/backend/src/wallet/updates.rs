@@ -1,4 +1,5 @@
 use crate::ckusdc_index_types::GetTransactions;
+use crate::current_user_state::UserState;
 use crate::wallet::error::Error;
 use crate::workspaces::nat_to_u64;
 use crate::{CPayment, ExchangeType, PaymentStatus, Wallet};
@@ -140,6 +141,7 @@ async fn transfer_from(amount: Nat, from: Principal, to: Principal) -> Result<Bl
 
 #[update]
 async fn deposit_ckusdt() -> Result<Wallet, Error> {
+    UserState::set_is_transfering()?;
     let mut wallet = Wallet::get(caller());
     let balance = get_user_balance().await;
     if balance.is_err() {
@@ -161,8 +163,11 @@ async fn deposit_ckusdt() -> Result<Wallet, Error> {
                 message: format!("{:?}", wallet_error),
             });
         }
+        UserState::unset_is_transfering();
         return Ok(wallet.clone());
     }
+
+    UserState::unset_is_transfering();
     Err(Error::IcCdkError {
         message: format!("{:?}", "Minimum deposit should be 0.1 USD".to_string()),
     })
@@ -170,6 +175,7 @@ async fn deposit_ckusdt() -> Result<Wallet, Error> {
 
 #[update]
 async fn withdraw_ckusdt(amount: u64, address: String) -> Result<Wallet, Error> {
+    UserState::set_is_transfering()?;
     let balance = get_user_balance().await;
     if balance.is_err() {
         return Err(Error::IcCdkError {
@@ -187,13 +193,18 @@ async fn withdraw_ckusdt(amount: u64, address: String) -> Result<Wallet, Error> 
     }
 
     if Nat::from(amount.clone()) >= balance {
-        transfer_from(
+        let res = transfer_from(
             Nat::from(amount.clone() as u64 * 1000000),
             ic_cdk::id(),
             Principal::from_text(address.clone()).unwrap(),
         )
-        .await?;
+        .await;
+        if let Err(err) = res {
+            UserState::unset_is_transfering();
+            return Err(err);
+        }
     }
+    UserState::unset_is_transfering();
     Ok(wallet)
 }
 

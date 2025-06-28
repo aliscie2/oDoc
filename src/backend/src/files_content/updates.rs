@@ -4,6 +4,7 @@ use candid::{CandidType, Deserialize};
 use ic_cdk::caller;
 use ic_cdk_macros::update;
 
+use crate::current_user_state::UserState;
 use crate::files::FileNode;
 use crate::files_content::ContentNode;
 use crate::storage_schema::{ContentTree, FileId};
@@ -75,11 +76,16 @@ fn multi_updates(
     contracts_updates: Vec<ContractUpdates>,
     files_indexing: Vec<FileIndexing>,
 ) -> Result<String, String> {
-    let mut messages = "".to_string();
-
-    for file in files.clone() {
-        file.save()?;
+    if contracts_updates.len() > 0 {
+        let res = UserState::set_is_transfering();
+        // if  res not ok
+        if Ok(res) = res {
+        } else {
+            return Err("Please wait few second, there is already a transaction going.".to_string());
+        }
     }
+
+    let mut messages = "".to_string();
 
     // Update or create contract
     for contract_update in contracts_updates {
@@ -163,7 +169,18 @@ fn multi_updates(
         }
 
         // Final save to ensure everything is persisted
-        curr_contract.save()?;
+        let res = curr_contract.save();
+        let res = file.save();
+        if let Err(er) = res {
+            messages.push_str(&format!("contract save err: {}", er));
+        }
+    }
+
+    for file in files.clone() {
+        let res = file.save();
+        if let Err(er) = res {
+            messages.push_str(&format!("Files save err: {}", er));
+        }
     }
 
     // Update FILE_CONTENTS
@@ -188,5 +205,7 @@ fn multi_updates(
     }
 
     messages.push_str("Updates applied successfully.");
+    UserState::unset_is_transfering();
+
     Ok(messages)
 }

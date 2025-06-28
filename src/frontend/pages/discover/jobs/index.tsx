@@ -33,66 +33,66 @@ import { Login } from "@mui/icons-material";
 // }
 
 const JobsPage: React.FC = () => {
- const { backendActor } = useBackendContext();
+  const { backendActor } = useBackendContext();
 
- const { isChanged, currentJobId, jobs, matchingJobs } = useSelector(
-   (state: any) => state.jobState,
- );
- const currentJobRef = useRef<Job | undefined>(undefined);
- const dispatch = useDispatch();
+  const { isChanged, currentJobId, jobs, matchingJobs } = useSelector(
+    (state: any) => state.jobState,
+  );
+  const currentJobRef = useRef<Job | undefined>(undefined);
+  const dispatch = useDispatch();
 
- const [isProfileDone, setIsProfileDone] = useState<boolean>(false);
+  const [isProfileDone, setIsProfileDone] = useState<boolean>(false);
 
- useEffect(() => {
-   currentJobRef.current = jobs.find((job: Job) => job.id === currentJobId);
- }, [currentJobId, jobs]);
+  useEffect(() => {
+    currentJobRef.current = jobs.find((job: Job) => job.id === currentJobId);
+  }, [currentJobId, jobs]);
 
- useEffect(() => {
-   const fetchJobs = async () => {
-     try {
-       const res: { jobs: Job[]; matching_jobs: Job[] } =
-         await backendActor.get_my_jobs();
-       dispatch({
-         type: "INIT_JOBS",
-         jobs: res.jobs,
-         matchingJobs: res.matching_jobs,
-       });
-     } catch (error) {
-       console.error("Error fetching jobs:", error);
-     }
-   };
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        const res: { jobs: Job[]; matching_jobs: Job[] } =
+          await backendActor.get_my_jobs();
+        dispatch({
+          type: "INIT_JOBS",
+          jobs: res.jobs,
+          matchingJobs: res.matching_jobs,
+        });
+      } catch (error) {
+        console.error("Error fetching jobs:", error);
+      }
+    };
 
-   fetchJobs();
- }, [dispatch]);
+    fetchJobs();
+  }, [dispatch]);
 
- const { profile } = useSelector((state: any) => state.filesState);
+  const { profile } = useSelector((state: any) => state.filesState);
 
- if (!profile) {
-   return (
-     <>
-       Please make suer to login first
-       <LoginButton startIcon={<Login />} />
-     </>
-   );
- }
+  if (!profile) {
+    return (
+      <>
+        Please make suer to login first
+        <LoginButton startIcon={<Login />} />
+      </>
+    );
+  }
 
- return (
-   <Box
-     className="jobs-page-container"
-     sx={{
-       padding: 0,
-       margin: 0,
-       height: "100%",
-       overflowY: "auto",
-       overflowX: "hidden",
-       display: "flex",
-       flexDirection: "column",
-     }}
-   >
-     <JobSelector />
-     <JobSearchComponent />
-   </Box>
- );
+  return (
+    <Box
+      className="jobs-page-container"
+      sx={{
+        padding: 0,
+        margin: 0,
+        height: "100%",
+        overflowY: "auto",
+        overflowX: "hidden",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <JobSelector />
+      <JobSearchComponent />
+    </Box>
+  );
 };
 
 export default JobsPage;

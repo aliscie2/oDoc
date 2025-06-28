@@ -36,7 +36,7 @@ const ANIMATIONS = {
   handShake: { class: "gentle", eyePattern: "friendly" },
   watch: { class: "float", eyePattern: "follow" },
   Loading: { class: "pulse", eyePattern: "circle" },
-  logo: { class: "float", eyePattern: "normal" },
+  logo: { class: "float", eyePattern: "surprised" }, // Changed to surprised
 };
 
 // Icon mapping (excluding Search for creative implementation)
@@ -51,6 +51,7 @@ const ICONS = {
 };
 
 export default function EmotionalAnimation({
+  absolute= false,
   type = "404",
   title = "",
   description = "",
@@ -222,6 +223,23 @@ export default function EmotionalAnimation({
         }, 600);
         break;
 
+      case "surprised":
+        // New surprised pattern - look towards top left with small movements
+        let surprisePhase = 0;
+        eyeInterval = setInterval(() => {
+          const baseX = -18; // Looking towards top left
+          const baseY = -12;
+          const wiggleX = Math.sin(surprisePhase * 0.1) * 3; // Small horizontal wiggle
+          const wiggleY = Math.cos(surprisePhase * 0.15) * 2; // Small vertical wiggle
+
+          setEyePos({
+            x: baseX + wiggleX,
+            y: baseY + wiggleY,
+          });
+          surprisePhase += 1;
+        }, 100);
+        break;
+
       case "follow":
         mouseHandler = (e) => {
           const rect = document
@@ -284,6 +302,7 @@ export default function EmotionalAnimation({
   return (
     <Box
       sx={{
+        position: absolute?"absolute":"relative",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -292,10 +311,31 @@ export default function EmotionalAnimation({
       }}
     >
       <Box sx={{ textAlign: "center" }}>
-        <Box sx={{ mb: 3, position: "relative" }}>
+        {/* Animation Container - Fixed spacing */}
+        <Box
+          sx={{
+            mb: 4, // Increased margin bottom for better separation
+            position: "relative",
+            display: "flex", // Changed to flex
+            justifyContent: "center", // Center the animation
+            alignItems: "center",
+            minHeight: `${config.width + 20}px`, // Ensure container has minimum height + padding
+            width: "100%", // Ensure full width
+          }}
+        >
           <div className={`jellyfish-container anim-${animation.class}`}>
             {type === "logo" ? (
-              <Box sx={{ position: "relative", display: "inline-block" }}>
+              <Box
+                sx={{
+                  position: "relative",
+                  display: "block",
+                  width: `${config.width}px`, // Set explicit width
+                  height: `${config.width}px`, // Set explicit height
+                  margin: "0 auto", // Center the animation
+                }}
+              >
+                {" "}
+                {/* Changed to block */}
                 {/* Show both LogoSVG and JellyfishSVG for logo type */}
                 <div className="logo-wrapper">
                   <LogoSVG size={config.width} />
@@ -303,8 +343,8 @@ export default function EmotionalAnimation({
                 <Box
                   sx={{
                     position: "absolute",
-                    top: `${config.width * 0.07}px`, // Position vertically centered
-                    left: `${config.width * 0.35}px`, // Position inside the C gap
+                    top: `${config.width * 0.3}px`, // Position vertically centered
+                    left: `${config.width * 0.6}px`, // Position inside the C gap
                     transform: "scale(0.5)", // Make jellyfish slightly smaller to fit in gap
                     transformOrigin: "center center",
                   }}
@@ -316,6 +356,7 @@ export default function EmotionalAnimation({
                     blink={blink}
                     phase={phase}
                     getTentaclePath={getTentaclePath}
+                    isSurprised={true} // Pass surprised state
                   />
                 </Box>
                 {/* Show icon alongside logo and jellyfish */}
@@ -332,7 +373,18 @@ export default function EmotionalAnimation({
                 </Box>
               </Box>
             ) : (
-              <Box sx={{ position: "relative", display: "inline-block" }}>
+              <Box
+                sx={{
+                  
+                  position: absolute?"absolute":"relative",
+                  display: "block",
+                  width: `${config.width}px`, // Set explicit width
+                  height: `${config.width}px`, // Set explicit height to prevent collapse
+                  margin: "0 auto", // Center the animation
+                }}
+              >
+                {" "}
+                {/* Changed to block */}
                 <JellyfishSVG
                   config={config}
                   scale={scale}
@@ -341,7 +393,6 @@ export default function EmotionalAnimation({
                   phase={phase}
                   getTentaclePath={getTentaclePath}
                 />
-
                 {/* Magnifier for search type */}
                 {type === "Searching" && (
                   <MagnifierSVG
@@ -350,7 +401,6 @@ export default function EmotionalAnimation({
                     rotation={magnifierRotation}
                   />
                 )}
-
                 {/* Regular icon overlay for non-search types */}
                 {type !== "Searching" && renderIcon() && (
                   <Box

@@ -1,4 +1,5 @@
 use super::{Subscprtion, UserState};
+use crate::wallet::error::Error;
 use ic_cdk::caller;
 
 impl Default for UserState {
@@ -24,7 +25,17 @@ impl UserState {
         })
     }
 
-    pub fn set_is_transfering() {
+    pub fn set_is_transfering() -> Result<(), Error> {
+        if Self::is_transfering() {
+            // erro ralready set
+
+            return Err(Error::IcCdkError {
+                message: format!(
+                    "{:?}",
+                    "Already trenasfering, please wait few seconds".to_string()
+                ),
+            });
+        }
         let current_user = caller().to_string();
         crate::CURRENT_USER_STATE_STORE.with(|store| {
             let mut states = store.borrow_mut();
@@ -32,10 +43,11 @@ impl UserState {
             user_state.is_transfering = true;
             states.insert(current_user, user_state);
         });
+        Ok(())
     }
 
     pub fn unset_is_transfering() {
-        let current_user = caller().to_string();
+        let current_user: String = caller().to_string();
         crate::CURRENT_USER_STATE_STORE.with(|store| {
             let mut states = store.borrow_mut();
             let mut user_state = states.get(&current_user).unwrap_or_default();

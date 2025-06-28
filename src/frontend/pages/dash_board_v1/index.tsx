@@ -78,7 +78,6 @@ const Dashboard = () => {
   const handleCardHover = (cardId, isEntering) => {
     setHoveredCard(isEntering ? cardId : null);
   };
-  
 
   const handleChatSend = async (message, isQuick = true) => {
     const messageId = messageCounter + 1;

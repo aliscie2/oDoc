@@ -1,6 +1,6 @@
 mod ck_usdc;
 pub mod ckusdc_index_types;
-mod error;
+pub mod error;
 mod icpswap;
 mod log;
 mod merchant;

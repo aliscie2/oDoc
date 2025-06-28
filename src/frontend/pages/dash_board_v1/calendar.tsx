@@ -6,6 +6,7 @@ import { BaseCard, CardHeader } from "./card";
 
 import FullscreenDialog from "./FullscreenDialog"; // Import the shared dialog
 import CalendarView from "./calindarView/calendar";
+import CalendarFeedback from "./updateClaendarFeedback";
 
 // Calendar/Events Component
 export const CalendarCard = ({
@@ -78,6 +79,8 @@ export const CalendarCard = ({
         onClick={handleCardClick}
         sx={{ cursor: "pointer" }}
       >
+        <CalendarFeedback />
+
         <CardHeader
           icon={<Event />}
           title="Calendar & Events"

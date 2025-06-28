@@ -205,7 +205,7 @@ export class GeminiAgent {
     try {
       // Use quick model if requested, otherwise use current model logic
       // const currentModel = quick ? "gemini-1.5-flash" : this.getCurrentModel();
-      const currentModel = "gemini-2.5-flash-preview-05-20"
+      const currentModel = "gemini-2.5-flash-preview-05-20";
       const compressedHistory = this.compressHistory();
 
       const response = await fetch(

@@ -80,7 +80,13 @@ export const useDocsSave = (): UseDocsSaveReturn => {
   const reset = useCallback(async () => {
     try {
       // Reset all changes in the files state
-      dispatch({ type: "RESET_CHANGES" });
+      dispatch({ type: "RESOLVE_CHANGES" });
+      const res = await backendActor?.get_initial_data();
+      res &&
+        dispatch({
+          type: "INIT_FILES_STATE",
+          data: { ...res.Ok },
+        });
       enqueueSnackbar("Document changes reset successfully!", {
         variant: "info",
       });

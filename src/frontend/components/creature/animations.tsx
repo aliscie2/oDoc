@@ -1,6 +1,6 @@
 import React from "react";
 import { useSelector } from "react-redux";
-const mainColor = "#F9F3E0";
+const mainColor = "#ffefce";
 const lightColor = "#fcfcfc";
 const darkColor = "#e6dfca";
 // const mainColor = "#40e0d0"

@@ -83,6 +83,7 @@ export const AIChatComponent = ({
             >
               <Box display="flex" alignItems="center" gap={1}>
                 <EmotionalAnimation
+                  absolute
                   type={isLoading ? "Loading" : "watch"}
                   size={100}
                 />
@@ -102,7 +103,7 @@ export const AIChatComponent = ({
                     message={msg.message}
                     isUser={msg.type === "user"}
                   />
-                  {msg.type === "ai" &&
+                  {/* {msg.type === "ai" &&
                     (msg.canUndo || msg.canRedo || msg.canRetry) && (
                       <Box display="flex" gap={1} mt={1} flexWrap="wrap">
                         {msg.canRetry && (
@@ -151,7 +152,7 @@ export const AIChatComponent = ({
                           </Button>
                         )}
                       </Box>
-                    )}
+                    )} */}
                 </Box>
               ))}
             </Box>
