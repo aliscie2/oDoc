@@ -231,16 +231,15 @@ thread_local! {
             MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(19))),
         )
     );
-    
+
     static TALENTS_INVERTED_IDEX_STORE: RefCell<StableBTreeMap<String, StorableStringVec, Memory>> = RefCell::new(
         StableBTreeMap::init(
             MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(20))),
         )
     );
 
-    
-}
 
+}
 
 use ic_cdk_macros::update;
 use ic_llm::{ChatMessage, Model};
@@ -256,10 +255,9 @@ async fn chat(messages: Vec<ChatMessage>) -> String {
         .with_messages(messages)
         .send()
         .await;
-    
+
     response.message.content.unwrap_or_default()
 }
-
 
 pub static COUNTER: AtomicU64 = AtomicU64::new(0);
 

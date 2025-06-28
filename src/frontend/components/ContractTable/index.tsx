@@ -509,7 +509,6 @@ const ContractGrid = memo(
   },
 );
 
-
 // Main Component
 const CustomContractViewer = ({ contractId }) => {
   const dispatch = useDispatch();
@@ -672,10 +671,7 @@ const CustomContractViewer = ({ contractId }) => {
           bgcolor: "background.paper",
         }}
       >
-        <Stack
-          direction="row"
-          alignItems="center"
-        >
+        <Stack direction="row" alignItems="center">
           <EditableTitle
             value={currentContract.name || "Untitled"}
             onChange={handleMainContractNameChange}
@@ -796,6 +792,5 @@ const CustomContractViewer = ({ contractId }) => {
     </Box>
   );
 };
-
 
 export default CustomContractViewer;

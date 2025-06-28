@@ -120,7 +120,6 @@ impl Job {
         })
     }
 
-
     pub fn get_jobs_by_ids(ids: Vec<String>) -> Vec<Job> {
         crate::JOBS_MATCH_STORE.with(|store| {
             let store = store.borrow();
@@ -129,7 +128,7 @@ impl Job {
                 .collect()
         })
     }
-    
+
     pub fn get(job_id: &String) -> Option<Job> {
         crate::JOBS_MATCH_STORE.with(|store| store.borrow().get(job_id).map(|job| job.clone()))
     }

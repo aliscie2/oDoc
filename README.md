@@ -1,10 +1,15 @@
 ## old version of Odoc can be found [here](https://github.com/aliscie/Odoc-old)
 
 ## first time run
-you have 2 options run 
+
+you have 2 options run
+
 ### Option 1
+
 `sh script/first_time_run.sh`
-### Option 2, follow this 
+
+### Option 2, follow this
+
 1. first download the pocketic https://github.com/dfinity/pocketic/releases
 2. add this to dfx.json
 
@@ -40,7 +45,6 @@ you have 2 options run
 4. read this https://crates.io/crates/pocket-ic
 5. and read this https://www.npmjs.com/package/@hadronous/pic
 
-
 ## everyday usage
 
 1. `dfx start --background --clean`
@@ -48,13 +52,16 @@ you have 2 options run
 2. `make deploy-all`
 
 ### For upgrade backend
+
 `make upgrade-backend`
 
-### for Frontend 
+### for Frontend
+
 `yarn start`
 Locally no need for `dfx deploy frontned`
 
-### for sperate use commands 
+### for sperate use commands
+
 2. `dfx deploy backend`
 3. `dfx deploy internet_identity`
 4. `sh scripts/deploy_ledger.sh`
@@ -226,6 +233,7 @@ We suggest that you begin by typing:
     yarn playwright test
 
 ### full env vars
+
 ```
 VITE_INTERNET_IDENTITY
 POCKET_IC_BIN

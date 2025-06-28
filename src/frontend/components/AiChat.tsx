@@ -14,7 +14,7 @@ import {
 import SendIcon from "@mui/icons-material/Send";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import AiCreditsCircle from "./ContractTable/AiCreditsCircle";
-import LoaderComponent from '@/components/creature'
+import LoaderComponent from "@/components/creature";
 
 export interface Message {
   id: string;

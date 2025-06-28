@@ -77,7 +77,7 @@ const handleAIValue = async ({
  * @param {Object} context - Processing context
  * @returns {Array} Array of valid actions
  */
-const processAIActions = (actions, { currentCalendar, setMessages }) => {
+export const processAIActions = (actions, { currentCalendar, setMessages }) => {
   const validActions = [];
   const messages = [];
 

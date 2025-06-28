@@ -20,13 +20,13 @@ import {
   Fade,
   Slide,
 } from "@mui/material";
-import { 
-  Visibility, 
-  Delete, 
-  Add, 
-  Work, 
-  LocationOn, 
-  AttachMoney, 
+import {
+  Visibility,
+  Delete,
+  Add,
+  Work,
+  LocationOn,
+  AttachMoney,
   Schedule,
   TrendingUp,
   KeyboardArrowDown,
@@ -39,13 +39,11 @@ import {
   Star,
   Assignment,
   CardGiftcard,
-  Person
+  Person,
 } from "@mui/icons-material";
 import JobDetails from "./JobDetails";
 import { useBackendContext } from "@/contexts/BackendContext";
 import JobBriefData from "./quickBar";
-
-
 
 const JobSelector: React.FC = () => {
   const dispatch = useDispatch();
@@ -54,9 +52,11 @@ const JobSelector: React.FC = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [showBriefData, setShowBriefData] = useState(false);
-  const [highlightedFields, setHighlightedFields] = useState<Set<string>>(new Set());
+  const [highlightedFields, setHighlightedFields] = useState<Set<string>>(
+    new Set(),
+  );
   const [previousJob, setPreviousJob] = useState<Job | null>(null);
-  
+
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -67,43 +67,61 @@ const JobSelector: React.FC = () => {
   useEffect(() => {
     if (currentJob && previousJob && currentJob.id === previousJob.id) {
       const changedFields = new Set<string>();
-      
+
       // Compare all job fields to detect changes
-      if (currentJob.description !== previousJob.description) changedFields.add('description');
-      if (currentJob.location !== previousJob.location) changedFields.add('location');
-      if (currentJob.salary !== previousJob.salary) changedFields.add('salary');
-      if (currentJob.jobType !== previousJob.jobType) changedFields.add('jobType');
-      if (JSON.stringify(currentJob.category) !== JSON.stringify(previousJob.category)) changedFields.add('category');
-      if (currentJob.active !== previousJob.active) changedFields.add('active');
-      if (JSON.stringify(currentJob.skills) !== JSON.stringify(previousJob.skills)) changedFields.add('skills');
-      if (currentJob.requirements !== previousJob.requirements) changedFields.add('requirements');
-      if (currentJob.benefits !== previousJob.benefits) changedFields.add('benefits');
-      if (currentJob.company !== previousJob.company) changedFields.add('company');
-      if (currentJob.contactEmail !== previousJob.contactEmail) changedFields.add('contactEmail');
-      if (currentJob.applicationDeadline !== previousJob.applicationDeadline) changedFields.add('applicationDeadline');
-      if (currentJob.experienceLevel !== previousJob.experienceLevel) changedFields.add('experienceLevel');
-      
+      if (currentJob.description !== previousJob.description)
+        changedFields.add("description");
+      if (currentJob.location !== previousJob.location)
+        changedFields.add("location");
+      if (currentJob.salary !== previousJob.salary) changedFields.add("salary");
+      if (currentJob.jobType !== previousJob.jobType)
+        changedFields.add("jobType");
+      if (
+        JSON.stringify(currentJob.category) !==
+        JSON.stringify(previousJob.category)
+      )
+        changedFields.add("category");
+      if (currentJob.active !== previousJob.active) changedFields.add("active");
+      if (
+        JSON.stringify(currentJob.skills) !== JSON.stringify(previousJob.skills)
+      )
+        changedFields.add("skills");
+      if (currentJob.requirements !== previousJob.requirements)
+        changedFields.add("requirements");
+      if (currentJob.benefits !== previousJob.benefits)
+        changedFields.add("benefits");
+      if (currentJob.company !== previousJob.company)
+        changedFields.add("company");
+      if (currentJob.contactEmail !== previousJob.contactEmail)
+        changedFields.add("contactEmail");
+      if (currentJob.applicationDeadline !== previousJob.applicationDeadline)
+        changedFields.add("applicationDeadline");
+      if (currentJob.experienceLevel !== previousJob.experienceLevel)
+        changedFields.add("experienceLevel");
+
       if (changedFields.size > 0) {
         setHighlightedFields(changedFields);
-        
+
         // Auto-scroll to brief data with smooth animation
         setTimeout(() => {
-          const briefElement = document.querySelector('[data-testid="job-brief-data"]');
+          const briefElement = document.querySelector(
+            '[data-testid="job-brief-data"]',
+          );
           if (briefElement) {
-            briefElement.scrollIntoView({ 
-              behavior: 'smooth', 
-              block: 'center' 
+            briefElement.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
             });
           }
         }, 300);
-        
+
         // Clear highlights after animation
         setTimeout(() => {
           setHighlightedFields(new Set());
         }, 4000); // Extended to 4 seconds for better visibility
       }
     }
-    
+
     setPreviousJob(currentJob ? { ...currentJob } : null);
   }, [currentJob]);
 
@@ -219,8 +237,10 @@ const JobSelector: React.FC = () => {
                   </Typography>
                   <IconButton
                     size="small"
-                    sx={{ 
-                      transform: showBriefData ? "rotate(180deg)" : "rotate(0deg)",
+                    sx={{
+                      transform: showBriefData
+                        ? "rotate(180deg)"
+                        : "rotate(0deg)",
                       transition: "transform 0.3s ease",
                     }}
                   >
@@ -357,8 +377,8 @@ const JobSelector: React.FC = () => {
       {/* Brief Data Bar */}
       <Collapse in={showBriefData} timeout={400}>
         <Box data-testid="job-brief-data">
-          <JobBriefData 
-            currentJob={currentJob} 
+          <JobBriefData
+            currentJob={currentJob}
             highlightedFields={highlightedFields}
             previousJob={previousJob}
             isMobile={isMobile}

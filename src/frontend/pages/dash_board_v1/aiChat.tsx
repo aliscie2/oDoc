@@ -9,13 +9,13 @@ import {
   Button,
 } from "@mui/material";
 import { Chat, Send, Refresh, Undo, Redo } from "@mui/icons-material";
-import creature from '@/public/creature.gif';
+import creature from "@/public/creature.gif";
 import { useBackendContext } from "@/contexts/BackendContext";
 import EmotionalAnimation from "@/components/creature";
 import { JOB_MATCHING_PROMPT } from "../discover/jobs/utils/jobMatchingPrompt";
 import { MAIN_CHAT_PROMPT } from "../discover/jobs/utils/mainChatProblm";
 import { useSelector } from "react-redux";
-import MarkdownMessage from "./MarkdownMessage"; // Import the new component
+import MarkdownMessage from "./markDownMessageRdnder"; // Import the new component
 import { logger } from "@/DevUtils/logData";
 
 export const AIChatComponent = ({
@@ -28,7 +28,7 @@ export const AIChatComponent = ({
   onRedoMessage,
   onRetryMessage,
 }) => {
-  logger({chatHistory})
+  logger({ chatHistory });
   const [message, setMessage] = useState("");
 
   const handleSend = async () => {
@@ -82,7 +82,10 @@ export const AIChatComponent = ({
               mb={2}
             >
               <Box display="flex" alignItems="center" gap={1}>
-                <EmotionalAnimation type={isLoading ? "Loading" : "watch"} size={100} />
+                <EmotionalAnimation
+                  type={isLoading ? "Loading" : "watch"}
+                  size={100}
+                />
                 <Typography variant="h6" sx={{ fontSize: "1rem" }}>
                   AI Assistant
                 </Typography>
@@ -95,59 +98,60 @@ export const AIChatComponent = ({
             <Box sx={{ flex: 1, overflowY: "auto", mb: 2 }}>
               {chatHistory.map((msg, idx) => (
                 <Box key={idx} mb={1}>
-                  <MarkdownMessage 
-                    message={msg.message} 
-                    isUser={msg.type === "user"} 
+                  <MarkdownMessage
+                    message={msg.message}
+                    isUser={msg.type === "user"}
                   />
-                  {msg.type === "ai" && (msg.canUndo || msg.canRedo || msg.canRetry) && (
-                    <Box display="flex" gap={1} mt={1} flexWrap="wrap">
-                      {msg.canRetry && (
-                        <Button
-                          size="small"
-                          startIcon={<Refresh fontSize="small" />}
-                          onClick={() => onRetryMessage(msg.id)}
-                          sx={{ 
-                            color: "#00d4ff", 
-                            minWidth: "auto", 
-                            p: 0.5,
-                            fontSize: { xs: "0.6rem", sm: "0.75rem" }
-                          }}
-                        >
-                          Retry
-                        </Button>
-                      )}
-                      {msg.canUndo && (
-                        <Button
-                          size="small"
-                          startIcon={<Undo fontSize="small" />}
-                          onClick={() => onUndoMessage(msg.id)}
-                          sx={{ 
-                            color: "#ff9800", 
-                            minWidth: "auto", 
-                            p: 0.5,
-                            fontSize: { xs: "0.6rem", sm: "0.75rem" }
-                          }}
-                        >
-                          Undo
-                        </Button>
-                      )}
-                      {msg.canRedo && (
-                        <Button
-                          size="small"
-                          startIcon={<Redo fontSize="small" />}
-                          onClick={() => onRedoMessage(msg.id)}
-                          sx={{ 
-                            color: "#f44336", 
-                            minWidth: "auto", 
-                            p: 0.5,
-                            fontSize: { xs: "0.6rem", sm: "0.75rem" }
-                          }}
-                        >
-                          Redo
-                        </Button>
-                      )}
-                    </Box>
-                  )}
+                  {msg.type === "ai" &&
+                    (msg.canUndo || msg.canRedo || msg.canRetry) && (
+                      <Box display="flex" gap={1} mt={1} flexWrap="wrap">
+                        {msg.canRetry && (
+                          <Button
+                            size="small"
+                            startIcon={<Refresh fontSize="small" />}
+                            onClick={() => onRetryMessage(msg.id)}
+                            sx={{
+                              color: "#00d4ff",
+                              minWidth: "auto",
+                              p: 0.5,
+                              fontSize: { xs: "0.6rem", sm: "0.75rem" },
+                            }}
+                          >
+                            Retry
+                          </Button>
+                        )}
+                        {msg.canUndo && (
+                          <Button
+                            size="small"
+                            startIcon={<Undo fontSize="small" />}
+                            onClick={() => onUndoMessage(msg.id)}
+                            sx={{
+                              color: "#ff9800",
+                              minWidth: "auto",
+                              p: 0.5,
+                              fontSize: { xs: "0.6rem", sm: "0.75rem" },
+                            }}
+                          >
+                            Undo
+                          </Button>
+                        )}
+                        {msg.canRedo && (
+                          <Button
+                            size="small"
+                            startIcon={<Redo fontSize="small" />}
+                            onClick={() => onRedoMessage(msg.id)}
+                            sx={{
+                              color: "#f44336",
+                              minWidth: "auto",
+                              p: 0.5,
+                              fontSize: { xs: "0.6rem", sm: "0.75rem" },
+                            }}
+                          >
+                            Redo
+                          </Button>
+                        )}
+                      </Box>
+                    )}
                 </Box>
               ))}
             </Box>

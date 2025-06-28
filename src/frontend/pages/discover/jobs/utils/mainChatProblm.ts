@@ -1,6 +1,4 @@
-
-
-export const MAIN_CHAT_PROMPT  = `
+export const MAIN_CHAT_PROMPT = `
 extract data from the message appove and return only json like this
 {
 type:"CALENDAR", // This can be CALENDAR|JOBS

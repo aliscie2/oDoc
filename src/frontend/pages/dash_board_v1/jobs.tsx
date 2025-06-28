@@ -106,27 +106,27 @@ export const JobMatchesCard = ({
       isVisible={isVisible}
       sx={{ cursor: "pointer", height: isExpanded ? "400px" : "auto" }}
     >
-      <CardHeader 
-        icon={<Search />} 
-        title="Job Matches" 
+      <CardHeader
+        icon={<Search />}
+        title="Job Matches"
         color="#00d4ff"
         onExpandClick={handleExpandClick}
         showExpandIcon={true}
       />
 
       {/* Normal and Expanded modes */}
-      <Box 
-          sx={{ 
-            height: "350px", 
-            overflow: "hidden",
-            border: 1,
-            borderColor: "divider",
-            borderRadius: 1,
-            mt: 1
-          }}
-        >
-          <JobsPage />
-        </Box>
+      <Box
+        sx={{
+          height: "350px",
+          overflow: "hidden",
+          border: 1,
+          borderColor: "divider",
+          borderRadius: 1,
+          mt: 1,
+        }}
+      >
+        <JobsPage />
+      </Box>
     </BaseCard>
   );
 };

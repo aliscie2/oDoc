@@ -1,9 +1,9 @@
+use candid::{Decode, Encode};
+use ic_stable_structures::memory_manager::{MemoryId, MemoryManager, VirtualMemory};
+use ic_stable_structures::{storable::Bound, Storable};
+use ic_stable_structures::{DefaultMemoryImpl, StableBTreeMap};
 use std::cell::RefCell;
 use std::collections::HashMap;
-use ic_stable_structures::memory_manager::{MemoryId, MemoryManager, VirtualMemory};
-use ic_stable_structures::{DefaultMemoryImpl, StableBTreeMap};
-use candid::{Decode, Encode};
-use ic_stable_structures::{storable::Bound, Storable};
 
 type Memory = VirtualMemory<DefaultMemoryImpl>;
 
@@ -37,7 +37,7 @@ impl From<StorableStringVec> for Vec<String> {
 
 impl std::ops::Deref for StorableStringVec {
     type Target = Vec<String>;
-    
+
     fn deref(&self) -> &Self::Target {
         &self.0
     }
@@ -53,7 +53,7 @@ impl std::ops::DerefMut for StorableStringVec {
 pub fn add_new_job(keys: Vec<String>, job_id: String) {
     crate::JOBS_INVERTED_IDEX_STORE.with(|store| {
         let mut store_ref = store.borrow_mut();
-        
+
         for key in keys {
             match store_ref.get(&key) {
                 Some(stored_vec) => {
@@ -74,13 +74,13 @@ pub fn add_new_job(keys: Vec<String>, job_id: String) {
 pub fn delete_job_search(keys: Vec<String>, job_id: String) {
     crate::JOBS_INVERTED_IDEX_STORE.with(|store| {
         let mut store_ref = store.borrow_mut();
-        
+
         for key in keys {
             if let Some(stored_vec) = store_ref.get(&key) {
                 let mut ids: Vec<String> = stored_vec.into();
                 // Remove all occurrences of the ID
                 ids.retain(|existing_id| existing_id != &job_id);
-                
+
                 if ids.is_empty() {
                     // Remove the key if no IDs left
                     store_ref.remove(&key);
@@ -97,7 +97,7 @@ pub fn search_for_job(keys: Vec<String>) -> Vec<String> {
     crate::JOBS_INVERTED_IDEX_STORE.with(|store| {
         let store_ref = store.borrow();
         let mut id_scores: HashMap<String, (usize, usize)> = HashMap::new(); // (key_matches, earliest_position)
-        
+
         for key in keys {
             if let Some(stored_vec) = store_ref.get(&key) {
                 let ids: Vec<String> = stored_vec.into();
@@ -108,24 +108,21 @@ pub fn search_for_job(keys: Vec<String>) -> Vec<String> {
                 }
             }
         }
-        
+
         // Convert to vector and sort
         let mut results: Vec<(String, usize, usize)> = id_scores
             .into_iter()
             .map(|(id, (key_matches, earliest_pos))| (id, key_matches, earliest_pos))
             .collect();
-        
+
         // Sort by key matches (descending), then by position (ascending for latest first)
         results.sort_by(|a, b| {
             b.1.cmp(&a.1) // More key matches first
                 .then_with(|| a.2.cmp(&b.2)) // Earlier position (latest added) first
         });
-        
+
         // Return top 10 IDs
-        results.into_iter()
-            .take(10)
-            .map(|(id, _, _)| id)
-            .collect()
+        results.into_iter().take(10).map(|(id, _, _)| id).collect()
     })
 }
 
@@ -133,7 +130,7 @@ pub fn search_for_job(keys: Vec<String>) -> Vec<String> {
 pub fn add_new_talent(keys: Vec<String>, talent_id: String) {
     crate::TALENTS_INVERTED_IDEX_STORE.with(|store| {
         let mut store_ref = store.borrow_mut();
-        
+
         for key in keys {
             match store_ref.get(&key) {
                 Some(stored_vec) => {
@@ -154,13 +151,13 @@ pub fn add_new_talent(keys: Vec<String>, talent_id: String) {
 pub fn delete_talent_search(keys: Vec<String>, talent_id: String) {
     crate::TALENTS_INVERTED_IDEX_STORE.with(|store| {
         let mut store_ref = store.borrow_mut();
-        
+
         for key in keys {
             if let Some(stored_vec) = store_ref.get(&key) {
                 let mut ids: Vec<String> = stored_vec.into();
                 // Remove all occurrences of the ID
                 ids.retain(|existing_id| existing_id != &talent_id);
-                
+
                 if ids.is_empty() {
                     // Remove the key if no IDs left
                     store_ref.remove(&key);
@@ -177,7 +174,7 @@ pub fn search_for_talent(keys: Vec<String>) -> Vec<String> {
     crate::TALENTS_INVERTED_IDEX_STORE.with(|store| {
         let store_ref = store.borrow();
         let mut id_scores: HashMap<String, (usize, usize)> = HashMap::new(); // (key_matches, earliest_position)
-        
+
         for key in keys {
             if let Some(stored_vec) = store_ref.get(&key) {
                 let ids: Vec<String> = stored_vec.into();
@@ -188,23 +185,20 @@ pub fn search_for_talent(keys: Vec<String>) -> Vec<String> {
                 }
             }
         }
-        
+
         // Convert to vector and sort
         let mut results: Vec<(String, usize, usize)> = id_scores
             .into_iter()
             .map(|(id, (key_matches, earliest_pos))| (id, key_matches, earliest_pos))
             .collect();
-        
+
         // Sort by key matches (descending), then by position (ascending for latest first)
         results.sort_by(|a, b| {
             b.1.cmp(&a.1) // More key matches first
                 .then_with(|| a.2.cmp(&b.2)) // Earlier position (latest added) first
         });
-        
+
         // Return top 10 IDs
-        results.into_iter()
-            .take(10)
-            .map(|(id, _, _)| id)
-            .collect()
+        results.into_iter().take(10).map(|(id, _, _)| id).collect()
     })
 }

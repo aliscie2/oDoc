@@ -191,7 +191,7 @@ const MobileTutrials: React.FC<TutorialsSectionProps> = () => {
         >
           <ChevronLeft />
         </IconButton>
-        
+
         <Typography
           variant="h6"
           sx={{
@@ -203,7 +203,7 @@ const MobileTutrials: React.FC<TutorialsSectionProps> = () => {
         >
           {currentTutorial.title}
         </Typography>
-        
+
         <IconButton
           onClick={goToNext}
           disabled={selectedTutorial === tutorials.length - 1}
@@ -225,7 +225,6 @@ const MobileTutrials: React.FC<TutorialsSectionProps> = () => {
           overflow: "hidden",
         }}
       >
-
         <Box
           ref={videoContainerRef}
           onTouchStart={handleTouchStart}
@@ -439,8 +438,6 @@ const MobileTutrials: React.FC<TutorialsSectionProps> = () => {
           })}
         </Box>
       </Box>
-
-
     </>
   );
 };

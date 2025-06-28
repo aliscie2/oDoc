@@ -134,14 +134,14 @@ function FileContentPage() {
       });
     }
   }, 250);
-  
-  console.log({files,inited})
-  
+
+  console.log({ files, inited });
+
   // Check for 404 case first (when initialization is complete but no files exist)
   if (inited && files.length === 0) {
-    return <EmotionalAnimation />
+    return <EmotionalAnimation />;
   }
-  
+
   // Show loading spinner while files are being loaded (and user is logged in)
   if (files.length === 0 && isLoggedIn) {
     return <CircularProgress />;
@@ -149,7 +149,12 @@ function FileContentPage() {
 
   // If no current file is found, show 404
   if (!currentFile) {
-    return <EmotionalAnimation type="404" description="Even our deep-sea explorer jellyfish couldn't find what you're looking for!"/>
+    return (
+      <EmotionalAnimation
+        type="404"
+        description="Even our deep-sea explorer jellyfish couldn't find what you're looking for!"
+      />
+    );
   }
 
   const editable =

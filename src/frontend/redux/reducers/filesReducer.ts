@@ -1631,54 +1631,54 @@ export function filesReducer(
       };
     }
 
-    case "RENAME_SMART_CONTRACT": {
-      const { contract_id, new_name } = action;
+    // case "RENAME_SMART_CONTRACT": {
+    //   const { contract_id, new_name } = action;
 
-      // Update contract name
-      const updatedContracts = {
-        ...state.contracts,
-        [contract_id]: {
-          ...state.contracts[contract_id],
-          name: new_name,
-        },
-      };
+    //   // Update contract name
+    //   const updatedContracts = {
+    //     ...state.contracts,
+    //     [contract_id]: {
+    //       ...state.contracts[contract_id],
+    //       name: new_name,
+    //     },
+    //   };
 
-      // Update changes
-      const contractsArray = Array.isArray(state.changes.contracts)
-        ? state.changes.contracts
-        : [];
-      const existingContractIndex = contractsArray.findIndex(
-        (c) => c.id === contract_id,
-      );
-      let updatedChangesContracts;
+    //   // Update changes
+    //   const contractsArray = Array.isArray(state.changes.contracts)
+    //     ? state.changes.contracts
+    //     : [];
+    //   const existingContractIndex = contractsArray.findIndex(
+    //     (c) => c.id === contract_id,
+    //   );
+    //   let updatedChangesContracts;
 
-      if (existingContractIndex !== -1) {
-        updatedChangesContracts = contractsArray.map((c, index) =>
-          index === existingContractIndex ? { ...c, name: [new_name] } : c,
-        );
-      } else {
-        const newContractUpdate = {
-          id: contract_id,
-          permissions: [],
-          promises_indexes: [],
-          name: [new_name],
-          delete_tables: [],
-          tables: [],
-          delete_promises: [],
-          promises: [],
-        };
-        updatedChangesContracts = [...contractsArray, newContractUpdate];
-      }
+    //   if (existingContractIndex !== -1) {
+    //     updatedChangesContracts = contractsArray.map((c, index) =>
+    //       index === existingContractIndex ? { ...c, name: [new_name] } : c,
+    //     );
+    //   } else {
+    //     const newContractUpdate = {
+    //       id: contract_id,
+    //       permissions: [],
+    //       promises_indexes: [],
+    //       name: [new_name],
+    //       delete_tables: [],
+    //       tables: [],
+    //       delete_promises: [],
+    //       promises: [],
+    //     };
+    //     updatedChangesContracts = [...contractsArray, newContractUpdate];
+    //   }
 
-      return {
-        ...state,
-        contracts: updatedContracts,
-        changes: {
-          ...state.changes,
-          contracts: updatedChangesContracts,
-        },
-      };
-    }
+    //   return {
+    //     ...state,
+    //     contracts: updatedContracts,
+    //     changes: {
+    //       ...state.changes,
+    //       contracts: updatedChangesContracts,
+    //     },
+    //   };
+    // }
 
     case "ADD_TABLE": {
       const { contract_id, table } = action;

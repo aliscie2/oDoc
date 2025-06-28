@@ -11,7 +11,10 @@ interface LoginButtonProps {
   sx?: React.CSSProperties | any;
 }
 
-const LoginButton: React.FC<LoginButtonProps> = ({ isMobile = false, sx = {} }) => {
+const LoginButton: React.FC<LoginButtonProps> = ({
+  isMobile = false,
+  sx = {},
+}) => {
   const { login } = useBackendContext();
   const { isFetching } = useSelector((state: RootState) => state.uiState);
 
@@ -21,12 +24,12 @@ const LoginButton: React.FC<LoginButtonProps> = ({ isMobile = false, sx = {} }) 
 
   if (isFetching) {
     return (
-      <LinearProgress 
-        sx={{ 
-          width: isMobile ? "100%" : 120, 
+      <LinearProgress
+        sx={{
+          width: isMobile ? "100%" : 120,
           height: 10,
-          borderRadius: 2 
-        }} 
+          borderRadius: 2,
+        }}
       />
     );
   }
@@ -35,13 +38,16 @@ const LoginButton: React.FC<LoginButtonProps> = ({ isMobile = false, sx = {} }) 
     return (
       <BottomNavigationAction
         label="Login"
-        icon={<><img
-          src={DfnIcon}
-          alt="Internet Identity"
-          style={{ width: 20, height: 20 }}
-        />
-        <Person2Icon />
-        </>}
+        icon={
+          <>
+            <img
+              src={DfnIcon}
+              alt="Internet Identity"
+              style={{ width: 20, height: 20 }}
+            />
+            <Person2Icon />
+          </>
+        }
         onClick={handleLogin}
         sx={{ height: "100%" }}
       />

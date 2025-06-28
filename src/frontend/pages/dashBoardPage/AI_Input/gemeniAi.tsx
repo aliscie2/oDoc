@@ -25,7 +25,7 @@ interface CalendarAction {
 }
 
 // Time formatting utilities
-class TimeFormatter {
+export class TimeFormatter {
   private static readonly TIME_FORMAT: Intl.DateTimeFormatOptions = {
     hour12: false,
     hour: "2-digit",
@@ -95,7 +95,7 @@ class TimeFormatter {
 }
 
 // Calendar formatter for AI prompt
-class CalendarFormatter {
+export class CalendarFormatter {
   static formatCalendarForPrompt(calendar: Calendar): string {
     const sections: string[] = [];
     if (calendar?.events?.length) {
@@ -156,7 +156,7 @@ class CalendarFormatter {
 }
 
 // Action processor
-class ActionProcessor {
+export class ActionProcessor {
   static validateEventAction(action: any): boolean {
     return (
       action.event &&

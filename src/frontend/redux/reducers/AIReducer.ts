@@ -41,7 +41,7 @@ export function AIReducer(state = initialState, action: Action): any {
       // state.geminiAgent.addCredits(action.credits, action.isFree)
       return {
         ...state,
-        geminiAgent: new GeminiAgent(action.credits, false),
+        geminiAgent: new GeminiAgent(10, false),
         credits: state.credits,
         initialCredits: action.credits,
       };

@@ -38,12 +38,7 @@ import { textToJson } from "../discover/jobs/utils/processResponseJobs";
 import { Job } from "$/declarations/backend/backend.did";
 import { useChatHandler } from "./useChathandler";
 
-
-
 const Dashboard = () => {
-
-
-
   const dispatch = useDispatch();
   const [expandedCard, setExpandedCard] = useState(null);
   const [hoveredCard, setHoveredCard] = useState(null);
@@ -52,23 +47,19 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [messageCounter, setMessageCounter] = useState(0);
 
-const { processMessage, handleRetry, handleUndo, handleRedo } = useChatHandler();
+  const { processMessage, handleRetry, handleUndo, handleRedo } =
+    useChatHandler();
   const { isChanged, currentJobId, jobs, matchingJobs } = useSelector(
     (state: any) => state.jobState,
   );
 
   const currentJobRef = useRef<Job | undefined>(undefined);
 
-
   useEffect(() => {
     currentJobRef.current = jobs.find((job: Job) => job.id === currentJobId);
   }, [currentJobId, jobs]);
 
-
-  
-  const { geminiAgent } = useSelector(
-    (state) => state.AIState,
-  );
+  const { geminiAgent } = useSelector((state) => state.AIState);
 
   // State for different dashboard components
   const [showJobMatch, setShowJobMatch] = useState(true);
@@ -84,113 +75,109 @@ const { processMessage, handleRetry, handleUndo, handleRedo } = useChatHandler()
     setHoveredCard(isEntering ? cardId : null);
   };
 
-  
-
   const handleChatSend = async (message, isQuick = true) => {
-  const messageId = messageCounter + 1;
-  setMessageCounter(messageId);
+    const messageId = messageCounter + 1;
+    setMessageCounter(messageId);
 
-  setChatHistory((prev) => [
-    ...prev,
-    { type: "user", message, id: messageId },
-  ]);
-  
-  setIsLoading(true);
+    setChatHistory((prev) => [
+      ...prev,
+      { type: "user", message, id: messageId },
+    ]);
 
-  try {
-    // Save current state before making changes
-    const currentState = {
-      showJobMatch,
-    };
+    setIsLoading(true);
 
-    // Process the message using the hook
-    const result = await processMessage(message, messageId, isQuick);
-    
-    // Handle hover effects based on type
-    if (result.responses.parsed.type === 'CALENDAR') {
-      setHoveredCard('events');
-    } else if (result.responses.parsed.type === 'JOBS') {
-      setHoveredCard('job');
-    }
+    try {
+      // Save current state before making changes
+      const currentState = {
+        showJobMatch,
+      };
 
-    let newState = { ...currentState };
+      // Process the message using the hook
+      const result = await processMessage(message, messageId, isQuick);
 
-    // Apply any state changes based on parsed response
-    if (result.action) {
-      if (result.action.type === "hideJobs") {
-        newState.showJobMatch = false;
-        setShowJobMatch(false);
+      // Handle hover effects based on type
+      if (result.responses.parsed.type === "CALENDAR") {
+        setHoveredCard("events");
+      } else if (result.responses.parsed.type === "JOBS") {
+        setHoveredCard("job");
       }
-    }
 
-    // Store the action history for this specific message
-    if (result.action) {
-      setActionHistory((prev) => ({
+      let newState = { ...currentState };
+
+      // Apply any state changes based on parsed response
+      if (result.action) {
+        if (result.action.type === "hideJobs") {
+          newState.showJobMatch = false;
+          setShowJobMatch(false);
+        }
+      }
+
+      // Store the action history for this specific message
+      if (result.action) {
+        setActionHistory((prev) => ({
+          ...prev,
+          [messageId]: {
+            beforeState: currentState,
+            afterState: newState,
+            actionType: result.action.type,
+            isUndone: false,
+            undoAction: { type: "test 1" },
+            redoAction: { type: "test reDo" },
+          },
+        }));
+      }
+
+      // Determine button visibility based on parsed.feedback
+      // Determine button visibility based on parsed.feedback
+      const hasRealFeedback =
+        result.responses.parsed.feedback &&
+        !result.responses.parsed.feedback.includes("will be implemented soon");
+
+      // Check if there's a real action (not empty or undefined)
+      const hasAction = result.action && Object.keys(result.action).length > 0;
+
+      // Add AI response with undo/redo capabilities
+      setChatHistory((prev) => [
         ...prev,
-        [messageId]: {
-          beforeState: currentState,
-          afterState: newState,
-          actionType: result.action.type,
-          isUndone: false,
-          undoAction: {type:"test 1"},
-          redoAction: {type:"test reDo"},
+        {
+          type: "ai",
+          message: result.feedback,
+          id: messageId,
+          canUndo: hasRealFeedback && hasAction,
+          canRedo: false,
+          canRetry: !hasRealFeedback,
         },
-      }));
+      ]);
+
+      // Add AI response with undo/redo capabilities
+      setChatHistory((prev) => [
+        ...prev,
+        {
+          type: "ai",
+          message: result.feedback,
+          id: messageId,
+          canUndo: hasRealFeedback && !!result.action,
+          canRedo: false,
+          canRetry: !hasRealFeedback, // Show retry only for placeholder responses
+        },
+      ]);
+    } catch (error) {
+      // Handle errors
+      setChatHistory((prev) => [
+        ...prev,
+        {
+          type: "ai",
+          message: error.message || "An error occurred",
+          id: messageId,
+          canUndo: false,
+          canRedo: false,
+          canRetry: true,
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
     }
-
-    // Determine button visibility based on parsed.feedback
-    // Determine button visibility based on parsed.feedback
-const hasRealFeedback = result.responses.parsed.feedback && 
-                       !result.responses.parsed.feedback.includes("will be implemented soon");
-
-// Check if there's a real action (not empty or undefined)
-const hasAction = result.action && Object.keys(result.action).length > 0;
-
-// Add AI response with undo/redo capabilities
-setChatHistory((prev) => [
-  ...prev,
-  {
-    type: "ai",
-    message: result.feedback,
-    id: messageId,
-    canUndo: hasRealFeedback && hasAction,
-    canRedo: false,
-    canRetry: !hasRealFeedback,
-  },
-]);
-
-    
-    // Add AI response with undo/redo capabilities
-    setChatHistory((prev) => [
-      ...prev,
-      {
-        type: "ai",
-        message: result.feedback,
-        id: messageId,
-        canUndo: hasRealFeedback && !!result.action,
-        canRedo: false,
-        canRetry: !hasRealFeedback, // Show retry only for placeholder responses
-      },
-    ]);
-
-  } catch (error) {
-    // Handle errors
-    setChatHistory((prev) => [
-      ...prev,
-      {
-        type: "ai",
-        message: error.message || "An error occurred",
-        id: messageId,
-        canUndo: false,
-        canRedo: false,
-        canRetry: true,
-      },
-    ]);
-  } finally {
-    setIsLoading(false);
-  }
-};
-
+  };
 
   const handleUndoMessage = (messageId) => {
     const action = actionHistory[messageId];
@@ -239,7 +226,7 @@ setChatHistory((prev) => [
   };
 
   const handleRetryMessage = (messageId) => {
-    console.log({messageId,chatHistory })
+    console.log({ messageId, chatHistory });
     // const originalMessage = chatHistory.find(
     //   (msg) => msg.id === messageId - 1 && msg.type === "user"
     // );
@@ -312,6 +299,4 @@ setChatHistory((prev) => [
   );
 };
 
-
 export default Dashboard;
-

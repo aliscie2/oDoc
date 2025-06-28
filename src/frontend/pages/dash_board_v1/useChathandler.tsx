@@ -1,32 +1,65 @@
-import { useState, useRef } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { textToJson } from '../discover/jobs/utils/processResponseJobs';
-import PROMPTS from '../discover/jobs/utils/prompts';
+import { useState, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { textToJson } from "../discover/jobs/utils/processResponseJobs";
+import PROMPTS from "../discover/jobs/utils/prompts";
+import {
+  ActionProcessor,
+  CalendarFormatter,
+  TimeFormatter,
+} from "../dashBoardPage/AI_Input/gemeniAi";
+import { logger } from "@/DevUtils/logData";
+import DUUMY_CALENDAR_RES from "../discover/jobs/utils/dummyCalendarResponse";
 
 export const useChatHandler = () => {
+  const { calendar } = useSelector((state: any) => state.calendarState);
+
   const dispatch = useDispatch();
   const [messageResponses, setMessageResponses] = useState({});
-  
+
   const { geminiAgent } = useSelector((state) => state.AIState);
+  console.log({ x: geminiAgent.remainingCredits() });
   const { isChanged, currentJobId, jobs, matchingJobs } = useSelector(
-    (state) => state.jobState
+    (state) => state.jobState,
   );
-  
+
   const currentJobRef = useRef();
   currentJobRef.current = jobs.find((job) => job.id === currentJobId);
 
   const handleCalendarCase = async (message, parsed, mainRes, isQuick) => {
+    let now = Date.now() * 1e6;
+    const prompt = `
+      ${PROMPTS.CALENDAR}
+      Current time: ${TimeFormatter.formatTime(now)} ${TimeFormatter.formatDate(now)}
+      
+      Current Calendar: ${CalendarFormatter.formatCalendarForPrompt(calendar)}
+      
+      User input: ${message}
+    `;
+
+    const calendarRes = await geminiAgent.sendMessage(prompt, false);
+
+    const eventRes = textToJson(calendarRes).extractedData;
+    // const  eventRes = DUUMY_CALENDAR_RES;
+
+    // let actions = ActionProcessor.processAction(eventRes.data)
+    // console.log({action})
+    eventRes?.forEach((action) => {
+      console.log({ action });
+      let parsedActions = ActionProcessor.processAction(action.data);
+      console.log({ parsedActions });
+      dispatch(parsedActions);
+    });
     // Store the responses for later use
     const responses = {
       parsed,
       mainRes,
-      eventRes: null // Will be implemented later
+      eventRes,
     };
-    
+
     return {
       responses,
-      feedback: "Calendar functionality will be implemented soon",
-      action: parsed.action
+      feedback: eventRes[0].feedback,
+      action: parsed.action,
     };
   };
 
@@ -36,10 +69,10 @@ export const useChatHandler = () => {
       User Input: ${message.trim()},
       Current Job Data: ${JSON.stringify(currentJobRef.current)}
     `;
-    
-    const jobRes = await geminiAgent.sendMessage(prompt, isQuick);
+
+    const jobRes = await geminiAgent.sendMessage(prompt, false);
     const parsedJob = textToJson(jobRes).extractedData;
-    
+
     // Validation logic
     if (!currentJobId) {
       if (
@@ -56,7 +89,9 @@ export const useChatHandler = () => {
 
     if (!parsedJob || !parsedJob.updates) {
       console.error("Invalid response format:", parsedJob);
-      throw new Error("Something went wrong please try again. and report the issue on x.com/odoc_ic");
+      throw new Error(
+        "Something went wrong please try again. and report the issue on x.com/odoc_ic",
+      );
     }
 
     // Dispatch updates
@@ -70,14 +105,14 @@ export const useChatHandler = () => {
     const responses = {
       parsed,
       mainRes,
-      jobRes
+      jobRes,
     };
 
     return {
       responses,
       feedback: parsedJob.feedback,
       action: parsed.action,
-      done: parsedJob.done
+      done: parsedJob.done,
     };
   };
 
@@ -86,13 +121,13 @@ export const useChatHandler = () => {
     const responses = {
       parsed,
       mainRes,
-      quesRes: null // Will be implemented later with RAG
+      quesRes: null, // Will be implemented later with RAG
     };
-    
+
     return {
       responses,
       feedback: "Questions functionality with RAG will be implemented soon",
-      action: parsed.action
+      action: parsed.action,
     };
   };
 
@@ -101,34 +136,37 @@ export const useChatHandler = () => {
     const responses = {
       parsed,
       mainRes,
-      otherRes: null // Will be implemented later
+      otherRes: null, // Will be implemented later
     };
-    
+
     return {
       responses,
       feedback: parsed.feedback || "Task completed",
-      action: parsed.action
+      action: parsed.action,
     };
   };
 
   const processMessage = async (message, messageId, isQuick = true) => {
     try {
-      const mainRes = await geminiAgent.sendMessage(`
+      const mainRes = await geminiAgent.sendMessage(
+        `
         message: ${message.trim()},
         ${PROMPTS.MAIN}
-      `, isQuick);
-      
+      `,
+        true,
+      );
+      // console.log({mainRes})
       const parsed = textToJson(mainRes).extractedData;
       let result;
 
       switch (parsed.type) {
-        case 'CALENDAR':
+        case "CALENDAR":
           result = await handleCalendarCase(message, parsed, mainRes, isQuick);
           break;
-        case 'JOBS':
+        case "JOBS":
           result = await handleJobsCase(message, parsed, mainRes, isQuick);
           break;
-        case 'QUESTIONS':
+        case "QUESTIONS":
           result = await handleQuestionsCase(message, parsed, mainRes, isQuick);
           break;
         default: // 'Other'
@@ -137,14 +175,14 @@ export const useChatHandler = () => {
       }
 
       // Store all responses for this message
-      setMessageResponses(prev => ({
+      setMessageResponses((prev) => ({
         ...prev,
-        [messageId]: result.responses
+        [messageId]: result.responses,
       }));
 
       return result;
     } catch (error) {
-      console.error('Error processing message:', error);
+      console.error("Error processing message:", error);
       throw error;
     }
   };
@@ -152,21 +190,30 @@ export const useChatHandler = () => {
   const handleRetry = (messageId) => {
     const responses = messageResponses[messageId];
     if (responses) {
-      console.log('Retry:', { parsed: responses.parsed, res: responses.mainRes });
+      console.log("Retry:", {
+        parsed: responses.parsed,
+        res: responses.mainRes,
+      });
     }
   };
 
   const handleUndo = (messageId) => {
     const responses = messageResponses[messageId];
     if (responses) {
-      console.log('Undo:', { parsed: responses.parsed, res: responses.mainRes });
+      console.log("Undo:", {
+        parsed: responses.parsed,
+        res: responses.mainRes,
+      });
     }
   };
 
   const handleRedo = (messageId) => {
     const responses = messageResponses[messageId];
     if (responses) {
-      console.log('Redo:', { parsed: responses.parsed, res: responses.mainRes });
+      console.log("Redo:", {
+        parsed: responses.parsed,
+        res: responses.mainRes,
+      });
     }
   };
 
@@ -175,6 +222,6 @@ export const useChatHandler = () => {
     handleRetry,
     handleUndo,
     handleRedo,
-    messageResponses
+    messageResponses,
   };
 };

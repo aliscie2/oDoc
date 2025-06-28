@@ -635,7 +635,6 @@ export const contractContextMenu = (params) => {
     baseMenuItems.push({
       name: "Delete Column",
       action: () => {
-       
         // const fieldName = params.column.getColId();
         dispatch({
           type: "DELETE_COLUMN",

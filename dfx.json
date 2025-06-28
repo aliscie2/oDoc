@@ -4,7 +4,7 @@
     "capabilities": ["nodejs"]
   },
   "canisters": {
-        "llm": {
+    "llm": {
       "type": "pull",
       "id": "w36hm-eqaaa-aaaal-qr76a-cai"
     },
@@ -38,9 +38,7 @@
       "candid": "src/backend/backend.did",
       "package": "backend",
       "type": "rust",
-       "dependencies": [
-        "llm"
-      ]
+      "dependencies": ["llm"]
     },
     "frontend": {
       "dependencies": ["backend"],

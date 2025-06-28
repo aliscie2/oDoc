@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import { Box } from "@mui/material";
 
-import AiChat from "@/components/AiChat";
+
 import { v4 as uuidv4 } from "uuid";
 import { textToJson } from "./utils/processResponseJobs";
 import { useDispatch, useSelector } from "react-redux";
@@ -170,33 +170,21 @@ const JobsPage: React.FC = () => {
   //     alert(buyAiCredits.Err);
   //   }
   // };
-  
+
   return (
-    <Box 
-      className="jobs-page-container" 
-      sx={{ 
-        padding: 0, 
+    <Box
+      className="jobs-page-container"
+      sx={{
+        padding: 0,
         margin: "0 auto",
         height: "100vh", // Set full viewport height
         overflowY: "auto", // Enable vertical scrolling
         overflowX: "hidden", // Hide horizontal scrollbar if not needed
         display: "flex",
-        flexDirection: "column"
+        flexDirection: "column",
       }}
     >
       <JobSelector />
-      <Box sx={{ flex: 1, minHeight: 0 }}> {/* Allow this to shrink */}
-        {/* <AiChat
-          key={geminiAgent}
-          currentAICredits={geminiAgent?.remainingCredits()}
-          onBuyCredit={onBuyCredit}
-          // title="Job Application Assistant"
-          initialMessages={messages}
-          infoMessage="Tell us are you looking for Job or talent?. Share ur resume/requirements and we will find it for you while you are sleeping."
-          loading={loading}
-          onSendMessage={handleSendMessage}
-        /> */}
-      </Box>
       <JobSearchComponent />
     </Box>
   );

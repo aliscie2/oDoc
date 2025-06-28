@@ -22,7 +22,7 @@ pub struct JobUpdate {
     pub matches: Option<Vec<Match>>,
 }
 
-fn delete_from_search(id: String){
+fn delete_from_search(id: String) {
     let curr_job = Job::get(&id);
     if let Some(job) = curr_job {
         if job.category == Category::Job {
@@ -41,8 +41,6 @@ fn add_to_search(skills: &Vec<String>, job_id: &String, category: &Category) {
     }
 }
 
-
-
 #[update]
 fn update_job(updates: Vec<JobUpdate>, ai_credits: Option<f32>) -> Result<(), String> {
     if ic_cdk::caller().to_string() == Principal::anonymous().to_string() {
@@ -54,8 +52,6 @@ fn update_job(updates: Vec<JobUpdate>, ai_credits: Option<f32>) -> Result<(), St
     }
 
     for update in updates {
-
-        
         let mut job = match Job::get(&update.id) {
             Some(job) => job,
             None => Job::new(update.id.clone()),
