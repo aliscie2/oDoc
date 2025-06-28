@@ -2,11 +2,7 @@ import { useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { textToJson } from "../discover/jobs/utils/processResponseJobs";
 import PROMPTS from "../discover/jobs/utils/prompts";
-import {
-  ActionProcessor,
-  CalendarFormatter,
-  TimeFormatter,
-} from "../dashBoardPage/AI_Input/gemeniAi";
+import { ActionProcessor, CalendarFormatter, TimeFormatter } from "./gemeniAi";
 import { logger } from "@/DevUtils/logData";
 import DUUMY_CALENDAR_RES from "../discover/jobs/utils/dummyCalendarResponse";
 
@@ -95,6 +91,7 @@ export const useChatHandler = () => {
     }
 
     // Dispatch updates
+
     dispatch({
       type: "UPDATE_FIELDS",
       updates: parsedJob.updates,

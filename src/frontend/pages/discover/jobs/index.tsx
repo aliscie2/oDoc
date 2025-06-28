@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import { Box } from "@mui/material";
 
-
 import { v4 as uuidv4 } from "uuid";
 import { textToJson } from "./utils/processResponseJobs";
 import { useDispatch, useSelector } from "react-redux";
@@ -34,160 +33,66 @@ import { Login } from "@mui/icons-material";
 // }
 
 const JobsPage: React.FC = () => {
-  const { backendActor } = useBackendContext();
+ const { backendActor } = useBackendContext();
 
-  const { isChanged, currentJobId, jobs, matchingJobs } = useSelector(
-    (state: any) => state.jobState,
-  );
-  // const { geminiAgent, credits } = useSelector((state: any) => state.AIState);
-  const currentJobRef = useRef<Job | undefined>(undefined);
-  const dispatch = useDispatch();
-  // const [loading, setLoading] = useState(false);
-  // const [messages, setMessages] = useState<Message[]>([]);
+ const { isChanged, currentJobId, jobs, matchingJobs } = useSelector(
+   (state: any) => state.jobState,
+ );
+ const currentJobRef = useRef<Job | undefined>(undefined);
+ const dispatch = useDispatch();
 
-  const [isProfileDone, setIsProfileDone] = useState<boolean>(false);
+ const [isProfileDone, setIsProfileDone] = useState<boolean>(false);
 
-  useEffect(() => {
-    currentJobRef.current = jobs.find((job: Job) => job.id === currentJobId);
-  }, [currentJobId, jobs]);
+ useEffect(() => {
+   currentJobRef.current = jobs.find((job: Job) => job.id === currentJobId);
+ }, [currentJobId, jobs]);
 
-  useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        const res: { jobs: Job[]; matching_jobs: Job[] } =
-          await backendActor.get_my_jobs();
-        dispatch({
-          type: "INIT_JOBS",
-          jobs: res.jobs,
-          matchingJobs: res.matching_jobs,
-        });
-      } catch (error) {
-        console.error("Error fetching jobs:", error);
-      }
-    };
+ useEffect(() => {
+   const fetchJobs = async () => {
+     try {
+       const res: { jobs: Job[]; matching_jobs: Job[] } =
+         await backendActor.get_my_jobs();
+       dispatch({
+         type: "INIT_JOBS",
+         jobs: res.jobs,
+         matchingJobs: res.matching_jobs,
+       });
+     } catch (error) {
+       console.error("Error fetching jobs:", error);
+     }
+   };
 
-    fetchJobs();
-  }, [dispatch]);
+   fetchJobs();
+ }, [dispatch]);
 
-  // const handleSendMessage = useCallback(
-  //   async (content: string) => {
-  //     if (!geminiAgent) return;
+ const { profile } = useSelector((state: any) => state.filesState);
 
-  //     setLoading(true);
-  //     try {
-  //       const newMessage: Message = {
-  //         id: uuidv4(),
-  //         content,
-  //         sender: "user",
-  //         timestamp: new Date(),
-  //       };
+ if (!profile) {
+   return (
+     <>
+       Please make suer to login first
+       <LoginButton startIcon={<Login />} />
+     </>
+   );
+ }
 
-  //       setMessages((prev) => [...prev, newMessage]);
-
-  //       const messageToSend = `
-  //     ${BUILD_JOB_PROMPT}
-  //     User Input: ${content},
-  //     Current Job Data: ${JSON.stringify(currentJobRef.current)}
-  //     `;
-
-  //       const response = await geminiAgent.sendMessage(messageToSend);
-  //       // let gemini_uage = geminiAgent?.getUsage();
-
-  //       // const response = "```" + gmeniResponseExample + "```";
-  //       const parsed: ProcessedJobResponse =
-  //         textToJson(response).extractedData;
-  //       //TODO renreder <JobSearchComponent /> if parsed.isBreakingChanges == true
-  //       // Validate before processing
-  //       if (!currentJobId) {
-  //         if (
-  //           parsed.category == "Talent" &&
-  //           jobs.some((j: Job) => Object.keys(j.category)[0] === "Talent")
-  //         ) {
-  //           alert("You can create only one talent profile");
-  //           return;
-  //         } else if (
-  //           jobs.filter((j: Job) => Object.keys(j.category)[0] === "Job")
-  //             .length >= 3
-  //         ) {
-  //           alert("You can have max 3 job posts");
-  //           return;
-  //         }
-  //       }
-
-  //       if (!parsed || !parsed.updates) {
-  //         console.error("Invalid response format:", parsed);
-  //         alert(
-  //           "Somthing went wrong please try again. and report the issue on x.com/odoc_ic",
-  //         );
-  //       }
-  //       console.log("parsed", { parsed });
-  //       dispatch({
-  //         type: "UPDATE_FIELDS",
-  //         updates: parsed.updates,
-  //         category: parsed.category,
-  //         required_match_score: parsed.required_match_score,
-  //       });
-
-  //       if (parsed.done) {
-  //         setIsProfileDone(true);
-  //       }
-
-  //       const aiMessage: Message = {
-  //         id: uuidv4(),
-  //         content: parsed.feedback,
-  //         sender: "ai",
-  //         timestamp: new Date(),
-  //       };
-  //       setMessages((prev) => [...prev, aiMessage]);
-  //     } catch (error) {
-  //       console.error("Error sending message:", error);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   },
-  //   [geminiAgent, jobs, currentJobId, dispatch],
-  // );
-
-  const { profile } = useSelector((state: any) => state.filesState);
-
-  if (!profile) {
-    return (
-      <>
-        Please make suer to login first
-        <LoginButton startIcon={<Login />} />
-      </>
-    );
-  }
-
-  // const onBuyCredit = async (value) => {
-  //   let buyAiCredits = await backendActor.buy_ai_credits(value);
-  //   if (buyAiCredits.Ok) {
-  //     dispatch({
-  //       type: "ADD_AI_CREDITS",
-  //       credits: value * 0.8,
-  //     });
-  //   } else {
-  //     alert(buyAiCredits.Err);
-  //   }
-  // };
-
-  return (
-    <Box
-      className="jobs-page-container"
-      sx={{
-        padding: 0,
-        margin: "0 auto",
-        height: "100vh", // Set full viewport height
-        overflowY: "auto", // Enable vertical scrolling
-        overflowX: "hidden", // Hide horizontal scrollbar if not needed
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      <JobSelector />
-      <JobSearchComponent />
-    </Box>
-  );
+ return (
+   <Box
+     className="jobs-page-container"
+     sx={{
+       padding: 0,
+       margin: 0,
+       height: "100%",
+       overflowY: "auto",
+       overflowX: "hidden",
+       display: "flex",
+       flexDirection: "column",
+     }}
+   >
+     <JobSelector />
+     <JobSearchComponent />
+   </Box>
+ );
 };
 
 export default JobsPage;

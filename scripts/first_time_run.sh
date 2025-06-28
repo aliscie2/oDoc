@@ -52,6 +52,7 @@ log "Step 2: Deploying backend..."
 dfx deploy backend || error "Backend deployment failed"
 success "Backend deployed"
 
+DFX_PORT=$(dfx info webserver-port)
 BACKEND_ID=$(dfx canister id backend)
 log "Backend canister ID: $BACKEND_ID"
 
@@ -107,7 +108,7 @@ success "Declaration generation completed"
 log "Creating/updating .env file with all canister IDs..."
 cat > .env << EOF
 VITE_DFX_NETWORK=local
-VITE_DFX_PORT=8080
+VITE_DFX_PORT=$DFX_PORT
 VITE_IC_HOST=http://localhost:4943
 VITE_BACKEND_CANISTER_ID=$BACKEND_ID
 VITE_FRONTEND_CANISTER_ID=$FRONTEND_ID

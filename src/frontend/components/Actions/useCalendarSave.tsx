@@ -7,7 +7,7 @@ import { CalendarActions } from "$/declarations/backend/backend.did";
 import {
   AvailabilityTimezone,
   EventTimezone,
-} from "@/pages/dashBoardPage/calindarView/serializers";
+} from "@/pages/dash_board_v1/calindarView/serializers";
 
 interface UseCalendarSaveReturn {
   isChanged: boolean;

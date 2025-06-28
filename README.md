@@ -232,6 +232,10 @@ We suggest that you begin by typing:
 
     yarn playwright test
 
+### Note frontend has too many unused vars,imports,const
+
+`npx tsc --noUnusedLocals --noUnusedParameters --noEmit`
+
 ### full env vars
 
 ```

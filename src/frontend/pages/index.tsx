@@ -19,9 +19,9 @@ import AffiliateDashboard from "./affiliate";
 import AffiliateRedirect from "./affiliateRedirect";
 
 import ContractPage from "./profile/ContractPage";
-import Scheduler from "./dashBoardPage/calindarView";
 import { useNavigate, Link, Navigate } from "react-router-dom";
 import Dashboard from "./dash_board_v1";
+import CalendarView from "./dash_board_v1/calindarView/calendar";
 
 function Pages() {
   const navigate = useNavigate();
@@ -70,7 +70,7 @@ function Pages() {
       <Route path="/affiliate" element={<AffiliateDashboard />} />
       <Route path="/f" element={<AffiliateRedirect />} />
       <Route path="/*" element={<FileContentPage />} />
-      <Route path="/calendar" element={<Scheduler />} />
+      <Route path="/calendar" element={<CalendarView />} />
     </Routes>
   );
 }

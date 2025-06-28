@@ -41,11 +41,11 @@ else
     II_ID=$(dfx canister id internet_identity 2>/dev/null)
     BACKEND_ID=$(dfx canister id backend 2>/dev/null)
     FRONTEND_ID=$(dfx canister id frontend 2>/dev/null)
-    
+    DFX_PORT=$(dfx info webserver-port)
     # Create new .env file with all variables
         cat > .env <<EOF
     VITE_DFX_NETWORK=local
-    VITE_DFX_PORT=8080
+    VITE_DFX_PORT=$DFX_PORT
     VITE_IC_HOST=http://localhost:4943
     EOF
         

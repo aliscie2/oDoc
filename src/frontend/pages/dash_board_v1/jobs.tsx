@@ -44,59 +44,24 @@ export const JobMatchesCard = ({
   };
 
   // Helper function to get job category display name
-  const getJobCategoryName = (category) => {
-    if (!category) return "Unknown";
-    const categoryKey = Object.keys(category)[0];
-    return categoryKey || "Unknown";
-  };
+  // const getJobCategoryName = (category) => {
+  //   if (!category) return "Unknown";
+  //   const categoryKey = Object.keys(category)[0];
+  //   return categoryKey || "Unknown";
+  // };
 
   // Helper function to extract skills from job
-  const getJobSkills = (job) => {
-    return job?.skills?.slice(0, 3) || [];
-  };
+  // const getJobSkills = (job) => {
+  //   return job?.skills?.slice(0, 3) || [];
+  // };
 
   // Helper function to get job title or default
-  const getJobTitle = (job) => {
-    return job?.title || job?.role || "Untitled Position";
-  };
+  // const getJobTitle = (job) => {
+  //   return job?.title || job?.role || "Untitled Position";
+  // };
 
   // If fullscreen mode, render JobsPage directly
-  if (isFullscreen) {
-    return (
-      <Box
-        sx={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: 1300,
-          backgroundColor: "background.default",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            p: 2,
-            borderBottom: 1,
-            borderColor: "divider",
-          }}
-        >
-          <Typography variant="h6">Job Matches & Profiles</Typography>
-          <IconButton onClick={handleExpandClick}>
-            <Close />
-          </IconButton>
-        </Box>
-        <Box sx={{ flex: 1, overflow: "hidden" }}>
-          <JobsPage />
-        </Box>
-      </Box>
-    );
-  }
+  
 
   return (
     <BaseCard
@@ -114,19 +79,7 @@ export const JobMatchesCard = ({
         showExpandIcon={true}
       />
 
-      {/* Normal and Expanded modes */}
-      <Box
-        sx={{
-          height: "350px",
-          overflow: "hidden",
-          border: 1,
-          borderColor: "divider",
-          borderRadius: 1,
-          mt: 1,
-        }}
-      >
-        <JobsPage />
-      </Box>
+      <JobsPage />
     </BaseCard>
   );
 };

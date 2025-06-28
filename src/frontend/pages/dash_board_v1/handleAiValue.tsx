@@ -1,5 +1,5 @@
 // handleAIValue.js
-import { processCalendarText } from "./gemeniAi";
+import { processCalendarText } from "../../dash_board_v1/gemeniAi";
 // import { validateEventAgainstCalendar } from "../calendarView/utils";
 
 /**

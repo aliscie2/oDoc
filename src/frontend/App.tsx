@@ -11,8 +11,7 @@ import useSocket from "./websocket/use_socket";
 import { useBackendContext } from "./contexts/BackendContext";
 import { Box, CircularProgress, styled, useTheme } from "@mui/material";
 import { Principal } from "@dfinity/principal";
-import PromoNotification from "./components/limitedOffer";
-import BetaWarning from "./betWarning";
+// import PromoNotification from "./components/limitedOffer";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { DndProvider } from "react-dnd";
 import { canisterId } from "../declarations/backend";
@@ -20,7 +19,7 @@ import getckUsdcBalance from "./utils/getBalance";
 import {
   AvailabilityTimezone,
   EventTimezone,
-} from "./pages/dashBoardPage/calindarView/serializers";
+} from "./pages/dash_board_v1/calindarView/serializers";
 import { RootState } from "./redux/reducers";
 
 import RegistrationForm from "./components/MainComponents/RegistrationForm";

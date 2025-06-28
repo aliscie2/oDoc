@@ -38,6 +38,10 @@ import { textToJson } from "../discover/jobs/utils/processResponseJobs";
 import { Job } from "$/declarations/backend/backend.did";
 import { useChatHandler } from "./useChathandler";
 
+// let parsedJob = {    "required_match_score": 7,    "feedback": "Thank you for sharing your skills! To help us find the best opportunities for you, please provide your contact email, your preferred hourly/monthly/yearly rate, and details about your education, work experience, and any certifications you hold. Given your expertise with Django, are you also proficient in Python?",    "updates": [      {        "field": "skills",        "values": [          "rust",          "icp",          "dfx",          "django"        ]      },      {        "field": "job_titles",        "values": [          "Software Developer",          "Backend Developer",          "Blockchain Developer",          "Web Developer"        ]      }    ],    "category": "Talent",    "done": false,    "isBreakingChanges": true  }
+// let parsedJob2 = {    "required_match_score": 7,    "feedback": "Great! Could you please specify the name of the Google certificate (e.g., Google IT Support Professional Certificate, Google Project Management Certificate)? Also, remember to provide your contact email, your preferred hourly/monthly/yearly rate, and details about your education and work experience to complete your profile.",    "updates": [      {        "field": "certifications",        "values": [          "Google certificate"        ]      },      {        "field": "job_titles",        "values": [          "Software Developer",          "Backend Developer",          "Blockchain Developer",          "Web Developer"        ]      }    ],    "category": "Talent",    "done": false,    "isBreakingChanges": true  };
+// let parsedJob3 = {    "required_match_score": 7,    "feedback": "Understood, ICP has been removed from your skills. Please remember to provide your contact email, your preferred hourly/monthly/yearly rate, and details about your education and work experience to ensure your profile is complete and we can connect you with relevant opportunities.",    "updates": [      {        "field": "skills",        "values": [          "rust",          "dfx",          "django"        ]      },      {        "field": "job_titles",        "values": [          "Software Developer",          "Backend Developer",          "Blockchain Developer",          "Web Developer"        ]      }    ],    "category": "Talent",    "done": false,    "isBreakingChanges": true  }
+
 const Dashboard = () => {
   const dispatch = useDispatch();
   const [expandedCard, setExpandedCard] = useState(null);
@@ -74,6 +78,7 @@ const Dashboard = () => {
   const handleCardHover = (cardId, isEntering) => {
     setHoveredCard(isEntering ? cardId : null);
   };
+  
 
   const handleChatSend = async (message, isQuick = true) => {
     const messageId = messageCounter + 1;

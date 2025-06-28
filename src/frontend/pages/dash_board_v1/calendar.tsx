@@ -3,8 +3,9 @@ import { Box, Typography, Chip, Divider, Collapse, Alert } from "@mui/material";
 import { Event, Schedule, Email } from "@mui/icons-material";
 import { useSelector } from "react-redux";
 import { BaseCard, CardHeader } from "./card";
-import Scheduler from "../dashBoardPage/calindarView";
+
 import FullscreenDialog from "./FullscreenDialog"; // Import the shared dialog
+import CalendarView from "./calindarView/calendar";
 
 // Calendar/Events Component
 export const CalendarCard = ({
@@ -172,7 +173,7 @@ export const CalendarCard = ({
         title="Calendar & Events"
         showTitle={false} // Calendar doesn't show title, just close button
       >
-        <Scheduler />
+        <CalendarView />
       </FullscreenDialog>
     </>
   );
