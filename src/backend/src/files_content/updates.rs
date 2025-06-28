@@ -77,10 +77,8 @@ fn multi_updates(
     files_indexing: Vec<FileIndexing>,
 ) -> Result<String, String> {
     if contracts_updates.len() > 0 {
-        let res = UserState::set_is_transfering();
-        // if  res not ok
-        if Ok(res) = res {
-        } else {
+        let res: Result<(), crate::Error> = UserState::set_is_transfering();
+        if res.is_err() {
             return Err(
                 "Please wait few second, there is already a transaction going.".to_string(),
             );
@@ -172,7 +170,6 @@ fn multi_updates(
 
         // Final save to ensure everything is persisted
         let res = curr_contract.save();
-        let res = file.save();
         if let Err(er) = res {
             messages.push_str(&format!("contract save err: {}", er));
         }
