@@ -1,4 +1,4 @@
-export const gmeniResponseExample = `json
+export const gmeniJobResponseExample = `json
 {
 
   "required_match_score": 7.8,

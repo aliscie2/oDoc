@@ -54,7 +54,7 @@ export default function EmotionalAnimation({
   // Size configuration
   const getSizeConfig = (size) => {
     const configs = {
-      xs: { width: 120, scale: 0.4, iconSize: 28 },
+      xs: { width: 70, scale: 0.3, iconSize: 20 },
       sm: { width: 180, scale: 0.6, iconSize: 36 },
       md: { width: 300, scale: 1, iconSize: 48 },
       lg: { width: 420, scale: 1.4, iconSize: 64 },

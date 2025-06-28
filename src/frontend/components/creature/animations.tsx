@@ -99,6 +99,7 @@ export const JellyfishSVG = ({
       height={config.width} 
       viewBox="0 0 209 259"
       style={{ 
+        position:"absolute",
         filter: 'drop-shadow(0 4px 20px rgba(0,0,0,0.15))',
         transform: `scale(${config.scale})` 
       }}

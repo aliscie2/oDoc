@@ -1,4 +1,4 @@
-export const processResponseJobs = (response: string) => {
+export const textToJson = (response: string) => {
   // Extract the display response (everything before the JSON)
   let displayResponse = response;
   let extractedData = null;

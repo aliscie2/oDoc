@@ -24,7 +24,7 @@ import ConnectButton from "./ConnectButton";
 import { useBackendContext } from "@/contexts/BackendContext";
 import JobDetails from "./JobDetails";
 import { JOB_MATCHING_PROMPT } from "./utils/jobMatchingPrompt";
-import { processResponseJobs } from "./utils/processResponseJobs";
+import { textToJson } from "./utils/processResponseJobs";
 
 const JobSearchComponent: React.FC = () => {
   const { backendActor } = useBackendContext();
@@ -139,7 +139,7 @@ const JobSearchComponent: React.FC = () => {
           Current: ${JSON.stringify(currentJob)}
         `);
 
-        const parsed = processResponseJobs(aiResponse)?.extractedData;
+        const parsed = textToJson(aiResponse)?.extractedData;
         processedMatches =
           parsed?.matches?.map((match: any) => ({
             job_id: match.job_id,

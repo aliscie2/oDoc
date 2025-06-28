@@ -10,15 +10,14 @@ import {
 } from "@mui/material";
 import { Chat, Send, Refresh, Undo, Redo } from "@mui/icons-material";
 import creature from '@/public/creature.gif';
-
 import { useBackendContext } from "@/contexts/BackendContext";
 import EmotionalAnimation from "@/components/creature";
 import { JOB_MATCHING_PROMPT } from "../discover/jobs/utils/jobMatchingPrompt";
 import { MAIN_CHAT_PROMPT } from "../discover/jobs/utils/mainChatProblm";
 import { useSelector } from "react-redux";
-import { processResponseJobs } from "../discover/jobs/utils/processResponseJobs";
+import MarkdownMessage from "./MarkdownMessage"; // Import the new component
+import { logger } from "@/DevUtils/logData";
 
-// AI Chat Component
 export const AIChatComponent = ({
   isExpanded,
   onToggle,
@@ -27,27 +26,13 @@ export const AIChatComponent = ({
   isLoading,
   onUndoMessage,
   onRedoMessage,
+  onRetryMessage,
 }) => {
-
-  const { geminiAgent } = useSelector(
-    (state: any) => state.AIState,
-  );
-
-  const { backendActor } = useBackendContext();
+  logger({chatHistory})
   const [message, setMessage] = useState("");
 
   const handleSend = async () => {
-
-    
     if (!message.trim()) return;
-    console.log({message})
-    const res = await geminiAgent.sendMessage(`
-      message: ${message.trim()},
-          ${MAIN_CHAT_PROMPT}
-        `,true);
-        const parsed = processResponseJobs(res).extractedData;
-    // let res = await backendActor?.prompt(message)
-    console.log({parsed})
     onSendMessage(message);
     setMessage("");
   };
@@ -73,11 +58,12 @@ export const AIChatComponent = ({
       sx={{
         ...cardStyle,
         position: "fixed",
-        bottom: 20,
-        right: 20,
-        width: isExpanded ? 400 : 60,
-        height: isExpanded ? 300 : 60,
+        bottom: { xs: 10, sm: 20 },
+        right: { xs: 10, sm: 20 },
+        width: isExpanded ? { xs: "calc(100vw - 20px)", sm: 500, md: 600 } : 60,
+        height: isExpanded ? { xs: "50vh", sm: 400, md: 500 } : 60,
         zIndex: 1000,
+        maxWidth: isExpanded ? "90vw" : "auto",
       }}
     >
       <CardContent sx={{ p: 1, height: "100%" }}>
@@ -96,8 +82,7 @@ export const AIChatComponent = ({
               mb={2}
             >
               <Box display="flex" alignItems="center" gap={1}>
-
-                <EmotionalAnimation type={isLoading?"Loading":"watch"} size="xs" />
+                <EmotionalAnimation type={isLoading ? "Loading" : "watch"} size={100} />
                 <Typography variant="h6" sx={{ fontSize: "1rem" }}>
                   AI Assistant
                 </Typography>
@@ -110,29 +95,38 @@ export const AIChatComponent = ({
             <Box sx={{ flex: 1, overflowY: "auto", mb: 2 }}>
               {chatHistory.map((msg, idx) => (
                 <Box key={idx} mb={1}>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      textAlign: msg.type === "user" ? "right" : "left",
-                    }}
-                  >
-                    {msg.message}
-                  </Typography>
-                  {msg.type === "ai" && (msg.canUndo || msg.canRedo) && (
-                    <Box display="flex" gap={1} mt={1}>
-                      <Button
-                        size="small"
-                        startIcon={<Refresh fontSize="small" />}
-                        sx={{ color: "#00d4ff", minWidth: "auto", p: 0.5 }}
-                      >
-                        Retry
-                      </Button>
+                  <MarkdownMessage 
+                    message={msg.message} 
+                    isUser={msg.type === "user"} 
+                  />
+                  {msg.type === "ai" && (msg.canUndo || msg.canRedo || msg.canRetry) && (
+                    <Box display="flex" gap={1} mt={1} flexWrap="wrap">
+                      {msg.canRetry && (
+                        <Button
+                          size="small"
+                          startIcon={<Refresh fontSize="small" />}
+                          onClick={() => onRetryMessage(msg.id)}
+                          sx={{ 
+                            color: "#00d4ff", 
+                            minWidth: "auto", 
+                            p: 0.5,
+                            fontSize: { xs: "0.6rem", sm: "0.75rem" }
+                          }}
+                        >
+                          Retry
+                        </Button>
+                      )}
                       {msg.canUndo && (
                         <Button
                           size="small"
                           startIcon={<Undo fontSize="small" />}
                           onClick={() => onUndoMessage(msg.id)}
-                          sx={{ color: "#ff9800", minWidth: "auto", p: 0.5 }}
+                          sx={{ 
+                            color: "#ff9800", 
+                            minWidth: "auto", 
+                            p: 0.5,
+                            fontSize: { xs: "0.6rem", sm: "0.75rem" }
+                          }}
                         >
                           Undo
                         </Button>
@@ -142,7 +136,12 @@ export const AIChatComponent = ({
                           size="small"
                           startIcon={<Redo fontSize="small" />}
                           onClick={() => onRedoMessage(msg.id)}
-                          sx={{ color: "#f44336", minWidth: "auto", p: 0.5 }}
+                          sx={{ 
+                            color: "#f44336", 
+                            minWidth: "auto", 
+                            p: 0.5,
+                            fontSize: { xs: "0.6rem", sm: "0.75rem" }
+                          }}
                         >
                           Redo
                         </Button>
@@ -151,14 +150,6 @@ export const AIChatComponent = ({
                   )}
                 </Box>
               ))}
-              {isLoading && (
-                <Typography
-                  variant="body2"
-                  sx={{ color: "rgba(255,255,255,0.6)" }}
-                >
-                  Loading...
-                </Typography>
-              )}
             </Box>
 
             <Box display="flex" gap={1}>

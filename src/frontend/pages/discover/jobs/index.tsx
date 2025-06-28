@@ -3,7 +3,7 @@ import { Box } from "@mui/material";
 
 import AiChat from "@/components/AiChat";
 import { v4 as uuidv4 } from "uuid";
-import { processResponseJobs } from "./utils/processResponseJobs";
+import { textToJson } from "./utils/processResponseJobs";
 import { useDispatch, useSelector } from "react-redux";
 import { Job, JobUpdate } from "$/declarations/backend/backend.did";
 import { BUILD_JOB_PROMPT } from "./utils/buildProfilePrompt";
@@ -14,24 +14,24 @@ import { useBackendContext } from "@/contexts/BackendContext";
 import LoginButton from "@/components/MainComponents/topNavBar/loginButton";
 import { Login } from "@mui/icons-material";
 
-interface Message {
-  id: string;
-  content: string;
-  sender: "user" | "ai";
-  timestamp: Date;
-}
+// interface Message {
+//   id: string;
+//   content: string;
+//   sender: "user" | "ai";
+//   timestamp: Date;
+// }
 
-interface ProcessedJobResponse {
-  done: boolean;
-  feedback: string;
-  actions: Array<
-    | { type: "SET_CURRENT_JOB"; job: Job }
-    | { type: "UPDATE_JOB"; update: JobUpdate }
-    | { type: "SET_JOBS"; jobs: Job[] }
-    | { type: "ADD_JOB"; job: Job }
-    | { type: "DELETE_JOB"; id: string }
-  >;
-}
+// interface ProcessedJobResponse {
+//   done: boolean;
+//   feedback: string;
+//   actions: Array<
+//     | { type: "SET_CURRENT_JOB"; job: Job }
+//     | { type: "UPDATE_JOB"; update: JobUpdate }
+//     | { type: "SET_JOBS"; jobs: Job[] }
+//     | { type: "ADD_JOB"; job: Job }
+//     | { type: "DELETE_JOB"; id: string }
+//   >;
+// }
 
 const JobsPage: React.FC = () => {
   const { backendActor } = useBackendContext();
@@ -39,11 +39,11 @@ const JobsPage: React.FC = () => {
   const { isChanged, currentJobId, jobs, matchingJobs } = useSelector(
     (state: any) => state.jobState,
   );
-  const { geminiAgent, credits } = useSelector((state: any) => state.AIState);
+  // const { geminiAgent, credits } = useSelector((state: any) => state.AIState);
   const currentJobRef = useRef<Job | undefined>(undefined);
   const dispatch = useDispatch();
-  const [loading, setLoading] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([]);
+  // const [loading, setLoading] = useState(false);
+  // const [messages, setMessages] = useState<Message[]>([]);
 
   const [isProfileDone, setIsProfileDone] = useState<boolean>(false);
 
@@ -69,84 +69,84 @@ const JobsPage: React.FC = () => {
     fetchJobs();
   }, [dispatch]);
 
-  const handleSendMessage = useCallback(
-    async (content: string) => {
-      if (!geminiAgent) return;
+  // const handleSendMessage = useCallback(
+  //   async (content: string) => {
+  //     if (!geminiAgent) return;
 
-      setLoading(true);
-      try {
-        const newMessage: Message = {
-          id: uuidv4(),
-          content,
-          sender: "user",
-          timestamp: new Date(),
-        };
+  //     setLoading(true);
+  //     try {
+  //       const newMessage: Message = {
+  //         id: uuidv4(),
+  //         content,
+  //         sender: "user",
+  //         timestamp: new Date(),
+  //       };
 
-        setMessages((prev) => [...prev, newMessage]);
+  //       setMessages((prev) => [...prev, newMessage]);
 
-        const messageToSend = `
-      ${BUILD_JOB_PROMPT}
-      User Input: ${content},
-      Current Job Data: ${JSON.stringify(currentJobRef.current)}
-      `;
+  //       const messageToSend = `
+  //     ${BUILD_JOB_PROMPT}
+  //     User Input: ${content},
+  //     Current Job Data: ${JSON.stringify(currentJobRef.current)}
+  //     `;
 
-        const response = await geminiAgent.sendMessage(messageToSend);
-        // let gemini_uage = geminiAgent?.getUsage();
+  //       const response = await geminiAgent.sendMessage(messageToSend);
+  //       // let gemini_uage = geminiAgent?.getUsage();
 
-        // const response = "```" + gmeniResponseExample + "```";
-        const parsed: ProcessedJobResponse =
-          processResponseJobs(response).extractedData;
-        //TODO renreder <JobSearchComponent /> if parsed.isBreakingChanges == true
-        // Validate before processing
-        if (!currentJobId) {
-          if (
-            parsed.category == "Talent" &&
-            jobs.some((j: Job) => Object.keys(j.category)[0] === "Talent")
-          ) {
-            alert("You can create only one talent profile");
-            return;
-          } else if (
-            jobs.filter((j: Job) => Object.keys(j.category)[0] === "Job")
-              .length >= 3
-          ) {
-            alert("You can have max 3 job posts");
-            return;
-          }
-        }
+  //       // const response = "```" + gmeniResponseExample + "```";
+  //       const parsed: ProcessedJobResponse =
+  //         textToJson(response).extractedData;
+  //       //TODO renreder <JobSearchComponent /> if parsed.isBreakingChanges == true
+  //       // Validate before processing
+  //       if (!currentJobId) {
+  //         if (
+  //           parsed.category == "Talent" &&
+  //           jobs.some((j: Job) => Object.keys(j.category)[0] === "Talent")
+  //         ) {
+  //           alert("You can create only one talent profile");
+  //           return;
+  //         } else if (
+  //           jobs.filter((j: Job) => Object.keys(j.category)[0] === "Job")
+  //             .length >= 3
+  //         ) {
+  //           alert("You can have max 3 job posts");
+  //           return;
+  //         }
+  //       }
 
-        if (!parsed || !parsed.updates) {
-          console.error("Invalid response format:", parsed);
-          alert(
-            "Somthing went wrong please try again. and report the issue on x.com/odoc_ic",
-          );
-        }
-        console.log("parsed", { parsed });
-        dispatch({
-          type: "UPDATE_FIELDS",
-          updates: parsed.updates,
-          category: parsed.category,
-          required_match_score: parsed.required_match_score,
-        });
+  //       if (!parsed || !parsed.updates) {
+  //         console.error("Invalid response format:", parsed);
+  //         alert(
+  //           "Somthing went wrong please try again. and report the issue on x.com/odoc_ic",
+  //         );
+  //       }
+  //       console.log("parsed", { parsed });
+  //       dispatch({
+  //         type: "UPDATE_FIELDS",
+  //         updates: parsed.updates,
+  //         category: parsed.category,
+  //         required_match_score: parsed.required_match_score,
+  //       });
 
-        if (parsed.done) {
-          setIsProfileDone(true);
-        }
+  //       if (parsed.done) {
+  //         setIsProfileDone(true);
+  //       }
 
-        const aiMessage: Message = {
-          id: uuidv4(),
-          content: parsed.feedback,
-          sender: "ai",
-          timestamp: new Date(),
-        };
-        setMessages((prev) => [...prev, aiMessage]);
-      } catch (error) {
-        console.error("Error sending message:", error);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [geminiAgent, jobs, currentJobId, dispatch],
-  );
+  //       const aiMessage: Message = {
+  //         id: uuidv4(),
+  //         content: parsed.feedback,
+  //         sender: "ai",
+  //         timestamp: new Date(),
+  //       };
+  //       setMessages((prev) => [...prev, aiMessage]);
+  //     } catch (error) {
+  //       console.error("Error sending message:", error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   },
+  //   [geminiAgent, jobs, currentJobId, dispatch],
+  // );
 
   const { profile } = useSelector((state: any) => state.filesState);
 
@@ -159,17 +159,17 @@ const JobsPage: React.FC = () => {
     );
   }
 
-  const onBuyCredit = async (value) => {
-    let buyAiCredits = await backendActor.buy_ai_credits(value);
-    if (buyAiCredits.Ok) {
-      dispatch({
-        type: "ADD_AI_CREDITS",
-        credits: value * 0.8,
-      });
-    } else {
-      alert(buyAiCredits.Err);
-    }
-  };
+  // const onBuyCredit = async (value) => {
+  //   let buyAiCredits = await backendActor.buy_ai_credits(value);
+  //   if (buyAiCredits.Ok) {
+  //     dispatch({
+  //       type: "ADD_AI_CREDITS",
+  //       credits: value * 0.8,
+  //     });
+  //   } else {
+  //     alert(buyAiCredits.Err);
+  //   }
+  // };
   
   return (
     <Box 
@@ -186,7 +186,7 @@ const JobsPage: React.FC = () => {
     >
       <JobSelector />
       <Box sx={{ flex: 1, minHeight: 0 }}> {/* Allow this to shrink */}
-        <AiChat
+        {/* <AiChat
           key={geminiAgent}
           currentAICredits={geminiAgent?.remainingCredits()}
           onBuyCredit={onBuyCredit}
@@ -195,11 +195,9 @@ const JobsPage: React.FC = () => {
           infoMessage="Tell us are you looking for Job or talent?. Share ur resume/requirements and we will find it for you while you are sleeping."
           loading={loading}
           onSendMessage={handleSendMessage}
-        />
+        /> */}
       </Box>
-      {(isProfileDone ||
-        matchingJobs.length > 0 ||
-        (currentJobRef?.current?.skills.length > 0)) && <JobSearchComponent />}
+      <JobSearchComponent />
     </Box>
   );
 };
