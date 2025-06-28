@@ -15,6 +15,7 @@ import SendIcon from "@mui/icons-material/Send";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import AiCreditsCircle from "./ContractTable/AiCreditsCircle";
 import LoaderComponent from '@/components/creature'
+
 export interface Message {
   id: string;
   content: string;
@@ -192,8 +193,7 @@ const AiChat: React.FC<AiChatProps> = ({
         maxWidth: { xs: "100%", sm: 600, md: 800 },
         mx: "auto",
         p: { xs: 1, sm: 2, md: 3 },
-        height: { xs: "100vh", sm: "auto" },
-        minHeight: { xs: "100vh", sm: "600px" },
+        maxHeight: "50vh",
         display: "flex",
         flexDirection: "column",
       }}
@@ -209,6 +209,7 @@ const AiChat: React.FC<AiChatProps> = ({
             color: theme.palette.text.primary,
             textAlign: "center",
             px: { xs: 1, sm: 0 },
+            flexShrink: 0,
           }}
         >
           {title}
@@ -226,7 +227,7 @@ const AiChat: React.FC<AiChatProps> = ({
           border: `1px solid ${theme.palette.divider}`,
           borderRadius: { xs: 2, sm: 3 },
           overflow: "hidden",
-          minHeight: { xs: "auto", sm: "400px" },
+          minHeight: 0,
         }}
       >
         {/* Messages Area */}
@@ -235,7 +236,7 @@ const AiChat: React.FC<AiChatProps> = ({
             flex: 1,
             overflowY: "auto",
             p: { xs: 1.5, sm: 2, md: 3 },
-            minHeight: { xs: "300px", sm: "400px" },
+            minHeight: 0,
           }}
         >
           {messages.length === 0 ? (
@@ -333,6 +334,7 @@ const AiChat: React.FC<AiChatProps> = ({
             p: { xs: 1.5, sm: 2, md: 3 },
             pt: 0,
             borderTop: `1px solid ${theme.palette.divider}`,
+            flexShrink: 0,
           }}
         >
           <Box

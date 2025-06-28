@@ -24,6 +24,7 @@ import {
 import { RootState } from "./redux/reducers";
 
 import RegistrationForm from "./components/MainComponents/RegistrationForm";
+import GetStartedHelper from "./components/creature/getStartedhelper";
 
 // import LoaderComponent from "./components/creature";
 
@@ -64,7 +65,7 @@ const App: React.FC = () => {
   );
   const { isFetching } = useSelector((state: RootState) => state.uiState);
   const dispatch = useDispatch();
-  const { profile } = useSelector((state: any) => state.filesState);
+  const { profile,files} = useSelector((state: any) => state.filesState);
   const { backendActor, ckUSDCActor } = useBackendContext();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const theme = useTheme();
@@ -75,7 +76,7 @@ const App: React.FC = () => {
         dispatch({ type: "IS_FETCHING", isFetching: true });
 
         const res = await backendActor.get_initial_data();
-        console.log({ res });
+        
         const workspaces = await backendActor.get_work_spaces();
         if ("Err" in res && res.Err == "Anonymous user.") {
           dispatch({ isRegistered: false, type: "IS_REGISTERED" });
@@ -337,8 +338,10 @@ const App: React.FC = () => {
     );
   }
 
+  
   return (
     <BrowserRouter>
+    {isRegistered&& (localStorage.getItem("helper") !=='true' && files.length <2 ) && <GetStartedHelper />}
       <MainContent>
         <SearchPopper />
 
@@ -348,6 +351,7 @@ const App: React.FC = () => {
             <PageContainer>
               
               {isRegistered == false ? <RegistrationForm /> : <Pages />}
+              
             </PageContainer>
           </NavBar>
         </DndProvider>

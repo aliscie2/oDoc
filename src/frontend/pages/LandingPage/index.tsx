@@ -200,7 +200,7 @@ export default function OdocLandingPage() {
           icon={<EmotionalAnimation size={isMobile?'sm':"md"} title={"oDoc crypto agreement"} description='The unified freelance platform.' type="logo" />}
         >
           <Typography variant="h6" paragraph color="text.secondary" sx={{ mb: 3 }}>
-          C• A freelance crypto Agreement platform designed to obviate the need for middlemen, spreadsheets, documents, or task managers. Powered by AI & ICP
+          C• oDoc is A decentralized freelance crypto Agreement platform designed to obviate the need for middlemen, spreadsheets, documents, or task managers. Powered by AI & ICP
           </Typography>
           </FeatureSection>
         {/* Job Matching Section */}
@@ -216,7 +216,7 @@ export default function OdocLandingPage() {
           <List sx={{ '& .MuiListItem-root': { pl: 0 } }}>
             {[
               'It will alert you by email when there is a good match for you',
-              'Provide with cover letter so you can read the full job post/resume',
+              'Provide with cover letter so you do not need to read the full job post/resume',
               'Prevent spams by hiding low matching scores'
             ].map((text, index) => (
               <ListItem key={index}>

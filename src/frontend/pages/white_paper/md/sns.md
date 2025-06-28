@@ -1,36 +1,44 @@
-# Tokenomics
-
-**Token Name:** ODOC
-
-#### Utility
-
-The ODOC token is the platform’s native currency used for transactions, incentivizing user engagement, and enabling participation in governance decisions. It forms the backbone of odoc's multi-token ecosystem, aligning the interests of users, developers, and stakeholders.
-
-#### Distribution
-
-Tokens will be fairly distributed among early adopters, contributors, and strategic partners, with reserves allocated for ongoing development and community rewards.
-
-#### Economic Model
-
-The token model is engineered to balance supply and demand, encouraging active participation and sustainable growth. It integrates multiple token types to reflect financial and social engagements accurately:
-
-##### Interaction Tokens
-
-- **Sender Tokens:**  
-  Earned when initiating a payment, these tokens are subject to burning in cases of refunds or unmet escrow conditions. Higher payment amounts trigger a proportional burn to ensure accountability.
-- **Receiver Tokens:**  
-  Granted upon receiving payments, these tokens serve as a reputation or "stock" marker. In cases of disputes or cancellations, tokens are deducted to maintain fairness.
-- **Social Talk Tokens:**  
-  Accrued through positive social interactions—such as posting content, receiving likes, and gaining views—these tokens are burnt when content receives negative feedback, ensuring a quality-driven social ecosystem.
-
-**Consensus Mechanism:** All token gains and burns are executed via a consensus-based system, ensuring that adjustments are community-validated in a manner similar to peer-reviewed scientific publishing or collaborative platforms like Wikipedia.
-
----
-
-# Governance
-
-**Model:** Decentralized Autonomous Organization (DAO)  
-**Mechanism:** Token holders have proportional voting rights, enabling them to influence key decisions such as protocol upgrades, feature development, and content moderation policies. This democratic governance model guarantees that the platform evolves according to community needs.  
-**Transparency:** Every governance decision is recorded on-chain, ensuring complete transparency and accountability throughout the decision-making process.
-
----
+Tokenomics
+The $ODOC token is the official governance and utilities token of the ODOC Freelance Crypto
+Agreement Platform. It allows users to participate in governance decisions, access premium
+features, and means of payments in ODOC platform. Below is the token distribution breakdown:
+Total Supply: 1,000,0000,000
+Ledger Transaction Fee: 0.1 ODOC
+Token Allocation
+Total Supply: 1,000,000,000 $ODOC, The allocation of the total supply of $ODOC is as follows:
+Developer Team: 14% - 140,000,000 ODOC
+SNS Swap: 25% - 250,000,000 ODOC
+Airdrop: 1% - 10,000,000 ODOC
+Treasury: 60% - 600,000,000
+Note
+The 14% of the developer team of the total supply will be divided into 3 equal neurons with
+dissolve delays of 12, 24, and 36 months respectively.
+The 25% of the SNS Swap will be distributed to 5 equal neurons for each of the participants in
+the SNS sales with dissolve delays of 0,3,6,9 and 12 respectively.
+The 1% of the total supply will be distributed to the early active users of ODOC platform after a
+successful SNS swap respectively.
+SNS Swap
+ODOC Total Supply: 1,000,000,000
+ODOC for SNS Swap: 250,000,000
+ODOC for Development Team: 140,000,000
+DAO Treasury: 600,000,000
+Airdrop: 10,000,000
+Minimum ICP to Raise: 40,000 ICP
+Maximum ICP to Raise: 160,000 ICP (Without CF)
+Min per Swaper: 1 ICP
+Max per Swaper: 50,000 ICP
+Duration: 10 days
+The Ledger Transaction fee is 0.1 ODOC
+Minimum number of Participants: 100
+Token Utility
+The major utilities of $ODOC token are
+Governance
+ODOC tokens will be used for the governance of the Sonic platform. ODOC holders will be able
+to vote on proposals related to the development and management of the platform, giving them a
+say in its future direction.
+Transaction Fee
+ODOC tokens will be use for ledger transactions fee which will be 0.1 ODOC per transaction.
+In-app Means of Payment
+ODOC token will be one of the tokens that will be used for payment activities within the
+application which will include payment for services and payment for exclusive and premium
+features.

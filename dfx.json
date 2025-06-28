@@ -4,6 +4,10 @@
     "capabilities": ["nodejs"]
   },
   "canisters": {
+        "llm": {
+      "type": "pull",
+      "id": "w36hm-eqaaa-aaaal-qr76a-cai"
+    },
     "ic_siwe_provider": {
       "type": "custom",
       "candid": "https://github.com/kristoferlund/ic-siwe/releases/download/v0.1.1/ic_siwe_provider.did",
@@ -33,7 +37,10 @@
     "backend": {
       "candid": "src/backend/backend.did",
       "package": "backend",
-      "type": "rust"
+      "type": "rust",
+       "dependencies": [
+        "llm"
+      ]
     },
     "frontend": {
       "dependencies": ["backend"],

@@ -170,22 +170,36 @@ const JobsPage: React.FC = () => {
       alert(buyAiCredits.Err);
     }
   };
+  
   return (
-    <Box className="jobs-page-container" sx={{ padding: 0, margin: "0 auto" }}>
+    <Box 
+      className="jobs-page-container" 
+      sx={{ 
+        padding: 0, 
+        margin: "0 auto",
+        height: "100vh", // Set full viewport height
+        overflowY: "auto", // Enable vertical scrolling
+        overflowX: "hidden", // Hide horizontal scrollbar if not needed
+        display: "flex",
+        flexDirection: "column"
+      }}
+    >
       <JobSelector />
-      <AiChat
-        key={geminiAgent}
-        currentAICredits={geminiAgent?.remainingCredits()}
-        onBuyCredit={onBuyCredit}
-        // title="Job Application Assistant"
-        initialMessages={messages}
-        infoMessage="Tell us are you looking for Job or talent?. Share ur resume/requirements and we will find it for you while you are sleeping."
-        loading={loading}
-        onSendMessage={handleSendMessage}
-      />
-      {isProfileDone ||
-        matchingJobs.lenght > 0 ||
-        (currentJobRef?.current?.skills.length > 0 && <JobSearchComponent />)}
+      <Box sx={{ flex: 1, minHeight: 0 }}> {/* Allow this to shrink */}
+        <AiChat
+          key={geminiAgent}
+          currentAICredits={geminiAgent?.remainingCredits()}
+          onBuyCredit={onBuyCredit}
+          // title="Job Application Assistant"
+          initialMessages={messages}
+          infoMessage="Tell us are you looking for Job or talent?. Share ur resume/requirements and we will find it for you while you are sleeping."
+          loading={loading}
+          onSendMessage={handleSendMessage}
+        />
+      </Box>
+      {(isProfileDone ||
+        matchingJobs.length > 0 ||
+        (currentJobRef?.current?.skills.length > 0)) && <JobSearchComponent />}
     </Box>
   );
 };

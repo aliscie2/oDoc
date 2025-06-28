@@ -189,6 +189,7 @@ export default function TopNavBar() {
           value={location.pathname}
         >
           <BottomNavigationAction
+          name='toggleNavbar'
             label="Menu"
             icon={isNavOpen ? <MenuOpenIcon /> : <MenuIcon />}
             onClick={() => dispatch({ type: "TOGGLE_NAV" })}
@@ -249,12 +250,14 @@ export default function TopNavBar() {
     >
       <Box sx={{ display: "flex", alignItems: "center" }}>
         <IconButton
+          role='toggleNav'
+          className="toggleNav"
           edge="start"
           color="inherit"
           onClick={() => dispatch({ type: "TOGGLE_NAV" })}
           sx={styles.iconButton}
         >
-          {isNavOpen ? <MenuOpenIcon /> : <MenuIcon />}
+          {isNavOpen ? <MenuOpenIcon /> : <MenuIcon   />}
         </IconButton>
         <Routes>
           <Route path="*" element={<BreadPage />} />

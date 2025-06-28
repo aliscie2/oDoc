@@ -72,7 +72,7 @@ export class GeminiAgent {
   // Get the appropriate model based on tier
   private getCurrentModel(): string {
     return GeminiAgent.MYSTATICS.isFreeTier
-      ? "gemini-2.5-flash-preview-05-20" // Free tier - Lite model
+      ? "gemini-1.5-flash" // Free tier - Lite model
       : "gemini-2.5-flash-preview-05-20"; // Paid tier - Pro model (same model for now)
   }
 
@@ -192,104 +192,105 @@ export class GeminiAgent {
     return { allowed: true };
   }
 
-  async sendMessage(message: string, files: any[] = []): Promise<string> {
-    const estimatedCost = this.estimateInputCost(message);
-    const requestCheck = this.shouldAllowRequest(estimatedCost);
+  async sendMessage(message: string, quick: boolean = false): Promise<string> {
+  const estimatedCost = this.estimateInputCost(message);
+  const requestCheck = this.shouldAllowRequest(estimatedCost);
 
-    if (!requestCheck.allowed) {
-      // Show alert with cooldown and throw error immediately
-      this.showAlert(requestCheck.reason || "Request not allowed");
-      throw new Error("INSUFFICIENT_CREDITS"); // Use a specific error code
-    }
-
-    try {
-      const currentModel = this.getCurrentModel();
-      const compressedHistory = this.compressHistory();
-
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-goog-api-key": this.apiKey,
-          },
-          body: JSON.stringify({
-            contents: [
-              ...compressedHistory.map((msg) => ({
-                role: msg.role,
-                parts: [{ text: msg.parts[0] }],
-              })),
-              {
-                role: "user",
-                parts: [{ text: message }],
-              },
-            ],
-            // Increased generation config limits for better JSON responses
-            generationConfig: {
-              maxOutputTokens: GeminiAgent.MYSTATICS.isFreeTier ? 2000 : 4000, // Increased limits
-              temperature: 0.7,
-              candidateCount: 1, // Only generate one candidate
-            },
-          }),
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error(`API request failed with status ${response.status}`);
-      }
-
-      const data = await response.json();
-      const assistantMessage =
-        data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-
-      // Update usage statistics and deduct credits
-      if (!GeminiAgent.MYSTATICS.isFreeTier) {
-        this.updateUsageStatsAndDeductCredits(data.usageMetadata);
-      } else {
-        this.updateUsageStats(data.usageMetadata);
-      }
-
-      // Add to conversation history (full history is maintained, compression happens at send time)
-      if (message.trim()) {
-        GeminiAgent.MYSTATICS.conversationHistory.push({
-          role: "user",
-          parts: [message],
-        });
-      }
-
-      if (assistantMessage) {
-        GeminiAgent.MYSTATICS.conversationHistory.push({
-          role: "model",
-          parts: [assistantMessage],
-        });
-      }
-
-      return assistantMessage;
-    } catch (error) {
-      console.error("Error calling Gemini API:", error);
-
-      // Handle specific errors without showing duplicate alerts
-      if (error instanceof Error) {
-        if (error.message === "INSUFFICIENT_CREDITS") {
-          // Don't show another alert - already shown above
-          throw error;
-        } else if (error.message.includes("403")) {
-          this.showAlert("API key invalid or quota exceeded");
-        } else if (error.message.includes("429")) {
-          this.showAlert("Rate limit exceeded - Gemini is busy");
-        } else {
-          this.showAlert("Gemini is busy - please try again");
-        }
-      }
-
-      throw new Error(
-        error instanceof Error
-          ? error.message
-          : "Failed to get response from AI",
-      );
-    }
+  if (!requestCheck.allowed) {
+    // Show alert with cooldown and throw error immediately
+    this.showAlert(requestCheck.reason || "Request not allowed");
+    throw new Error("INSUFFICIENT_CREDITS"); // Use a specific error code
   }
+
+  try {
+    // Use quick model if requested, otherwise use current model logic
+    const currentModel = quick ? "gemini-1.5-flash" : this.getCurrentModel();
+    const compressedHistory = this.compressHistory();
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": this.apiKey,
+        },
+        body: JSON.stringify({
+          contents: [
+            ...compressedHistory.map((msg) => ({
+              role: msg.role,
+              parts: [{ text: msg.parts[0] }],
+            })),
+            {
+              role: "user",
+              parts: [{ text: message }],
+            },
+          ],
+          // Increased generation config limits for better JSON responses
+          generationConfig: {
+            maxOutputTokens: GeminiAgent.MYSTATICS.isFreeTier ? 2000 : 4000, // Increased limits
+            temperature: 0.7,
+            candidateCount: 1, // Only generate one candidate
+          },
+        }),
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`API request failed with status ${response.status}`);
+    }
+
+    const data = await response.json();
+    const assistantMessage =
+      data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
+    // Update usage statistics and deduct credits
+    if (!GeminiAgent.MYSTATICS.isFreeTier) {
+      this.updateUsageStatsAndDeductCredits(data.usageMetadata);
+    } else {
+      this.updateUsageStats(data.usageMetadata);
+    }
+
+    // Add to conversation history (full history is maintained, compression happens at send time)
+    if (message.trim()) {
+      GeminiAgent.MYSTATICS.conversationHistory.push({
+        role: "user",
+        parts: [message],
+      });
+    }
+
+    if (assistantMessage) {
+      GeminiAgent.MYSTATICS.conversationHistory.push({
+        role: "model",
+        parts: [assistantMessage],
+      });
+    }
+
+    return assistantMessage;
+  } catch (error) {
+    console.error("Error calling Gemini API:", error);
+
+    // Handle specific errors without showing duplicate alerts
+    if (error instanceof Error) {
+      if (error.message === "INSUFFICIENT_CREDITS") {
+        // Don't show another alert - already shown above
+        throw error;
+      } else if (error.message.includes("403")) {
+        this.showAlert("API key invalid or quota exceeded");
+      } else if (error.message.includes("429")) {
+        this.showAlert("Rate limit exceeded - Gemini is busy");
+      } else {
+        this.showAlert("Gemini is busy - please try again");
+      }
+    }
+
+    throw new Error(
+      error instanceof Error
+        ? error.message
+        : "Failed to get response from AI",
+    );
+  }
+}
 
   // Update usage stats only (for free tier)
   private updateUsageStats(usageMetadata?: GeminiUsageMetadata): void {

@@ -55,6 +55,25 @@ export const idlFactory = ({ IDL }) => {
     'receiver' : IDL.Principal,
   });
   const Result_3 = IDL.Variant({ 'Ok' : IDL.Null, 'Err' : IDL.Text });
+  const ToolCallArgument = IDL.Record({
+    'value' : IDL.Text,
+    'name' : IDL.Text,
+  });
+  const FunctionCall = IDL.Record({
+    'name' : IDL.Text,
+    'arguments' : IDL.Vec(ToolCallArgument),
+  });
+  const ToolCall = IDL.Record({ 'id' : IDL.Text, 'function' : FunctionCall });
+  const AssistantMessage = IDL.Record({
+    'content' : IDL.Opt(IDL.Text),
+    'tool_calls' : IDL.Vec(ToolCall),
+  });
+  const ChatMessage = IDL.Variant({
+    'tool' : IDL.Record({ 'content' : IDL.Text, 'tool_call_id' : IDL.Text }),
+    'user' : IDL.Record({ 'content' : IDL.Text }),
+    'assistant' : AssistantMessage,
+    'system' : IDL.Record({ 'content' : IDL.Text }),
+  });
   const Index_Account = IDL.Record({
     'owner' : IDL.Principal,
     'subaccount' : IDL.Opt(IDL.Vec(IDL.Nat8)),
@@ -662,6 +681,7 @@ export const idlFactory = ({ IDL }) => {
     'approve_high_promise' : IDL.Func([CPayment], [Result_3], []),
     'buy_ai_credits' : IDL.Func([IDL.Float64], [Result_3], []),
     'cancel_friend_request' : IDL.Func([IDL.Text], [Result], []),
+    'chat' : IDL.Func([IDL.Vec(ChatMessage)], [IDL.Text], []),
     'check_external_transactions' : IDL.Func([IDL.Nat], [Result_4], []),
     'confirmed_c_payment' : IDL.Func([CPayment], [Result_3], []),
     'confirmed_cancellation' : IDL.Func([CPayment], [Result_3], []),
@@ -770,6 +790,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'object_on_cancel' : IDL.Func([CPayment, IDL.Text], [Result_3], []),
     'pay' : IDL.Func([PayArgs], [Result_2], []),
+    'prompt' : IDL.Func([IDL.Text], [IDL.Text], []),
     'rate_user' : IDL.Func([IDL.Principal, Rating], [Result_3], []),
     'register' : IDL.Func([IDL.Text, RegisterUser], [Result], []),
     'reject_friend_request' : IDL.Func([IDL.Text], [Result], []),

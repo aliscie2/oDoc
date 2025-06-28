@@ -1,7 +1,10 @@
 ## old version of Odoc can be found [here](https://github.com/aliscie/Odoc-old)
 
-## to get started
-
+## first time run
+you have 2 options run 
+### Option 1
+`sh script/first_time_run.sh`
+### Option 2, follow this 
 1. first download the pocketic https://github.com/dfinity/pocketic/releases
 2. add this to dfx.json
 
@@ -37,10 +40,21 @@
 4. read this https://crates.io/crates/pocket-ic
 5. and read this https://www.npmjs.com/package/@hadronous/pic
 
-## TO get started
+
+## everyday usage
 
 1. `dfx start --background --clean`
    - Note: somtimes you need to check the commands from `MakeFile` in `generate_candid_file`
+2. `make deploy-all`
+
+### For upgrade backend
+`make upgrade-backend`
+
+### for Frontend 
+`yarn start`
+Locally no need for `dfx deploy frontned`
+
+### for sperate use commands 
 2. `dfx deploy backend`
 3. `dfx deploy internet_identity`
 4. `sh scripts/deploy_ledger.sh`
@@ -210,3 +224,54 @@ Auto generate tests with Codegen.
 We suggest that you begin by typing:
 
     yarn playwright test
+
+### full env vars
+```
+VITE_INTERNET_IDENTITY
+POCKET_IC_BIN
+VITE_POCKET_IC_BIN
+BACKEND_WASM
+VITE_DFX_NETWORK
+VITE_DFX_PORT
+VITE_IC_HOST
+# DFX CANISTER ENVIRONMENT VARIABLES
+DFX_VERSION
+DFX_NETWORK
+CANISTER_ID_INTERNET_IDENTITY
+CANISTER_ID_IC_SIWE_PROVIDER
+CANISTER_ID_FRONTEND
+CANISTER_ID_CKUSDC_LEDGER
+CANISTER_ID_BACKEND
+CANISTER_ID
+CANISTER_CANDID_PATH
+# END DFX CANISTER ENVIRONMENT VARIABLES
+ODOC_CEO_ID
+
+VITE_TEST_ENV
+VITE_ANTHROPIC_API_KEY
+AIDER_COMMAND
+VITE_GEMINI_API_KEY
+VITE_ANTHROPIC_SECRET_KEY
+SECRET
+
+VITE_GMAIL_AUTH_CLIENT_ID
+VITE_REACT_APP_EMAILJS_SERVICE_ID
+
+VITE_REACT_APP_EMAILJS_USER_ID
+VITE_REACT_APP_EMAILJS_TEMPLATE_ID
+VITE_DEEPSEEK_API_KEY
+VITE_PUBLIC_BASE_PATH
+
+VITE_GOOGLE_CLIENT_ID
+VITE_GOOGLE_API_KEY
+VITE_GOOGLE_CLIENT_SECRET
+
+VITE_PUBLIC_TELEGRAM_BOT_TOKEN
+VITE_MAINGUN_SECRET_KEY
+VITE_MAILGUN_KEY
+VITE_MAILJET_KEY
+VITE_MAILJET_SECRET_KEY
+VITE_BREVO_SECRET_KEY
+VITE_MAIL_TRAP
+ZEROSTEP_TOKEN
+```

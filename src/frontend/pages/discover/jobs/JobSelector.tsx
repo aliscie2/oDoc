@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Job } from "$/declarations/backend/backend.did";
 import {
@@ -16,10 +16,36 @@ import {
   Chip,
   useTheme,
   useMediaQuery,
+  Collapse,
+  Fade,
+  Slide,
 } from "@mui/material";
-import { Visibility, Delete, Add } from "@mui/icons-material";
+import { 
+  Visibility, 
+  Delete, 
+  Add, 
+  Work, 
+  LocationOn, 
+  AttachMoney, 
+  Schedule,
+  TrendingUp,
+  KeyboardArrowDown,
+  KeyboardArrowUp,
+  Business,
+  Email,
+  CalendarToday,
+  CheckCircle,
+  Cancel,
+  Star,
+  Assignment,
+  CardGiftcard,
+  Person
+} from "@mui/icons-material";
 import JobDetails from "./JobDetails";
 import { useBackendContext } from "@/contexts/BackendContext";
+import JobBriefData from "./quickBar";
+
+
 
 const JobSelector: React.FC = () => {
   const dispatch = useDispatch();
@@ -27,11 +53,64 @@ const JobSelector: React.FC = () => {
   const [expanded, setExpanded] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [showBriefData, setShowBriefData] = useState(false);
+  const [highlightedFields, setHighlightedFields] = useState<Set<string>>(new Set());
+  const [previousJob, setPreviousJob] = useState<Job | null>(null);
+  
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const currentJob = jobs.find((job: Job) => job.id === currentJobId);
   const { backendActor } = useBackendContext();
+
+  // Track job changes and highlight updated fields
+  useEffect(() => {
+    if (currentJob && previousJob && currentJob.id === previousJob.id) {
+      const changedFields = new Set<string>();
+      
+      // Compare all job fields to detect changes
+      if (currentJob.description !== previousJob.description) changedFields.add('description');
+      if (currentJob.location !== previousJob.location) changedFields.add('location');
+      if (currentJob.salary !== previousJob.salary) changedFields.add('salary');
+      if (currentJob.jobType !== previousJob.jobType) changedFields.add('jobType');
+      if (JSON.stringify(currentJob.category) !== JSON.stringify(previousJob.category)) changedFields.add('category');
+      if (currentJob.active !== previousJob.active) changedFields.add('active');
+      if (JSON.stringify(currentJob.skills) !== JSON.stringify(previousJob.skills)) changedFields.add('skills');
+      if (currentJob.requirements !== previousJob.requirements) changedFields.add('requirements');
+      if (currentJob.benefits !== previousJob.benefits) changedFields.add('benefits');
+      if (currentJob.company !== previousJob.company) changedFields.add('company');
+      if (currentJob.contactEmail !== previousJob.contactEmail) changedFields.add('contactEmail');
+      if (currentJob.applicationDeadline !== previousJob.applicationDeadline) changedFields.add('applicationDeadline');
+      if (currentJob.experienceLevel !== previousJob.experienceLevel) changedFields.add('experienceLevel');
+      
+      if (changedFields.size > 0) {
+        setHighlightedFields(changedFields);
+        
+        // Auto-scroll to brief data with smooth animation
+        setTimeout(() => {
+          const briefElement = document.querySelector('[data-testid="job-brief-data"]');
+          if (briefElement) {
+            briefElement.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'center' 
+            });
+          }
+        }, 300);
+        
+        // Clear highlights after animation
+        setTimeout(() => {
+          setHighlightedFields(new Set());
+        }, 4000); // Extended to 4 seconds for better visibility
+      }
+    }
+    
+    setPreviousJob(currentJob ? { ...currentJob } : null);
+  }, [currentJob]);
+
+  // Show/hide brief data based on current job
+  useEffect(() => {
+    setShowBriefData(!!currentJob);
+  }, [currentJob]);
 
   const handleJobSelect = (jobId: string | null) => {
     if (jobId === null) {
@@ -105,6 +184,7 @@ const JobSelector: React.FC = () => {
           border: `1px solid ${theme.palette.divider}`,
           borderRadius: 3,
           overflow: "hidden",
+          transition: "all 0.3s ease",
         }}
       >
         <Select
@@ -137,6 +217,15 @@ const JobSelector: React.FC = () => {
                   <Typography variant="body1" sx={{ flex: 1 }}>
                     {getJobTitle(currentJob)}
                   </Typography>
+                  <IconButton
+                    size="small"
+                    sx={{ 
+                      transform: showBriefData ? "rotate(180deg)" : "rotate(0deg)",
+                      transition: "transform 0.3s ease",
+                    }}
+                  >
+                    <KeyboardArrowDown />
+                  </IconButton>
                 </>
               ) : (
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -264,6 +353,18 @@ const JobSelector: React.FC = () => {
           ))}
         </Select>
       </Paper>
+
+      {/* Brief Data Bar */}
+      <Collapse in={showBriefData} timeout={400}>
+        <Box data-testid="job-brief-data">
+          <JobBriefData 
+            currentJob={currentJob} 
+            highlightedFields={highlightedFields}
+            previousJob={previousJob}
+            isMobile={isMobile}
+          />
+        </Box>
+      </Collapse>
 
       {/* Job Details Dialog */}
       <Dialog

@@ -1,16 +1,18 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-
+const mainColor = "#F9F3E0"
+const lightColor = "#fcfcfc"
+const darkColor = "#e6dfca"
+// const mainColor = "#40e0d0"
+// const lightColor = "#49fceb"
+// const darkColor = "#3dd4c5"
 // Simplified Logo SVG Component
 export const LogoSVG = ({ size = 120 }) => {
-  const { isDarkMode } = useSelector((state: any) => state.uiState);
-// const creamColor = isDarkMode ? '#F9F3E0' : '#E8D9B5'; // Darker cream when not in dark mode
-
 
   return (
     <svg width={size} height={size} viewBox="0 0 429 492" fill="none">
       <path d="M241.653 0C315.012 0 380.727 33.3416 425.004 85.9639C429.071 94.9083 429.498 103.745 426.827 111.375C424.204 118.87 418.192 124.905 411.082 129.455C403.976 134.003 395.819 137.039 388.992 138.556C387.734 138.835 386.071 138.681 384.053 138.119C382.043 137.559 379.727 136.607 377.186 135.342C374.525 134.017 371.632 132.354 368.601 130.454C337.385 94.4923 291.74 71.8135 240.89 71.8135C146.799 71.8136 70.5234 149.458 70.5234 245.236C70.5236 341.015 146.799 418.658 240.89 418.658C260.887 418.658 280.079 415.148 297.905 408.705C299.03 409.06 300.197 409.524 301.321 410.041C303.066 410.843 304.688 411.76 305.867 412.565C306.458 412.969 306.926 413.337 307.239 413.64C307.396 413.791 307.503 413.916 307.566 414.01C307.638 414.116 307.619 414.13 307.619 414.075C307.619 414.326 307.766 414.5 307.86 414.589C307.964 414.686 308.092 414.765 308.218 414.83C308.473 414.962 308.824 415.09 309.238 415.214C310.074 415.464 311.26 415.724 312.688 415.976C315.548 416.48 319.434 416.961 323.555 417.248C327.675 417.536 332.045 417.632 335.872 417.367C339.672 417.104 343.026 416.48 345.047 415.268C347.825 413.601 351.148 414.706 354.332 417.02C357.486 419.312 360.314 422.663 361.949 425.053L361.999 425.126L362.071 425.178C363.867 426.461 366.901 428.457 370.178 430.287C373.444 432.112 376.999 433.799 379.824 434.427C381.424 434.782 382.534 435.611 383.147 436.732C383.764 437.86 383.913 439.347 383.46 441.068C382.778 443.661 380.737 446.73 377.043 449.7C375.459 450.795 373.863 451.872 372.253 452.93C365.837 456.704 357.7 461.504 350.376 465.49C347.856 466.862 345.434 468.133 343.215 469.235C341.245 470.167 339.261 471.073 337.263 471.952C335.582 472.623 334.223 473.05 333.269 473.169C333.062 473.195 332.797 273.271 332.621 473.501C332.498 473.662 332.463 473.838 332.469 473.999C304.435 485.605 273.777 492 241.653 492C108.323 492 0.237305 381.862 0.237305 246C0.237305 110.138 108.323 0.000162517 241.653 0Z" 
-            fill={'#F9F3E0'}
+            fill={mainColor}
             
             style={{ filter: 'drop-shadow(0 0 4px rgba(0,0,0,0.7))' }}
 
@@ -88,7 +90,6 @@ export const JellyfishSVG = ({
   ];
 
   const { isDarkMode } = useSelector((state: any) => state.uiState);
-  const creamColor = isDarkMode ? '#F9F3E0' : '#E8D9B5'; // Darker cream when not in dark mode
 
 
   return (
@@ -104,13 +105,13 @@ export const JellyfishSVG = ({
     >
       {/* Glow lines */}
       <g className="glow" opacity="0.6">
-        <line stroke={creamColor} strokeWidth="8" x1="83.7" y1="37.4" x2="82.1" y2="0.85" />
-        <line stroke={creamColor} strokeWidth="8" x1="136.7" y1="49.2" x2="159.4" y2="23.3" />
-        <line stroke={creamColor} strokeWidth="8" x1="175.2" y1="95.7" x2="203.5" y2="84.8" />
+        <line stroke={lightColor} strokeWidth="8" x1="83.7" y1="37.4" x2="82.1" y2="0.85" />
+        <line stroke={lightColor} strokeWidth="8" x1="136.7" y1="49.2" x2="159.4" y2="23.3" />
+        <line stroke={lightColor} strokeWidth="8" x1="175.2" y1="95.7" x2="203.5" y2="84.8" />
       </g>
       
       {/* Eye parts */}
-      <ellipse fill={creamColor}   cx="80.7" cy="138.4" rx="80.7" ry="80.7"
+      <ellipse fill={mainColor}   cx="80.7" cy="138.4" rx="80.7" ry="80.7"
         style={{ transform: `scale(${scale})`, transition: 'transform 2s ease-in-out' }} />
       <ellipse fill="#ffffff" cx="78.6" cy="138" rx="64.6" ry="65"
         style={{ transform: `scale(${scale})`, transition: 'transform 2s ease-in-out' }} />
@@ -124,7 +125,7 @@ export const JellyfishSVG = ({
       {/* Tentacles */}
       {tentacles.map((path, i) => (
         <path key={i} d={getTentaclePath(path, i)} 
-        fill={creamColor} 
+        fill={mainColor} 
         className="tentacle-jiggle"
           style={{
             transformOrigin: '80px 200px',

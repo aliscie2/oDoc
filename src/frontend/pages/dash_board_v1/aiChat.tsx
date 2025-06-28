@@ -13,6 +13,10 @@ import creature from '@/public/creature.gif';
 
 import { useBackendContext } from "@/contexts/BackendContext";
 import EmotionalAnimation from "@/components/creature";
+import { JOB_MATCHING_PROMPT } from "../discover/jobs/utils/jobMatchingPrompt";
+import { MAIN_CHAT_PROMPT } from "../discover/jobs/utils/mainChatProblm";
+import { useSelector } from "react-redux";
+import { processResponseJobs } from "../discover/jobs/utils/processResponseJobs";
 
 // AI Chat Component
 export const AIChatComponent = ({
@@ -25,6 +29,10 @@ export const AIChatComponent = ({
   onRedoMessage,
 }) => {
 
+  const { geminiAgent } = useSelector(
+    (state: any) => state.AIState,
+  );
+
   const { backendActor } = useBackendContext();
   const [message, setMessage] = useState("");
 
@@ -32,9 +40,14 @@ export const AIChatComponent = ({
 
     
     if (!message.trim()) return;
-
-    let res = await backendActor?.prompt(message)
-    console.log({res})
+    console.log({message})
+    const res = await geminiAgent.sendMessage(`
+      message: ${message.trim()},
+          ${MAIN_CHAT_PROMPT}
+        `,true);
+        const parsed = processResponseJobs(res).extractedData;
+    // let res = await backendActor?.prompt(message)
+    console.log({parsed})
     onSendMessage(message);
     setMessage("");
   };

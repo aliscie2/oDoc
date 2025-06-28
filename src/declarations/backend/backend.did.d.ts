@@ -45,6 +45,10 @@ export interface Approve {
   'expires_at' : [] | [bigint],
   'spender' : Index_Account,
 }
+export interface AssistantMessage {
+  'content' : [] | [string],
+  'tool_calls' : Array<ToolCall>,
+}
 export interface Availability {
   'id' : string,
   'title' : [] | [string],
@@ -133,6 +137,12 @@ export interface Chat {
   'workspaces' : Array<string>,
   'admins' : Array<Principal>,
 }
+export type ChatMessage = {
+    'tool' : { 'content' : string, 'tool_call_id' : string }
+  } |
+  { 'user' : { 'content' : string } } |
+  { 'assistant' : AssistantMessage } |
+  { 'system' : { 'content' : string } };
 export interface ClientKey {
   'client_principal' : Principal,
   'client_nonce' : bigint,
@@ -271,6 +281,10 @@ export interface Friend {
   'receiver' : User,
 }
 export interface FriendRequestNotification { 'friend' : Friend }
+export interface FunctionCall {
+  'name' : string,
+  'arguments' : Array<ToolCallArgument>,
+}
 export interface GetErrorLogsArgs {
   'start' : [] | [bigint],
   'length' : [] | [bigint],
@@ -539,6 +553,8 @@ export interface TableUpdates {
   'delete_rows' : Array<string>,
 }
 export interface TimeSlot { 'end_time' : bigint, 'start_time' : bigint }
+export interface ToolCall { 'id' : string, 'function' : FunctionCall }
+export interface ToolCallArgument { 'value' : string, 'name' : string }
 export interface Transaction {
   'burn' : [] | [Burn],
   'kind' : string,
@@ -618,6 +634,7 @@ export interface _SERVICE {
   'approve_high_promise' : ActorMethod<[CPayment], Result_3>,
   'buy_ai_credits' : ActorMethod<[number], Result_3>,
   'cancel_friend_request' : ActorMethod<[string], Result>,
+  'chat' : ActorMethod<[Array<ChatMessage>], string>,
   'check_external_transactions' : ActorMethod<[bigint], Result_4>,
   'confirmed_c_payment' : ActorMethod<[CPayment], Result_3>,
   'confirmed_cancellation' : ActorMethod<[CPayment], Result_3>,
@@ -693,6 +710,7 @@ export interface _SERVICE {
   >,
   'object_on_cancel' : ActorMethod<[CPayment, string], Result_3>,
   'pay' : ActorMethod<[PayArgs], Result_2>,
+  'prompt' : ActorMethod<[string], string>,
   'rate_user' : ActorMethod<[Principal, Rating], Result_3>,
   'register' : ActorMethod<[string, RegisterUser], Result>,
   'reject_friend_request' : ActorMethod<[string], Result>,

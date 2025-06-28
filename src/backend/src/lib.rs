@@ -241,6 +241,26 @@ thread_local! {
     
 }
 
+
+use ic_cdk_macros::update;
+use ic_llm::{ChatMessage, Model};
+
+#[update]
+async fn prompt(prompt_str: String) -> String {
+    ic_llm::prompt(Model::Llama3_1_8B, prompt_str).await
+}
+
+#[update]
+async fn chat(messages: Vec<ChatMessage>) -> String {
+    let response = ic_llm::chat(Model::Llama3_1_8B)
+        .with_messages(messages)
+        .send()
+        .await;
+    
+    response.message.content.unwrap_or_default()
+}
+
+
 pub static COUNTER: AtomicU64 = AtomicU64::new(0);
 
 #[cfg(test)]
