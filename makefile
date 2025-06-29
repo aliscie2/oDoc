@@ -1,5 +1,5 @@
 run_fe:
-	npm start
+	yarn start
 run_be:
 	dfx deploy backend
 

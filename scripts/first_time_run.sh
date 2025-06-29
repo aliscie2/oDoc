@@ -114,38 +114,3 @@ VITE_BACKEND_CANISTER_ID=$BACKEND_ID
 VITE_FRONTEND_CANISTER_ID=$FRONTEND_ID
 VITE_INTERNET_IDENTITY=$II_ID
 EOF
-
-# -------------
-
-# Add DFX environment variables (this will be auto-generated)
-dfx generate --output-env .env || warn "Failed to generate .env variables"
-success ".env file created/updated with all canister IDs"
-
-# 13. Build frontend with all declarations available
-log "Building frontend with all declarations..."
-yarn vite build || error "Frontend build failed"
-success "Frontend built successfully"
-
-
-# 14. Final verification and instructions
-echo -e "\n${GREEN}✅ Setup Complete - All Canisters Deployed!${NC}"
-echo ""
-echo "🌐 Access URLs:"
-if [ -n "$FRONTEND_ID" ]; then
-    echo "Frontend: http://localhost:4943/?canisterId=$FRONTEND_ID"
-    echo "Frontend: http://$FRONTEND_ID.localhost:4943/"
-fi
-echo "Backend:  http://localhost:4943/?canisterId=$BACKEND_ID"
-echo "Internet Identity: http://localhost:4943/?canisterId=$II_ID"
-if [ -n "$IC_SIWE_ID" ]; then
-    echo "ic_siwe_provider: http://localhost:4943/?canisterId=$IC_SIWE_ID"
-fi
-echo ""
-echo "📋 Next steps (Step 6 from README):"
-echo "  yarn start                    # Start dev server"
-echo "  open http://127.0.0.1:5173/   # Open the app (Step 7 from README)"
-echo ""
-echo "🛑 To stop:"
-echo "  dfx stop                      # Stop dfx when done"
-echo ""
-echo "📝 All canister IDs have been saved to .env file"
