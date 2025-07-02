@@ -175,7 +175,6 @@ export default function OdocLandingPage() {
   const isMobile = useMediaQuery("(max-width:900px)");
   const theme = useTheme();
   const visibleSection = useScrollVisibility();
-  console.log({ visibleSection });
 
   // Add animations
   React.useEffect(() => {

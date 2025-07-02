@@ -9,7 +9,8 @@ const CALENDAR_PROMPT = `
       - For events: "ADD_EVENT", "UPDATE_EVENT", "DELETE_EVENT"
       - For availability: "ADD_AVAILABILITY", "UPDATE_AVAILABILITY", "DELETE_AVAILABILITY"
       - For blocked times: "UPDATE_BLOCKED_TIME", "DELETE_BLOCKED_TIME"
-      
+      Noete: type can be "CALENDAR_QUERY"  if there is no action required just the user want info.
+      Note: if end time not spefifced assume it is 15 minutes later, if start time not sfpeficed assume it as close is possable to user prompt, like morning, eventing etc..
       Example response format:
       [
         {
@@ -25,7 +26,7 @@ const CALENDAR_PROMPT = `
               "description": "Weekly sync",
               "attendees": [],
               "recurrence": []
-            }
+            },
           }
         }
       ]

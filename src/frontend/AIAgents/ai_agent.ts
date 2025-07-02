@@ -1,19 +1,19 @@
-interface GeminiMessage {
+interface AiMessage {
   role: "user" | "model";
   parts: string[];
 }
 
-interface GeminiUsageMetadata {
+interface AIUsageMetadata {
   promptTokenCount?: number;
   candidatesTokenCount?: number;
   totalTokenCount?: number;
 }
 
 // Static data store to prevent Redux state mutations
-class GeminiStaticStore {
-  private static instance: GeminiStaticStore;
+class AIStaticStore {
+  private static instance: AIStaticStore;
 
-  public conversationHistory: GeminiMessage[] = [];
+  public conversationHistory: AiMessage[] = [];
   public totalInputTokens: number = 0;
   public totalOutputTokens: number = 0;
   public credits: number = 0;
@@ -22,11 +22,11 @@ class GeminiStaticStore {
 
   private constructor() {}
 
-  public static getInstance(): GeminiStaticStore {
-    if (!GeminiStaticStore.instance) {
-      GeminiStaticStore.instance = new GeminiStaticStore();
+  public static getInstance(): AIStaticStore {
+    if (!AIStaticStore.instance) {
+      AIStaticStore.instance = new AIStaticStore();
     }
-    return GeminiStaticStore.instance;
+    return AIStaticStore.instance;
   }
 
   public reset(): void {
@@ -39,9 +39,9 @@ class GeminiStaticStore {
   }
 }
 
-export class GeminiAgent {
+export class AIAgent {
   private apiKey: string;
-  private static MYSTATICS = GeminiStaticStore.getInstance();
+  private static MYSTATICS = AIStaticStore.getInstance();
 
   // Pricing for different tiers
   private readonly FREE_INPUT_TOKEN_COST = 0.0000375; // Lite model: $0.075 per 1M tokens
@@ -59,26 +59,26 @@ export class GeminiAgent {
     this.apiKey = import.meta.env.VITE_GEMINI_API_KEY || "";
 
     // Set credits and tier based on constructor parameters
-    GeminiAgent.MYSTATICS.credits = initialCredits;
-    GeminiAgent.MYSTATICS.isFreeTier = isFreeTier;
+    AIAgent.MYSTATICS.credits = initialCredits;
+    AIAgent.MYSTATICS.isFreeTier = isFreeTier;
 
     // If credits are provided but isFreeTier is true, auto-switch to paid
     if (initialCredits > 0 && isFreeTier) {
       console.log("Credits provided - automatically switching to paid tier");
-      GeminiAgent.MYSTATICS.isFreeTier = false;
+      AIAgent.MYSTATICS.isFreeTier = false;
     }
   }
 
   // Get the appropriate model based on tier
   private getCurrentModel(): string {
-    return GeminiAgent.MYSTATICS.isFreeTier
+    return AIAgent.MYSTATICS.isFreeTier
       ? "gemini-1.5-flash" // Free tier - Lite model
       : "gemini-2.5-flash-preview-05-20"; // Paid tier - Pro model (same model for now)
   }
 
   // Get current pricing based on tier
   private getCurrentPricing(): { input: number; output: number } {
-    return GeminiAgent.MYSTATICS.isFreeTier
+    return AIAgent.MYSTATICS.isFreeTier
       ? {
           input: this.FREE_INPUT_TOKEN_COST,
           output: this.FREE_OUTPUT_TOKEN_COST,
@@ -95,8 +95,8 @@ export class GeminiAgent {
   }
 
   // Compress conversation history to reduce token usage
-  private compressHistory(): GeminiMessage[] {
-    const history = [...GeminiAgent.MYSTATICS.conversationHistory];
+  private compressHistory(): AiMessage[] {
+    const history = [...AIAgent.MYSTATICS.conversationHistory];
 
     if (history.length <= this.MAX_HISTORY_MESSAGES) {
       return history;
@@ -120,7 +120,7 @@ export class GeminiAgent {
 
     // Add a summary of older context if there were more messages
     if (history.length > 6) {
-      const summaryMessage: GeminiMessage = {
+      const summaryMessage: AiMessage = {
         role: "user",
         parts: [
           `[Previous conversation context: ${Math.floor((history.length - 6) / 2)} exchanges about various topics]`,
@@ -145,18 +145,18 @@ export class GeminiAgent {
 
   // Add credits and optionally change tier
   addCredits(amount: number, switchToPaid: boolean = false): void {
-    GeminiAgent.MYSTATICS.credits += amount;
+    AIAgent.MYSTATICS.credits += amount;
     if (switchToPaid) {
-      GeminiAgent.MYSTATICS.isFreeTier = false;
+      AIAgent.MYSTATICS.isFreeTier = false;
     }
   }
 
   // Show alert with cooldown to prevent spam
   private showAlert(message: string): void {
     const now = Date.now();
-    if (now - GeminiAgent.MYSTATICS.lastAlertTime > this.ALERT_COOLDOWN_MS) {
+    if (now - AIAgent.MYSTATICS.lastAlertTime > this.ALERT_COOLDOWN_MS) {
       alert(message);
-      GeminiAgent.MYSTATICS.lastAlertTime = now;
+      AIAgent.MYSTATICS.lastAlertTime = now;
     }
   }
 
@@ -165,10 +165,9 @@ export class GeminiAgent {
     allowed: boolean;
     reason?: string;
   } {
-    if (GeminiAgent.MYSTATICS.isFreeTier) {
+    if (AIAgent.MYSTATICS.isFreeTier) {
       // For free tier, implement daily/hourly limits instead of strict credit checking
-      const conversationLength =
-        GeminiAgent.MYSTATICS.conversationHistory.length;
+      const conversationLength = AIAgent.MYSTATICS.conversationHistory.length;
       if (conversationLength > 50) {
         // Limit free tier to 50 messages per session
         return {
@@ -182,86 +181,94 @@ export class GeminiAgent {
 
     // For paid tier, check credits with a small buffer
     const bufferCost = estimatedCost * 1.2; // 20% buffer for estimation errors
-    if (GeminiAgent.MYSTATICS.credits < bufferCost) {
+    if (AIAgent.MYSTATICS.credits == 0) {
       return {
         allowed: false,
-        reason: `Insufficient credits for this request. Available: $${GeminiAgent.MYSTATICS.credits.toFixed(4)}, Required: ~$${bufferCost.toFixed(4)}. Please add more credits to continue.`,
+        reason: `Insufficient credits for this request. Available: $${AIAgent.MYSTATICS.credits.toFixed(4)}, Required: ~$${bufferCost.toFixed(4)}. Please add more credits to continue.`,
       };
     }
 
     return { allowed: true };
   }
 
-  async sendMessage(message: string, quick: boolean = false): Promise<string> {
+  async sendMessage(
+    message: string,
+    quick: boolean = false,
+    systemPrompt?: string,
+  ): Promise<string> {
     const estimatedCost = this.estimateInputCost(message);
     const requestCheck = this.shouldAllowRequest(estimatedCost);
 
     if (!requestCheck.allowed) {
-      // Show alert with cooldown and throw error immediately
       this.showAlert(requestCheck.reason || "Request not allowed");
-      throw new Error("INSUFFICIENT_CREDITS"); // Use a specific error code
+      throw new Error("INSUFFICIENT_CREDITS");
     }
 
     try {
-      // Use quick model if requested, otherwise use current model logic
-      // const currentModel = quick ? "gemini-1.5-flash" : this.getCurrentModel();
-      const currentModel = "gemini-2.5-flash-preview-05-20";
+      const apiToken = import.meta.env.VITE_HUGING_FACE_TOKEN;
       const compressedHistory = this.compressHistory();
 
+      // Build conversation context
+      let conversationContext = "";
+      if (systemPrompt) {
+        conversationContext += `<|system|>\n${systemPrompt}<|end|>\n`;
+      }
+
+      // Add history in alternating user/assistant format
+      compressedHistory.forEach((msg) => {
+        const role = msg.role === "user" ? "user" : "assistant";
+        conversationContext += `<|${role}|>\n${msg.parts[0]}<|end|>\n`;
+      });
+
+      // Add current message
+      conversationContext += `<|user|>\n${message}<|end|>\n<|assistant|>`;
+
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent`,
+        "https://api-inference.huggingface.co/models/microsoft/phi-4",
         {
           method: "POST",
           headers: {
+            Authorization: `Bearer ${apiToken}`,
             "Content-Type": "application/json",
-            "x-goog-api-key": this.apiKey,
           },
           body: JSON.stringify({
-            contents: [
-              ...compressedHistory.map((msg) => ({
-                role: msg.role,
-                parts: [{ text: msg.parts[0] }],
-              })),
-              {
-                role: "user",
-                parts: [{ text: message }],
-              },
-            ],
-            // Increased generation config limits for better JSON responses
-            generationConfig: {
-              maxOutputTokens: GeminiAgent.MYSTATICS.isFreeTier ? 2000 : 4000, // Increased limits
+            inputs: conversationContext,
+            parameters: {
+              max_new_tokens: AIAgent.MYSTATICS.isFreeTier ? 2000 : 4000,
               temperature: 0.7,
-              candidateCount: 1, // Only generate one candidate
+              return_full_text: false,
             },
           }),
         },
       );
-
       if (!response.ok) {
         throw new Error(`API request failed with status ${response.status}`);
       }
 
       const data = await response.json();
-      const assistantMessage =
-        data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
-      // Update usage statistics and deduct credits
-      if (!GeminiAgent.MYSTATICS.isFreeTier) {
-        this.updateUsageStatsAndDeductCredits(data.usageMetadata);
-      } else {
-        this.updateUsageStats(data.usageMetadata);
+      const assistantMessage = Array.isArray(data)
+        ? data[0]?.generated_text?.trim() || ""
+        : "";
+
+      // Update stats (Hugging Face doesn't provide token counts, so estimate)
+      if (!AIAgent.MYSTATICS.isFreeTier) {
+        AIAgent.MYSTATICS.credits = Math.max(
+          0,
+          AIAgent.MYSTATICS.credits - 0.05,
+        );
       }
 
-      // Add to conversation history (full history is maintained, compression happens at send time)
+      // Add to conversation history
       if (message.trim()) {
-        GeminiAgent.MYSTATICS.conversationHistory.push({
+        AIAgent.MYSTATICS.conversationHistory.push({
           role: "user",
           parts: [message],
         });
       }
 
       if (assistantMessage) {
-        GeminiAgent.MYSTATICS.conversationHistory.push({
+        AIAgent.MYSTATICS.conversationHistory.push({
           role: "model",
           parts: [assistantMessage],
         });
@@ -269,19 +276,17 @@ export class GeminiAgent {
 
       return assistantMessage;
     } catch (error) {
-      console.error("Error calling Gemini API:", error);
+      console.error("Error calling Hugging Face API:", error);
 
-      // Handle specific errors without showing duplicate alerts
       if (error instanceof Error) {
         if (error.message === "INSUFFICIENT_CREDITS") {
-          // Don't show another alert - already shown above
           throw error;
         } else if (error.message.includes("403")) {
-          this.showAlert("API key invalid or quota exceeded");
+          this.showAlert("API token invalid or unauthorized");
         } else if (error.message.includes("429")) {
-          this.showAlert("Rate limit exceeded - Gemini is busy");
+          this.showAlert("Rate limit exceeded");
         } else {
-          this.showAlert("Gemini is busy - please try again");
+          this.showAlert("API request failed - please try again");
         }
       }
 
@@ -293,23 +298,112 @@ export class GeminiAgent {
     }
   }
 
+  //   async sendMessage(
+  //     message: string,
+  //     quick: boolean = false,
+  //     systemPrompt?: string,
+  // ): Promise<string> {
+  //     const estimatedCost = this.estimateInputCost(message);
+  //     const requestCheck = this.shouldAllowRequest(estimatedCost);
+
+  //     if (!requestCheck.allowed) {
+  //         this.showAlert(requestCheck.reason || "Request not allowed");
+  //         throw new Error("INSUFFICIENT_CREDITS");
+  //     }
+
+  //     try {
+  //         const compressedHistory = this.compressHistory();
+
+  //         // Simpler conversation format
+  //         let conversationContext = "";
+  //         if (systemPrompt) {
+  //             conversationContext += `System: ${systemPrompt}\n\n`;
+  //         }
+
+  //         compressedHistory.forEach(msg => {
+  //             const role = msg.role === "user" ? "Human" : "Assistant";
+  //             conversationContext += `${role}: ${msg.parts[0]}\n\n`;
+  //         });
+
+  //         conversationContext += `Human: ${message}\n\nAssistant:`;
+
+  //         const response = await fetch("http://localhost:11434/api/generate", {
+  //             method: "POST",
+  //             headers: {
+  //                 "Content-Type": "application/json"
+  //             },
+  //             body: JSON.stringify({
+  //                 model: "phi3.5:3.8b",
+  //                 prompt: conversationContext,
+  //                 stream: false,
+  //                 options: {
+  //                     num_predict: AIAgent.MYSTATICS.isFreeTier ? 2000 : 4000,
+  //                     temperature: 0.7
+  //                 }
+  //             })
+  //         });
+
+  //         if (!response.ok) {
+  //             throw new Error(`API request failed with status ${response.status}`);
+  //         }
+
+  //         const data = await response.json();
+  //         console.log("Raw API response:", data); // Debug log
+
+  //         // Correct field for Ollama API
+  //         const assistantMessage = data.response?.trim() || "";
+  //         console.log("Extracted message:", assistantMessage); // Debug log
+
+  //         if (!assistantMessage) {
+  //             console.warn("Empty response received from API");
+  //             return "I apologize, but I didn't generate a response. Please try again.";
+  //         }
+
+  //         // Update conversation history
+  //         if (message.trim()) {
+  //             AIAgent.MYSTATICS.conversationHistory.push({
+  //                 role: "user",
+  //                 parts: [message],
+  //             });
+  //         }
+
+  //         if (assistantMessage) {
+  //             AIAgent.MYSTATICS.conversationHistory.push({
+  //                 role: "model",
+  //                 parts: [assistantMessage],
+  //             });
+  //         }
+
+  //         // Update credits
+  //         if (!AIAgent.MYSTATICS.isFreeTier) {
+  //             AIAgent.MYSTATICS.credits = Math.max(0, AIAgent.MYSTATICS.credits - 0.05);
+  //         }
+
+  //         return assistantMessage;
+
+  //     } catch (error) {
+  //         console.error("Error calling Ollama API:", error);
+  //         // ... rest of your error handling
+  //         throw new Error(error instanceof Error ? error.message : "Failed to get response from AI");
+  //     }
+  // }
+
   // Update usage stats only (for free tier)
-  private updateUsageStats(usageMetadata?: GeminiUsageMetadata): void {
+  private updateUsageStats(usageMetadata?: AIUsageMetadata): void {
     if (!usageMetadata) return;
 
     if (usageMetadata.promptTokenCount) {
-      GeminiAgent.MYSTATICS.totalInputTokens += usageMetadata.promptTokenCount;
+      AIAgent.MYSTATICS.totalInputTokens += usageMetadata.promptTokenCount;
     }
 
     if (usageMetadata.candidatesTokenCount) {
-      GeminiAgent.MYSTATICS.totalOutputTokens +=
-        usageMetadata.candidatesTokenCount;
+      AIAgent.MYSTATICS.totalOutputTokens += usageMetadata.candidatesTokenCount;
     }
   }
 
   // Update usage stats and deduct credits (for paid tier)
   private updateUsageStatsAndDeductCredits(
-    usageMetadata?: GeminiUsageMetadata,
+    usageMetadata?: AIUsageMetadata,
   ): number {
     if (!usageMetadata) return 0;
     // TODO update this later
@@ -327,24 +421,21 @@ export class GeminiAgent {
     // }
 
     // Deduct the cost from credits
-    GeminiAgent.MYSTATICS.credits = Math.max(
-      0,
-      GeminiAgent.MYSTATICS.credits - 0.05,
-    );
+    AIAgent.MYSTATICS.credits = Math.max(0, AIAgent.MYSTATICS.credits - 0.05);
 
     return cost;
   }
 
   getUsage(): { total_input_tokens: number; total_output_tokens: number } {
     return {
-      total_input_tokens: GeminiAgent.MYSTATICS.totalInputTokens,
-      total_output_tokens: GeminiAgent.MYSTATICS.totalOutputTokens,
+      total_input_tokens: AIAgent.MYSTATICS.totalInputTokens,
+      total_output_tokens: AIAgent.MYSTATICS.totalOutputTokens,
     };
   }
 
   // Get remaining credits
   remainingCredits(): number {
-    return GeminiAgent.MYSTATICS.credits;
+    return AIAgent.MYSTATICS.credits;
   }
 
   // Get current tier info with cost savings info
@@ -355,7 +446,7 @@ export class GeminiAgent {
     historyLength: number;
     estimatedSavings: string;
   } {
-    const fullHistoryTokens = GeminiAgent.MYSTATICS.conversationHistory.reduce(
+    const fullHistoryTokens = AIAgent.MYSTATICS.conversationHistory.reduce(
       (sum, msg) => sum + this.estimateTokenCount(msg.parts[0]),
       0,
     );
@@ -367,10 +458,10 @@ export class GeminiAgent {
     const costSavings = tokenSavings * this.getCurrentPricing().input;
 
     return {
-      tier: GeminiAgent.MYSTATICS.isFreeTier ? "Free" : "Paid",
+      tier: AIAgent.MYSTATICS.isFreeTier ? "Free" : "Paid",
       model: this.getCurrentModel(),
-      credits: GeminiAgent.MYSTATICS.credits,
-      historyLength: GeminiAgent.MYSTATICS.conversationHistory.length,
+      credits: AIAgent.MYSTATICS.credits,
+      historyLength: AIAgent.MYSTATICS.conversationHistory.length,
       estimatedSavings: `${tokenSavings} tokens (~$${costSavings.toFixed(4)} per request)`,
     };
   }
@@ -379,29 +470,29 @@ export class GeminiAgent {
   getTotalCost(): number {
     const pricing = this.getCurrentPricing();
     return (
-      GeminiAgent.MYSTATICS.totalInputTokens * pricing.input +
-      GeminiAgent.MYSTATICS.totalOutputTokens * pricing.output
+      AIAgent.MYSTATICS.totalInputTokens * pricing.input +
+      AIAgent.MYSTATICS.totalOutputTokens * pricing.output
     );
   }
 
   clearConversation(): void {
-    GeminiAgent.MYSTATICS.conversationHistory = [];
+    AIAgent.MYSTATICS.conversationHistory = [];
   }
 
   // Reset usage stats (useful for new billing periods)
   resetUsageStats(): void {
-    GeminiAgent.MYSTATICS.totalInputTokens = 0;
-    GeminiAgent.MYSTATICS.totalOutputTokens = 0;
+    AIAgent.MYSTATICS.totalInputTokens = 0;
+    AIAgent.MYSTATICS.totalOutputTokens = 0;
   }
 
   // Manually switch tiers (if needed)
   switchTier(isFreeTier: boolean): void {
-    GeminiAgent.MYSTATICS.isFreeTier = isFreeTier;
+    AIAgent.MYSTATICS.isFreeTier = isFreeTier;
   }
 
   // Static method to reset all data (useful for testing or logout)
   static resetAllData(): void {
-    GeminiAgent.MYSTATICS.reset();
+    AIAgent.MYSTATICS.reset();
   }
 
   // New method: Get cost estimate for next message
@@ -410,7 +501,7 @@ export class GeminiAgent {
     tokensToSend: number;
     historySavings: number;
   } {
-    const fullHistoryTokens = GeminiAgent.MYSTATICS.conversationHistory.reduce(
+    const fullHistoryTokens = AIAgent.MYSTATICS.conversationHistory.reduce(
       (sum, msg) => sum + this.estimateTokenCount(msg.parts[0]),
       0,
     );

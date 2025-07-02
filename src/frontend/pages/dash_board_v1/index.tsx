@@ -37,10 +37,8 @@ import PROMPTS from "../discover/jobs/utils/prompts";
 import { textToJson } from "../discover/jobs/utils/processResponseJobs";
 import { Job } from "$/declarations/backend/backend.did";
 import { useChatHandler } from "./useChathandler";
-
-// let parsedJob = {    "required_match_score": 7,    "feedback": "Thank you for sharing your skills! To help us find the best opportunities for you, please provide your contact email, your preferred hourly/monthly/yearly rate, and details about your education, work experience, and any certifications you hold. Given your expertise with Django, are you also proficient in Python?",    "updates": [      {        "field": "skills",        "values": [          "rust",          "icp",          "dfx",          "django"        ]      },      {        "field": "job_titles",        "values": [          "Software Developer",          "Backend Developer",          "Blockchain Developer",          "Web Developer"        ]      }    ],    "category": "Talent",    "done": false,    "isBreakingChanges": true  }
-// let parsedJob2 = {    "required_match_score": 7,    "feedback": "Great! Could you please specify the name of the Google certificate (e.g., Google IT Support Professional Certificate, Google Project Management Certificate)? Also, remember to provide your contact email, your preferred hourly/monthly/yearly rate, and details about your education and work experience to complete your profile.",    "updates": [      {        "field": "certifications",        "values": [          "Google certificate"        ]      },      {        "field": "job_titles",        "values": [          "Software Developer",          "Backend Developer",          "Blockchain Developer",          "Web Developer"        ]      }    ],    "category": "Talent",    "done": false,    "isBreakingChanges": true  };
-// let parsedJob3 = {    "required_match_score": 7,    "feedback": "Understood, ICP has been removed from your skills. Please remember to provide your contact email, your preferred hourly/monthly/yearly rate, and details about your education and work experience to ensure your profile is complete and we can connect you with relevant opportunities.",    "updates": [      {        "field": "skills",        "values": [          "rust",          "dfx",          "django"        ]      },      {        "field": "job_titles",        "values": [          "Software Developer",          "Backend Developer",          "Blockchain Developer",          "Web Developer"        ]      }    ],    "category": "Talent",    "done": false,    "isBreakingChanges": true  }
+import { undoCalendarAction, undoJobAction } from "./reverseAction";
+import { ActionProcessor } from "./gemeniAi";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -51,11 +49,11 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [messageCounter, setMessageCounter] = useState(0);
 
-  const { processMessage, handleRetry, handleUndo, handleRedo } =
-    useChatHandler();
-  const { isChanged, currentJobId, jobs, matchingJobs } = useSelector(
-    (state: any) => state.jobState,
-  );
+  const { calendar } = useSelector((state: any) => state.calendarState);
+  const { currentJobId, jobs } = useSelector((state: any) => state.jobState);
+  const currentJob = jobs.find((job: Job) => job.id === currentJobId);
+
+  const { processMessage } = useChatHandler();
 
   const currentJobRef = useRef<Job | undefined>(undefined);
 
@@ -63,13 +61,13 @@ const Dashboard = () => {
     currentJobRef.current = jobs.find((job: Job) => job.id === currentJobId);
   }, [currentJobId, jobs]);
 
-  const { geminiAgent } = useSelector((state) => state.AIState);
+  const { aiAgent } = useSelector((state) => state.AIState);
 
   // State for different dashboard components
   const [showJobMatch, setShowJobMatch] = useState(true);
 
   // Store action history for each message
-  const [actionHistory, setActionHistory] = useState({});
+  // const [actionHistory, setActionHistory] = useState({});
 
   const handleCardClick = (cardId) => {
     setExpandedCard(expandedCard === cardId ? null : cardId);
@@ -85,7 +83,11 @@ const Dashboard = () => {
 
     setChatHistory((prev) => [
       ...prev,
-      { type: "user", message, id: messageId },
+      {
+        type: "user",
+        message: message,
+        id: messageId + "user",
+      },
     ]);
 
     setIsLoading(true);
@@ -94,75 +96,79 @@ const Dashboard = () => {
       // Save current state before making changes
       const currentState = {
         showJobMatch,
+        // Add other relevant state properties here
       };
 
       // Process the message using the hook
+      const perv_cal = calendar;
+      const prev_job = currentJob;
       const result = await processMessage(message, messageId, isQuick);
 
-      // Handle hover effects based on type
-      if (result.responses.parsed.type === "CALENDAR") {
+      // Handle hover effects based on action_type
+      if (result.action_type === "CALENDAR") {
         setHoveredCard("events");
-      } else if (result.responses.parsed.type === "JOBS") {
+      } else if (result.action_type === "JOBS") {
         setHoveredCard("job");
       }
 
+      // Apply any state changes based on result
       let newState = { ...currentState };
+      let hasStateChanges = false;
 
-      // Apply any state changes based on parsed response
-      if (result.action) {
-        if (result.action.type === "hideJobs") {
+      // Example state changes based on action_type or actions
+      if (result.action_type === "JOBS" && result.actions.length > 0) {
+        // Example: if hiding jobs is one of the actions
+        const hideJobsAction = result.actions.find(
+          (action) =>
+            action.field === "visibility" && action.value === "hidden",
+        );
+        if (hideJobsAction) {
           newState.showJobMatch = false;
           setShowJobMatch(false);
+          hasStateChanges = true;
         }
       }
 
-      // Store the action history for this specific message
-      if (result.action) {
-        setActionHistory((prev) => ({
-          ...prev,
-          [messageId]: {
-            beforeState: currentState,
-            afterState: newState,
-            actionType: result.action.type,
-            isUndone: false,
-            undoAction: { type: "test 1" },
-            redoAction: { type: "test reDo" },
-          },
-        }));
+      // Store the action history for this specific message only if there are state changes
+      if (hasStateChanges || result.actions.length > 0) {
+        // setActionHistory((prev) => ({
+        //   ...prev,
+        //   [messageId]: {
+        //     beforeState: currentState,
+        //     afterState: newState,
+        //     actionType: result.action_type,
+        //     actions: result.actions,
+        //     isUndone: false,
+        //     canUndo: result.actions.length > 0, // Can undo if there are actions
+        //   },
+        // }));
       }
 
-      // Determine button visibility based on parsed.feedback
-      // Determine button visibility based on parsed.feedback
-      const hasRealFeedback =
-        result.responses.parsed.feedback &&
-        !result.responses.parsed.feedback.includes("will be implemented soon");
+      // Determine button visibility
+      // const hasRealFeedback =
+      //   result.feedback &&
+      //   !result.feedback.includes("will be implemented soon");
 
-      // Check if there's a real action (not empty or undefined)
-      const hasAction = result.action && Object.keys(result.action).length > 0;
+      // Check if there are real actions
+      const hasActions = result.actions && result.actions.length > 0;
 
-      // Add AI response with undo/redo capabilities
+      // Add AI response
       setChatHistory((prev) => [
         ...prev,
         {
           type: "ai",
+          action_type: result.action_type,
+          actions: result.actions,
           message: result.feedback,
           id: messageId,
-          canUndo: hasRealFeedback && hasAction,
+          canUndo: hasActions,
           canRedo: false,
-          canRetry: !hasRealFeedback,
-        },
-      ]);
-
-      // Add AI response with undo/redo capabilities
-      setChatHistory((prev) => [
-        ...prev,
-        {
-          type: "ai",
-          message: result.feedback,
-          id: messageId,
-          canUndo: hasRealFeedback && !!result.action,
-          canRedo: false,
-          canRetry: !hasRealFeedback, // Show retry only for placeholder responses
+          canRetry: hasActions, // Show retry only for placeholder responses
+          done: result.done,
+          curr_cal: result.action_type == "JOBS" ? null : calendar, // Will be updated after action
+          curr_job: result.action_type == "JOBS" ? currentJob : null, // Will be updated after action
+          prev_job: result.action_type == "JOBS" ? prev_job : null,
+          perv_cal: result.action_type == "JOBS" ? null : perv_cal,
         },
       ]);
     } catch (error) {
@@ -184,19 +190,20 @@ const Dashboard = () => {
   };
 
   const handleUndoMessage = (messageId) => {
-    const action = actionHistory[messageId];
-    if (!action || action.isUndone) return;
+    const message = chatHistory.find((m) => m.id == messageId);
+    if (!message) return;
 
-    // Restore the before state
-    setShowJobMatch(action.beforeState.showJobMatch);
+    if (message.action_type === "CALENDAR") {
+      const undoAction = undoCalendarAction(message);
+      undoAction.forEach((action) => {
+        dispatch(action);
+      });
+    } else if (message.action_type === "JOBS") {
+      const undoAction = undoJobAction(message);
+      dispatch(undoAction);
+    }
 
-    // Update action history
-    setActionHistory((prev) => ({
-      ...prev,
-      [messageId]: { ...action, isUndone: true },
-    }));
-
-    // Update chat history to show redo instead of undo
+    // // Update chat history to show redo instead of undo
     setChatHistory((prev) =>
       prev.map((msg) =>
         msg.id === messageId && msg.type === "ai"
@@ -207,19 +214,28 @@ const Dashboard = () => {
   };
 
   const handleRedoMessage = (messageId) => {
-    const action = actionHistory[messageId];
-    if (!action || !action.isUndone) return;
+    const message = chatHistory.find((m) => m.id == messageId);
+    if (!message) return;
 
-    // Restore the after state
-    setShowJobMatch(action.afterState.showJobMatch);
+    if (message.action_type === "CALENDAR") {
+      message.actions.forEach((action) => {
+        dispatch(action);
+      });
+    } else if (message.action_type === "JOBS") {
+      let category = Object.keys(
+        message.prev_job.category || message.curr_job.category,
+      )[0];
+      dispatch({
+        type: "UPDATE_FIELDS",
+        updates: message.actions,
+        category,
+        required_match_score:
+          message.prev_job.required_match_score ||
+          message.curr_job.required_match_score,
+      });
+    }
 
-    // Update action history
-    setActionHistory((prev) => ({
-      ...prev,
-      [messageId]: { ...action, isUndone: false },
-    }));
-
-    // Update chat history to show undo instead of redo
+    // // Update chat history to show undo instead of redo
     setChatHistory((prev) =>
       prev.map((msg) =>
         msg.id === messageId && msg.type === "ai"
@@ -227,16 +243,6 @@ const Dashboard = () => {
           : msg,
       ),
     );
-  };
-
-  const handleRetryMessage = (messageId) => {
-    console.log({ messageId, chatHistory });
-    // const originalMessage = chatHistory.find(
-    //   (msg) => msg.id === messageId - 1 && msg.type === "user"
-    // );
-    // if (originalMessage) {
-    //   handleChatSend(originalMessage.message, false);
-    // }
   };
 
   const toggleChat = () => {
@@ -297,7 +303,6 @@ const Dashboard = () => {
         isLoading={isLoading}
         onUndoMessage={handleUndoMessage}
         onRedoMessage={handleRedoMessage}
-        onRetryMessage={handleRetryMessage}
       />
     </Box>
   );

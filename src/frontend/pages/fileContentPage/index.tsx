@@ -135,8 +135,6 @@ function FileContentPage() {
     }
   }, 250);
 
-  console.log({ files, inited });
-
   // Check for 404 case first (when initialization is complete but no files exist)
   if (inited && files.length === 0) {
     return <EmotionalAnimation />;

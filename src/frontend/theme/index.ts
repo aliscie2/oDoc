@@ -523,9 +523,15 @@ export const createComponents = ({ palette }: { palette: any }) => {
           },
         },
         filled: {
-          background: `linear-gradient(135deg, ${alpha(palette.primary.main, 0.2)}, ${alpha(palette.primary.main, 0.1)})`,
-          color: palette.primary.main,
+          background: `linear-gradient(135deg, ${alpha(palette.primary.main, 0.15)}, ${alpha(palette.primary.main, 0.08)})`,
+          color: palette.text.primary,
           border: `1px solid ${alpha(palette.primary.main, 0.3)}`,
+          "& .MuiChip-deleteIcon": {
+            color: palette.text.secondary,
+            "&:hover": {
+              color: palette.text.primary,
+            },
+          },
         },
       },
     },

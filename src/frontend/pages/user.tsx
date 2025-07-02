@@ -21,7 +21,6 @@ function UserProfile() {
     const fetchUserData = async () => {
       try {
         const userId = searchParams.get("id");
-        // console.log({ userId2: userId });
         if (!userId || !backendActor) return;
 
         const userData = await backendActor.get_user(userId);

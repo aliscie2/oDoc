@@ -19,7 +19,7 @@ export const useJobsSave = (): UseJobsSaveReturn => {
   const saveInProgress = useRef(false);
   const [aiCreditsChangd, setChangedAICredits] = useState(false);
   const { jobChanges, isChanged } = useSelector((state: any) => state.jobState);
-  const { credits, initialCredits, geminiAgent } = useSelector(
+  const { credits, initialCredits, aiAgent } = useSelector(
     (state: any) => state.AIState,
   );
 
@@ -38,9 +38,8 @@ export const useJobsSave = (): UseJobsSaveReturn => {
     setLoading(true);
 
     try {
-      console.log({ jobChanges });
       const res = await backendActor.update_job(jobChanges, [
-        geminiAgent.remainingCredits(),
+        aiAgent.remainingCredits(),
       ]);
 
       if (res?.Err) {
@@ -68,12 +67,12 @@ export const useJobsSave = (): UseJobsSaveReturn => {
   const reset = async () => {
     try {
       // Reset job changes
-      const remainingCredits = geminiAgent?.remainingCredits();
+      const remainingCredits = aiAgent?.remainingCredits();
 
       if (remainingCredits < initialCredits) {
         const res = await backendActor.update_job(
           [],
-          [geminiAgent.remainingCredits()],
+          [aiAgent.remainingCredits()],
         );
 
         if (res?.Err) {

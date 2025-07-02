@@ -22,15 +22,16 @@ const ChangeWorkSpace = (props: any) => {
     });
   };
   let theFile = current_file && files.find((f) => f.id == current_file.id);
+  theFile.workspaces = theFile.workspaces.filter(
+    (w) => w === "default" || workspaces.find((ws) => ws.id === w),
+  );
 
   const defaultValue =
     theFile &&
-    theFile.workspaces
-      .filter((w) => w !== "default")
-      .map((workspaceId) => {
-        const W = workspaces.find((w) => w.id == workspaceId);
-        return { title: W.name, id: W.id };
-      });
+    theFile.workspaces.map((workspaceId) => {
+      const W = workspaces.find((w) => w.id == workspaceId);
+      return { title: W?.name, id: W?.id };
+    });
 
   return (
     <Autocomplete

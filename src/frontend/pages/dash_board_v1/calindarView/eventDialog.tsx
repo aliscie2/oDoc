@@ -262,8 +262,6 @@ const EventDialog = ({ open, onClose, slotInfo, selectedEvent = null }) => {
           Boolean,
         ); // Remove null/undefined values
 
-        console.log({ attendees });
-
         if (isConnected) {
           await executeGoogleAction({
             type: "ADD_EVENT",

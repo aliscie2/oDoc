@@ -8,16 +8,16 @@ let match: Match = {
   date_updated: BigInt(Date.now() * 1e6),
 };
 
-export const JOB_MATCHING_PROMPT = `
-Act as a job matching engine. and HR expert, investigate list of jobs/talents and match it with a job or talent
-{
-  matches: [
-        {
-        job_id: string, // id of a candidate, Note: do not take id from Current
-        missmatching_skills: string[], // Items in Job but missing in Talent. That is, missmatching_skills = { skill ∈ Job | skill ∉ Talent }. Note: it should not be vice versa (in other words ignore skills found in Talent but missing in Jobs), note in job it look like categroy :{"Talent":null} | {"Job":null}
-        score: number, // out of 10 // how git fit is the profile category :{"Talent":null}, relative to job with category : {"Job":null}?
-        cover_letter: string, // Write your honist opnoin about why is the job with id of job_id is a good or bad match. Mention only the matching skills, history, education certicate etc.. and ignore other things.
-        }
-  ]
-}
-`;
+export const JOB_MATCHING_PROMPT = `Match current job to candidates. Return JSON:
+{matches:[{candidate_id:string,missmatching_skills:string[],score:number,cover_letter:string}]}
+
+SCORING FORMULA (0-10):
+- Skills match: (matching_skills / total_current_skills) * 40%
+- Experience relevance: relevant_years * 20% (max 4 points)
+- Education match: has_relevant_degree ? 20% : 0%
+- Certifications match: (matching_certs / total_current_certs) * 20%
+
+Calculate exact score using this formula. Be consistent.
+candidate_id = ID of matching candidate from candidates array.
+missmatching_skills = actual skill names that are in current job but missing in candidate.
+Use skill_dict to convert indices back to skill names.`;

@@ -68,12 +68,7 @@ const JobsPage: React.FC = () => {
   const { profile } = useSelector((state: any) => state.filesState);
 
   if (!profile) {
-    return (
-      <>
-        Please make suer to login first
-        <LoginButton startIcon={<Login />} />
-      </>
-    );
+    return <LoginButton startIcon={<Login />} />;
   }
 
   return (

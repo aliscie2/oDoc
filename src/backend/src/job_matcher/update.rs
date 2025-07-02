@@ -46,10 +46,26 @@ fn update_job(updates: Vec<JobUpdate>, ai_credits: Option<f32>) -> Result<(), St
     if ic_cdk::caller().to_string() == Principal::anonymous().to_string() {
         return Err("Permission denied (anonymous)".to_string());
     };
-    // TODO this can be a security isssue.
     if let Some(credits) = ai_credits {
         UserState::set_credits(credits);
     }
+
+    let updates: Vec<JobUpdate> = updates
+        .into_iter()
+        .map(|mut update| {
+            update.updates = update
+                .updates
+                .into_iter()
+                .map(|mut u| {
+                    if u.field == "skills" {
+                        u.values = u.values.into_iter().map(|s| s.to_lowercase()).collect();
+                    }
+                    u
+                })
+                .collect();
+            update
+        })
+        .collect();
 
     for update in updates {
         let mut job = match Job::get(&update.id) {
@@ -63,21 +79,15 @@ fn update_job(updates: Vec<JobUpdate>, ai_credits: Option<f32>) -> Result<(), St
 
         let mut job_updated = update.updates.len() > 0;
 
-        // Handle regular field updates
         for d in update.updates {
-            if &d.field == &"skills".to_string() {
+            if &d.field == "skills" {
                 delete_from_search(job.id.clone());
-                let category: &Category = if let Some(category) = update.category.clone() {
-                    &category.clone()
-                } else {
-                    &job.category
-                };
+                let category = update.category.as_ref().unwrap_or(&job.category);
                 add_to_search(&d.values, &job.id, category);
             }
             job.update(&d.field, d.values);
         }
 
-        // Handle optional fields using if let chains
         if let Some(active) = update.active {
             job.active = active;
             job_updated = true;

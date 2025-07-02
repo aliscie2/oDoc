@@ -1,7 +1,12 @@
 import { afterAll, beforeAll, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
 import { resolve } from "node:path";
-import { createIdentity, PocketIc, PocketIcServer, SetupCanisterOptions } from "@hadronous/pic";
+import {
+  createIdentity,
+  PocketIc,
+  PocketIcServer,
+  SetupCanisterOptions,
+} from "@hadronous/pic";
 import { idlFactory } from "../../../declarations/backend";
 import { _SERVICE } from "../../../declarations/backend/backend.did";
 import { Identity } from "@dfinity/agent";
@@ -45,11 +50,10 @@ const setupTestEnvironment = async () => {
   const url = picIcServer.getUrl();
 
   const pic = await PocketIc.create(url);
-  const setup : SetupCanisterOptions = {
+  const setup: SetupCanisterOptions = {
     idlFactory,
     wasm: "/Users/ahmed/Desktop/odoc/target/wasm32-unknown-unknown/release/backend.wasm",
-
-  }
+  };
   const fixture = await pic.setupCanister<_SERVICE>(setup);
   // const { actor } = fixture;
 

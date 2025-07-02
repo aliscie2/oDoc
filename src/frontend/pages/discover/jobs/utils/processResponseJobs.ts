@@ -1,66 +1,196 @@
+import JSON5 from "json5";
+import { jsonrepair } from "jsonrepair";
+
 export const textToJson = (response: string) => {
-  // Extract the display response (everything before the JSON)
   let displayResponse = response;
   let extractedData = null;
 
-  // Look for JSON blocks in the response
-  const jsonMatch = response.match(/```json\s*([\s\S]*?)\s*```/);
+  // Extract all potential JSON candidates from the text
+  const jsonCandidates = extractJsonCandidates(response);
 
-  if (jsonMatch && jsonMatch[1]) {
-    try {
-      // Extract just the display part (remove the JSON block)
-      displayResponse = response.replace(/```json\s*[\s\S]*?\s*```/, "").trim();
+  // Try to parse each candidate with multiple strategies
+  for (const candidate of jsonCandidates) {
+    const parsed = parseWithFallbacks(candidate);
+    if (parsed) {
+      extractedData = parsed;
+      // Remove the JSON from display response
+      displayResponse = response.replace(candidate, "").trim();
+      break;
+    }
+  }
 
-      // If displayResponse is empty, check if there's feedback in the JSON
-      let jsonText = jsonMatch[1];
-      const parsedJson = JSON.parse(jsonText);
+  // Clean up display response
+  if (displayResponse) {
+    displayResponse = cleanDisplayResponse(displayResponse);
+  }
 
-      if (displayResponse === "" && parsedJson.feedback) {
-        // Use the feedback as the display response if no other text is present
-        displayResponse = parsedJson.feedback;
-      }
+  // Use feedback as fallback display text
+  if (!displayResponse && extractedData?.feedback) {
+    displayResponse = extractedData.feedback;
+  }
 
-      // Check if we have multiple "extractedData" keys (invalid JSON)
-      const extractedDataCount = (jsonText.match(/"extractedData"\s*:/g) || [])
-        .length;
-
-      if (extractedDataCount > 1) {
-        // Convert the invalid JSON with multiple same keys into valid JSON with an array
-        // First, get the feedback part
-        const feedbackMatch =
-          jsonText.match(/"feedback"\s*:\s*"([^"]*)"/) || [];
-        const feedback = feedbackMatch[1] || "";
-
-        // Then extract all the extractedData objects
-        const extractedDataRegex = /"extractedData"\s*:\s*({[^}]*})/g;
-        const extractedDataObjects = [];
-        let match;
-
-        while ((match = extractedDataRegex.exec(jsonText)) !== null) {
-          try {
-            // Parse each extractedData object
-            const dataObj = JSON.parse(match[1]);
-            extractedDataObjects.push(dataObj);
-          } catch (e) {
-            console.error("Error parsing individual extractedData object:", e);
-          }
-        }
-
-        // Create a new valid JSON structure
-        const validJson = {
-          feedback,
-          extractedDataArray: extractedDataObjects,
-        };
-
-        extractedData = validJson;
-      } else {
-        // If it's valid JSON with a single extractedData, parse it normally
-        extractedData = JSON.parse(jsonText);
-      }
-    } catch (error) {
-      console.error("Error parsing JSON from response:", error);
+  // Handle array responses
+  if (Array.isArray(extractedData) && extractedData.length > 0) {
+    const firstItem = extractedData[0];
+    if (!displayResponse && firstItem?.feedback) {
+      displayResponse = firstItem.feedback;
     }
   }
 
   return { displayResponse, extractedData };
+};
+
+// Extract JSON candidates using multiple patterns
+function extractJsonCandidates(text: string): string[] {
+  const candidates = new Set<string>();
+
+  // 1. JSON code blocks
+  const codeBlockRegex = /```json\s*([\s\S]*?)\s*```/g;
+  let match;
+  while ((match = codeBlockRegex.exec(text)) !== null) {
+    candidates.add(match[1].trim());
+  }
+
+  // 2. Balanced braces and brackets (handles nested structures)
+  const balancedBraces = extractBalancedJson(text, "{", "}");
+  const balancedBrackets = extractBalancedJson(text, "[", "]");
+
+  balancedBraces.forEach((json) => candidates.add(json));
+  balancedBrackets.forEach((json) => candidates.add(json));
+
+  // Sort by length (longer candidates first - more likely to be complete)
+  return Array.from(candidates).sort((a, b) => b.length - a.length);
+}
+
+// Extract balanced JSON structures
+function extractBalancedJson(
+  text: string,
+  openChar: string,
+  closeChar: string,
+): string[] {
+  const results = [];
+  let depth = 0;
+  let start = -1;
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+
+    if (char === openChar) {
+      if (depth === 0) start = i;
+      depth++;
+    } else if (char === closeChar) {
+      depth--;
+      if (depth === 0 && start !== -1) {
+        const candidate = text.substring(start, i + 1);
+        if (candidate.length > 10) {
+          // Filter out very short candidates
+          results.push(candidate);
+        }
+        start = -1;
+      }
+    }
+  }
+
+  return results;
+}
+
+// Try multiple parsing strategies with fallbacks
+function parseWithFallbacks(jsonText: string): any {
+  const strategies = [
+    // 1. Standard JSON.parse
+    () => JSON.parse(jsonText),
+
+    // 2. JSON5 (handles comments, trailing commas, unquoted keys)
+    () => JSON5.parse(jsonText),
+
+    // 3. Repair then parse with JSON
+    () => {
+      const repaired = jsonrepair(jsonText);
+      return JSON.parse(repaired);
+    },
+
+    // 4. Repair then parse with JSON5
+    () => {
+      const repaired = jsonrepair(jsonText);
+      return JSON5.parse(repaired);
+    },
+
+    // 5. Manual cleanup then parse
+    () => {
+      const cleaned = cleanJsonText(jsonText);
+      return JSON.parse(cleaned);
+    },
+  ];
+
+  for (const strategy of strategies) {
+    try {
+      const result = strategy();
+      if (result !== null && result !== undefined) {
+        return result;
+      }
+    } catch (error) {
+      // Continue to next strategy
+      continue;
+    }
+  }
+
+  return null;
+}
+
+// Manual JSON cleanup for common issues
+function cleanJsonText(text: string): string {
+  return text
+    .replace(/\/\/.*$/gm, "") // Remove single-line comments
+    .replace(/\/\*[\s\S]*?\*\//g, "") // Remove multi-line comments
+    .replace(/,(\s*[}\]])/g, "$1") // Remove trailing commas
+    .replace(/([{,]\s*)(\w+):/g, '$1"$2":') // Quote unquoted keys
+    .replace(/:\s*'([^']*)'/g, ': "$1"') // Convert single quotes to double
+    .replace(/\n|\r/g, "") // Remove newlines
+    .trim();
+}
+
+// Clean up display response text
+function cleanDisplayResponse(text: string): string {
+  return text
+    .replace(/```json[\s\S]*?```/g, "") // Remove JSON code blocks
+    .replace(/[\[\]{}]/g, "") // Remove stray brackets
+    .replace(/^\s*[,.:;]\s*/, "") // Remove leading punctuation
+    .replace(/\s+/g, " ") // Normalize whitespace
+    .trim();
+}
+
+// Helper function to handle multiple extractedData objects (from your original code)
+const parseJsonContent = (jsonText: string) => {
+  const parsed = parseWithFallbacks(jsonText);
+  if (!parsed) return null;
+
+  // Return arrays as-is
+  if (Array.isArray(parsed)) {
+    return parsed;
+  }
+
+  // Handle multiple extractedData objects pattern
+  const extractedDataCount = (jsonText.match(/"extractedData"\s*:/g) || [])
+    .length;
+  if (extractedDataCount > 1) {
+    const feedbackMatch = jsonText.match(/"feedback"\s*:\s*"([^"]*)"/);
+    const feedback = feedbackMatch?.[1] || "";
+
+    const extractedDataObjects = [];
+    const regex = /"extractedData"\s*:\s*({[^}]*})/g;
+    let match;
+
+    while ((match = regex.exec(jsonText)) !== null) {
+      try {
+        const dataObj = parseWithFallbacks(match[1]);
+        if (dataObj) extractedDataObjects.push(dataObj);
+      } catch (e) {
+        console.warn("Error parsing extractedData object:", e);
+      }
+    }
+
+    return { feedback, extractedDataArray: extractedDataObjects };
+  }
+
+  return parsed;
 };

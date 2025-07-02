@@ -46,11 +46,8 @@ export function UserDropDown(props) {
     contract.promises = contract.promises
       .filter((p) => p.id !== promise.id)
       .concat(promise);
-    // console.log({ contract });
     dispatch({ type: "UPDATE_CONTRACT", contract });
   }
-  // console.log({ z: props.column.colId == "receiver" });
-  // console.log({ x: props.column.colId == "sender" });
 
   return (
     <Select

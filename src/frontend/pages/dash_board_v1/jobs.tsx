@@ -13,6 +13,7 @@ import { useSelector } from "react-redux";
 import { BaseCard, CardHeader } from "./card";
 import JobsPage from "../discover/jobs";
 import FullscreenDialog from "./FullscreenDialog"; // Import the shared dialog
+import { Job } from "$/declarations/backend/backend.did";
 
 export const JobMatchesCard = ({
   isHovered,
@@ -27,6 +28,7 @@ export const JobMatchesCard = ({
   const { isChanged, currentJobId, jobs, matchingJobs } = useSelector(
     (state: any) => state.jobState,
   );
+  const currentJob = jobs.find((job: Job) => job.id === currentJobId);
 
   // Get latest 3 matches for preview
   const previewMatches = matchingJobs?.slice(0, 3) || [];
@@ -62,6 +64,10 @@ export const JobMatchesCard = ({
 
   // If fullscreen mode, render JobsPage directly
 
+  let lookingFor = Object.keys(currentJob?.category || {});
+  lookingFor = lookingFor && lookingFor[0];
+  lookingFor = lookingFor == "Job" ? "Talent" : "Job";
+  lookingFor = matchingJobs.length > 1 ? lookingFor + "s" : lookingFor;
   return (
     <BaseCard
       onMouseEnter={onMouseEnter}
@@ -72,7 +78,7 @@ export const JobMatchesCard = ({
     >
       <CardHeader
         icon={<Search />}
-        title="Job Matches"
+        title={matchingJobs.length + " " + lookingFor + " found"}
         color="#00d4ff"
         onExpandClick={handleExpandClick}
         showExpandIcon={true}

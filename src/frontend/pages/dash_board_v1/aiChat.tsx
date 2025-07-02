@@ -17,6 +17,7 @@ import { MAIN_CHAT_PROMPT } from "../discover/jobs/utils/mainChatProblm";
 import { useSelector } from "react-redux";
 import MarkdownMessage from "./markDownMessageRdnder"; // Import the new component
 import { logger } from "@/DevUtils/logData";
+import AICreditsComponent from "./AICreditsCompnent";
 
 export const AIChatComponent = ({
   isExpanded,
@@ -26,9 +27,7 @@ export const AIChatComponent = ({
   isLoading,
   onUndoMessage,
   onRedoMessage,
-  onRetryMessage,
 }) => {
-  logger({ chatHistory });
   const [message, setMessage] = useState("");
 
   const handleSend = async () => {
@@ -37,8 +36,25 @@ export const AIChatComponent = ({
     setMessage("");
   };
 
+  const handleRetry = (msgId) => {
+    const msg = chatHistory.find((m) => m.id === msgId);
+    if (!msg) return;
+
+    const userMsgIndex = chatHistory.findIndex((m) => m.id === msgId) - 1;
+    const userMsg = chatHistory[userMsgIndex];
+
+    if (msg.canUndo) {
+      onUndoMessage(msgId);
+    }
+
+    if (userMsg?.message) {
+      onSendMessage(userMsg.message);
+    }
+  };
+
   const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
       handleSend();
     }
   };
@@ -53,12 +69,26 @@ export const AIChatComponent = ({
     },
   };
 
+  const chatContainerRef = React.useRef(null);
+
+  // Add this useEffect after your useState
+  React.useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
+    }
+  }, [chatHistory]);
+
+  const { credits, initialCredits, aiAgent } = useSelector(
+    (state: any) => state.AIState,
+  );
+
   return (
     <Card
       sx={{
         ...cardStyle,
         position: "fixed",
-        bottom: { xs: 10, sm: 20 },
+        bottom: { xs: 80, sm: 20 },
         right: { xs: 10, sm: 20 },
         width: isExpanded ? { xs: "calc(100vw - 20px)", sm: 500, md: 600 } : 60,
         height: isExpanded ? { xs: "50vh", sm: 400, md: 500 } : 60,
@@ -82,35 +112,58 @@ export const AIChatComponent = ({
               mb={2}
             >
               <Box display="flex" alignItems="center" gap={1}>
-                <EmotionalAnimation
-                  absolute
-                  type={isLoading ? "Loading" : "watch"}
-                  size={100}
-                />
+                <AICreditsComponent credits={aiAgent.remainingCredits()} />
+
                 <Typography variant="h6" sx={{ fontSize: "1rem" }}>
                   AI Assistant
                 </Typography>
               </Box>
-              <IconButton size="small" onClick={onToggle} sx={{}}>
+
+              <IconButton size="small" onClick={onToggle}>
                 ×
               </IconButton>
             </Box>
 
-            <Box sx={{ flex: 1, overflowY: "auto", mb: 2 }}>
+            <EmotionalAnimation
+              absolute
+              type={isLoading ? "Loading" : "watch"}
+              size={130}
+            />
+
+            <Box
+              ref={chatContainerRef}
+              sx={{ flex: 1, overflowY: "auto", mb: 2 }}
+            >
               {chatHistory.map((msg, idx) => (
-                <Box key={idx} mb={1}>
-                  <MarkdownMessage
-                    message={msg.message}
-                    isUser={msg.type === "user"}
-                  />
-                  {/* {msg.type === "ai" &&
+                <Box
+                  key={idx}
+                  mb={1}
+                  sx={{
+                    display: "flex",
+                    justifyContent:
+                      msg.type === "user" ? "flex-end" : "flex-start",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      maxWidth: "80%",
+                      textAlign: "left", // Force left alignment for all text
+                      "& *": { textAlign: "left !important" }, // Override any child text alignment
+                    }}
+                  >
+                    <MarkdownMessage
+                      message={msg.message}
+                      isUser={msg.type === "user"}
+                    />
+                  </Box>
+                  {msg.type === "ai" &&
                     (msg.canUndo || msg.canRedo || msg.canRetry) && (
                       <Box display="flex" gap={1} mt={1} flexWrap="wrap">
                         {msg.canRetry && (
                           <Button
                             size="small"
                             startIcon={<Refresh fontSize="small" />}
-                            onClick={() => onRetryMessage(msg.id)}
+                            onClick={() => handleRetry(msg.id)}
                             sx={{
                               color: "#00d4ff",
                               minWidth: "auto",
@@ -142,7 +195,7 @@ export const AIChatComponent = ({
                             startIcon={<Redo fontSize="small" />}
                             onClick={() => onRedoMessage(msg.id)}
                             sx={{
-                              color: "#f44336",
+                              color: "#4caf50",
                               minWidth: "auto",
                               p: 0.5,
                               fontSize: { xs: "0.6rem", sm: "0.75rem" },
@@ -152,15 +205,19 @@ export const AIChatComponent = ({
                           </Button>
                         )}
                       </Box>
-                    )} */}
+                    )}
                 </Box>
               ))}
             </Box>
 
-            <Box display="flex" gap={1}>
+            <Box display="flex" gap={1} alignItems="flex-end">
               <TextField
+                disabled={isLoading}
                 size="small"
                 fullWidth
+                multiline
+                minRows={1}
+                maxRows={6}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
@@ -171,10 +228,30 @@ export const AIChatComponent = ({
                     "&:hover fieldset": {
                       borderColor: "rgba(255,255,255,0.5)",
                     },
+                    "& .MuiInputBase-input": {
+                      resize: "none",
+                      scrollbarWidth: "thin",
+                      "&::-webkit-scrollbar": { width: "4px" },
+                      "&::-webkit-scrollbar-track": {
+                        background: "rgba(255,255,255,0.1)",
+                        borderRadius: "2px",
+                      },
+                      "&::-webkit-scrollbar-thumb": {
+                        background: "rgba(255,255,255,0.3)",
+                        borderRadius: "2px",
+                      },
+                      "&::-webkit-scrollbar-thumb:hover": {
+                        background: "rgba(255,255,255,0.5)",
+                      },
+                    },
                   },
                 }}
               />
-              <IconButton onClick={handleSend}>
+              <IconButton
+                disabled={isLoading}
+                onClick={handleSend}
+                sx={{ flexShrink: 0, alignSelf: "flex-end" }}
+              >
                 <Send />
               </IconButton>
             </Box>

@@ -82,22 +82,31 @@ export const AdminsSelect = memo(({ value, onChange, members }) => (
     }
   />
 ));
+export const WorkspaceSelect = memo(({ value, onChange, workspaces }) => {
+  const { currentWorkspace } = useSelector((state: any) => state.filesState);
 
-export const WorkspaceSelect = memo(({ value, onChange, workspaces }) => (
-  <Autocomplete
-    multiple
-    options={workspaces}
-    getOptionLabel={(option) => option.name}
-    value={value}
-    onChange={(_, newValue) => onChange(newValue)}
-    renderInput={(params) => <TextField {...params} label="Workspaces" />}
-    renderTags={(value, getTagProps) =>
-      value.map((option, index) => (
-        <Chip label={option.name} {...getTagProps({ index })} />
-      ))
-    }
-  />
-));
+  return (
+    <Autocomplete
+      multiple
+      options={workspaces}
+      getOptionLabel={(option) => option.name}
+      value={
+        value?.length
+          ? value
+          : currentWorkspace.id !== "default"
+            ? [currentWorkspace]
+            : []
+      }
+      onChange={(_, newValue) => onChange(newValue)}
+      renderInput={(params) => <TextField {...params} label="Workspaces" />}
+      renderTags={(value, getTagProps) =>
+        value.map((option, index) => (
+          <Chip label={option.name} {...getTagProps({ index })} />
+        ))
+      }
+    />
+  );
+});
 
 // Memoized Create Group Dialog (unchanged)
 const CreateGroupDialog = memo(
@@ -332,30 +341,24 @@ const ChatList = memo(
 
 const ChatNotifications = () => {
   const dispatch = useDispatch();
-  const { chats } = useSelector((state: RootState) => state.chatsState);
-  const [openChats, setOpenChats] = useState(
-    new Map<string, { x: number; y: number }>(),
+  const { chats } = useSelector((state) => state.chatsState);
+  const { profile, currentWorkspace, all_friends, workspaces } = useSelector(
+    (state) => state.filesState,
   );
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const { backendActor } = useBackendContext();
+
+  const [openChats, setOpenChats] = useState(new Map());
+  const [anchorEl, setAnchorEl] = useState(null);
   const [createGroupOpen, setCreateGroupOpen] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMoreChats, setHasMoreChats] = useState(false);
 
   useEffect(() => {
-    if (hasMoreChats != chats.length > 14) {
-      setHasMoreChats(chats.length > 14);
-    }
+    setHasMoreChats(chats.length > 14);
   }, [chats.length]);
 
-  const { backendActor } = useBackendContext();
-  const { profile, currentWorkspace } = useSelector(
-    (state: any) => state.filesState,
-  );
-
-  // Calculate total unseen messages across all chats
   const totalUnseenMessages = useMemo(() => {
     if (!profile?.id) return 0;
-
     return chats.reduce((total, chat) => {
       const unseenInChat = chat.messages.reduce((count, message) => {
         const isSeen = message.seen_by.some(
@@ -369,18 +372,13 @@ const ChatNotifications = () => {
 
   const handleLoadMore = useCallback(async () => {
     if (!backendActor || isLoadingMore) return;
-
     setIsLoadingMore(true);
     try {
-      let chatsList = await backendActor.get_my_chats(chats.length);
-
+      const chatsList = await backendActor.get_my_chats(chats.length);
       if (chatsList.length === 0) {
         setHasMoreChats(false);
       } else {
-        dispatch({
-          type: "SET_CHATS",
-          chats: [...chats, ...chatsList],
-        });
+        dispatch({ type: "SET_CHATS", chats: [...chats, ...chatsList] });
       }
     } catch (error) {
       console.error("Error loading more chats:", error);
@@ -389,21 +387,18 @@ const ChatNotifications = () => {
     }
   }, [backendActor, chats, isLoadingMore, dispatch]);
 
-  const handleOpenChat = useCallback((chat: Chat) => {
+  const handleOpenChat = useCallback((chat) => {
     setOpenChats((prev) => {
       const newChats = new Map(prev);
       if (!newChats.has(chat.id)) {
         const offset = newChats.size * 30;
-        newChats.set(chat.id, {
-          x: 100 + offset,
-          y: 100 + offset,
-        });
+        newChats.set(chat.id, { x: 100 + offset, y: 100 + offset });
       }
       return newChats;
     });
   }, []);
 
-  const handleCloseChat = useCallback((chatId: string) => {
+  const handleCloseChat = useCallback((chatId) => {
     setOpenChats((prev) => {
       const newChats = new Map(prev);
       newChats.delete(chatId);
@@ -411,38 +406,27 @@ const ChatNotifications = () => {
     });
   }, []);
 
-  const handleChatPosition = useCallback(
-    (chatId: string, position: { x: number; y: number }) => {
-      setOpenChats((prev) => {
-        const newChats = new Map(prev);
-        newChats.set(chatId, position);
-        return newChats;
-      });
-    },
-    [],
-  );
-
-  const handleClick = useCallback(
-    (event: React.MouseEvent<HTMLButtonElement>) => {
-      setAnchorEl(event.currentTarget);
-    },
-    [],
-  );
-
-  const handleClose = useCallback(() => {
-    setAnchorEl(null);
+  const handleChatPosition = useCallback((chatId, position) => {
+    setOpenChats((prev) => {
+      const newChats = new Map(prev);
+      newChats.set(chatId, position);
+      return newChats;
+    });
   }, []);
 
+  const handleClick = useCallback(
+    (event) => setAnchorEl(event.currentTarget),
+    [],
+  );
+  const handleClose = useCallback(() => setAnchorEl(null), []);
+
   const handleChatClick = useCallback(
-    async (chat: Chat) => {
+    async (chat) => {
       try {
-        // Get latest unseen message
-        const unseenMessages = chat.messages.filter((message) => {
-          const isSeen = message.seen_by.some(
-            (user) => user.toString() === profile?.id,
-          );
-          return !isSeen;
-        });
+        const unseenMessages = chat.messages.filter(
+          (message) =>
+            !message.seen_by.some((user) => user.toString() === profile?.id),
+        );
 
         const updatedMessages = chat.messages.map((msg) => ({
           ...msg,
@@ -451,15 +435,9 @@ const ChatNotifications = () => {
             : [...msg.seen_by, Principal.fromText(profile?.id)],
         }));
 
-        const updatedChat = {
-          ...chat,
-          messages: updatedMessages,
-          unread: 0, // Add unread property and set to 0
-        };
-
+        const updatedChat = { ...chat, messages: updatedMessages, unread: 0 };
         dispatch({ type: "UPDATE_CHAT", chat: updatedChat });
 
-        // Call backend if there are unseen messages
         handleOpenChat(chat);
         handleClose();
 
@@ -472,7 +450,6 @@ const ChatNotifications = () => {
             seen_by: [],
             chat_id: chat.id,
           };
-
           await backendActor?.message_is_seen(messageForBackend);
         }
       } catch (error) {
@@ -485,11 +462,10 @@ const ChatNotifications = () => {
   );
 
   const handleCreateGroup = useCallback(
-    async (formData: any) => {
+    async (formData) => {
       if (!backendActor || !profile?.id) return;
-
       try {
-        const newChat: Chat = {
+        const newChat = {
           id: randomString(),
           name: formData.name || "Untitled",
           messages: [],
@@ -504,7 +480,7 @@ const ChatNotifications = () => {
           workspaces:
             formData.workspace?.length > 0
               ? formData.workspace.map((w) => w.id)
-              : currentWorkspace && currentWorkspace.name !== "default"
+              : currentWorkspace?.name !== "default"
                 ? [currentWorkspace.id]
                 : [],
           creator: Principal.fromText(profile.id),
@@ -512,9 +488,7 @@ const ChatNotifications = () => {
 
         const result = await backendActor.make_new_chat_room(newChat);
         if ("Ok" in result) {
-          // Add new chat to local state
           dispatch({ type: "SET_CHATS", chats: [newChat, ...chats] });
-          // Open the new chat window
           handleOpenChat(newChat);
         } else {
           console.log("Failed to create chat:", result.Err);
@@ -522,34 +496,35 @@ const ChatNotifications = () => {
       } catch (error) {
         console.log("Error creating chat:", error);
       }
-
       setCreateGroupOpen(false);
     },
-    [backendActor, profile?.id, handleOpenChat, chats, dispatch],
+    [
+      backendActor,
+      profile?.id,
+      handleOpenChat,
+      chats,
+      dispatch,
+      currentWorkspace,
+    ],
   );
 
   const handleSendMessage = useCallback(
-    async (chatId: string, messageText: string) => {
+    async (chatId, messageText) => {
       if (!profile?.id || !messageText.trim()) return;
-
       const chat = chats.find((c) => c.id === chatId);
       if (!chat) return;
 
-      const newMessage: Message = {
+      const newMessage = {
         id: randomString(),
         date: BigInt(Date.now() * 1e6),
         sender: Principal.fromText(profile.id),
         seen_by: [Principal.fromText(profile.id)],
-        message: messageText, // Use the actual message text
+        message: messageText,
         chat_id: chatId,
       };
 
       try {
-        // Send message to backend with recipients
-        const res = await backendActor?.send_message([], newMessage);
-        // console.log("Message sent:", { res });
-
-        // Update local state
+        await backendActor?.send_message([], newMessage);
         dispatch({
           type: "UPDATE_CHAT",
           chat: { ...chat, messages: [newMessage, ...chat.messages] },
@@ -561,10 +536,7 @@ const ChatNotifications = () => {
     [profile, backendActor, chats, dispatch],
   );
 
-  const open = anchorEl && Boolean(anchorEl);
-  const { all_friends, workspaces } = useSelector(
-    (state: any) => state.filesState,
-  );
+  const open = Boolean(anchorEl);
 
   return (
     <>
@@ -584,12 +556,7 @@ const ChatNotifications = () => {
         anchorEl={anchorEl}
         open={open}
         onClose={handleClose}
-        PaperProps={{
-          sx: {
-            maxHeight: 500,
-            width: 320,
-          },
-        }}
+        PaperProps={{ sx: { maxHeight: 500, width: 320 } }}
         transformOrigin={{ horizontal: "right", vertical: "top" }}
         anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
       >
@@ -617,7 +584,6 @@ const ChatNotifications = () => {
       {Array.from(openChats.entries()).map(([chatId, position]) => {
         const chat = chats.find((c) => c.id === chatId);
         if (!chat) return null;
-
         return (
           <ChatWindow
             key={chatId}
@@ -625,9 +591,7 @@ const ChatNotifications = () => {
             position={position}
             onClose={handleCloseChat}
             onPositionChange={handleChatPosition}
-            onSendMessage={(currentChatId, message) =>
-              handleSendMessage(chatId, message)
-            }
+            onSendMessage={(_, message) => handleSendMessage(chatId, message)}
             user={profile}
           />
         );
@@ -642,7 +606,7 @@ const ChatNotifications = () => {
           members: [],
           admins: [],
           workspace:
-            currentWorkspace.name !== "default" ? [currentWorkspace.id] : [],
+            currentWorkspace?.name !== "default" ? [currentWorkspace.id] : [],
         }}
         users={all_friends}
         workspaces={workspaces}

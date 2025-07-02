@@ -94,7 +94,6 @@ export function filesReducer(
         files: [...state.files, ...action.files],
       };
     case "ADD_POSTS":
-      // console.log({ action });
       return {
         ...state,
         posts: [...state.posts, ...action.posts],
@@ -158,8 +157,7 @@ export function filesReducer(
       };
 
     case "CURRENT_FILE":
-      // console.log({ action });
-      // localStorage.setItem("current_file", JSON.stringify({ ...action.file }));
+      localStorage.setItem("current_file", JSON.stringify({ ...action.file }));
       return {
         ...state,
         current_file: action.file,
@@ -1042,7 +1040,6 @@ export function filesReducer(
 
     case "UPDATE_ROWS": {
       const { contract_id, table_id, rows } = action;
-      console.log({ action });
 
       // Update/add multiple rows in the specific table
       const updatedContracts = {

@@ -89,7 +89,6 @@ const WalletPage = ({ wallet = defaultWallet }) => {
           withdrawAddress,
         );
       }
-      // console.log({result})
 
       if ("Ok" in result) {
         enqueueSnackbar("Transaction completed successfully", {

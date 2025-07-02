@@ -185,99 +185,102 @@ export class ActionProcessor {
     );
   }
 
-  static processAction(action: any): CalendarAction {
+  static processAction(action: any): CalendarAction | null {
     const newAction: CalendarAction = { type: action.type };
 
     try {
-      // Process event actions
-      if (action.type.includes("EVENT")) {
-        if (action.type === "DELETE_EVENT") {
+      switch (action.type) {
+        case "ADD_EVENT":
+        case "UPDATE_EVENT":
+          if (!this.validateEventAction(action)) {
+            throw new Error(
+              `Invalid event data in action: ${JSON.stringify(action)}`,
+            );
+          }
+          const dateTimestamp = TimeFormatter.parseDate(action.event.date);
+          newAction.event = {
+            recurrence: action.event.recurrence || [],
+            id: action.event.id || `evt_${Date.now()}`,
+            title: action.event.title || "",
+            start_time: TimeFormatter.parseTime(
+              action.event.start_time,
+              new Date(dateTimestamp / 1e6),
+            ),
+            end_time: TimeFormatter.parseTime(
+              action.event.end_time,
+              new Date(dateTimestamp / 1e6),
+            ),
+            description: String(action.event.description),
+            attendees: action.event.attendees || [],
+            created_by: "",
+          };
+          break;
+
+        case "DELETE_EVENT":
           newAction.id = action.id;
-          return newAction;
-        }
+          break;
 
-        if (!this.validateEventAction(action)) {
-          throw new Error(
-            `Invalid event data in action: ${JSON.stringify(action)}`,
-          );
-        }
+        case "ADD_AVAILABILITY":
+        case "UPDATE_AVAILABILITY":
+          if (!this.validateAvailabilityAction(action)) {
+            throw new Error(
+              `Invalid availability data in action: ${JSON.stringify(action)}`,
+            );
+          }
+          newAction.availability = {
+            id: action.availability.id || `avail_${Date.now()}`,
+            title: action.availability.title ? [action.availability.title] : [],
+            is_blocked: action.availability.is_blocked || false,
+            schedule_type: action.availability.schedule_type || "WEEKLY",
+            time_slots: action.availability.slots.map((slot: any) => ({
+              start_time: TimeFormatter.parseTime(slot.start_time),
+              end_time: TimeFormatter.parseTime(slot.end_time),
+            })),
+          };
+          break;
 
-        const dateTimestamp = TimeFormatter.parseDate(action.event.date);
-        newAction.event = {
-          recurrence: action.event.recurrence || [],
-          id: action.event.id || `evt_${Date.now()}`,
-          title: action.event.title || "",
-          start_time: TimeFormatter.parseTime(
-            action.event.start_time,
-            new Date(dateTimestamp / 1e6),
-          ),
-          end_time: TimeFormatter.parseTime(
-            action.event.end_time,
-            new Date(dateTimestamp / 1e6),
-          ),
-          description: String(action.event.description),
-          attendees: action.event.attendees || [],
-          created_by: "",
-        };
-      }
-
-      // Process availability actions
-      if (action.type.includes("AVAILABILITY")) {
-        if (action.type === "DELETE_AVAILABILITY") {
+        case "DELETE_AVAILABILITY":
           newAction.id = action.id;
-          return newAction;
-        }
+          break;
 
-        if (!this.validateAvailabilityAction(action)) {
-          throw new Error(
-            `Invalid availability data in action: ${JSON.stringify(action)}`,
+        case "UPDATE_BLOCKED_TIME":
+          if (!this.validateBlockedTimeAction(action)) {
+            throw new Error(
+              `Invalid blocked time data in action: ${JSON.stringify(action)}`,
+            );
+          }
+          const blockedDateTimestamp = TimeFormatter.parseDate(
+            action.blocked_time.date,
           );
-        }
-
-        newAction.availability = {
-          id: action.availability.id || `avail_${Date.now()}`,
-          title: action.availability.title ? [action.availability.title] : [],
-          is_blocked: action.availability.is_blocked || false, // Add missing field
-          schedule_type: action.availability.schedule_type || "WEEKLY",
-          time_slots: action.availability.slots.map((slot: any) => ({
-            start_time: TimeFormatter.parseTime(slot.start_time),
-            end_time: TimeFormatter.parseTime(slot.end_time),
-          })),
-        };
-      }
-
-      // Process blocked time actions
-      if (action.type.includes("BLOCKED_TIME")) {
-        if (action.type === "DELETE_BLOCKED_TIME") {
-          newAction.id = action.id;
-          return newAction;
-        }
-
-        if (!this.validateBlockedTimeAction(action)) {
-          throw new Error(
-            `Invalid blocked time data in action: ${JSON.stringify(action)}`,
-          );
-        }
-
-        const dateTimestamp = TimeFormatter.parseDate(action.blocked_time.date);
-        newAction.blocked_time = {
-          id: action.blocked_time.id || `block_${Date.now()}`,
-          block_type: {
-            SingleBlock: {
-              start_time: TimeFormatter.parseTime(
-                action.blocked_time.start_time,
-                new Date(dateTimestamp / 1e6),
-              ),
-              end_time: TimeFormatter.parseTime(
-                action.blocked_time.end_time,
-                new Date(dateTimestamp / 1e6),
-              ),
+          newAction.blocked_time = {
+            id: action.blocked_time.id || `block_${Date.now()}`,
+            block_type: {
+              SingleBlock: {
+                start_time: TimeFormatter.parseTime(
+                  action.blocked_time.start_time,
+                  new Date(blockedDateTimestamp / 1e6),
+                ),
+                end_time: TimeFormatter.parseTime(
+                  action.blocked_time.end_time,
+                  new Date(blockedDateTimestamp / 1e6),
+                ),
+              },
             },
-          },
-          reason: action.blocked_time.reason
-            ? [action.blocked_time.reason]
-            : [],
-        };
+            reason: action.blocked_time.reason
+              ? [action.blocked_time.reason]
+              : [],
+          };
+          break;
+
+        case "DELETE_BLOCKED_TIME":
+          newAction.id = action.id;
+          break;
+
+        case "CALENDAR_QUERY":
+          return null;
+
+        default:
+          return null;
       }
 
       return newAction;

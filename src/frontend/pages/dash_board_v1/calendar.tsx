@@ -21,7 +21,6 @@ export const CalendarCard = ({
 
   // Get calendar data from Redux store
   const { calendar } = useSelector((state) => state.calendarState);
-  logger({ calendar });
 
   // Fixed version of getUpcomingEvents function
   const getUpcomingEvents = () => {

@@ -25,6 +25,9 @@ import { useBackendContext } from "@/contexts/BackendContext";
 import JobDetails from "./JobDetails";
 import { JOB_MATCHING_PROMPT } from "./utils/jobMatchingPrompt";
 import { textToJson } from "./utils/processResponseJobs";
+import generateMatches from "./utils/generateCoverLetter";
+import optimizeMatchingInput from "./utils/compressJobMatchInput";
+import { profile } from "console";
 
 const JobSearchComponent: React.FC = () => {
   const { backendActor } = useBackendContext();
@@ -32,61 +35,52 @@ const JobSearchComponent: React.FC = () => {
   const { currentJobId, jobs, matchingJobs } = useSelector(
     (state: any) => state.jobState,
   );
-  const { geminiAgent } = useSelector((state: any) => state.AIState);
+  const { aiAgent } = useSelector((state: any) => state.AIState);
   const theme = useTheme();
 
   const [loading, setLoading] = useState(false);
   const [openDialogId, setOpenDialogId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [calledJobs, setCalledJobs] = useState(new Set());
 
-  // Memoized current job and validation
   const currentJob = useMemo(
     () => jobs?.find((job: Job) => job.id === currentJobId),
     [jobs, currentJobId],
   );
-
   const isValidSetup = useMemo(
-    () => currentJobId && currentJob && backendActor && geminiAgent,
-    [currentJobId, currentJob, backendActor, geminiAgent],
+    () => currentJobId && currentJob && backendActor && aiAgent,
+    [currentJobId, currentJob, backendActor, aiAgent],
   );
 
-  // Memoized sorted matches with comprehensive edge case handling
-  const { jobMatches, sortedMatches, debugInfo } = useMemo(() => {
-    if (!currentJob?.matches) {
-      return {
-        jobMatches: [],
-        sortedMatches: [],
-        debugInfo: { matches: 0, jobs: 0, found: 0 },
-      };
-    }
+  const { isLoggedIn, isRegistered } = useSelector(
+    (state: any) => state.uiState,
+  );
 
-    const matches = currentJob.matches.filter(Boolean); // Remove null/undefined matches
+  const { sortedMatches, debugInfo } = useMemo(() => {
+    if (!currentJob?.matches)
+      return { sortedMatches: [], debugInfo: { found: 0 } };
+
+    const matches = currentJob.matches.filter(Boolean);
     const validMatches = matches
       .map((match) => ({
         job: matchingJobs?.find((j: Job) => j?.id === match?.job_id),
         match,
       }))
-      .filter(({ job, match }) => job && match?.job_id !== currentJobId) // Exclude self-matches
+      .filter(({ job, match }) => job && match?.job_id !== currentJobId)
       .sort((a, b) => (b.match?.score || 0) - (a.match?.score || 0));
 
     return {
-      jobMatches: matches,
       sortedMatches: validMatches,
-      debugInfo: {
-        matches: matches.length,
-        jobs: matchingJobs?.length || 0,
-        found: validMatches.length,
-      },
+      debugInfo: { found: validMatches.length },
     };
   }, [currentJob, matchingJobs, currentJobId]);
 
-  // Utilities
   const getLookingForCategory = useCallback((job: Job) => {
     const categoryKey = Object.keys(job?.category || {})[0];
     return categoryKey === "Job" ? { Talent: null } : { Job: null };
   }, []);
 
-  const truncateTitle = useCallback((title: string, maxWords = 5) => {
+  const truncateTitle = useCallback((title: string, maxWords = 3) => {
     if (!title) return "Untitled";
     const words = title.split(" ");
     return (
@@ -101,49 +95,43 @@ const JobSearchComponent: React.FC = () => {
     return "error";
   }, []);
 
-  // Main matching logic
-  const findMatches = useCallback(async () => {
+  const findMatches = async () => {
     if (!isValidSetup) return;
 
     setLoading(true);
     setError(null);
 
     try {
-      // Fetch matches from backend
       const newMatchingJobs = await backendActor.get_matches(
         currentJobId,
-        currentJob.skills || [],
+        (currentJob.skills || []).map((skill) => skill.toLowerCase()),
         getLookingForCategory(currentJob),
       );
-
-      console.log("newMatchingJobs", {
-        matchingJobs,
-        currentJob,
-        newMatchingJobs,
-        currentJobId,
-        skills: currentJob.skills,
-        cat: getLookingForCategory(currentJob),
-      });
 
       if (!newMatchingJobs?.length) {
         setLoading(false);
         return;
       }
 
-      // Process with AI
       let processedMatches;
       try {
-        const aiResponse = await geminiAgent.sendMessage(`
-          ${JOB_MATCHING_PROMPT}
-          candidates: ${JSON.stringify(newMatchingJobs)},
-          Current: ${JSON.stringify(currentJob)}
-        `);
+        let aiResponse = `{
+              "matches": [
+                {
+                  "candidate_id": "cesnwg1",
+                  "missmatching_skills": ["Django"],
+                  "score": 2.67,
+                  "cover_letter": "Dear Hiring Manager, \n\nI am excited to apply for the Rust Developer, ICP Developer, and Django Developer position. While I have strong skills in Rust and ICP, I am eager to enhance my Django skills and contribute to your team. Thank you for considering my application.\n\nSincerely,\n[Your Name]"
+                }
+              ]
+            }`;
 
         const parsed = textToJson(aiResponse)?.extractedData;
+
         processedMatches =
-          parsed?.matches?.map((match: any) => ({
-            job_id: match.job_id,
-            score: Math.max(0, Math.min(10, match.score || 0)), // Clamp score 0-10
+          parsed.matches?.map((match) => ({
+            job_id: match.candidate_id,
+            score: Math.max(0, Math.min(10, match.score || 0)),
             missmatching_skills: match.missmatching_skills || [],
             date_updated: Date.now() * 1e6,
             is_connected: false,
@@ -152,9 +140,9 @@ const JobSearchComponent: React.FC = () => {
           })) || [];
       } catch (aiError) {
         alert("AI processing failed, using basic scoring:", aiError);
-        processedMatches = newMatchingJobs.map((job: Job) => ({
+        processedMatches = newMatchingJobs.map((job) => ({
           job_id: job.id,
-          score: 5, // Default neutral score
+          score: 5,
           missmatching_skills: [],
           date_updated: Date.now() * 1e6,
           is_connected: false,
@@ -163,11 +151,9 @@ const JobSearchComponent: React.FC = () => {
         }));
       }
 
-      // Filter out self-matches
       const validMatches = processedMatches.filter(
         (m) => m.job_id !== currentJobId,
       );
-
       if (validMatches.length > 0) {
         dispatch({
           type: "UPDATE_MATCHING_JOBS",
@@ -181,25 +167,19 @@ const JobSearchComponent: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [
-    isValidSetup,
-    currentJobId,
-    currentJob,
-    backendActor,
-    geminiAgent,
-    getLookingForCategory,
-    dispatch,
-  ]);
-  const [isGemeniCalled, setisCalled] = useState(false);
+  };
 
   useEffect(() => {
-    if (!isGemeniCalled && geminiAgent.remainingCredits() > 0) {
+    if (
+      currentJobId &&
+      aiAgent?.remainingCredits() > 0 &&
+      !calledJobs.has(currentJobId)
+    ) {
+      setCalledJobs((prev) => new Set(prev).add(currentJobId));
       findMatches();
-      setisCalled(true);
     }
-  }, [findMatches]);
+  }, [jobs, isRegistered]);
 
-  // Event handlers
   const handleOpenDialog = useCallback(
     (jobId: string) => setOpenDialogId(jobId),
     [],
@@ -212,122 +192,110 @@ const JobSearchComponent: React.FC = () => {
     [dispatch],
   );
 
-  // Render helpers
   const renderMatchCard = useCallback(
-    ({ job, match }: { job: Job; match: Match }) => (
-      <Card
-        key={job.id}
-        sx={{
-          cursor: "pointer",
-          transition: "all 0.2s ease",
-          "&:hover": {
-            transform: "translateY(-2px)",
-            boxShadow: theme.shadows[4],
-          },
-        }}
-        onClick={() => handleOpenDialog(job.id)}
-      >
-        <CardContent sx={{ p: 3 }}>
-          {/* Header */}
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "start",
-              mb: 2,
-            }}
-          >
-            <Typography variant="h6" sx={{ flex: 1, mr: 2 }}>
-              {truncateTitle(job.job_titles?.[0])}
-            </Typography>
-            <Chip
-              label={match.score ? `${Math.round(match.score * 10)}%` : "New"}
-              color={match.score ? getScoreColor(match.score * 10) : "default"}
-              size="small"
-              icon={match.score ? <Star fontSize="small" /> : undefined}
-            />
-          </Box>
+    ({ job, match }: { job: Job; match: Match }) => {
+      const score = match.score ? Math.round(match.score * 10) : 0;
+      const scoreColor =
+        score >= 70 ? "#4caf50" : score >= 30 ? "#ff9800" : "#f44336";
 
-          {/* Score bar */}
-          {match.score > 0 && (
-            <LinearProgress
-              variant="determinate"
-              value={match.score * 10}
-              color={getScoreColor(match.score * 10)}
-              sx={{ height: 4, borderRadius: 2, mb: 2 }}
-            />
-          )}
-
-          {/* Contact */}
-          {job.emails?.[0] && (
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-                mb: 2,
-                color: "text.secondary",
-              }}
-            >
-              <Email fontSize="small" />
-              <Typography variant="body2">{job.emails[0]}</Typography>
-            </Box>
-          )}
-
-          {/* Missing skills */}
-          {match.missmatching_skills?.length > 0 && (
-            <Box>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{ mb: 1, display: "block" }}
-              >
-                Missing skills:
-              </Typography>
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-                {match.missmatching_skills.slice(0, 3).map((skill, i) => (
-                  <Chip
-                    key={i}
-                    label={skill}
-                    size="small"
-                    color="warning"
-                    variant="outlined"
-                  />
-                ))}
-                {match.missmatching_skills.length > 3 && (
-                  <Chip
-                    label={`+${match.missmatching_skills.length - 3}`}
-                    size="small"
-                    color="warning"
-                    variant="outlined"
-                  />
-                )}
-              </Box>
-            </Box>
-          )}
-        </CardContent>
-
-        <Divider />
-
-        <Box
+      return (
+        <Card
+          key={job.id}
           sx={{
-            p: 2,
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
+            cursor: "pointer",
+            transition: "all 0.2s ease",
+            "&:hover": {
+              transform: "translateY(-1px)",
+              boxShadow: theme.shadows[2],
+            },
+            minHeight: "auto",
           }}
+          onClick={() => handleOpenDialog(job.id)}
         >
-          <ConnectButton jobId={job.id} />
-          <IconButton size="small" color="primary">
-            <Visibility fontSize="small" />
-          </IconButton>
-        </Box>
-      </Card>
-    ),
-    [theme, truncateTitle, getScoreColor, handleOpenDialog],
+          <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
+              <Box sx={{ position: "relative", display: "inline-flex" }}>
+                <CircularProgress
+                  variant="determinate"
+                  value={score}
+                  size={40}
+                  thickness={4}
+                  sx={{ color: scoreColor }}
+                />
+                <Box
+                  sx={{
+                    top: 0,
+                    left: 0,
+                    bottom: 0,
+                    right: 0,
+                    position: "absolute",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    component="div"
+                    sx={{
+                      fontSize: "0.7rem",
+                      fontWeight: 600,
+                      color: scoreColor,
+                    }}
+                  >
+                    {score}%
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Typography variant="subtitle2" sx={{ flex: 1, fontWeight: 600 }}>
+                {truncateTitle(job.job_titles?.[0])}
+              </Typography>
+
+              <ConnectButton jobId={job.id} />
+            </Box>
+
+            {match.missmatching_skills?.length > 0 && (
+              <Box>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontSize: "0.7rem", fontWeight: 500 }}
+                >
+                  Mismatches:
+                </Typography>
+                <Box
+                  sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mt: 0.5 }}
+                >
+                  {match.missmatching_skills.slice(0, 3).map((skill, i) => (
+                    <Chip
+                      key={i}
+                      label={skill}
+                      size="small"
+                      color="error"
+                      variant="outlined"
+                      sx={{ height: 18, fontSize: "0.65rem" }}
+                    />
+                  ))}
+                  {match.missmatching_skills.length > 3 && (
+                    <Chip
+                      label={`+${match.missmatching_skills.length - 3}`}
+                      size="small"
+                      color="error"
+                      variant="outlined"
+                      sx={{ height: 18, fontSize: "0.65rem" }}
+                    />
+                  )}
+                </Box>
+              </Box>
+            )}
+          </CardContent>
+        </Card>
+      );
+    },
+    [theme, truncateTitle, handleOpenDialog],
   );
 
-  // Loading state
   if (loading) {
     return (
       <Box
@@ -347,7 +315,6 @@ const JobSearchComponent: React.FC = () => {
     );
   }
 
-  // No job selected
   if (!currentJobId || !currentJob) {
     return (
       <Box sx={{ textAlign: "center", py: 8 }}>
@@ -358,7 +325,6 @@ const JobSearchComponent: React.FC = () => {
     );
   }
 
-  // Error state
   if (error) {
     return (
       <Alert severity="error" sx={{ mb: 3 }}>
@@ -370,84 +336,70 @@ const JobSearchComponent: React.FC = () => {
       </Alert>
     );
   }
-  // TODO sometimes sortedMatches.map is not working without this console.log it give it some time to re-render.
-  console.log({ sortedMatches });
+
   return (
     <Box sx={{ py: 2 }}>
-      {/* Header */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 4,
-        }}
-      >
-        <Typography variant="h4" sx={{ fontWeight: 300 }}>
-          Job Matches
-        </Typography>
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Chip label={`${debugInfo.found} matches`} color="primary" />
-          {!geminiAgent && (
-            <Chip label="AI loading..." color="warning" size="small" />
-          )}
-        </Box>
-      </Box>
-
-      {/* Matches */}
       {sortedMatches.length === 0 ? (
         <Box sx={{ textAlign: "center", py: 8 }}>
           <Warning sx={{ fontSize: 48, color: "text.secondary", mb: 2 }} />
           <Typography variant="h6" color="text.secondary" gutterBottom>
-            {jobMatches.length > 0
-              ? "Matches found but jobs missing"
-              : "No matches found"}
+            No matches found
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            {jobMatches.length > 0
-              ? `${jobMatches.length} matches exist but job details are missing from store`
-              : "Try adjusting your job criteria or check back later"}
+            Try adjusting your job criteria or check back later
           </Typography>
           <Button variant="outlined" onClick={findMatches}>
             Refresh Matches
           </Button>
         </Box>
       ) : (
-        <Box sx={{ display: "grid", gap: 3 }}>
+        <Box
+          sx={{
+            maxHeight: "400px",
+            overflowY: "auto",
+            display: "grid",
+            gap: 1.5,
+            pr: 1,
+            "&::-webkit-scrollbar": { width: "6px" },
+            "&::-webkit-scrollbar-track": {
+              background: "#f1f1f1",
+              borderRadius: "3px",
+            },
+            "&::-webkit-scrollbar-thumb": {
+              background: "#c1c1c1",
+              borderRadius: "3px",
+            },
+            "&::-webkit-scrollbar-thumb:hover": { background: "#a8a8a8" },
+          }}
+        >
           {sortedMatches.map(renderMatchCard)}
         </Box>
       )}
 
-      {/* Job Details Dialogs */}
-      {sortedMatches.map(({ job }) => (
-        <Dialog
-          key={job.id}
-          open={openDialogId === job.id}
-          onClose={handleCloseDialog}
-          maxWidth="md"
-          fullWidth
-          PaperProps={{ sx: { borderRadius: 2 } }}
-        >
-          <DialogTitle>Job Details</DialogTitle>
-          <DialogContent sx={{ p: 0 }}>
-            <JobDetails
-              job={{
-                ...job,
-                cover_letter: currentJob.matches?.find(
-                  (m) => m.job_id === job.id,
-                )?.cover_letter,
-              }}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseDialog} variant="contained">
-              Close
-            </Button>
-          </DialogActions>
-        </Dialog>
-      ))}
+      {sortedMatches.map(({ job }) => {
+        let match = currentJob.matches?.find((m) => m.job_id === job.id);
+        return (
+          <Dialog
+            key={job.id}
+            open={openDialogId === job.id}
+            onClose={handleCloseDialog}
+            maxWidth="md"
+            fullWidth
+            PaperProps={{ sx: { borderRadius: 2 } }}
+          >
+            <DialogTitle>Job Details</DialogTitle>
+            <DialogContent sx={{ p: 0 }}>
+              <JobDetails job={job} match={match} />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCloseDialog} variant="contained">
+                Close
+              </Button>
+            </DialogActions>
+          </Dialog>
+        );
+      })}
     </Box>
   );
 };
-
 export default JobSearchComponent;

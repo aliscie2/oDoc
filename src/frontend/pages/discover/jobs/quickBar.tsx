@@ -278,7 +278,7 @@ const JobUpdateAnimation = ({ currentJob, jobs }) => {
                   >
                     -
                   </span>
-                  {String(currentUpdate.oldValue || "None")}
+                  {String(currentUpdate?.oldValue || "None")}
                 </motion.div>
 
                 {/* Arrow */}

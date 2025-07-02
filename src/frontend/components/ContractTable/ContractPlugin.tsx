@@ -23,7 +23,6 @@ const createContractPlugin = createPluginFactory({
 
   // handlers: {
   //   onKeyDown: (editor: PlateEditor, event) => {
-  //     console.log({ editor, event });
   //     // Check if the event is a backspace
   //     if (event.key === "Backspace") {
   //       const { selection } = editor;

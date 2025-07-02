@@ -190,7 +190,7 @@ const CalendarFeedback = () => {
     }
   };
 
-  const colors = getUpdateColor(currentUpdate.type);
+  const colors = getUpdateColor(currentUpdate?.type);
 
   return (
     <div

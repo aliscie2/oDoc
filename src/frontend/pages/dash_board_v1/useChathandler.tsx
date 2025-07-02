@@ -5,6 +5,8 @@ import PROMPTS from "../discover/jobs/utils/prompts";
 import { ActionProcessor, CalendarFormatter, TimeFormatter } from "./gemeniAi";
 import { logger } from "@/DevUtils/logData";
 import DUUMY_CALENDAR_RES from "../discover/jobs/utils/dummyCalendarResponse";
+import { classifyMessage } from "../discover/jobs/utils/mainChatProblm";
+import compactMessage from "../discover/jobs/utils/compactMessage";
 
 export const useChatHandler = () => {
   const { calendar } = useSelector((state: any) => state.calendarState);
@@ -12,8 +14,7 @@ export const useChatHandler = () => {
   const dispatch = useDispatch();
   const [messageResponses, setMessageResponses] = useState({});
 
-  const { geminiAgent } = useSelector((state) => state.AIState);
-  console.log({ x: geminiAgent.remainingCredits() });
+  const { aiAgent } = useSelector((state) => state.AIState);
   const { isChanged, currentJobId, jobs, matchingJobs } = useSelector(
     (state) => state.jobState,
   );
@@ -21,7 +22,7 @@ export const useChatHandler = () => {
   const currentJobRef = useRef();
   currentJobRef.current = jobs.find((job) => job.id === currentJobId);
 
-  const handleCalendarCase = async (message, parsed, mainRes, isQuick) => {
+  const handleCalendarCase = async (message, parsed, isQuick) => {
     let now = Date.now() * 1e6;
     const prompt = `
       ${PROMPTS.CALENDAR}
@@ -32,41 +33,79 @@ export const useChatHandler = () => {
       User input: ${message}
     `;
 
-    const calendarRes = await geminiAgent.sendMessage(prompt, false);
+    let calendarRes = await aiAgent.sendMessage(prompt);
+    //     let calendarRes = `"[
+    //   {
+    //     "feedback": "ADD_EVENT Meeting on 02-07-2025 from 09:00 to 10:00",
+    //     "data": {
+    //       "type": "ADD_EVENT",
+    //       "event": {
+    //         "id": "evt_[TIMESTAMP]",
+    //         "title": "Meeting",
+    //         "date": "02-07-2025",
+    //         "start_time": "09:00",
+    //         "end_time": "10:15", // Added 15 minutes as per rule
+    //         "description": "",
+    //         "attendees": [],
+    //         "recurrence": []
+    //       }
+    //     }
+    //   }
+    // ]"`
 
     const eventRes = textToJson(calendarRes).extractedData;
-    // const  eventRes = DUUMY_CALENDAR_RES;
 
-    // let actions = ActionProcessor.processAction(eventRes.data)
-    // console.log({action})
     eventRes?.forEach((action) => {
-      console.log({ action });
-      let parsedActions = ActionProcessor.processAction(action.data);
-      console.log({ parsedActions });
-      dispatch(parsedActions);
+      if (action.data.type !== "CALENDAR_QUERY") {
+        let parsedActions = ActionProcessor.processAction(action.data);
+        dispatch(parsedActions);
+      }
     });
+
     // Store the responses for later use
-    const responses = {
-      parsed,
-      mainRes,
-      eventRes,
-    };
+    // const responses = {
+    //   parsed,
+    //   actions: eventRes,
+    // };
 
     return {
-      responses,
-      feedback: eventRes[0].feedback,
-      action: parsed.action,
+      action_type: "CALENDAR",
+      // feedback: eventRes[0]?.feedback || "Calendar action completed",
+      actions: eventRes?.map((e) => e.data) || [],
+      done: true,
     };
   };
 
-  const handleJobsCase = async (message, parsed, mainRes, isQuick) => {
+  const handleJobsCase = async (message, parsed, isQuick) => {
     const prompt = `
       ${PROMPTS.JOBS}
       User Input: ${message.trim()},
       Current Job Data: ${JSON.stringify(currentJobRef.current)}
     `;
 
-    const jobRes = await geminiAgent.sendMessage(prompt, false);
+    const jobRes = await aiAgent.sendMessage(prompt, false);
+
+    // const jobRes =`{
+    //     "required_match_score": 7.0,
+    //     "feedback": "Thank you for your request. To refine your search, please provide additional details such as your hourly/monthly/yearly rate, preferred contact email, and any specific certifications or educational background you require. Additionally, if you have any experience with Python, please mention it as it is often associated with Django development.",
+    //     "updates": [
+    //       {
+    //         "field": "job_titles",
+    //         "values": ["Rust Developer", "ICP Developer", "Django Developer"]
+    //       },
+    //       {
+    //         "field": "skills",
+    //         "values": ["Rust", "ICP", "Django"]
+    //       },
+    //       {
+    //         "field": "experience",
+    //         "values": ["3 years of experience"]
+    //       }
+    //     ],
+    //     "category": "Job",
+    //     "done": false,
+    //     "isBreakingChanges": false
+    //   }`
     const parsedJob = textToJson(jobRes).extractedData;
 
     // Validation logic
@@ -91,90 +130,81 @@ export const useChatHandler = () => {
     }
 
     // Dispatch updates
-
-    dispatch({
-      type: "UPDATE_FIELDS",
-      updates: parsedJob.updates,
-      category: parsedJob.category,
-      required_match_score: parsedJob.required_match_score,
-    });
-
-    const responses = {
-      parsed,
-      mainRes,
-      jobRes,
-    };
+    if (parsedJob.type !== "JOBS_QUERY") {
+      dispatch({
+        type: "UPDATE_FIELDS",
+        updates: parsedJob.updates,
+        category: parsedJob.category,
+        required_match_score: parsedJob.required_match_score,
+      });
+    }
 
     return {
-      responses,
+      action_type: "JOBS",
       feedback: parsedJob.feedback,
-      action: parsed.action,
-      done: parsedJob.done,
+      actions: parsedJob.updates || [],
+      done: parsedJob.done || false,
     };
   };
 
-  const handleQuestionsCase = async (message, parsed, mainRes, isQuick) => {
-    // Store the responses for later use
-    const responses = {
-      parsed,
-      mainRes,
-      quesRes: null, // Will be implemented later with RAG
-    };
-
+  const handleQuestionsCase = async (message, parsed, isQuick) => {
     return {
-      responses,
+      action_type: "QUESTIONS",
       feedback: "Questions functionality with RAG will be implemented soon",
-      action: parsed.action,
+      actions: [],
+      done: true,
     };
   };
 
-  const handleOtherCase = async (message, parsed, mainRes, isQuick) => {
-    // Store the responses for later use
-    const responses = {
-      parsed,
-      mainRes,
-      otherRes: null, // Will be implemented later
-    };
-
+  const handleOtherCase = async (message, parsed, isQuick) => {
     return {
-      responses,
+      action_type: "OTHER",
       feedback: parsed.feedback || "Task completed",
-      action: parsed.action,
+      actions: [],
+      done: true,
     };
   };
 
   const processMessage = async (message, messageId, isQuick = true) => {
+    let compact_message =
+      message.length > 2000 ? compactMessage(message) : message;
+
     try {
-      const mainRes = await geminiAgent.sendMessage(
-        `
-        message: ${message.trim()},
-        ${PROMPTS.MAIN}
-      `,
-        true,
-      );
-      // console.log({mainRes})
-      const parsed = textToJson(mainRes).extractedData;
+      let parsed = classifyMessage(compact_message);
+
+      if (!parsed.type) {
+        return {
+          action_type: "OTHER",
+          feedback: parsed.feedback || "Unable to process request",
+          actions: [],
+          done: true,
+        };
+      }
+
       let result;
 
       switch (parsed.type) {
         case "CALENDAR":
-          result = await handleCalendarCase(message, parsed, mainRes, isQuick);
+          result = await handleCalendarCase(compact_message, parsed, isQuick);
           break;
         case "JOBS":
-          result = await handleJobsCase(message, parsed, mainRes, isQuick);
+          result = await handleJobsCase(compact_message, parsed, isQuick);
           break;
         case "QUESTIONS":
-          result = await handleQuestionsCase(message, parsed, mainRes, isQuick);
+          result = await handleQuestionsCase(compact_message, parsed, isQuick);
           break;
-        default: // 'Other'
-          result = await handleOtherCase(message, parsed, mainRes, isQuick);
+        default:
+          result = await handleOtherCase(compact_message, parsed, isQuick);
           break;
       }
 
-      // Store all responses for this message
+      // Store responses for retry/undo functionality
       setMessageResponses((prev) => ({
         ...prev,
-        [messageId]: result.responses,
+        [messageId]: {
+          parsed,
+          result,
+        },
       }));
 
       return result;
@@ -184,41 +214,8 @@ export const useChatHandler = () => {
     }
   };
 
-  const handleRetry = (messageId) => {
-    const responses = messageResponses[messageId];
-    if (responses) {
-      console.log("Retry:", {
-        parsed: responses.parsed,
-        res: responses.mainRes,
-      });
-    }
-  };
-
-  const handleUndo = (messageId) => {
-    const responses = messageResponses[messageId];
-    if (responses) {
-      console.log("Undo:", {
-        parsed: responses.parsed,
-        res: responses.mainRes,
-      });
-    }
-  };
-
-  const handleRedo = (messageId) => {
-    const responses = messageResponses[messageId];
-    if (responses) {
-      console.log("Redo:", {
-        parsed: responses.parsed,
-        res: responses.mainRes,
-      });
-    }
-  };
-
   return {
     processMessage,
-    handleRetry,
-    handleUndo,
-    handleRedo,
     messageResponses,
   };
 };

@@ -5,7 +5,7 @@ export const BUILD_JOB_PROMPT = `Act ast a job management assistant. Analyze the
 2. A list of job actions needed to fulfill the request
 3. Make sure to return clear valid json
 4. Always try to infer a job title do not leave job_titles = []
-
+NOTE: if the user just asking quastions return only two fields type:"JOBS_QUERY", feedback: "", make sure to answer thier quatioons in feedback.
 Response format:
 {
   "required_match_score": 9.0, // must be float like 9.0 or 9.5, If the person want exact match, this number represent how exact do you want to match your requirements or your talent

@@ -721,7 +721,6 @@ export const getContractColumnDefs = (columns) => {
         //   }
         // });
         // const row = contract.rows.find((row) => row.id === data.id);
-        // console.log({data})
         params.context.dispatch({
           type: "UPDATE_ROW",
           contract_id: contractsState.id,

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Job } from "$/declarations/backend/backend.did";
+import { Job, JobUpdate, Match } from "$/declarations/backend/backend.did";
 import {
   Box,
   Typography,
@@ -14,6 +14,7 @@ import {
   CardContent,
   Grid,
   Button,
+  TextField,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -25,16 +26,63 @@ import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import { Link } from "react-router-dom";
 import { formatRelativeTime } from "@/utils/time";
 import { useSelector } from "react-redux";
+import { useBackendContext } from "@/contexts/BackendContext";
+import { json } from "stream/consumers";
 
 interface JobDetailsProps {
   job: Job;
+  match: Match;
 }
 
-const JobDetails: React.FC<JobDetailsProps> = ({ job }) => {
+const JobDetails: React.FC<JobDetailsProps> = ({ job, match }) => {
   const [expandedSection, setExpandedSection] = React.useState<string | false>(
     "basic",
   );
+  const [editingCoverLetter, setEditingCoverLetter] = React.useState(false);
+  const [coverLetterText, setCoverLetterText] = React.useState<String>(
+    match?.cover_letter || "",
+  );
+  const [saving, setSaving] = React.useState(false);
+  const { currentJobId, matchingJobs, jobs } = useSelector(
+    (state: any) => state.jobState,
+  );
   const { profile } = useSelector((state: any) => state.filesState);
+  const { backendActor } = useBackendContext();
+  const currentJob = jobs.find((job: Job) => job.id === currentJobId);
+
+  const canEdit = Object.keys(currentJob.category)[0] == "Talent";
+
+  const handleSaveCoverLetter = async () => {
+    setSaving(true);
+    try {
+      const updatedMatch: Match = {
+        ...match,
+        cover_letter: String(coverLetterText),
+      };
+
+      const jobUpdate: Array<JobUpdate> = [
+        {
+          id: currentJobId,
+          updates: [],
+          active: [],
+          required_match_score: [],
+          category: [],
+          matches: [[updatedMatch]],
+        },
+      ];
+
+      const res = await backendActor.update_job(jobUpdate, []);
+      if (res.Err) {
+        alert(JSON.stringify(res.Err));
+      } else {
+        setEditingCoverLetter(false);
+      }
+    } catch (error) {
+      console.error("Failed to update cover letter:", error);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   // Helper function to format field names
   const formatFieldName = (key: string) => {
@@ -213,7 +261,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job }) => {
       )}
 
       {/* Cover Letter Section */}
-      {job.cover_letter && (
+      {(match?.cover_letter || canEdit) && (
         <Card
           sx={{
             mb: 3,
@@ -227,29 +275,73 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job }) => {
             <Stack
               direction="row"
               alignItems="center"
-              spacing={1}
+              justifyContent="space-between"
               sx={{ mb: 2 }}
             >
-              <EmailIcon />
-              <Typography
-                variant="h5"
+              <Stack direction="row" alignItems="center" spacing={1}>
+                <EmailIcon />
+                <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                  Cover Letter
+                </Typography>
+              </Stack>
+              {canEdit && (
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() =>
+                    editingCoverLetter
+                      ? handleSaveCoverLetter()
+                      : setEditingCoverLetter(true)
+                  }
+                  disabled={saving}
+                  sx={{
+                    color: "white",
+                    borderColor: "white",
+                    "&:hover": {
+                      borderColor: "white",
+                      backgroundColor: "rgba(255,255,255,0.1)",
+                    },
+                  }}
+                >
+                  {saving ? "Saving..." : editingCoverLetter ? "Save" : "Edit"}
+                </Button>
+              )}
+            </Stack>
+            {editingCoverLetter ? (
+              <TextField
+                fullWidth
+                multiline
+                rows={8}
+                value={coverLetterText}
+                onChange={(e) => setCoverLetterText(e.target.value)}
+                placeholder="Write your cover letter..."
+                variant="outlined"
                 sx={{
-                  fontWeight: 700,
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: 2,
+                    "& fieldset": { border: "none" },
+                    "&:hover fieldset": { border: "none" },
+                    "&.Mui-focused fieldset": { border: "2px solid white" },
+                  },
+                  "& .MuiInputBase-input": {
+                    fontSize: "1.1rem",
+                    lineHeight: 1.7,
+                  },
+                }}
+              />
+            ) : (
+              <Typography
+                variant="body1"
+                sx={{
+                  lineHeight: 1.7,
+                  fontSize: "1.1rem",
+                  whiteSpace: "pre-wrap",
                 }}
               >
-                Cover Letter
+                {coverLetterText ||
+                  "No cover letter yet. Click Edit to add one."}
               </Typography>
-            </Stack>
-            <Typography
-              variant="body1"
-              sx={{
-                lineHeight: 1.7,
-                fontSize: "1.1rem",
-                whiteSpace: "pre-wrap",
-              }}
-            >
-              {job.cover_letter}
-            </Typography>
+            )}
           </CardContent>
         </Card>
       )}
@@ -320,7 +412,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job }) => {
             </Typography>
             <Grid container spacing={3}>
               {/* Display emails first if they exist */}
-              {job.emails && job.emails.length > 0 && (
+              {/* {job.emails && job.emails.length > 0 && (
                 <Grid item xs={12}>
                   <Box
                     sx={{
@@ -361,7 +453,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job }) => {
                     </Stack>
                   </Box>
                 </Grid>
-              )}
+              )} */}
 
               {basicInfoFields.map((key) => {
                 const value = job[key as keyof Job];
