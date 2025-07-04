@@ -224,7 +224,7 @@ export class AIAgent {
       conversationContext += `<|user|>\n${message}<|end|>\n<|assistant|>`;
 
       const response = await fetch(
-        "https://api-inference.huggingface.co/models/microsoft/phi-4",
+        "https://api-inference.huggingface.co/models/microsoft/Phi-3-mini-4k-instruct",
         {
           method: "POST",
           headers: {
@@ -234,14 +234,16 @@ export class AIAgent {
           body: JSON.stringify({
             inputs: conversationContext,
             parameters: {
-              max_new_tokens: AIAgent.MYSTATICS.isFreeTier ? 2000 : 4000,
+              max_new_tokens: 2000,
               temperature: 0.7,
               return_full_text: false,
             },
           }),
         },
       );
+
       if (!response.ok) {
+        console.log({ response });
         throw new Error(`API request failed with status ${response.status}`);
       }
 

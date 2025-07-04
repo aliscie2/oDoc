@@ -18,6 +18,7 @@ import { useSelector } from "react-redux";
 import MarkdownMessage from "./markDownMessageRdnder"; // Import the new component
 import { logger } from "@/DevUtils/logData";
 import AICreditsComponent from "./AICreditsCompnent";
+import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
 
 export const AIChatComponent = ({
   isExpanded,
@@ -123,13 +124,7 @@ export const AIChatComponent = ({
                 ×
               </IconButton>
             </Box>
-
-            <EmotionalAnimation
-              absolute
-              type={isLoading ? "Loading" : "watch"}
-              size={130}
-            />
-
+            <RunawayJellyfish thinking={isLoading} runaway={true} />
             <Box
               ref={chatContainerRef}
               sx={{ flex: 1, overflowY: "auto", mb: 2 }}

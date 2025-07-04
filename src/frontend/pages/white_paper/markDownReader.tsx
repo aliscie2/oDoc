@@ -26,6 +26,7 @@ import whitepaperText from "./md/whitepaper.md";
 import promisePaper from "./md/promise.md";
 import roadMap from "./md/roadmap.md";
 import snsPaper from "./md/sns.md";
+import architecture from "./md/architecture.md";
 
 function TabPanel({ children, value, index, ...other }) {
   return (
@@ -55,6 +56,7 @@ const MarkdownRenderer = () => {
           promisePaper,
           roadMap,
           snsPaper,
+          architecture,
         ].map((paper) => fetch(paper).then((response) => response.text()));
 
         const allTexts = await Promise.all(fetchPromises);

@@ -42,12 +42,18 @@ import {
   Twitter,
   GitHub,
 } from "@mui/icons-material";
-import EmotionalAnimation from "@/components/creature";
+
 import OdocStrecture from "./oDocStrecture";
 import MobileTutrials from "./mobileVideoTutorials";
 import DeskTopTutorials from "../videoTutorial";
 import PlatformProgress from "./platformProgress";
 import PageFooter from "./socialButton";
+import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
+import LOGOSVG, {
+  AUTOMATIONSVG,
+  FriendlyCharacter,
+  SECRUTYSVG,
+} from "@/components/creature/logoSVG";
 
 // Hook for scroll-based visibility
 const useScrollVisibility = () => {
@@ -209,12 +215,18 @@ export default function OdocLandingPage() {
           visibleSection={visibleSection}
           title="Streamline your work flow."
           icon={
-            <EmotionalAnimation
-              size={isMobile ? "sm" : "md"}
-              title={"oDoc crypto agreement"}
-              description="The unified freelance platform."
-              type="logo"
-            />
+            <>
+              <div>
+                <RunawayJellyfish
+                  LogoSvg={LOGOSVG}
+                  jellyfishOffsetX={-135}
+                  jellyfishOffsetY={5}
+                  scale={1.3}
+                />
+              </div>
+              <Typography>oDoc crypto agreement</Typography>
+              <Typography>The unified freelance platform.</Typography>
+            </>
           }
         >
           <Typography
@@ -231,13 +243,7 @@ export default function OdocLandingPage() {
         {/* Job Matching Section */}
         <FeatureSection
           title="Stop hunting for jobs, let AI do it for you"
-          icon={
-            <EmotionalAnimation
-              size={isMobile ? "sm" : "md"}
-              title={"From 40 Hours of Job Hunting to 5 Minutes of AI Magic"}
-              type="Searching"
-            />
-          }
+          icon={<RunawayJellyfish thinking={true} scale={isMobile ? 1.2 : 2} />}
           sectionIndex={1}
           visibleSection={visibleSection}
         >
@@ -268,9 +274,15 @@ export default function OdocLandingPage() {
         <FeatureSection
           title="Crypto Agreement"
           icon={
-            <EmotionalAnimation
-              size={isMobile ? "sm" : "md"}
-              type="handShake"
+            <RunawayJellyfish
+              shiver={true}
+              jellyfishOffsetX={isMobile ? -100 : -50}
+              jellyfishOffsetY={0}
+              scale={isMobile ? 1 : 1.3}
+              LogoSvg={FriendlyCharacter}
+              shiver={true}
+              scale={1}
+              logoSvgScale={isMobile ? 1 : 1.5}
             />
           }
           reversed
@@ -550,9 +562,12 @@ export default function OdocLandingPage() {
         <FeatureSection
           title="Automated Tasks Manager"
           icon={
-            <EmotionalAnimation
-              size={isMobile ? "sm" : "md"}
-              type="MultiTask"
+            <RunawayJellyfish
+              logoSvgScale={isMobile ? 1.5 : 2}
+              LogoSvg={AUTOMATIONSVG}
+              jellyfishOffsetX={-100}
+              jellyfishOffsetY={5}
+              scale={isMobile ? 0.7 : 1.3}
             />
           }
           sectionIndex={isMobile ? 5 : 6}
@@ -593,7 +608,13 @@ export default function OdocLandingPage() {
         <FeatureSection
           title="Cyber Security"
           icon={
-            <EmotionalAnimation size={isMobile ? "sm" : "md"} type="Security" />
+            <RunawayJellyfish
+              logoSvgScale={isMobile ? 1 : 1.5}
+              LogoSvg={SECRUTYSVG}
+              jellyfishOffsetX={-100}
+              jellyfishOffsetY={5}
+              scale={isMobile ? 0.7 : 1.3}
+            />
           }
           sectionIndex={isMobile ? 6 : 7}
           visibleSection={visibleSection}
