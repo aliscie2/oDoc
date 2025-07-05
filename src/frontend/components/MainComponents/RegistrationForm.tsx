@@ -14,7 +14,7 @@ import { RegisterUser } from "../../../declarations/backend/backend.did";
 import LoaderButton from "../MuiComponents/LoaderButton";
 import compressImage from "@/DataProcessing/compressImage";
 import { useLocation } from "react-router-dom";
-import LoaderComponent from "../creature";
+import RunawayJellyfish from "../creature/runAeayJellyFish";
 
 // Utility function to convert File to Uint8Array
 const fileToUint8Array = (file: File): Promise<Uint8Array> => {
@@ -144,7 +144,7 @@ const RegistrationForm: React.FC = () => {
       >
         Complete your profile to get started
       </Typography>
-      <LoaderComponent type="greetings" size={16} />
+      <RunawayJellyfish runaway={true} />
 
       <Box sx={{ display: "flex", justifyContent: "center", mb: 4 }}>
         <input

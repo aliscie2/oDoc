@@ -42,7 +42,7 @@ const RunawayJellyfish = ({
 
   // Logo eye tracking behavior
   useEffect(() => {
-    if (LogoSvg && !die && !isDead) {
+    if (LogoSvg) {
       const startEyeTracking = () => {
         // Look at top-left most of the time
         setIsLookingAtCamera(false);

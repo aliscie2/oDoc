@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { debounce } from "lodash";
+import { debounce, truncate } from "lodash";
 import {
   CircularProgress,
   Input,
@@ -18,8 +18,9 @@ import ViewListIcon from "@mui/icons-material/ViewList";
 import EditorComponent from "../../components/EditorComponent";
 import NestedTabMenu from "./contentTab";
 import { Link } from "react-router-dom";
-import LoaderComponent from "@/components/creature";
-import EmotionalAnimation from "@/components/creature";
+
+import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
+import { NOTFOUND404 } from "@/components/creature/logoSVG";
 
 const ExpandingInput = styled(Input)(({ theme }) => ({
   "& input": {
@@ -137,7 +138,16 @@ function FileContentPage() {
 
   // Check for 404 case first (when initialization is complete but no files exist)
   if (inited && files.length === 0) {
-    return <EmotionalAnimation />;
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="100vh" // or whatever height you want
+      >
+        <RunawayJellyfish thinking={true} scale={1.3} />
+      </Box>
+    );
   }
 
   // Show loading spinner while files are being loaded (and user is logged in)
@@ -146,12 +156,24 @@ function FileContentPage() {
   }
 
   // If no current file is found, show 404
+  // make it in center
   if (!currentFile) {
     return (
-      <EmotionalAnimation
-        type="404"
-        description="Even our deep-sea explorer jellyfish couldn't find what you're looking for!"
-      />
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="100vh" // or whatever height you want
+      >
+        <RunawayJellyfish
+          thinking={true}
+          logoSvgScale={3}
+          LogoSvg={NOTFOUND404}
+          jellyfishOffsetX={-150}
+          jellyfishOffsetY={25}
+          scale={2}
+        />
+      </Box>
     );
   }
 

@@ -9,14 +9,9 @@ import {
   Button,
 } from "@mui/material";
 import { Chat, Send, Refresh, Undo, Redo } from "@mui/icons-material";
-import creature from "@/public/creature.gif";
-import { useBackendContext } from "@/contexts/BackendContext";
-import EmotionalAnimation from "@/components/creature";
-import { JOB_MATCHING_PROMPT } from "../discover/jobs/utils/jobMatchingPrompt";
-import { MAIN_CHAT_PROMPT } from "../discover/jobs/utils/mainChatProblm";
+
 import { useSelector } from "react-redux";
 import MarkdownMessage from "./markDownMessageRdnder"; // Import the new component
-import { logger } from "@/DevUtils/logData";
 import AICreditsComponent from "./AICreditsCompnent";
 import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
 

@@ -51,7 +51,12 @@ export const useBackendContext = (): BackendContextProps => {
 };
 
 const createAuthClient = async (): Promise<AuthClient> => {
-  return await AuthClient.create();
+  return await AuthClient.create({
+    idleOptions: {
+      disableIdle: true,
+      disableDefaultIdleCallback: true,
+    },
+  });
 };
 
 const createHttpAgent = async (
@@ -145,7 +150,7 @@ export const BackendProvider: React.FC<BackendProviderProps> = ({
       setState((prevState) => ({ ...prevState, isAuthenticating: true }));
 
       await authClient.login({
-        maxTimeToLive: BigInt(3 * 24 * 60 * 60 * 1000000000),
+        // maxTimeToLive: BigInt(3 * 24 * 60 * 60 * 1000000000),
         identityProvider,
         onSuccess: async () => {
           dispatch({ type: "LOGIN" });

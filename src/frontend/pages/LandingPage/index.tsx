@@ -215,18 +215,43 @@ export default function OdocLandingPage() {
           visibleSection={visibleSection}
           title="Streamline your work flow."
           icon={
-            <>
-              <div>
-                <RunawayJellyfish
-                  LogoSvg={LOGOSVG}
-                  jellyfishOffsetX={-135}
-                  jellyfishOffsetY={5}
-                  scale={1.3}
-                />
-              </div>
-              <Typography>oDoc crypto agreement</Typography>
-              <Typography>The unified freelance platform.</Typography>
-            </>
+            <Box sx={{ textAlign: "center", py: 4 }}>
+              <RunawayJellyfish
+                LogoSvg={LOGOSVG}
+                jellyfishOffsetX={-135}
+                jellyfishOffsetY={5}
+                scale={1.3}
+              />
+              <Typography
+                variant="h3"
+                component="h1"
+                sx={{ mb: 1.5, fontWeight: 600, mt: 2 }}
+              >
+                oDoc Crypto Agreement
+              </Typography>
+              <Typography
+                variant="h6"
+                sx={{ mb: 3, opacity: 0.7, fontWeight: 400 }}
+              >
+                The unified freelance platform
+              </Typography>
+              <Stack
+                direction="row"
+                spacing={1}
+                sx={{ justifyContent: "center", flexWrap: "wrap", gap: 1 }}
+              >
+                {["Open Source", "Decentralized", "Unified", "All-in-One"].map(
+                  (label) => (
+                    <Chip
+                      key={label}
+                      label={label}
+                      size="small"
+                      variant="outlined"
+                    />
+                  ),
+                )}
+              </Stack>
+            </Box>
           }
         >
           <Typography
