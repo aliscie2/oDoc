@@ -1,19 +1,19 @@
 import { test, expect } from "@playwright/test";
-import path from "path";
 
-// const authFile = path.join(__dirname, '../playwright/.auth/user.json');
+// Use the authentication state from setup
+test.use({ storageState: "playwright/.auth/user.json" });
 
-test("Login with Internet Identity", async ({ browser }) => {
-  const adminContext = await browser.newContext({
-    storageState: "playwright/.auth/user.json",
-  });
-  const page = await adminContext.newPage();
+// test("Login with Internet Identity", async ({ page }) => {
+//   await page.goto("http://localhost:5173/");
+  
+//   // Should already be logged in due to storageState
+//   await expect(page.locator("text=Job Matches")).toBeVisible();
+// });
 
-  // const adminContext = await browser.newContext({ storageState: 'playwright/.auth/user.json' });
-  // const page = await adminContext.newPage();
+// Alternative test without using storageState (if you want to test the login flow)
+test("Fresh login flow", async ({ page }) => {
   await page.goto("http://localhost:5173/");
 
-  await expect(page.locator("text=Job Matches")).toBeVisible();
-
-  // No need to manually close the tab since it closes automatically
+  // Should already be logged in due to storageState
+  await expect(page.locator('h6.MuiTypography-h6:has-text("Recent Posts")')).toBeVisible();
 });

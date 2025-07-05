@@ -3,42 +3,34 @@ import path from "path";
 
 const authFile = path.join(__dirname, "../playwright/.auth/user.json");
 
-setup("authenticate", async ({ page, context }) => {
-  await page.goto("http://localhost:5173/");
-
-  // Click Login button
-  await page.click('button:has-text("Login")');
-
-  // Wait for dropdown and click Internet Identity menuitem
-  await page.waitForSelector(
-    '[role="menuitem"]:has-text("Internet Identity")',
-    { state: "visible" },
-  );
-  // await page.click('[role="menuitem"]:has-text("Internet Identity")')
-
-  // Wait for new tab to open
+setup("authenticate", async ({ page }) => {
+  await page.goto("http://localhost:5173");
+  
+  // Click Login button using the specific MUI button class
   const popupPromise = page.waitForEvent("popup");
-  await page.click('[role="menuitem"]:has-text("Internet Identity")');
+  await page.click('button.MuiButton-root:has-text("Login with Internet Identity")');
+  
   const newPage = await popupPromise;
-  // console.log(await popup.evaluate('location.href'));
-  // const [newPage] = await Promise.all([
-  //   context.waitForEvent('page'),
-  // ])
-
+  
+  // Wait for the new page to load completely
   await newPage.waitForLoadState("networkidle");
-
-  // Click "Use existing" in new tab
-  await newPage.click("text=Use existing");
-
-  // Type 10000 and press Enter
-  await newPage.fill('input[type="text"]', "10000");
-  await newPage.press('input[type="text"]', "Enter");
-
-  // Wait for auth to complete and tab to close automatically
+  
+  // Click "Use existing" button with the specific ID and class
+  await newPage.click('button#loginButton.c-button--secondary:has-text("Use existing")');
+  
+  // Fill the input field with the specific data-role attribute
+  await newPage.fill('input[data-role="anchor-input"]', "10000");
+  
+  // Press Enter on the input field
+  await newPage.press('input[data-role="anchor-input"]', "Enter");
+  
+  // Wait for the popup tab to close automatically
   await newPage.waitForEvent("close");
-
-  // Verify we're back on original page and logged in
-  await expect(page.locator("text=Job Matches")).toBeVisible();
+  
+  // Verify we're back on the original page and logged in
+  // Check for the specific MUI Typography element with "Recent Posts"
+  await expect(page.locator('h6.MuiTypography-h6:has-text("Recent Posts")')).toBeVisible();
+  
+  // Save authentication state
   await page.context().storageState({ path: authFile });
-  // await newPage.context().storageState({ path: authFile });
 });

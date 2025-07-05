@@ -58,9 +58,18 @@ log "Backend canister ID: $BACKEND_ID"
 
 # 7. Step 3 from README: dfx deploy internet_identity
 log "Step 3: Deploying internet_identity..."
+
 if dfx deploy internet_identity 2>/dev/null; then
     II_ID=$(dfx canister id internet_identity)
     success "Internet Identity deployed: $II_ID"
+    
+    # Install custom WASM if found
+    PATH_FOUND=$(find . -name "internet_identity.wasm.gz" -type f)
+    if [ -n "$PATH_FOUND" ]; then
+        log "Found Internet Identity WASM at: $PATH_FOUND - reinstalling with custom config"
+        dfx canister install internet_identity --wasm "$PATH_FOUND" --mode reinstall --argument "(opt record { captcha_config = opt record { max_unsolved_captchas= 50:nat64; captcha_trigger = variant {Static = variant { CaptchaDisabled }}}; related_origins = opt vec { \"https://id.ai\" }; new_flow_origins = opt vec { \"https://id.ai\" }; dummy_auth = opt opt record { prompt_for_index = true }})" || warn "Custom WASM installation failed"
+        dfx deploy internet_identity || warn "Final deployment after WASM install failed"
+    fi
 else
     warn "Internet Identity deployment failed - will use remote instance"
     II_ID="rdmx6-jaaaa-aaaaa-aaadq-cai"  # Remote IC instance
