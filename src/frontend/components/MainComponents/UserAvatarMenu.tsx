@@ -25,6 +25,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../redux/reducers";
 import { randomString } from "../../DataProcessing/dataSamples";
 import { convertToBlobLink } from "@/DataProcessing/imageToVec";
+import { logger } from "@/DevUtils/logData";
 
 interface UserAvatarMenuProps {
   user: {
@@ -41,6 +42,7 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
   sx,
   hide = [],
 }) => {
+  console.log({ user });
   if (!user) {
     return <CircularProgress />;
   }
@@ -53,6 +55,21 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
   const [rating, setRating] = useState<number>(0);
   const [comment, setComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { chats } = useSelector((state: RootState) => state.chatsState);
+  const { profile, posts } = useSelector(
+    (state: RootState) => state.filesState,
+  );
+
+  const getUserPhoto = () => {
+    if (user.photo && user.photo.length > 0) {
+      return convertToBlobLink(user.photo);
+    }
+    const userPost = posts.find((p) => p.creator.id === user.id);
+    return userPost?.creator.photo?.length > 0
+      ? convertToBlobLink(userPost.creator.photo)
+      : null;
+  };
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -69,11 +86,8 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
 
   const [activeChat, setActiveChat] = useState<any>(null);
   const [chatPosition, setChatPosition] = useState({ x: 0, y: 0 });
-  const { chats } = useSelector((state: RootState) => state.chatsState);
-  const { profile } = useSelector((state: RootState) => state.filesState);
 
   const handleMessage = useCallback(() => {
-    // Use the already selected chats and profile
     const existingChat = chats.find((chat) =>
       chat.members.some(
         (member) =>
@@ -181,7 +195,6 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
   const handleReviewSubmit = async () => {
     setIsSubmitting(true);
     try {
-      // Convert user.id string to Principal
       const userPrincipal = Principal.fromText(user.id);
 
       const ratingData: Rating = {
@@ -202,7 +215,6 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
         enqueueSnackbar(result.Err, { variant: "error" });
       }
     } catch (error) {
-      // console.error('Error submitting review:', error);
       enqueueSnackbar("Failed to submit review " + error, { variant: "error" });
     } finally {
       setIsSubmitting(false);
@@ -211,10 +223,11 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
       setComment("");
     }
   };
+  console.log({ posts, x: getUserPhoto() });
   return (
     <>
       <IconButton disabled={user.id === profile?.id} onClick={handleClick}>
-        <Avatar src={convertToBlobLink(user.photo)} alt={user.name} sx={sx}>
+        <Avatar src={getUserPhoto()} alt={user.name} sx={sx}>
           {user.name?.charAt(0) || "A"}
         </Avatar>
       </IconButton>
@@ -275,8 +288,6 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
           user={user}
           chat={activeChat}
           onClose={handleCloseChat}
-          // position={chatPosition}
-          // onPositionChange={handleChatPositionChange}
           dialog={true}
           onSendMessage={handleSendMessage}
         />

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-
+const mainColor = "#FFEFCE";
 const RunawayJellyfish = ({
   scale = 1,
   panic = false,
@@ -412,6 +412,10 @@ const RunawayJellyfish = ({
       );
     }
 
+    const thinkingSquint = thinking
+      ? 0.75 + Math.sin(Date.now() * 0.006) * 0.15
+      : 1;
+
     return (
       <>
         <circle
@@ -422,7 +426,7 @@ const RunawayJellyfish = ({
           style={{
             transform: isBlinking
               ? "scaleY(0.1)"
-              : `scaleY(${isMoving ? 1.1 : 1})`,
+              : `scaleY(${(isMoving ? 1.1 : 1) * thinkingSquint})`,
             transformOrigin: `${eyeX}px ${eyeY}px`,
             transition: LogoSvg
               ? "cx 0.8s ease-in-out, cy 0.8s ease-in-out, transform 0.3s ease-out"
@@ -437,7 +441,7 @@ const RunawayJellyfish = ({
           style={{
             transform: isBlinking
               ? "scaleY(0.1)"
-              : `scaleY(${isMoving ? 1.2 : 1})`,
+              : `scaleY(${(isMoving ? 1.2 : 1) * thinkingSquint})`,
             transformOrigin: `${pupilX}px ${pupilY}px`,
             transition: LogoSvg
               ? "cx 0.8s ease-in-out, cy 0.8s ease-in-out, transform 0.3s ease-out"
@@ -462,7 +466,7 @@ const RunawayJellyfish = ({
             : "none",
         filter: die
           ? "brightness(0.3) contrast(0.8) grayscale(0.8)"
-          : `drop-shadow(0 ${(isMoving ? 8 : 4) * scale}px ${(isMoving ? 30 : 20) * scale}px rgba(249, 243, 224, ${isMoving ? 0.5 : 0.3}))`,
+          : `drop-shadow(0 ${(isMoving ? 8 : 4) * scale}px ${(isMoving ? 30 : 20) * scale}px rgba(249, 243, 224, ${isMoving ? 0.5 : 0.3})) drop-shadow(0 ${(isMoving ? 12 : 8) * scale}px ${(isMoving ? 40 : 30) * scale}px rgba(0, 0, 0, ${isMoving ? 0.7 : 0.6}))`,
         pointerEvents: "none",
         animation: die ? "death-transition 2s ease-out" : "none",
         zIndex: LogoSvg ? 10 : 1000,
@@ -473,7 +477,7 @@ const RunawayJellyfish = ({
           <path
             key={i}
             d={emphas.d}
-            fill="#F9F3E0"
+            fill={mainColor}
             style={{
               opacity: !initialAnimationComplete
                 ? i < emphasisIndex
@@ -499,7 +503,7 @@ const RunawayJellyfish = ({
 
         <path
           d="M255.5 401C331.439 401 393 339.439 393 263.5C393 187.561 331.439 126 255.5 126C179.561 126 118 187.561 118 263.5C118 339.439 179.561 401 255.5 401Z"
-          fill="#F9F3E0"
+          fill={mainColor}
           style={{
             transform: `scale(${bodySquish})`,
             transformOrigin: "255.5px 263.5px",
@@ -525,7 +529,7 @@ const RunawayJellyfish = ({
           <path
             key={i}
             d={tentacle.d}
-            fill="#F9F3E0"
+            fill={mainColor}
             style={{
               opacity: !initialAnimationComplete
                 ? i < tentacleIndex

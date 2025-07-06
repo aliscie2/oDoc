@@ -4,7 +4,7 @@ import { Typography, Box } from "@mui/material";
 const MarkdownMessage = ({ message, isUser = false }) => {
   // Simple markdown renderer for common markdown elements
   const renderMarkdown = (text) => {
-    if (!text) return "";
+    if (!text || typeof text !== "string") return "";
 
     // Convert markdown to JSX elements
     let content = text;

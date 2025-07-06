@@ -5,7 +5,7 @@ test.use({ storageState: "playwright/.auth/user.json" });
 
 // test("Login with Internet Identity", async ({ page }) => {
 //   await page.goto("http://localhost:5173/");
-  
+
 //   // Should already be logged in due to storageState
 //   await expect(page.locator("text=Job Matches")).toBeVisible();
 // });
@@ -15,5 +15,7 @@ test("Fresh login flow", async ({ page }) => {
   await page.goto("http://localhost:5173/");
 
   // Should already be logged in due to storageState
-  await expect(page.locator('h6.MuiTypography-h6:has-text("Recent Posts")')).toBeVisible();
+  await expect(
+    page.locator('h6.MuiTypography-h6:has-text("Recent Posts")'),
+  ).toBeVisible();
 });

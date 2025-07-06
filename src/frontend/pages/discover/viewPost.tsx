@@ -123,6 +123,12 @@ const ViewPostComponent: React.FC<ViewPostComponentProps> = ({
   });
 
   const contentTree = React.useRef([]);
+  const isOwner = profile?.id === post.creator.id;
+  const canVote = profile && !isOwner && !voteLoading;
+  const userUpVoted = votes.up.map((v) => v.toString()).includes(profile?.id);
+  const userDownVoted = votes.down
+    .map((v) => v.toString())
+    .includes(profile?.id);
 
   const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
     setMenuAnchorEl(event.currentTarget);
@@ -175,7 +181,7 @@ const ViewPostComponent: React.FC<ViewPostComponentProps> = ({
   };
 
   const onLike = async () => {
-    if (profile?.id === post.creator.id) {
+    if (isOwner) {
       enqueueSnackbar("Can't like your own post", { variant: "error" });
       return;
     }
@@ -195,7 +201,7 @@ const ViewPostComponent: React.FC<ViewPostComponentProps> = ({
   };
 
   const onDisLike = async () => {
-    if (profile?.id === post.creator.id) {
+    if (isOwner) {
       enqueueSnackbar("Can't dislike your own post", { variant: "error" });
       return;
     }
@@ -217,54 +223,15 @@ const ViewPostComponent: React.FC<ViewPostComponentProps> = ({
   return (
     <PostCard>
       <StyledCardContent>
-        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-          <UserAvatarMenu sx={{ mr: 2 }} user={post.creator} />
-          <Box>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 0.5,
-                fontWeight: "bold",
-              }}
-            >
-              <Box
-                component="span"
-                sx={{
-                  color: theme.palette.text.secondary,
-                  fontWeight: "normal",
-                }}
-              >
-                @{post.creator.name}
-              </Box>
-              <Box
-                component="span"
-                sx={{
-                  color: theme.palette.text.secondary,
-                  fontWeight: "normal",
-                }}
-              >
-                · {formatRelativeTime(post.date_created)}
-              </Box>
-            </Box>
-          </Box>
-
-          {profile?.id === post.creator.id && (
-            <IconButton sx={{ ml: "auto" }} onClick={handleMenuClick}>
-              <MoreVertical />
-            </IconButton>
-          )}
-        </Box>
-
         <Box sx={{ mb: 2, maxHeight: "400px", overflowY: "auto" }}>
           <EditorComponent
             editorKey={post.id}
-            readOnly={profile?.id !== post.creator.id}
+            readOnly={!isOwner}
             id={post.id}
-            contentEditable={profile?.id === post.creator.id}
+            contentEditable={isOwner}
             onChange={(content) => {
               contentTree.current = { "": content };
-              if (!isChanged && post.creator.id === profile?.id) {
+              if (!isChanged && isOwner) {
                 setChanged(true);
               }
             }}
@@ -272,70 +239,78 @@ const ViewPostComponent: React.FC<ViewPostComponentProps> = ({
           />
         </Box>
 
-        <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
-          <ActionButton
-            onClick={() => setShowComments(!showComments)}
-            className={showComments ? "active" : ""}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+            fontSize: "0.875rem",
+          }}
+        >
+          <UserAvatarMenu sx={{ width: 24, height: 24 }} user={post.creator} />
+          <Box sx={{ color: theme.palette.text.secondary }}>
+            @{post.creator.name} · {formatRelativeTime(post.date_created)}
+          </Box>
+          <Box
+            sx={{ display: "flex", alignItems: "center", gap: 1, ml: "auto" }}
           >
-            <ChatBubbleOutline />
-            <Box component="span" sx={{ ml: 1, fontSize: "0.875rem" }}>
-              {post.children.length}
-            </Box>
-          </ActionButton>
-
-          <ActionButton
-            onClick={onLike}
-            disabled={
-              !profile || profile?.id === post.creator.id || voteLoading
-            }
-            className={
-              votes.up.map((v) => v.toString()).includes(profile?.id)
-                ? "liked"
-                : ""
-            }
-          >
-            <Favorite />
-            <Box component="span" sx={{ ml: 1, fontSize: "0.875rem" }}>
-              {votes.up.length}
-            </Box>
-          </ActionButton>
-
-          <ActionButton
-            onClick={onDisLike}
-            disabled={
-              !profile || profile?.id === post.creator.id || voteLoading
-            }
-            className={
-              votes.down.map((v) => v.toString()).includes(profile?.id)
-                ? "disliked"
-                : ""
-            }
-          >
-            <ThumbDown />
-            <Box component="span" sx={{ ml: 1, fontSize: "0.875rem" }}>
-              {votes.down.length}
-            </Box>
-          </ActionButton>
-
-          <ActionButton onClick={handleShare}>
-            <Share />
-          </ActionButton>
-
-          {profile?.id === post.creator.id && (
-            <Button
-              disabled={!isChanged}
-              onClick={onClickSave}
-              variant="contained"
+            <ActionButton
               size="small"
-              sx={{
-                ml: 2,
-                textTransform: "none",
-                borderRadius: "20px",
-              }}
+              onClick={() => setShowComments(!showComments)}
             >
-              Save
-            </Button>
-          )}
+              <ChatBubbleOutline fontSize="small" />
+              <Box component="span" sx={{ ml: 0.5 }}>
+                {post.children.length}
+              </Box>
+            </ActionButton>
+
+            {canVote && (
+              <ActionButton
+                size="small"
+                onClick={onLike}
+                className={userUpVoted ? "liked" : ""}
+              >
+                <Favorite fontSize="small" />
+                <Box component="span" sx={{ ml: 0.5 }}>
+                  {votes.up.length}
+                </Box>
+              </ActionButton>
+            )}
+
+            {canVote && (
+              <ActionButton
+                size="small"
+                onClick={onDisLike}
+                className={userDownVoted ? "disliked" : ""}
+              >
+                <ThumbDown fontSize="small" />
+                <Box component="span" sx={{ ml: 0.5 }}>
+                  {votes.down.length}
+                </Box>
+              </ActionButton>
+            )}
+
+            <ActionButton size="small" onClick={handleShare}>
+              <Share fontSize="small" />
+            </ActionButton>
+
+            {isOwner && isChanged && (
+              <Button
+                onClick={onClickSave}
+                variant="contained"
+                size="small"
+                sx={{ textTransform: "none", borderRadius: "20px" }}
+              >
+                Save
+              </Button>
+            )}
+
+            {isOwner && (
+              <IconButton size="small" onClick={handleMenuClick}>
+                <MoreVertical fontSize="small" />
+              </IconButton>
+            )}
+          </Box>
         </Box>
 
         <Collapse in={showComments}>

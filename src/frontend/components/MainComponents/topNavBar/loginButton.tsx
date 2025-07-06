@@ -34,26 +34,6 @@ const LoginButton: React.FC<LoginButtonProps> = ({
     );
   }
 
-  if (isMobile) {
-    return (
-      <BottomNavigationAction
-        label="Login"
-        icon={
-          <>
-            <img
-              src={DfnIcon}
-              alt="Internet Identity"
-              style={{ width: 20, height: 20 }}
-            />
-            <Person2Icon />
-          </>
-        }
-        onClick={handleLogin}
-        sx={{ height: "100%" }}
-      />
-    );
-  }
-
   return (
     <Button
       variant="contained"
@@ -82,7 +62,7 @@ const LoginButton: React.FC<LoginButtonProps> = ({
         ...sx,
       }}
     >
-      Login with Internet Identity
+      {isMobile ? "Get started" : "Login with Internet Identity"}
     </Button>
   );
 };

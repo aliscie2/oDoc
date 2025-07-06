@@ -27,19 +27,19 @@ import { Link } from "react-router-dom";
 import { formatRelativeTime } from "@/utils/time";
 import { useSelector } from "react-redux";
 import { useBackendContext } from "@/contexts/BackendContext";
-import { json } from "stream/consumers";
 
 interface JobDetailsProps {
   job: Job;
-  match: Match;
+  match: Match | null;
+  showEmails?: boolean;
 }
 
-const JobDetails: React.FC<JobDetailsProps> = ({ job, match }) => {
+const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
   const [expandedSection, setExpandedSection] = React.useState<string | false>(
     "basic",
   );
   const [editingCoverLetter, setEditingCoverLetter] = React.useState(false);
-  const [coverLetterText, setCoverLetterText] = React.useState<String>(
+  const [coverLetterText, setCoverLetterText] = React.useState<string>(
     match?.cover_letter || "",
   );
   const [saving, setSaving] = React.useState(false);
@@ -49,17 +49,13 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match }) => {
   const { profile } = useSelector((state: any) => state.filesState);
   const { backendActor } = useBackendContext();
   const currentJob = jobs.find((job: Job) => job.id === currentJobId);
-
   const canEdit = Object.keys(currentJob.category)[0] == "Talent";
 
   const handleSaveCoverLetter = async () => {
+    if (!match) return;
     setSaving(true);
     try {
-      const updatedMatch: Match = {
-        ...match,
-        cover_letter: String(coverLetterText),
-      };
-
+      const updatedMatch: Match = { ...match, cover_letter: coverLetterText };
       const jobUpdate: Array<JobUpdate> = [
         {
           id: currentJobId,
@@ -70,7 +66,6 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match }) => {
           matches: [[updatedMatch]],
         },
       ];
-
       const res = await backendActor.update_job(jobUpdate, []);
       if (res.Err) {
         alert(JSON.stringify(res.Err));
@@ -84,12 +79,9 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match }) => {
     }
   };
 
-  // Helper function to format field names
-  const formatFieldName = (key: string) => {
-    return key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, " ");
-  };
+  const formatFieldName = (key: string) =>
+    key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, " ");
 
-  // Get basic info fields (filtered to exclude specified fields)
   const basicInfoFields = Object.keys(job).filter(
     (key) =>
       !Array.isArray(job[key as keyof Job]) &&
@@ -104,7 +96,6 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match }) => {
       job[key as keyof Job] !== undefined,
   );
 
-  // Get array fields
   const arrayFields = Object.keys(job).filter((key) => {
     const value = job[key as keyof Job];
     return (
@@ -120,25 +111,76 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match }) => {
       setExpandedSection(isExpanded ? panel : false);
     };
 
+  const EmailsList = () => (
+    <Card
+      sx={{
+        mb: { xs: 2, sm: 3 },
+        mx: { xs: 0, sm: "auto" },
+        borderRadius: { xs: 1, sm: 2 },
+        boxShadow: 1,
+        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        color: "white",
+      }}
+    >
+      <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+        <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
+          <EmailIcon />
+          <Typography
+            variant="h5"
+            sx={{ fontWeight: 700, fontSize: { xs: "1.2rem", sm: "1.5rem" } }}
+          >
+            Emails ({job.emails?.length || 0})
+          </Typography>
+        </Stack>
+        <Stack spacing={1}>
+          {job.emails?.map((email, index) => (
+            <Box
+              key={index}
+              sx={{
+                p: { xs: 1.5, sm: 2 },
+                borderRadius: 2,
+                backgroundColor: "rgba(255,255,255,0.1)",
+              }}
+            >
+              <Typography
+                variant="body1"
+                sx={{
+                  fontWeight: 500,
+                  lineHeight: 1.6,
+                  fontSize: { xs: "0.9rem", sm: "1rem" },
+                }}
+              >
+                {email}
+              </Typography>
+            </Box>
+          ))}
+        </Stack>
+        <Typography
+          variant="caption"
+          sx={{ fontSize: { xs: "0.6rem", sm: "0.7rem" }, fontWeight: 400 }}
+        >
+          We will not share your emsils with other users. But we will contact
+          you when finding good match.
+        </Typography>
+      </CardContent>
+    </Card>
+  );
+
   return (
     <Paper
       elevation={0}
       sx={{
-        p: 4,
+        p: { xs: 1, sm: 2, md: 4 },
         maxWidth: 900,
-        mx: "auto",
-        borderRadius: 3,
+        mx: { xs: 0, sm: "auto" },
+        borderRadius: { xs: 0, sm: 3 },
+        width: { xs: "100%", sm: "auto" },
       }}
     >
       {/* Header Section */}
       <Box
-        sx={{
-          textAlign: "center",
-          mb: 4,
-          position: "relative",
-        }}
+        sx={{ textAlign: "center", mb: { xs: 2, sm: 4 }, px: { xs: 1, sm: 0 } }}
       >
-        {/* Job Title */}
         {job.job_titles && (
           <Typography
             variant="h3"
@@ -147,46 +189,32 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match }) => {
               mb: 2,
               fontWeight: 800,
               textShadow: "0 2px 10px rgba(0,0,0,0.1)",
+              fontSize: { xs: "1.5rem", sm: "2rem", md: "3rem" },
             }}
           >
             {job.job_titles[0]}
           </Typography>
         )}
-
-        {/* Status and Actions Row */}
         <Stack
-          direction="row"
+          direction={{ xs: "column", sm: "row" }}
           spacing={2}
           justifyContent="center"
           alignItems="center"
           sx={{ mb: 3 }}
         >
-          {/* Active Status */}
           <Chip
             icon={job.active ? <CheckCircleIcon /> : <PauseCircleIcon />}
             label={job.active ? "Active" : "Inactive"}
             color={job.active ? "success" : "default"}
             variant="filled"
-            sx={{
-              fontWeight: "bold",
-              px: 2,
-              py: 1,
-              height: "auto",
-            }}
+            sx={{ fontWeight: "bold", px: 2, py: 1, height: "auto" }}
           />
-
-          {/* Profile Link or Owner Indicator */}
           {profile.id === job.user_id ? (
             <Chip
               label="Created by You"
               color="primary"
               variant="filled"
-              sx={{
-                fontWeight: "bold",
-                px: 2,
-                py: 1,
-                height: "auto",
-              }}
+              sx={{ fontWeight: "bold", px: 2, py: 1, height: "auto" }}
             />
           ) : (
             <Button
@@ -206,9 +234,12 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match }) => {
             </Button>
           )}
         </Stack>
-
-        {/* Timestamps */}
-        <Stack direction="row" spacing={3} justifyContent="center">
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={3}
+          justifyContent="center"
+          sx={{ fontSize: { xs: "0.8rem", sm: "1rem" } }}
+        >
           <Typography variant="body2" color="text.secondary">
             Created: {formatRelativeTime(job.date_created)}
           </Typography>
@@ -222,14 +253,15 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match }) => {
       {job.description && (
         <Card
           sx={{
-            mb: 3,
-            borderRadius: 2,
+            mb: { xs: 2, sm: 3 },
+            mx: { xs: 0, sm: "auto" },
+            borderRadius: { xs: 1, sm: 2 },
             boxShadow: 1,
             background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
             color: "white",
           }}
         >
-          <CardContent sx={{ p: 3 }}>
+          <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
             <Stack
               direction="row"
               alignItems="center"
@@ -241,6 +273,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match }) => {
                 variant="h5"
                 sx={{
                   fontWeight: 700,
+                  fontSize: { xs: "1.2rem", sm: "1.5rem" },
                 }}
               >
                 Description
@@ -250,7 +283,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match }) => {
               variant="body1"
               sx={{
                 lineHeight: 1.7,
-                fontSize: "1.1rem",
+                fontSize: { xs: "0.9rem", sm: "1.1rem" },
                 whiteSpace: "pre-wrap",
               }}
             >
@@ -260,18 +293,22 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match }) => {
         </Card>
       )}
 
+      {/* Emails Section */}
+      {showEmails && job.emails && job.emails.length > 0 && <EmailsList />}
+
       {/* Cover Letter Section */}
-      {(match?.cover_letter || canEdit) && (
+      {match && (match.cover_letter || canEdit) && (
         <Card
           sx={{
-            mb: 3,
-            borderRadius: 2,
+            mb: { xs: 2, sm: 3 },
+            mx: { xs: 0, sm: "auto" },
+            borderRadius: { xs: 1, sm: 2 },
             boxShadow: 1,
             background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
             color: "white",
           }}
         >
-          <CardContent sx={{ p: 3 }}>
+          <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
             <Stack
               direction="row"
               alignItems="center"
@@ -280,7 +317,13 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match }) => {
             >
               <Stack direction="row" alignItems="center" spacing={1}>
                 <EmailIcon />
-                <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: { xs: "1.2rem", sm: "1.5rem" },
+                  }}
+                >
                   Cover Letter
                 </Typography>
               </Stack>
@@ -297,6 +340,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match }) => {
                   sx={{
                     color: "white",
                     borderColor: "white",
+                    fontSize: { xs: "0.7rem", sm: "0.875rem" },
                     "&:hover": {
                       borderColor: "white",
                       backgroundColor: "rgba(255,255,255,0.1)",
@@ -319,13 +363,15 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match }) => {
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: 2,
+                    backgroundColor: "rgba(255,255,255,0.9)",
                     "& fieldset": { border: "none" },
                     "&:hover fieldset": { border: "none" },
                     "&.Mui-focused fieldset": { border: "2px solid white" },
                   },
                   "& .MuiInputBase-input": {
-                    fontSize: "1.1rem",
+                    fontSize: { xs: "0.9rem", sm: "1.1rem" },
                     lineHeight: 1.7,
+                    color: "black",
                   },
                 }}
               />
@@ -334,12 +380,11 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match }) => {
                 variant="body1"
                 sx={{
                   lineHeight: 1.7,
-                  fontSize: "1.1rem",
+                  fontSize: { xs: "0.9rem", sm: "1.1rem" },
                   whiteSpace: "pre-wrap",
                 }}
               >
-                {coverLetterText ||
-                  "No cover letter yet. Click Edit to add one."}
+                {match.cover_letter || "No cover letter written yet."}
               </Typography>
             )}
           </CardContent>
@@ -350,14 +395,15 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match }) => {
       {job.trust_note && (
         <Card
           sx={{
-            mb: 3,
-            borderRadius: 2,
+            mb: { xs: 2, sm: 3 },
+            mx: { xs: 0, sm: "auto" },
+            borderRadius: { xs: 1, sm: 2 },
             boxShadow: 1,
             background: "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)",
             color: "white",
           }}
         >
-          <CardContent sx={{ p: 3 }}>
+          <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
             <Stack
               direction="row"
               alignItems="center"
@@ -369,6 +415,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match }) => {
                 variant="h5"
                 sx={{
                   fontWeight: 700,
+                  fontSize: { xs: "1.2rem", sm: "1.5rem" },
                 }}
               >
                 Trust Note
@@ -378,7 +425,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match }) => {
               variant="body1"
               sx={{
                 lineHeight: 1.7,
-                fontSize: "1.1rem",
+                fontSize: { xs: "0.9rem", sm: "1.1rem" },
                 whiteSpace: "pre-wrap",
               }}
             >
@@ -392,12 +439,13 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match }) => {
       {basicInfoFields.length > 0 && (
         <Card
           sx={{
-            mb: 3,
-            borderRadius: 2,
+            mb: { xs: 2, sm: 3 },
+            mx: { xs: 0, sm: "auto" },
+            borderRadius: { xs: 1, sm: 2 },
             boxShadow: 1,
           }}
         >
-          <CardContent sx={{ p: 3 }}>
+          <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
             <Typography
               variant="h5"
               gutterBottom
@@ -406,68 +454,24 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match }) => {
                 color: "primary.main",
                 mb: 3,
                 textAlign: "center",
+                fontSize: { xs: "1.2rem", sm: "1.5rem" },
               }}
             >
               Job Details
             </Typography>
-            <Grid container spacing={3}>
-              {/* Display emails first if they exist */}
-              {/* {job.emails && job.emails.length > 0 && (
-                <Grid item xs={12}>
-                  <Box
-                    sx={{
-                      p: 2,
-                      borderRadius: 2,
-                      border: 1,
-                      borderColor: "divider",
-                      minHeight: 80,
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{
-                        fontWeight: 500,
-                        mb: 1,
-                      }}
-                    >
-                      Emails
-                    </Typography>
-                    <Stack spacing={0.5}>
-                      {job.emails.map((email, index) => (
-                        <Typography
-                          key={index}
-                          variant="h6"
-                          sx={{
-                            fontWeight: 700,
-                            wordBreak: "break-word",
-                            color: "primary.main",
-                          }}
-                        >
-                          {email}
-                        </Typography>
-                      ))}
-                    </Stack>
-                  </Box>
-                </Grid>
-              )} */}
-
+            <Grid container spacing={{ xs: 1, sm: 3 }}>
               {basicInfoFields.map((key) => {
                 const value = job[key as keyof Job];
                 if (!value) return null;
-
                 return (
                   <Grid item xs={12} sm={6} md={4} key={key}>
                     <Box
                       sx={{
-                        p: 2,
+                        p: { xs: 1.5, sm: 2 },
                         borderRadius: 2,
                         border: 1,
                         borderColor: "divider",
-                        minHeight: 80,
+                        minHeight: { xs: 60, sm: 80 },
                         display: "flex",
                         flexDirection: "column",
                         justifyContent: "center",
@@ -479,6 +483,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match }) => {
                         sx={{
                           fontWeight: 500,
                           mb: 0.5,
+                          fontSize: { xs: "0.7rem", sm: "0.875rem" },
                         }}
                       >
                         {formatFieldName(key)}
@@ -488,6 +493,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match }) => {
                         sx={{
                           fontWeight: 700,
                           wordBreak: "break-word",
+                          fontSize: { xs: "0.9rem", sm: "1.25rem" },
                         }}
                       >
                         {String(value)}
@@ -513,14 +519,11 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match }) => {
             onChange={handleAccordionChange(fieldName)}
             sx={{
               mb: 2,
+              mx: { xs: 0, sm: "auto" },
               borderRadius: "12px !important",
               boxShadow: 1,
-              "&:before": {
-                display: "none",
-              },
-              "&.Mui-expanded": {
-                margin: "0 0 16px 0",
-              },
+              "&:before": { display: "none" },
+              "&.Mui-expanded": { margin: "0 0 16px 0" },
             }}
           >
             <AccordionSummary
@@ -529,9 +532,8 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match }) => {
                 borderRadius: "12px",
                 bgcolor: "primary.main",
                 color: "primary.contrastText",
-                "& .MuiAccordionSummary-content": {
-                  margin: "16px 0",
-                },
+                px: { xs: 2, sm: 3 },
+                "& .MuiAccordionSummary-content": { margin: "16px 0" },
                 "&.Mui-expanded": {
                   borderBottomLeftRadius: 0,
                   borderBottomRightRadius: 0,
@@ -543,20 +545,20 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match }) => {
                 component="h2"
                 sx={{
                   fontWeight: 700,
+                  fontSize: { xs: "1rem", sm: "1.25rem" },
                 }}
               >
                 {formatFieldName(fieldName)} ({fieldValue.length})
               </Typography>
             </AccordionSummary>
-            <AccordionDetails sx={{ p: 3 }}>
-              {/* Display as chips for better readability */}
+            <AccordionDetails sx={{ p: { xs: 2, sm: 3 } }}>
               {fieldName === "skills" ||
               fieldName === "technologies" ||
               fieldName === "tags" ? (
                 <Stack
                   direction="row"
                   spacing={1}
-                  sx={{ flexWrap: "wrap", gap: 1.5 }}
+                  sx={{ flexWrap: "wrap", gap: { xs: 1, sm: 1.5 } }}
                 >
                   {fieldValue.map((item, index) => (
                     <Chip
@@ -564,7 +566,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match }) => {
                       label={item}
                       variant="outlined"
                       sx={{
-                        fontSize: "0.9rem",
+                        fontSize: { xs: "0.7rem", sm: "0.9rem" },
                         fontWeight: 600,
                         borderRadius: 2,
                         px: 1,
@@ -573,13 +575,12 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match }) => {
                   ))}
                 </Stack>
               ) : (
-                /* Display as styled list for other arrays */
                 <Stack spacing={1}>
                   {fieldValue.map((item, index) => (
                     <Box
                       key={index}
                       sx={{
-                        p: 2,
+                        p: { xs: 1.5, sm: 2 },
                         borderRadius: 2,
                         background:
                           "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
@@ -591,6 +592,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match }) => {
                         sx={{
                           fontWeight: 500,
                           lineHeight: 1.6,
+                          fontSize: { xs: "0.9rem", sm: "1rem" },
                         }}
                       >
                         {item}
@@ -604,7 +606,6 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match }) => {
         );
       })}
 
-      {/* Footer divider */}
       <Divider
         sx={{
           mt: 4,
@@ -617,5 +618,4 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match }) => {
     </Paper>
   );
 };
-
 export default JobDetails;

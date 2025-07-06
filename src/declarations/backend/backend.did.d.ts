@@ -632,6 +632,7 @@ export interface User {
 export interface UserFE {
   id: string;
   name: string;
+  photo: Uint8Array | number[];
 }
 export interface UserProfile {
   id: Principal;

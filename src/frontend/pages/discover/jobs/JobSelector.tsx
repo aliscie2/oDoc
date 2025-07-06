@@ -377,8 +377,21 @@ const JobSelector: React.FC = () => {
         fullWidth
         PaperProps={{
           sx: {
-            borderRadius: 3,
-            maxHeight: "80vh",
+            borderRadius: { xs: 0, sm: 2 },
+            m: { xs: 0, sm: 2 },
+            maxHeight: { xs: "100vh", sm: "90vh" },
+            height: { xs: "100vh", sm: "auto" },
+            width: { xs: "100vw", sm: "auto" },
+            maxWidth: { xs: "100vw", sm: "none" },
+          },
+        }}
+        sx={{
+          "& .MuiDialog-container": {
+            alignItems: { xs: "stretch", sm: "center" },
+            p: { xs: 0, sm: 3 },
+          },
+          "& .MuiBackdrop-root": {
+            backgroundColor: { xs: "transparent", sm: "rgba(0, 0, 0, 0.5)" },
           },
         }}
       >
@@ -392,8 +405,8 @@ const JobSelector: React.FC = () => {
             Job Details
           </Typography>
         </DialogTitle>
-        <DialogContent sx={{ p: 3 }}>
-          {selectedJob && <JobDetails job={selectedJob} />}
+        <DialogContent sx={{ p: { xs: 0, sm: 0 } }}>
+          {selectedJob && <JobDetails job={selectedJob} showEmails={true} />}
         </DialogContent>
         <DialogActions
           sx={{

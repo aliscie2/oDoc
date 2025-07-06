@@ -23,11 +23,10 @@ import { Job, Match } from "$/declarations/backend/backend.did";
 import ConnectButton from "./ConnectButton";
 import { useBackendContext } from "@/contexts/BackendContext";
 import JobDetails from "./JobDetails";
-import { JOB_MATCHING_PROMPT } from "./utils/jobMatchingPrompt";
+
 import { textToJson } from "./utils/processResponseJobs";
-import generateMatches from "./utils/generateCoverLetter";
-import optimizeMatchingInput from "./utils/compressJobMatchInput";
-import { profile } from "console";
+import { JOB_MATCHING_PROMPT } from "./utils/jobMatchingPrompt";
+import { mockAIJobMatchResponse } from "./utils/mockJobMatchAiRes";
 
 const JobSearchComponent: React.FC = () => {
   const { backendActor } = useBackendContext();
@@ -115,18 +114,24 @@ const JobSearchComponent: React.FC = () => {
 
       let processedMatches;
       try {
-        let aiResponse = `{
-              "matches": [
-                {
-                  "candidate_id": "cesnwg1",
-                  "missmatching_skills": ["Django"],
-                  "score": 2.67,
-                  "cover_letter": "Dear Hiring Manager, \n\nI am excited to apply for the Rust Developer, ICP Developer, and Django Developer position. While I have strong skills in Rust and ICP, I am eager to enhance my Django skills and contribute to your team. Thank you for considering my application.\n\nSincerely,\n[Your Name]"
-                }
-              ]
-            }`;
+        let parsed = {};
+        // if (import.meta.env.VITE_DFX_NETWORK !== "ic") {
+        //   parsed = mockAIJobMatchResponse(newMatchingJobs, currentJob);
+        // } else {
+        //   const aiResponse = await aiAgent.sendMessage(`
+        //   ${JOB_MATCHING_PROMPT}
+        //   candidates: ${JSON.stringify(newMatchingJobs)},
+        //   Current: ${JSON.stringify(currentJob)}
+        // `);
+        //   parsed = textToJson(aiResponse)?.extractedData;
+        // }
 
-        const parsed = textToJson(aiResponse)?.extractedData;
+        const aiResponse = await aiAgent.sendMessage(`
+          ${JOB_MATCHING_PROMPT}
+          candidates: ${JSON.stringify(newMatchingJobs)},
+          Current: ${JSON.stringify(currentJob)}
+        `);
+        parsed = textToJson(aiResponse)?.extractedData;
 
         processedMatches =
           parsed.matches?.map((match) => ({
@@ -385,10 +390,31 @@ const JobSearchComponent: React.FC = () => {
             onClose={handleCloseDialog}
             maxWidth="md"
             fullWidth
-            PaperProps={{ sx: { borderRadius: 2 } }}
+            PaperProps={{
+              sx: {
+                borderRadius: { xs: 0, sm: 2 },
+                m: { xs: 0, sm: 2 },
+                maxHeight: { xs: "100vh", sm: "90vh" },
+                height: { xs: "100vh", sm: "auto" },
+                width: { xs: "100vw", sm: "auto" },
+                maxWidth: { xs: "100vw", sm: "none" },
+              },
+            }}
+            sx={{
+              "& .MuiDialog-container": {
+                alignItems: { xs: "stretch", sm: "center" },
+                p: { xs: 0, sm: 3 },
+              },
+              "& .MuiBackdrop-root": {
+                backgroundColor: {
+                  xs: "transparent",
+                  sm: "rgba(0, 0, 0, 0.5)",
+                },
+              },
+            }}
           >
             <DialogTitle>Job Details</DialogTitle>
-            <DialogContent sx={{ p: 0 }}>
+            <DialogContent sx={{ p: { xs: 0, sm: 0 } }}>
               <JobDetails job={job} match={match} />
             </DialogContent>
             <DialogActions>

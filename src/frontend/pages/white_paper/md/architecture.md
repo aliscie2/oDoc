@@ -4,6 +4,36 @@
 
 ODOC is a decentralized platform for managing crypto agreements, escrow services, and collaborative work between freelancers and business owners. Built on the Internet Computer (IC) using Rust backend and React frontend.
 
+![ODOC Platform Structure](https://pbs.twimg.com/media/GtaU37aWAAAea3F?format=jpg&name=medium)
+
+## Key Innovations
+
+### 1. AI Job Matcher
+
+Intelligent freelancer-client pairing with automated networking alerts and skill-based matching.
+
+### 2. Promises Contract System
+
+Milestone-based agreements with automated payment tracking and release conditions.
+
+### 3. AI dispute handler and AI Auto rlease
+
+not integrated yet
+
+---
+
+### Platform: Internet Computer Protocol (ICP)
+
+#### Core Components
+
+- **Smart Contract Canisters**: Backend logic for task management, payments, and governance
+- **Decentralized Identity**: User-controlled identity management
+- **Distributed Storage**: Resilient data storage across network nodes
+- **P2P Communication**: Direct user interactions via ICP protocols
+- **Automated Escrow**: Milestone-based payment releases
+
+---
+
 ## Core Architecture Components
 
 ### User Types & Workflows

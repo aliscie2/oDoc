@@ -23,15 +23,12 @@ import { formatRelativeTime } from "../../utils/time";
 import EditProfile from "./editeProfile";
 import CopyButton from "../../components/MuiComponents/copyButton";
 import EmailComposer from "./sendEmail";
-
 const ProfilePage = ({ profile, history, friends, friendButton }) => {
-  const { isDarkMode } = useSelector((state: any) => state.uiState);
-  const currentUser = useSelector((state: any) => state.filesState.profile);
-
+  const { isDarkMode } = useSelector((state) => state.uiState);
+  const currentUser = useSelector((state) => state.filesState.profile);
   const [isEditing, setIsEditing] = useState(false);
 
   const canEdit = currentUser?.id === profile?.id;
-
   const safeProfile = profile || {};
   const safeHistory = history || {};
 
@@ -50,7 +47,6 @@ const ProfilePage = ({ profile, history, friends, friendButton }) => {
     users_rate = 0,
   } = safeHistory;
 
-  // Ensure arrays are defined
   const safeRatesByActions = Array.isArray(rates_by_actions)
     ? rates_by_actions
     : [];
@@ -58,7 +54,6 @@ const ProfilePage = ({ profile, history, friends, friendButton }) => {
     ? rates_by_others
     : [];
 
-  // Convert action ratings to chart data with safe access
   const actionRatingsData = safeRatesByActions.map((rating) => ({
     date: new Date(rating?.date || 0).toLocaleDateString(),
     rating: rating?.rating || 0,
@@ -67,34 +62,29 @@ const ProfilePage = ({ profile, history, friends, friendButton }) => {
     promises: rating?.promises || 0,
   }));
 
-  // Calculate statistics with safe calculations
   const totalSpent = rates_by_actions[rates_by_actions.length - 1]?.spent;
   const totalReceived = rates_by_actions[rates_by_actions.length - 1]?.received;
-  // const averageRating = rates_by_actions[rates_by_actions.length - 1]?.rating;
 
-  // AG Charts configuration
   const chartOptions = {
     title: {
       text: "Actions history",
       fontSize: 18,
-      color: isDarkMode ? "#ffffff" : "#000000", // Responsive title color
+      color: isDarkMode ? "#ffffff" : "#000000",
     },
-    data: actionRatingsData, // Your data input
-    background: {
-      fill: isDarkMode ? "#1e1e1e" : "#fefefe", // Dark/light background
-    },
-    theme: isDarkMode ? "ag-dark" : "ag-default", // Switch AG Charts theme dynamically
+    data: actionRatingsData,
+    background: { fill: isDarkMode ? "#1e1e1e" : "#fefefe" },
+    theme: isDarkMode ? "ag-dark" : "ag-default",
     series: [
       {
         type: "line",
         xKey: "date",
         yKey: "rating",
         yName: "Rating",
-        stroke: isDarkMode ? "#F44336" : "#D32F2F", // Responsive line color
+        stroke: isDarkMode ? "#F44336" : "#D32F2F",
         marker: {
           enabled: true,
-          fill: isDarkMode ? "#F44336" : "#D32F2F", // Marker color
-          stroke: isDarkMode ? "#ffffff" : "#000000", // Marker border
+          fill: isDarkMode ? "#F44336" : "#D32F2F",
+          stroke: isDarkMode ? "#ffffff" : "#000000",
         },
         tooltip: { enabled: true },
       },
@@ -142,52 +132,64 @@ const ProfilePage = ({ profile, history, friends, friendButton }) => {
       {
         type: "category",
         position: "bottom",
-        line: { color: isDarkMode ? "#aaaaaa" : "#000000" }, // Axes line color
-        tick: { color: isDarkMode ? "#aaaaaa" : "#000000" }, // Axes tick color
-        label: { color: isDarkMode ? "#ffffff" : "#000000" }, // X-axis label color
+        line: { color: isDarkMode ? "#aaaaaa" : "#000000" },
+        tick: { color: isDarkMode ? "#aaaaaa" : "#000000" },
+        label: { color: isDarkMode ? "#ffffff" : "#000000" },
       },
       {
         type: "number",
         position: "left",
         line: { color: isDarkMode ? "#aaaaaa" : "#000000" },
         tick: { color: isDarkMode ? "#aaaaaa" : "#000000" },
-        label: { color: isDarkMode ? "#ffffff" : "#000000" }, // Y-axis label color
+        label: { color: isDarkMode ? "#ffffff" : "#000000" },
       },
     ],
     legend: {
       position: "bottom",
-      item: {
-        label: {
-          color: isDarkMode ? "#ffffff" : "#000000", // Legend text color
-        },
-      },
+      item: { label: { color: isDarkMode ? "#ffffff" : "#000000" } },
     },
   };
 
-  let founderOfOdoc =
+  const founderOfOdoc =
     "tgwpc-6xuon-k3a6y-ey7lt-xksjs-qx22h-ikhbt-4yp3a-6stco-rymbe-pqe";
+
   return (
     <Container key={JSON.stringify(profile)} maxWidth="lg" sx={{ py: 4 }}>
       {currentUser?.id == founderOfOdoc && <EmailComposer />}
-      {/*<GoogleSignInButton />*/}
-      {/* User Header */}
+
+      {/* User Header - Mobile Friendly */}
       <Card sx={{ mb: 4 }}>
         <CardContent>
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="flex-start"
-          >
-            <Box display="flex" alignItems="flex-start" gap={3}>
+          <Stack spacing={3}>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                alignItems: { xs: "center", sm: "flex-start" },
+                gap: { xs: 2, sm: 3 },
+                textAlign: { xs: "center", sm: "left" },
+                ...(isEditing && {
+                  px: { xs: 0, sm: 3 },
+                  gap: { xs: 0, sm: 3 },
+                  alignItems: { xs: "stretch", sm: "flex-start" },
+                }),
+              }}
+            >
               {profile && !isEditing && (
                 <UserAvatarMenu
                   hide={["Profile"]}
-                  sx={{ width: 96, height: 96 }}
+                  sx={{ width: { xs: 80, sm: 96 }, height: { xs: 80, sm: 96 } }}
                   user={profile}
                 />
               )}
 
-              <Box>
+              <Box
+                sx={{
+                  flex: 1,
+                  minWidth: 0,
+                  ...(isEditing && { width: "100%" }),
+                }}
+              >
                 {isEditing ? (
                   <EditProfile
                     setIsEditing={setIsEditing}
@@ -195,105 +197,112 @@ const ProfilePage = ({ profile, history, friends, friendButton }) => {
                     onCancel={() => setIsEditing(false)}
                   />
                 ) : (
-                  <>
-                    <Typography variant="h4" gutterBottom>
+                  <Stack spacing={1}>
+                    <Typography
+                      variant="h4"
+                      sx={{ fontSize: { xs: "1.5rem", sm: "2rem" } }}
+                    >
                       {name}
                     </Typography>
-                    <Typography variant="h4" gutterBottom>
+                    <Typography
+                      variant="h6"
+                      sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }}
+                    >
                       {email}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ wordBreak: "break-all" }}
+                    >
                       {id}
                     </Typography>
                     <Typography variant="body1" color="text.secondary">
                       {description}
                     </Typography>
-                    {friendButton}
-                    <CopyButton
-                      title="Copy Profile Link"
-                      value={`${window.location.host}/user?id=${profile?.id}`}
-                    />
-                  </>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexDirection: { xs: "column", sm: "row" },
+                        gap: 1,
+                        mt: 2,
+                      }}
+                    >
+                      {friendButton}
+                      <CopyButton
+                        title="Copy Profile Link"
+                        value={`${window.location.host}/user?id=${profile?.id}`}
+                      />
+                    </Box>
+                  </Stack>
                 )}
               </Box>
             </Box>
 
             {canEdit && !isEditing && (
-              <Button
-                startIcon={<Edit />}
-                onClick={() => setIsEditing(true)}
-                variant="outlined"
-                // sx={{
-                //   borderColor: theme.palette.divider,
-                //   "&:hover": {
-                //     borderColor: theme.palette.primary.main,
-                //   },
-                // }}
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: { xs: "center", sm: "flex-end" },
+                }}
               >
-                Edit Profile
-              </Button>
+                <Button
+                  startIcon={<Edit />}
+                  onClick={() => setIsEditing(true)}
+                  variant="outlined"
+                  size="small"
+                >
+                  Edit Profile
+                </Button>
+              </Box>
             )}
-          </Box>
+          </Stack>
         </CardContent>
       </Card>
 
       {/* Stats Overview */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" color="text.secondary" gutterBottom>
-                Trust score
-              </Typography>
-              <Box display="flex" flexDirection="column" gap={1}>
-                <Rating value={actions_rate} precision={0.1} readOnly />
-                <Typography variant="h4">{actions_rate}</Typography>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" color="text.secondary" gutterBottom>
-                Total rate score
-              </Typography>
-              <Box display="flex" flexDirection="column" gap={1}>
-                <Rating value={users_rate} precision={0.1} readOnly />
-                <Typography variant="h4">{users_rate}</Typography>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" color="text.secondary" gutterBottom>
-                Total Spent
-              </Typography>
-              <Typography variant="h4">${Number(totalSpent)}</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" color="text.secondary" gutterBottom>
-                Total Received
-              </Typography>
-              <Typography variant="h4">${totalReceived?.toFixed(2)}</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
+        {[
+          { title: "Trust score", value: actions_rate, rating: true },
+          { title: "Total rate score", value: users_rate, rating: true },
+          {
+            title: "Total Spent",
+            value: `$${Number(totalSpent)}`,
+            rating: false,
+          },
+          {
+            title: "Total Received",
+            value: `$${totalReceived?.toFixed(2)}`,
+            rating: false,
+          },
+        ].map((stat, index) => (
+          <Grid item xs={12} sm={6} md={3} key={index}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" color="text.secondary" gutterBottom>
+                  {stat.title}
+                </Typography>
+                <Stack spacing={1}>
+                  {stat.rating && (
+                    <Rating value={stat.value} precision={0.1} readOnly />
+                  )}
+                  <Typography
+                    variant="h4"
+                    sx={{ fontSize: { xs: "1.5rem", sm: "2rem" } }}
+                  >
+                    {stat.value}
+                  </Typography>
+                </Stack>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
       </Grid>
 
       {/* Chart */}
       <Card sx={{ mb: 4 }}>
         <CardContent>
-          <Box sx={{ height: 400 }}>
+          <Box sx={{ height: { xs: 300, sm: 400 } }}>
             {actionRatingsData.length > 0 ? (
               <AgCharts options={chartOptions} />
             ) : (
@@ -331,39 +340,40 @@ const ProfilePage = ({ profile, history, friends, friendButton }) => {
             Recent Ratings
           </Typography>
           {safeRatesByOthers.length > 0 ? (
-            <Box>
+            <Stack divider={<Divider />}>
               {safeRatesByOthers.slice(0, 5).map((rating, index) => (
-                <Box key={rating?.id || index}>
-                  <Box py={2}>
-                    <Box
-                      display="flex"
-                      justifyContent="space-between"
-                      alignItems="flex-start"
-                    >
-                      <Box>
-                        <Rating
-                          value={rating?.rating || 0}
-                          precision={0.1}
-                          readOnly
-                          size="small"
-                        />
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          sx={{ mt: 1 }}
-                        >
-                          {rating?.comment || "No comment"}
-                        </Typography>
-                      </Box>
-                      <Typography variant="caption" color="text.secondary">
-                        {formatRelativeTime(rating?.date)}
+                <Box key={rating?.id || index} py={2}>
+                  <Stack
+                    direction={{ xs: "column", sm: "row" }}
+                    spacing={2}
+                    justifyContent="space-between"
+                  >
+                    <Box>
+                      <Rating
+                        value={rating?.rating || 0}
+                        precision={0.1}
+                        readOnly
+                        size="small"
+                      />
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ mt: 1 }}
+                      >
+                        {rating?.comment || "No comment"}
                       </Typography>
                     </Box>
-                  </Box>
-                  {index < safeRatesByOthers.length - 1 && <Divider />}
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ alignSelf: { xs: "flex-start", sm: "flex-end" } }}
+                    >
+                      {formatRelativeTime(rating?.date)}
+                    </Typography>
+                  </Stack>
                 </Box>
               ))}
-            </Box>
+            </Stack>
           ) : (
             <Box py={2} textAlign="center">
               <Typography color="text.secondary">
@@ -376,5 +386,4 @@ const ProfilePage = ({ profile, history, friends, friendButton }) => {
     </Container>
   );
 };
-
 export default ProfilePage;

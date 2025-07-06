@@ -16,7 +16,7 @@ SCORING FORMULA (0-10):
 - Experience relevance: relevant_years * 20% (max 4 points)
 - Education match: has_relevant_degree ? 20% : 0%
 - Certifications match: (matching_certs / total_current_certs) * 20%
-
+ 
 Calculate exact score using this formula. Be consistent.
 candidate_id = ID of matching candidate from candidates array.
 missmatching_skills = actual skill names that are in current job but missing in candidate.

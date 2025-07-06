@@ -47,6 +47,7 @@ fn get_my_chats(chats_length: usize) -> Vec<FEChat> {
         let creator_fe_user = UserFE {
             id: creator_user.id,
             name: creator_user.name,
+            photo: vec![],
         };
 
         let admins_fe: Vec<UserFE> = chat
@@ -56,6 +57,8 @@ fn get_my_chats(chats_length: usize) -> Vec<FEChat> {
             .map(|admin_user| UserFE {
                 id: admin_user.id,
                 name: admin_user.name,
+                // photo: admin_user.photo,
+                photo: vec![],
             })
             .collect();
 

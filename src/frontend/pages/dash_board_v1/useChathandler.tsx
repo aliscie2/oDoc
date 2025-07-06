@@ -3,10 +3,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { textToJson } from "../discover/jobs/utils/processResponseJobs";
 import PROMPTS from "../discover/jobs/utils/prompts";
 import { ActionProcessor, CalendarFormatter, TimeFormatter } from "./gemeniAi";
-import { logger } from "@/DevUtils/logData";
-import DUUMY_CALENDAR_RES from "../discover/jobs/utils/dummyCalendarResponse";
+
 import { classifyMessage } from "../discover/jobs/utils/mainChatProblm";
 import compactMessage from "../discover/jobs/utils/compactMessage";
+import { mockCalendarAIResponse } from "../discover/jobs/utils/mockCalendarAIRes";
+import { mockJobAIResponse } from "../discover/jobs/utils/mockJobAIRes";
 
 export const useChatHandler = () => {
   const { calendar } = useSelector((state: any) => state.calendarState);
@@ -32,28 +33,17 @@ export const useChatHandler = () => {
       
       User input: ${message}
     `;
+    let eventRes = [];
+
+    // if (import.meta.env.VITE_DFX_NETWORK !== "ic") {
+    //   eventRes = mockCalendarAIResponse(calendar, message.split("//")[1]);
+    // } else {
+    //   let calendarRes = await aiAgent.sendMessage(prompt);
+    //   eventRes = textToJson(calendarRes).extractedData;
+    // }
 
     let calendarRes = await aiAgent.sendMessage(prompt);
-    //     let calendarRes = `"[
-    //   {
-    //     "feedback": "ADD_EVENT Meeting on 02-07-2025 from 09:00 to 10:00",
-    //     "data": {
-    //       "type": "ADD_EVENT",
-    //       "event": {
-    //         "id": "evt_[TIMESTAMP]",
-    //         "title": "Meeting",
-    //         "date": "02-07-2025",
-    //         "start_time": "09:00",
-    //         "end_time": "10:15", // Added 15 minutes as per rule
-    //         "description": "",
-    //         "attendees": [],
-    //         "recurrence": []
-    //       }
-    //     }
-    //   }
-    // ]"`
-
-    const eventRes = textToJson(calendarRes).extractedData;
+    eventRes = textToJson(calendarRes).extractedData;
 
     eventRes?.forEach((action) => {
       if (action.data.type !== "CALENDAR_QUERY") {
@@ -67,10 +57,12 @@ export const useChatHandler = () => {
     //   parsed,
     //   actions: eventRes,
     // };
-
+    console.log({ eventRes, x: eventRes.map((e) => e.feedback).join(" ") });
     return {
       action_type: "CALENDAR",
-      // feedback: eventRes[0]?.feedback || "Calendar action completed",
+      feedback:
+        eventRes.map((e) => e.feedback).join(" ") ||
+        "Calendar action completed",
       actions: eventRes?.map((e) => e.data) || [],
       done: true,
     };
@@ -82,31 +74,20 @@ export const useChatHandler = () => {
       User Input: ${message.trim()},
       Current Job Data: ${JSON.stringify(currentJobRef.current)}
     `;
+    let parsedJob = {};
 
+    // if (import.meta.env.VITE_DFX_NETWORK !== "ic") {
+    //   parsedJob = mockJobAIResponse(
+    //     currentJobRef.current,
+    //     jobs,
+    //     message.split("//")[1],
+    //   );
+    // } else {
+    //   const jobRes = await aiAgent.sendMessage(prompt, false);
+    //   parsedJob = textToJson(jobRes).extractedData;
+    // }
     const jobRes = await aiAgent.sendMessage(prompt, false);
-
-    // const jobRes =`{
-    //     "required_match_score": 7.0,
-    //     "feedback": "Thank you for your request. To refine your search, please provide additional details such as your hourly/monthly/yearly rate, preferred contact email, and any specific certifications or educational background you require. Additionally, if you have any experience with Python, please mention it as it is often associated with Django development.",
-    //     "updates": [
-    //       {
-    //         "field": "job_titles",
-    //         "values": ["Rust Developer", "ICP Developer", "Django Developer"]
-    //       },
-    //       {
-    //         "field": "skills",
-    //         "values": ["Rust", "ICP", "Django"]
-    //       },
-    //       {
-    //         "field": "experience",
-    //         "values": ["3 years of experience"]
-    //       }
-    //     ],
-    //     "category": "Job",
-    //     "done": false,
-    //     "isBreakingChanges": false
-    //   }`
-    const parsedJob = textToJson(jobRes).extractedData;
+    parsedJob = textToJson(jobRes).extractedData;
 
     // Validation logic
     if (!currentJobId) {

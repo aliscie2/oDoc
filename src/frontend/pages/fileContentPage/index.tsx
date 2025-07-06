@@ -12,6 +12,8 @@ import {
   Collapse,
   alpha,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import ViewListIcon from "@mui/icons-material/ViewList";
 
@@ -84,6 +86,8 @@ const StyledSwitch = styled(Switch)(({ theme }) => ({
 }));
 
 function FileContentPage() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const { isLoggedIn } = useSelector((state: any) => state.uiState);
   const [showContentTabs, setShowContentTabs] = useState(false);
   let fileId = window.location.pathname.split("/")[1];
@@ -167,7 +171,7 @@ function FileContentPage() {
       >
         <RunawayJellyfish
           thinking={true}
-          logoSvgScale={3}
+          logoSvgScale={isMobile ? 2 : 3}
           LogoSvg={NOTFOUND404}
           jellyfishOffsetX={-150}
           jellyfishOffsetY={25}

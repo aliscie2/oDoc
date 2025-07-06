@@ -205,63 +205,57 @@ export class AIAgent {
     }
 
     try {
-      const apiToken = import.meta.env.VITE_HUGING_FACE_TOKEN;
       const compressedHistory = this.compressHistory();
 
-      // Build conversation context
-      let conversationContext = "";
+      // Build contents array for Gemini API
+      const contents = [];
+
+      // Add system prompt if provided
       if (systemPrompt) {
-        conversationContext += `<|system|>\n${systemPrompt}<|end|>\n`;
+        contents.push({ role: "user", parts: [{ text: systemPrompt }] });
+        contents.push({ role: "model", parts: [{ text: "Understood." }] });
       }
 
-      // Add history in alternating user/assistant format
+      // Add conversation history
       compressedHistory.forEach((msg) => {
-        const role = msg.role === "user" ? "user" : "assistant";
-        conversationContext += `<|${role}|>\n${msg.parts[0]}<|end|>\n`;
+        contents.push({
+          role: msg.role === "user" ? "user" : "model",
+          parts: [{ text: msg.parts[0] }],
+        });
       });
 
       // Add current message
-      conversationContext += `<|user|>\n${message}<|end|>\n<|assistant|>`;
-
+      contents.push({ role: "user", parts: [{ text: message }] });
+      const model =
+        message.length > 3000
+          ? "gemini-2.0-flash-lite"
+          : "gemini-2.5-flash-preview-05-20";
+      //  const model = "gemini-2.5-flash-preview-05-20"
       const response = await fetch(
-        "https://api-inference.huggingface.co/models/microsoft/Phi-3-mini-4k-instruct",
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${this.apiKey}`,
         {
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${apiToken}`,
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            inputs: conversationContext,
-            parameters: {
-              max_new_tokens: 2000,
+            contents,
+            generationConfig: {
+              maxOutputTokens: AIAgent.MYSTATICS.isFreeTier ? 2000 : 4000,
               temperature: 0.7,
-              return_full_text: false,
             },
           }),
         },
       );
 
       if (!response.ok) {
-        console.log({ response });
         throw new Error(`API request failed with status ${response.status}`);
       }
 
       const data = await response.json();
+      console.log({ data });
+      const assistantMessage =
+        data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
 
-      const assistantMessage = Array.isArray(data)
-        ? data[0]?.generated_text?.trim() || ""
-        : "";
-
-      // Update stats (Hugging Face doesn't provide token counts, so estimate)
-      if (!AIAgent.MYSTATICS.isFreeTier) {
-        AIAgent.MYSTATICS.credits = Math.max(
-          0,
-          AIAgent.MYSTATICS.credits - 0.05,
-        );
-      }
-
-      // Add to conversation history
+      // Update conversation history
       if (message.trim()) {
         AIAgent.MYSTATICS.conversationHistory.push({
           role: "user",
@@ -276,20 +270,24 @@ export class AIAgent {
         });
       }
 
+      // Update usage stats and deduct credits
+      if (AIAgent.MYSTATICS.isFreeTier) {
+        this.updateUsageStats(data.usageMetadata);
+      } else {
+        this.updateUsageStatsAndDeductCredits(data.usageMetadata);
+      }
+
       return assistantMessage;
     } catch (error) {
-      console.error("Error calling Hugging Face API:", error);
+      console.error("Error calling Gemini API:", error);
 
       if (error instanceof Error) {
-        if (error.message === "INSUFFICIENT_CREDITS") {
-          throw error;
-        } else if (error.message.includes("403")) {
+        if (error.message === "INSUFFICIENT_CREDITS") throw error;
+        if (error.message.includes("403"))
           this.showAlert("API token invalid or unauthorized");
-        } else if (error.message.includes("429")) {
+        else if (error.message.includes("429"))
           this.showAlert("Rate limit exceeded");
-        } else {
-          this.showAlert("API request failed - please try again");
-        }
+        else this.showAlert("API request failed - please try again");
       }
 
       throw new Error(
@@ -300,94 +298,116 @@ export class AIAgent {
     }
   }
 
-  //   async sendMessage(
-  //     message: string,
-  //     quick: boolean = false,
-  //     systemPrompt?: string,
+  // async sendMessage(
+  //   message: string,
+  //   quick: boolean = false,
+  //   systemPrompt?: string,
   // ): Promise<string> {
-  //     const estimatedCost = this.estimateInputCost(message);
-  //     const requestCheck = this.shouldAllowRequest(estimatedCost);
+  //   const estimatedCost = this.estimateInputCost(message);
+  //   const requestCheck = this.shouldAllowRequest(estimatedCost);
 
-  //     if (!requestCheck.allowed) {
-  //         this.showAlert(requestCheck.reason || "Request not allowed");
-  //         throw new Error("INSUFFICIENT_CREDITS");
+  //   if (!requestCheck.allowed) {
+  //     this.showAlert(requestCheck.reason || "Request not allowed");
+  //     throw new Error("INSUFFICIENT_CREDITS");
+  //   }
+
+  //   try {
+  //     const apiToken = import.meta.env.VITE_HUGING_FACE_TOKEN;
+  //     const compressedHistory = this.compressHistory();
+
+  //     // Build conversation context
+  //     let conversationContext = "";
+  //     if (systemPrompt) {
+  //       conversationContext += `<|system|>\n${systemPrompt}<|end|>\n`;
   //     }
 
-  //     try {
-  //         const compressedHistory = this.compressHistory();
+  //     // Add history in alternating user/assistant format
+  //     compressedHistory.forEach((msg) => {
+  //       const role = msg.role === "user" ? "user" : "assistant";
+  //       conversationContext += `<|${role}|>\n${msg.parts[0]}<|end|>\n`;
+  //     });
 
-  //         // Simpler conversation format
-  //         let conversationContext = "";
-  //         if (systemPrompt) {
-  //             conversationContext += `System: ${systemPrompt}\n\n`;
-  //         }
+  //     // Add current message
+  //     conversationContext += `<|user|>\n${message}<|end|>\n<|assistant|>`;
 
-  //         compressedHistory.forEach(msg => {
-  //             const role = msg.role === "user" ? "Human" : "Assistant";
-  //             conversationContext += `${role}: ${msg.parts[0]}\n\n`;
-  //         });
+  //     const response = await fetch(
+  //       "https://api-inference.huggingface.co/models/microsoft/Phi-3-mini-4k-instruct",
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           Authorization: `Bearer ${apiToken}`,
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify({
+  //           inputs: conversationContext,
+  //           parameters: {
+  //             max_new_tokens: 2000,
+  //             temperature: 0.7,
+  //             return_full_text: false,
+  //           },
+  //         }),
+  //       },
+  //     );
 
-  //         conversationContext += `Human: ${message}\n\nAssistant:`;
-
-  //         const response = await fetch("http://localhost:11434/api/generate", {
-  //             method: "POST",
-  //             headers: {
-  //                 "Content-Type": "application/json"
-  //             },
-  //             body: JSON.stringify({
-  //                 model: "phi3.5:3.8b",
-  //                 prompt: conversationContext,
-  //                 stream: false,
-  //                 options: {
-  //                     num_predict: AIAgent.MYSTATICS.isFreeTier ? 2000 : 4000,
-  //                     temperature: 0.7
-  //                 }
-  //             })
-  //         });
-
-  //         if (!response.ok) {
-  //             throw new Error(`API request failed with status ${response.status}`);
-  //         }
-
-  //         const data = await response.json();
-  //         console.log("Raw API response:", data); // Debug log
-
-  //         // Correct field for Ollama API
-  //         const assistantMessage = data.response?.trim() || "";
-  //         console.log("Extracted message:", assistantMessage); // Debug log
-
-  //         if (!assistantMessage) {
-  //             console.warn("Empty response received from API");
-  //             return "I apologize, but I didn't generate a response. Please try again.";
-  //         }
-
-  //         // Update conversation history
-  //         if (message.trim()) {
-  //             AIAgent.MYSTATICS.conversationHistory.push({
-  //                 role: "user",
-  //                 parts: [message],
-  //             });
-  //         }
-
-  //         if (assistantMessage) {
-  //             AIAgent.MYSTATICS.conversationHistory.push({
-  //                 role: "model",
-  //                 parts: [assistantMessage],
-  //             });
-  //         }
-
-  //         // Update credits
-  //         if (!AIAgent.MYSTATICS.isFreeTier) {
-  //             AIAgent.MYSTATICS.credits = Math.max(0, AIAgent.MYSTATICS.credits - 0.05);
-  //         }
-
-  //         return assistantMessage;
-
-  //     } catch (error) {
-  //         console.error("Error calling Ollama API:", error);
-  //         // ... rest of your error handling
-  //         throw new Error(error instanceof Error ? error.message : "Failed to get response from AI");
+  //     if (!response.ok) {
+  //       console.log({ response });
+  //       throw new Error(`API request failed with status ${response.status}`);
   //     }
+
+  //     const data = await response.json();
+
+  //     const assistantMessage = Array.isArray(data)
+  //       ? data[0]?.generated_text?.trim() || ""
+  //       : "";
+  //     const DETECTION_RATE =
+  //       message.length < 500
+  //         ? 0.001
+  //         : Math.min(message.length / 100000 + 0.01, 0.07);
+  //     // Update stats (Hugging Face doesn't provide token counts, so estimate)
+  //     if (!AIAgent.MYSTATICS.isFreeTier) {
+  //       AIAgent.MYSTATICS.credits = Math.max(
+  //         0,
+  //         AIAgent.MYSTATICS.credits - DETECTION_RATE,
+  //       );
+  //     }
+
+  //     // Add to conversation history
+  //     if (message.trim()) {
+  //       AIAgent.MYSTATICS.conversationHistory.push({
+  //         role: "user",
+  //         parts: [message],
+  //       });
+  //     }
+
+  //     if (assistantMessage) {
+  //       AIAgent.MYSTATICS.conversationHistory.push({
+  //         role: "model",
+  //         parts: [assistantMessage],
+  //       });
+  //     }
+
+  //     return assistantMessage;
+  //   } catch (error) {
+  //     console.error("Error calling Hugging Face API:", error);
+
+  //     if (error instanceof Error) {
+  //       if (error.message === "INSUFFICIENT_CREDITS") {
+  //         throw error;
+  //       } else if (error.message.includes("403")) {
+  //         this.showAlert("API token invalid or unauthorized");
+  //       } else if (error.message.includes("429")) {
+  //         this.showAlert("Rate limit exceeded");
+  //       } else {
+  //         this.showAlert("API request failed - please try again");
+  //       }
+  //     }
+
+  //     throw new Error(
+  //       error instanceof Error
+  //         ? error.message
+  //         : "Failed to get response from AI",
+  //     );
+  //   }
   // }
 
   // Update usage stats only (for free tier)

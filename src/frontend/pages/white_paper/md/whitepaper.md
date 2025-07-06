@@ -68,38 +68,6 @@ ODOC addresses these problems through:
 
 ---
 
-# Architecture
-
-![ODOC Platform Structure](https://pbs.twimg.com/media/GtaU37aWAAAea3F?format=jpg&name=medium)
-
-## Key Innovations
-
-### 1. AI Job Matcher
-
-Intelligent freelancer-client pairing with automated networking alerts and skill-based matching.
-
-### 2. Promises Contract System
-
-Milestone-based agreements with automated payment tracking and release conditions.
-
-### 3. AI dispute handler and AI Auto rlease
-
-not integrated yet
-
----
-
-### Platform: Internet Computer Protocol (ICP)
-
-#### Core Components
-
-- **Smart Contract Canisters**: Backend logic for task management, payments, and governance
-- **Decentralized Identity**: User-controlled identity management
-- **Distributed Storage**: Resilient data storage across network nodes
-- **P2P Communication**: Direct user interactions via ICP protocols
-- **Automated Escrow**: Milestone-based payment releases
-
----
-
 # User
 
 user flow
@@ -123,7 +91,7 @@ user flow
 
 ---
 
-# ecurity
+# Security
 
 ODOC's decentralized architecture provides enterprise-grade security:
 
@@ -143,21 +111,6 @@ ODOC leverages ICP's inherent security features:
 - **Immutable ledger**: Transparent, verifiable transactions
 - **Decentralized nodes**: Eliminate single points of failure
 - **Smart contract verification**: Automated execution without intermediaries
-
----
-
-# Beta
-
-### Platform Capabilities
-
-- **AI Job Matching**: Intelligent pairing of freelancers and clients
-- **Promises Contracts**: Milestone-based payment agreements
-- **Workspace Collaboration**: Slack-like spaces for team projects
-- **Task & Document Management**: Integrated project organization tools
-- **Real-time Communication**: Built-in chat and messaging
-- **Global Scheduling**: Calendar with automatic timezone conversion
-- **Trust System**: Karma-based reputation scoring
-- **Unified Dashboard**: Overview of projects, tasks, and payments
 
 ---
 

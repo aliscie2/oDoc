@@ -7,41 +7,55 @@ const CalendarFeedback = () => {
   const [previousCalendar, setPreviousCalendar] = useState(null);
   const [updates, setUpdates] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-
   const compareCalendars = (oldCalendar, newCalendar) => {
     const changes = [];
 
+    const safeStringify = (obj) =>
+      JSON.stringify(obj, (key, value) =>
+        typeof value === "bigint" ? value.toString() : value,
+      );
+
+    const safeFormatTime = (timestamp) => {
+      if (!timestamp) return "";
+      // Handle BigInt properly
+      const timeValue =
+        typeof timestamp === "bigint" ? timestamp.toString() : timestamp;
+      return formatRelativeTime(timeValue);
+    };
+
     // Check for new events
-    const newEvents = newCalendar.events.filter(
-      (event) =>
-        !oldCalendar.events.some((prevEvent) => prevEvent.id === event.id),
-    );
-    newEvents.forEach((event) => {
-      changes.push({
-        type: "added",
-        category: "event",
-        title: event.title,
-        time: formatRelativeTime(event.start_time),
-        data: event,
+    newCalendar.events
+      .filter(
+        (event) =>
+          !oldCalendar.events.some((prevEvent) => prevEvent.id === event.id),
+      )
+      .forEach((event) => {
+        changes.push({
+          type: "added",
+          category: "event",
+          title: event.title,
+          time: safeFormatTime(event.start_time),
+          data: event,
+        });
       });
-    });
 
     // Check for removed events
-    const removedEvents = oldCalendar.events.filter(
-      (event) =>
-        !newCalendar.events.some(
-          (currentEvent) => currentEvent.id === event.id,
-        ),
-    );
-    removedEvents.forEach((event) => {
-      changes.push({
-        type: "removed",
-        category: "event",
-        title: event.title,
-        time: formatRelativeTime(event.start_time),
-        data: event,
+    oldCalendar.events
+      .filter(
+        (event) =>
+          !newCalendar.events.some(
+            (currentEvent) => currentEvent.id === event.id,
+          ),
+      )
+      .forEach((event) => {
+        changes.push({
+          type: "removed",
+          category: "event",
+          title: event.title,
+          time: safeFormatTime(event.start_time),
+          data: event,
+        });
       });
-    });
 
     // Check for updated events
     newCalendar.events.forEach((event) => {
@@ -57,7 +71,7 @@ const CalendarFeedback = () => {
           type: "updated",
           category: "event",
           title: event.title,
-          time: formatRelativeTime(event.start_time),
+          time: safeFormatTime(event.start_time),
           oldData: prevEvent,
           newData: event,
         });
@@ -65,44 +79,46 @@ const CalendarFeedback = () => {
     });
 
     // Check for new availabilities
-    const newAvailabilities = newCalendar.availabilities.filter(
-      (avail) =>
-        !oldCalendar.availabilities.some(
-          (prevAvail) => prevAvail.id === avail.id,
-        ),
-    );
-    newAvailabilities.forEach((avail) => {
-      changes.push({
-        type: "added",
-        category: "availability",
-        title: avail.title || "Availability",
-        time:
-          avail.time_slots.length > 0
-            ? formatRelativeTime(avail.time_slots[0].start_time)
-            : "",
-        data: avail,
+    newCalendar.availabilities
+      .filter(
+        (avail) =>
+          !oldCalendar.availabilities.some(
+            (prevAvail) => prevAvail.id === avail.id,
+          ),
+      )
+      .forEach((avail) => {
+        changes.push({
+          type: "added",
+          category: "availability",
+          title: avail.title || "Availability",
+          time:
+            avail.time_slots.length > 0
+              ? safeFormatTime(avail.time_slots[0].start_time)
+              : "",
+          data: avail,
+        });
       });
-    });
 
     // Check for removed availabilities
-    const removedAvailabilities = oldCalendar.availabilities.filter(
-      (avail) =>
-        !newCalendar.availabilities.some(
-          (currentAvail) => currentAvail.id === avail.id,
-        ),
-    );
-    removedAvailabilities.forEach((avail) => {
-      changes.push({
-        type: "removed",
-        category: "availability",
-        title: avail.title || "Availability",
-        time:
-          avail.time_slots.length > 0
-            ? formatRelativeTime(avail.time_slots[0].start_time)
-            : "",
-        data: avail,
+    oldCalendar.availabilities
+      .filter(
+        (avail) =>
+          !newCalendar.availabilities.some(
+            (currentAvail) => currentAvail.id === avail.id,
+          ),
+      )
+      .forEach((avail) => {
+        changes.push({
+          type: "removed",
+          category: "availability",
+          title: avail.title || "Availability",
+          time:
+            avail.time_slots.length > 0
+              ? safeFormatTime(avail.time_slots[0].start_time)
+              : "",
+          data: avail,
+        });
       });
-    });
 
     // Check for updated availabilities
     newCalendar.availabilities.forEach((avail) => {
@@ -113,8 +129,8 @@ const CalendarFeedback = () => {
         prevAvail &&
         (prevAvail.title !== avail.title ||
           prevAvail.is_blocked !== avail.is_blocked ||
-          JSON.stringify(prevAvail.time_slots) !==
-            JSON.stringify(avail.time_slots))
+          safeStringify(prevAvail.time_slots) !==
+            safeStringify(avail.time_slots))
       ) {
         changes.push({
           type: "updated",
@@ -122,7 +138,7 @@ const CalendarFeedback = () => {
           title: avail.title || "Availability",
           time:
             avail.time_slots.length > 0
-              ? formatRelativeTime(avail.time_slots[0].start_time)
+              ? safeFormatTime(avail.time_slots[0].start_time)
               : "",
           oldData: prevAvail,
           newData: avail,

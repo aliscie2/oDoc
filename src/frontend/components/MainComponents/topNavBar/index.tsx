@@ -32,25 +32,24 @@ import {
   Search as SearchIcon,
   Handshake as HandshakeIcon,
 } from "@mui/icons-material";
-
+import HomeIcon from "@mui/icons-material/Home";
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import ReceiptIcon from "@mui/icons-material/Receipt";
 
-import BreadPage from "../../MuiComponents/Breadcrumbs";
-import BasicMenu from "../../MuiComponents/BasicMenu";
-import ShareButton from "../../MuiComponents/CopyLink";
-import NotificationsButton from "../../NotifcationList";
-import MultiSaveButton from "../../Actions/MultiSave";
-import ChatsComponent from "../../Chat";
+import BreadPage from "@/components/MuiComponents/Breadcrumbs";
+import BasicMenu from "@/components/MuiComponents/BasicMenu";
+import ShareButton from "@/components/MuiComponents/CopyLink";
+import NotificationsButton from "@/components/NotifcationList";
+import MultiSaveButton from "@/components/Actions/MultiSave";
+import ChatsComponent from "@/components/Chat";
 import WorkspaceManager from "../Workspaces";
 import LoginButton from "./loginButton";
 
-import { useBackendContext } from "../../../contexts/BackendContext";
-import { convertToBlobLink } from "../../../DataProcessing/imageToVec";
-import { Z_INDEX_TOP_NAVBAR } from "../../../constants/zIndex";
-import { RootState } from "../../../redux/reducers";
+import { useBackendContext } from "@/contexts/BackendContext";
+import { convertToBlobLink } from "@/DataProcessing/imageToVec";
+
 import getStyles from "./styles";
 import EnhancedUserAvatar from "./EnhancedUserAvatar";
-
 export default function TopNavBar() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -77,35 +76,38 @@ export default function TopNavBar() {
       fontSize: "1.2rem",
     },
   };
+
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const { logout, backendActor } = useBackendContext();
 
-  const [mobileMenuAnchor, setMobileMenuAnchor] = useState<null | HTMLElement>(
-    null,
-  );
-  const [mobileNotificationAnchor, setMobileNotificationAnchor] =
-    useState<null | HTMLElement>(null);
+  const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null);
+  const [showMobileMenu, setShowMobileMenu] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
   const { isNavOpen, isDarkMode, isFetching, isLoggedIn, searchTool } =
-    useSelector((state: RootState) => state.uiState);
-
+    useSelector((state) => state.uiState);
   const { profile, profile_history, current_file } = useSelector(
-    (state: RootState) => state.filesState,
+    (state) => state.filesState,
   );
 
-  const handleMobileMenuToggle = (
-    event: React.MouseEvent<HTMLElement> | null,
-  ) => {
+  const imageLink = profile ? convertToBlobLink(profile.photo) : "";
+
+  useEffect(() => {
+    if (!isMobile) return;
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      setShowMobileMenu(currentScrollY < lastScrollY || currentScrollY < 10);
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY, isMobile]);
+
+  const handleMobileMenuToggle = (event) => {
     setMobileMenuAnchor(event ? event.currentTarget : null);
   };
-
-  const handleMobileNotificationToggle = (
-    event: React.MouseEvent<HTMLElement> | null,
-  ) => {
-    setMobileNotificationAnchor(event ? event.currentTarget : null);
-  };
-
-  const imageLink = profile ? convertToBlobLink(profile.photo) : "";
 
   const handleLogout = async () => {
     logout();
@@ -113,7 +115,7 @@ export default function TopNavBar() {
     navigate("/");
   };
 
-  const menuOptions = [
+  const loggedInMenuOptions = [
     { content: "Profile", to: "/profile", icon: <Person2Icon /> },
     { content: "Contracts", to: "/contracts", icon: <GavelIcon /> },
     { content: "Wallet", to: "/wallet", icon: <AccountBalanceWalletIcon /> },
@@ -121,164 +123,247 @@ export default function TopNavBar() {
     { content: "Logout", to: "/", icon: <LogoutIcon />, onClick: handleLogout },
   ];
 
-  // Render action buttons when user is logged in
-  const renderActionButtons = () => {
-    if (!isLoggedIn) return null;
+  const guestActions = [
+    { label: "Home", to: "/", icon: <HomeIcon /> },
+    {
+      label: isDarkMode ? "Light Mode" : "Dark Mode",
+      icon: isDarkMode ? <LightModeIcon /> : <DarkModeIcon />,
+      onClick: () => dispatch({ type: "TOGGLE_DARK" }),
+    },
+    { label: "White Paper", to: "/white_paper", icon: <ReceiptIcon /> },
+  ];
 
-    if (isMobile) {
-      return (
-        <>
-          <BottomNavigationAction
-            label="Notifications"
-            icon={<NotificationsButton isMobile={true} />}
-          />
-          <BottomNavigationAction
-            label="Chat"
-            icon={<ChatsComponent isMobile={true} />}
-          />
-          <BottomNavigationAction
-            label="Profile"
-            icon={
-              <EnhancedUserAvatar
-                actions_rate={profile_history?.actions_rate ?? 0}
-                photo={imageLink}
-                style={{ width: 24, height: 24 }}
-              />
-            }
-            onClick={handleMobileMenuToggle}
-          />
-          <MultiSaveButton />
-        </>
-      );
-    }
-
-    return (
-      <>
-        <NotificationsButton />
-        <ChatsComponent />
-        <WorkspaceManager />
-        <BasicMenu options={menuOptions}>
+  const renderLoggedInButtons = () => (
+    <>
+      {location.pathname !== "/" && location.pathname !== "" && (
+        <BottomNavigationAction
+          label="Home"
+          icon={<HomeIcon />}
+          onClick={() => navigate("/")}
+          sx={{ minWidth: 0, flex: 1 }}
+        />
+      )}
+      <BottomNavigationAction
+        label="Notifications"
+        icon={<NotificationsButton isMobile={true} />}
+        sx={{ minWidth: 0, flex: 1 }}
+      />
+      <BottomNavigationAction
+        label="Chat"
+        icon={<ChatsComponent isMobile={true} />}
+        sx={{ minWidth: 0, flex: 1 }}
+      />
+      <BottomNavigationAction
+        label="Profile"
+        icon={
           <EnhancedUserAvatar
             actions_rate={profile_history?.actions_rate ?? 0}
             photo={imageLink}
-            style={{ width: 24, height: 24 }}
+            style={{ width: 20, height: 20 }}
           />
-        </BasicMenu>
-        <MultiSaveButton />
-      </>
-    );
-  };
+        }
+        onClick={handleMobileMenuToggle}
+        sx={{ minWidth: 0, flex: 1 }}
+      />
+      <MultiSaveButton />
+    </>
+  );
+
+  const renderGuestButtons = () => (
+    <>
+      {location.pathname !== "/" && location.pathname !== "" && (
+        <BottomNavigationAction
+          label="Home"
+          icon={<HomeIcon />}
+          onClick={() => navigate("/")}
+          sx={{ minWidth: 0, flex: 1 }}
+        />
+      )}
+      {guestActions.slice(1).map((action, index) => (
+        <BottomNavigationAction
+          key={index}
+          label={action.label}
+          icon={action.icon}
+          onClick={() => {
+            if (action.onClick) action.onClick();
+            if (action.to) navigate(action.to);
+          }}
+          sx={{ minWidth: 0, flex: 1 }}
+        />
+      ))}
+      <BottomNavigationAction
+        label="Get Started"
+        icon={<LoginButton isMobile={true} />}
+        sx={{
+          minWidth: 0,
+          flex: location.pathname === "/" || location.pathname === "" ? 2 : 1.5,
+          "& .MuiBottomNavigationAction-label": {
+            fontSize: "0.85rem",
+            fontWeight: 600,
+            whiteSpace: "nowrap",
+          },
+        }}
+      />
+    </>
+  );
 
   const renderMobileContent = () => (
-    <Box
-      sx={{
-        position: "fixed",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        zIndex: Z_INDEX_TOP_NAVBAR + 1,
-        borderTopLeftRadius: 8,
-        borderTopRightRadius: 8,
-        overflow: "hidden",
-      }}
-    >
-      <Paper elevation={3}>
-        <BottomNavigation
-          sx={styles.mobileNavigation}
-          showLabels
-          value={location.pathname}
-        >
-          <BottomNavigationAction
-            name="toggleNavbar"
-            label="Menu"
-            icon={isNavOpen ? <MenuOpenIcon /> : <MenuIcon />}
-            onClick={() => dispatch({ type: "TOGGLE_NAV" })}
-          />
-
-          {isLoggedIn ? renderActionButtons() : <LoginButton isMobile={true} />}
-        </BottomNavigation>
-
-        <Menu
-          anchorEl={mobileMenuAnchor}
-          open={Boolean(mobileMenuAnchor)}
-          onClose={() => handleMobileMenuToggle(null)}
-          PaperProps={{ sx: styles.menuPaper }}
-          anchorOrigin={{ vertical: "top", horizontal: "center" }}
-          transformOrigin={{ vertical: "bottom", horizontal: "center" }}
-        >
-          {menuOptions.map((option, index) => (
-            <MenuItem
-              key={index}
-              onClick={() => {
-                handleMobileMenuToggle(null);
-                if (option.onClick) option.onClick();
-                if (option.to) navigate(option.to);
-              }}
-            >
-              <ListItemIcon>{option.icon}</ListItemIcon>
-              <ListItemText primary={option.content} />
-            </MenuItem>
-          ))}
-        </Menu>
-
-        <Menu
-          anchorEl={mobileNotificationAnchor}
-          open={Boolean(mobileNotificationAnchor)}
-          onClose={() => handleMobileNotificationToggle(null)}
-          PaperProps={{
-            sx: {
-              ...styles.menuPaper,
-              width: "300px",
+    <>
+      {isLoggedIn && showMobileMenu && (
+        <IconButton
+          sx={{
+            position: "fixed",
+            top: 16,
+            left: 16,
+            zIndex: 1300,
+            backgroundColor: alpha(theme.palette.background.paper, 0.9),
+            backdropFilter: "blur(10px)",
+            boxShadow: theme.shadows[2],
+            "&:hover": {
+              backgroundColor: alpha(theme.palette.background.paper, 0.95),
             },
           }}
-          anchorOrigin={{ vertical: "top", horizontal: "center" }}
-          transformOrigin={{ vertical: "bottom", horizontal: "center" }}
+          onClick={() => dispatch({ type: "TOGGLE_NAV" })}
         >
-          <NotificationsButton />
-        </Menu>
-      </Paper>
-    </Box>
+          {isNavOpen ? <MenuOpenIcon /> : <MenuIcon />}
+        </IconButton>
+      )}
+
+      <Box
+        sx={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 1200,
+          borderRadius: 0,
+          overflow: "hidden",
+        }}
+      >
+        <Paper elevation={3} sx={{ borderRadius: 0 }}>
+          <BottomNavigation
+            sx={{ borderRadius: 0 }}
+            showLabels
+            value={location.pathname}
+          >
+            {isLoggedIn ? renderLoggedInButtons() : renderGuestButtons()}
+          </BottomNavigation>
+
+          <Menu
+            anchorEl={mobileMenuAnchor}
+            open={Boolean(mobileMenuAnchor)}
+            onClose={() => handleMobileMenuToggle(null)}
+            anchorOrigin={{ vertical: "top", horizontal: "center" }}
+            transformOrigin={{ vertical: "bottom", horizontal: "center" }}
+          >
+            {loggedInMenuOptions.map((option, index) => (
+              <MenuItem
+                key={index}
+                onClick={() => {
+                  handleMobileMenuToggle(null);
+                  if (option.onClick) option.onClick();
+                  if (option.to) navigate(option.to);
+                }}
+              >
+                <ListItemIcon>{option.icon}</ListItemIcon>
+                <ListItemText primary={option.content} />
+              </MenuItem>
+            ))}
+          </Menu>
+        </Paper>
+      </Box>
+    </>
   );
 
   const renderDesktopContent = () => (
     <Toolbar
       variant="dense"
-      sx={{
-        ...styles.toolbar,
-        ...(isNavOpen && styles.toolbarShift),
-      }}
+      sx={{ ...styles.toolbar, ...(isNavOpen && styles.toolbarShift) }}
     >
       <Box sx={{ display: "flex", alignItems: "center" }}>
-        <IconButton
-          role="toggleNav"
-          className="toggleNav"
-          edge="start"
-          color="inherit"
-          onClick={() => dispatch({ type: "TOGGLE_NAV" })}
-          sx={styles.iconButton}
-        >
-          {isNavOpen ? <MenuOpenIcon /> : <MenuIcon />}
-        </IconButton>
+        {isLoggedIn && (
+          <IconButton
+            edge="start"
+            color="inherit"
+            onClick={() => dispatch({ type: "TOGGLE_NAV" })}
+            sx={styles.iconButton}
+          >
+            {isNavOpen ? <MenuOpenIcon /> : <MenuIcon />}
+          </IconButton>
+        )}
+
+        {!isLoggedIn && (
+          <>
+            <Tooltip title="Toggle Theme">
+              <IconButton
+                color="inherit"
+                onClick={() => dispatch({ type: "TOGGLE_DARK" })}
+                sx={styles.iconButton}
+              >
+                {isDarkMode ? <LightModeIcon /> : <DarkModeIcon />}
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="White Paper">
+              <IconButton
+                color="inherit"
+                onClick={() => navigate("/white_paper")}
+                sx={styles.iconButton}
+              >
+                <ReceiptIcon />
+              </IconButton>
+            </Tooltip>
+          </>
+        )}
+
         <Routes>
           <Route path="*" element={<BreadPage />} />
         </Routes>
-        <ShareButton fileId={current_file?.id} currentFile={current_file} />
+        {isLoggedIn && (
+          <ShareButton fileId={current_file?.id} currentFile={current_file} />
+        )}
       </Box>
 
       <Box sx={{ flexGrow: 1, mx: 2 }}>
-        <Tooltip title={'You can press "Command+F"'} placement="top">
-          <IconButton
-            color="inherit"
-            onClick={() => dispatch({ type: "SEARCH_TOOL" })}
-            sx={styles.iconButton}
-          >
-            {searchTool ? <CloseIcon /> : <SearchIcon />}
-          </IconButton>
-        </Tooltip>
+        {isLoggedIn && (
+          <Tooltip title={'You can press "Command+F"'} placement="top">
+            <IconButton
+              color="inherit"
+              onClick={() => dispatch({ type: "SEARCH_TOOL" })}
+              sx={styles.iconButton}
+            >
+              {searchTool ? <CloseIcon /> : <SearchIcon />}
+            </IconButton>
+          </Tooltip>
+        )}
       </Box>
 
       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-        {isLoggedIn ? renderActionButtons() : <LoginButton />}
+        {isLoggedIn ? (
+          <>
+            {location.pathname !== "/" && location.pathname !== "" && (
+              <IconButton
+                color="inherit"
+                onClick={() => navigate("/")}
+                sx={styles.iconButton}
+              >
+                <HomeIcon />
+              </IconButton>
+            )}
+            <NotificationsButton />
+            <ChatsComponent />
+            <WorkspaceManager />
+            <BasicMenu options={loggedInMenuOptions}>
+              <EnhancedUserAvatar
+                actions_rate={profile_history?.actions_rate ?? 0}
+                photo={imageLink}
+                style={{ width: 24, height: 24 }}
+              />
+            </BasicMenu>
+            <MultiSaveButton />
+          </>
+        ) : (
+          <LoginButton />
+        )}
       </Box>
     </Toolbar>
   );
@@ -291,6 +376,7 @@ export default function TopNavBar() {
         sx={{
           ...styles.appBar,
           display: isMobile ? "none" : "block",
+          borderRadius: 0,
         }}
       >
         {isFetching && <LinearProgress />}

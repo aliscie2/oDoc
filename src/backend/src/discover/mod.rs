@@ -109,6 +109,7 @@ pub struct UserFE {
     // FE === FrontEnd
     pub id: String,
     pub name: String,
+    pub photo: Vec<u8>,
 }
 
 // impl UserFE {
@@ -182,20 +183,20 @@ impl Post {
         })
     }
     // Get paginated posts
+
     pub fn get_pagination(start: usize, count: usize) -> Vec<PostUser> {
         POSTS.with(|posts| {
             let posts = posts.borrow();
             let total_posts = posts.len();
 
-            // If start is beyond the total number of posts, return an empty vector
             if start >= total_posts as usize {
                 return Vec::new();
             }
 
-            // Calculate the actual count based on the available posts
             let actual_count = usize::min(count, (total_posts - start as u64).try_into().unwrap());
+            let mut seen_users: std::collections::HashSet<String> =
+                std::collections::HashSet::new();
 
-            // for each post get the user User::get_user_from_text_principal(user_principal.clone());
             posts
                 .iter()
                 .skip((start as u64).try_into().unwrap())
@@ -205,9 +206,18 @@ impl Post {
                     if let Some(u) = User::get_user_from_text_principal(&post.creator) {
                         user = u
                     }
+
+                    let photo = if seen_users.contains(&user.id) {
+                        vec![]
+                    } else {
+                        seen_users.insert(user.id.clone());
+                        user.photo.clone()
+                    };
+
                     let creator = UserFE {
                         id: user.id.clone(),
                         name: user.name.clone(),
+                        photo,
                     };
                     PostUser {
                         id: post.id.clone(),
@@ -232,25 +242,29 @@ impl Post {
             let map_posts: HashMap<String, Post> =
                 posts.iter().map(|(k, v)| (k.clone(), v.clone())).collect();
             let mut filtered_posts: Vec<&Post> = map_posts.values().collect();
+
             if let Some(tags) = tags {
-                filtered_posts = filtered_posts
-                    .into_iter()
-                    .filter(|post| post.tags.iter().any(|tag| tags.contains(tag)))
-                    .collect::<Vec<&Post>>();
+                filtered_posts.retain(|post| post.tags.iter().any(|tag| tags.contains(tag)));
             }
             if let Some(creator) = creator {
-                filtered_posts = filtered_posts
-                    .into_iter()
-                    .filter(|post| post.creator == creator)
-                    .collect::<Vec<&Post>>();
+                filtered_posts.retain(|post| post.creator == creator);
             }
+
+            let mut user_seen = std::collections::HashSet::new();
+
             filtered_posts
                 .into_iter()
                 .map(|post| {
                     let user = User::get_user_from_text_principal(&post.creator).unwrap();
+                    let is_first_occurrence = user_seen.insert(user.id.clone());
                     let creator = UserFE {
                         id: user.id.clone(),
                         name: user.name.clone(),
+                        photo: if is_first_occurrence {
+                            user.photo.clone()
+                        } else {
+                            vec![]
+                        },
                     };
                     PostUser {
                         id: post.id.clone(),
@@ -265,7 +279,7 @@ impl Post {
                         parent: post.parent.clone(),
                     }
                 })
-                .collect::<Vec<PostUser>>()
+                .collect()
         })
     }
 

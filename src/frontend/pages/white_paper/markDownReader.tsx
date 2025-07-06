@@ -21,6 +21,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  useMediaQuery,
 } from "@mui/material";
 import whitepaperText from "./md/whitepaper.md";
 import promisePaper from "./md/promise.md";
@@ -28,29 +29,29 @@ import roadMap from "./md/roadmap.md";
 import snsPaper from "./md/sns.md";
 import architecture from "./md/architecture.md";
 
-function TabPanel({ children, value, index, ...other }) {
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`markdown-tabpanel-${index}`}
-      aria-labelledby={`markdown-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-    </div>
-  );
-}
+const TabPanel = ({ children, value, index, ...other }) => (
+  <div
+    role="tabpanel"
+    hidden={value !== index}
+    id={`markdown-tabpanel-${index}`}
+    aria-labelledby={`markdown-tab-${index}`}
+    {...other}
+  >
+    {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+  </div>
+);
 
 const MarkdownRenderer = () => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [markdownContent, setMarkdownContent] = React.useState("");
   const [currentTab, setCurrentTab] = React.useState(0);
+  const [showAppBar, setShowAppBar] = React.useState(true);
+  const [lastScrollY, setLastScrollY] = React.useState(0);
 
   React.useEffect(() => {
     const loadMarkdownFiles = async () => {
       try {
-        // Fetch all files concurrently
         const fetchPromises = [
           whitepaperText,
           promisePaper,
@@ -58,62 +59,73 @@ const MarkdownRenderer = () => {
           snsPaper,
           architecture,
         ].map((paper) => fetch(paper).then((response) => response.text()));
-
         const allTexts = await Promise.all(fetchPromises);
-        const totalText = allTexts.join("\n\n"); // Join with double newlines for separation
-
-        setMarkdownContent(totalText);
+        setMarkdownContent(allTexts.join("\n\n"));
       } catch (error) {
         console.error("Error loading markdown files:", error);
       }
     };
-
     loadMarkdownFiles();
   }, []);
 
-  const sections = React.useMemo(() => {
-    return markdownContent
-      .split(/(?=^# )/gm)
-      .filter((section) => section.trim());
-  }, [markdownContent]);
+  React.useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      setShowAppBar(currentScrollY < lastScrollY || currentScrollY < 10);
+      setLastScrollY(currentScrollY);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
 
-  const handleTabChange = (event, newValue) => {
-    setCurrentTab(newValue);
+  const sections = React.useMemo(
+    () =>
+      markdownContent.split(/(?=^# )/gm).filter((section) => section.trim()),
+    [markdownContent],
+  );
+
+  const getSectionTitle = (section) => {
+    const match = section.match(/^#\s+(.+)$/m);
+    return match ? match[1] : "Untitled Section";
   };
 
   const components = {
     h1: ({ children }) => (
-      <Typography variant="h1" gutterBottom>
+      <Typography variant="h1" gutterBottom sx={{ wordBreak: "break-word" }}>
         {children}
       </Typography>
     ),
     h2: ({ children }) => (
-      <Typography variant="h2" gutterBottom>
+      <Typography variant="h2" gutterBottom sx={{ wordBreak: "break-word" }}>
         {children}
       </Typography>
     ),
     h3: ({ children }) => (
-      <Typography variant="h3" gutterBottom>
+      <Typography variant="h3" gutterBottom sx={{ wordBreak: "break-word" }}>
         {children}
       </Typography>
     ),
     h4: ({ children }) => (
-      <Typography variant="h4" gutterBottom>
+      <Typography variant="h4" gutterBottom sx={{ wordBreak: "break-word" }}>
         {children}
       </Typography>
     ),
     h5: ({ children }) => (
-      <Typography variant="h5" gutterBottom>
+      <Typography variant="h5" gutterBottom sx={{ wordBreak: "break-word" }}>
         {children}
       </Typography>
     ),
     h6: ({ children }) => (
-      <Typography variant="h6" gutterBottom>
+      <Typography variant="h6" gutterBottom sx={{ wordBreak: "break-word" }}>
         {children}
       </Typography>
     ),
     p: ({ children }) => (
-      <Typography variant="body1" paragraph>
+      <Typography
+        variant="body1"
+        paragraph
+        sx={{ wordBreak: "break-word", overflowWrap: "break-word" }}
+      >
         {children}
       </Typography>
     ),
@@ -123,15 +135,18 @@ const MarkdownRenderer = () => {
         color="primary"
         target="_blank"
         rel="noopener noreferrer"
+        sx={{ wordBreak: "break-all" }}
       >
         {children}
       </Link>
     ),
-    ul: ({ children }) => <List>{children}</List>,
-    ol: ({ children }) => <List>{children}</List>,
+    ul: ({ children }) => <List sx={{ pl: { xs: 2, sm: 4 } }}>{children}</List>,
+    ol: ({ children }) => <List sx={{ pl: { xs: 2, sm: 4 } }}>{children}</List>,
     li: ({ children }) => (
-      <ListItem>
-        <Typography variant="body1">{children}</Typography>
+      <ListItem sx={{ pl: 0 }}>
+        <Typography variant="body1" sx={{ wordBreak: "break-word" }}>
+          {children}
+        </Typography>
       </ListItem>
     ),
     blockquote: ({ children }) => (
@@ -141,9 +156,13 @@ const MarkdownRenderer = () => {
           pl: 2,
           my: 2,
           bgcolor: theme.palette.background.paper,
+          mx: { xs: 0, sm: 2 },
         }}
       >
-        <Typography variant="body1" sx={{ fontStyle: "italic" }}>
+        <Typography
+          variant="body1"
+          sx={{ fontStyle: "italic", wordBreak: "break-word" }}
+        >
           {children}
         </Typography>
       </Box>
@@ -151,16 +170,28 @@ const MarkdownRenderer = () => {
     code: ({ node, inline, className, children, ...props }) => {
       const match = /language-(\w+)/.exec(className || "");
       return !inline && match ? (
-        <Paper elevation={2} sx={{ my: 2 }}>
-          <SyntaxHighlighter
-            style={tomorrow}
-            language={match[1]}
-            PreTag="div"
-            {...props}
-          >
-            {String(children).replace(/\n$/, "")}
-          </SyntaxHighlighter>
-        </Paper>
+        <Box sx={{ my: 2, overflow: "hidden", width: "100%" }}>
+          <Paper elevation={2} sx={{ overflow: "auto", borderRadius: 0 }}>
+            <SyntaxHighlighter
+              style={tomorrow}
+              language={match[1]}
+              PreTag="div"
+              customStyle={{
+                margin: 0,
+                fontSize: "0.75rem",
+                lineHeight: 1.4,
+                padding: "12px",
+                overflowX: "auto",
+                whiteSpace: "pre",
+              }}
+              wrapLines={false}
+              wrapLongLines={false}
+              {...props}
+            >
+              {String(children).replace(/\n$/, "")}
+            </SyntaxHighlighter>
+          </Paper>
+        </Box>
       ) : (
         <Typography
           component="code"
@@ -174,8 +205,11 @@ const MarkdownRenderer = () => {
                 ? theme.palette.grey[100]
                 : theme.palette.grey[900],
             padding: "2px 4px",
-            borderRadius: 1,
+            borderRadius: 0,
             fontFamily: "monospace",
+            wordBreak: "break-all",
+            fontSize: "0.8rem",
+            overflowWrap: "anywhere",
           }}
           {...props}
         >
@@ -183,13 +217,57 @@ const MarkdownRenderer = () => {
         </Typography>
       );
     },
+    pre: ({ children }) => (
+      <Box sx={{ my: 2, overflow: "hidden", width: "100%" }}>
+        <Paper elevation={1} sx={{ overflow: "auto", p: 2, borderRadius: 0 }}>
+          <Typography
+            component="pre"
+            sx={{
+              fontFamily: "monospace",
+              fontSize: "0.75rem",
+              lineHeight: 1.4,
+              margin: 0,
+              whiteSpace: "pre-wrap",
+              wordBreak: "break-word",
+              overflowWrap: "anywhere",
+            }}
+          >
+            {children}
+          </Typography>
+        </Paper>
+      </Box>
+    ),
     hr: () => <Divider sx={{ my: 2 }} />,
-
-    // Table components - these were missing in your original code
     table: ({ children }) => (
-      <TableContainer component={Paper} sx={{ my: 3, overflow: "auto" }}>
-        <Table sx={{ minWidth: 650 }}>{children}</Table>
-      </TableContainer>
+      <Box sx={{ my: 3, width: "100%", overflowX: "auto" }}>
+        <TableContainer
+          component={Paper}
+          sx={{
+            minWidth: 0,
+            width: "100%",
+            borderRadius: 0,
+            "& .MuiTable-root": { tableLayout: "auto" },
+          }}
+        >
+          <Table
+            sx={{
+              minWidth: 0,
+              width: "100%",
+              "& .MuiTableCell-root": {
+                padding: { xs: "4px 8px", sm: "8px 16px" },
+                fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                lineHeight: 1.3,
+                verticalAlign: "top",
+                wordBreak: "break-word",
+                hyphens: "auto",
+                minWidth: { xs: "60px", sm: "80px" },
+              },
+            }}
+          >
+            {children}
+          </Table>
+        </TableContainer>
+      </Box>
     ),
     thead: ({ children }) => <TableHead>{children}</TableHead>,
     tbody: ({ children }) => <TableBody>{children}</TableBody>,
@@ -200,37 +278,82 @@ const MarkdownRenderer = () => {
           fontWeight: "bold",
           backgroundColor: theme.palette.primary.light,
           color: theme.palette.primary.contrastText,
+          fontSize: { xs: "0.65rem", sm: "0.875rem" },
+          padding: { xs: "4px 6px", sm: "8px 16px" },
+          lineHeight: 1.2,
+          wordBreak: "break-word",
+          hyphens: "auto",
         }}
       >
         {children}
       </TableCell>
     ),
-    td: ({ children }) => <TableCell>{children}</TableCell>,
-  };
-
-  const getSectionTitle = (section) => {
-    const match = section.match(/^#\s+(.+)$/m);
-    return match ? match[1] : "Untitled Section";
+    td: ({ children }) => (
+      <TableCell
+        sx={{
+          fontSize: { xs: "0.65rem", sm: "0.875rem" },
+          padding: { xs: "4px 6px", sm: "8px 16px" },
+          lineHeight: 1.3,
+          wordBreak: "break-word",
+          hyphens: "auto",
+          verticalAlign: "top",
+        }}
+      >
+        {children}
+      </TableCell>
+    ),
+    img: ({ src, alt, ...props }) => (
+      <Box
+        sx={{ my: 2, textAlign: "center", width: "100%", overflow: "hidden" }}
+      >
+        <img
+          src={src}
+          alt={alt}
+          style={{
+            maxWidth: "100%",
+            width: "auto",
+            height: "auto",
+            display: "block",
+            margin: "0 auto",
+            objectFit: "contain",
+          }}
+          {...props}
+        />
+      </Box>
+    ),
   };
 
   return (
     <Box
       sx={{
-        width: "90wh",
+        width: "100%",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         minHeight: "100vh",
+        overflow: "hidden",
       }}
     >
       <AppBar
-        position="static"
+        position="fixed"
         color="default"
-        sx={{ width: "100%", maxWidth: "900px" }}
+        sx={{
+          width: "100%",
+          maxWidth: "900px",
+          left: "50%",
+          transform: "translateX(-50%)",
+          top: isMobile ? 0 : 45,
+          transition: "transform 0.3s ease-in-out",
+          transform: showAppBar
+            ? "translateX(-50%) translateY(0)"
+            : "translateX(-50%) translateY(-100%)",
+          borderRadius: 0,
+          zIndex: 1100,
+        }}
       >
         <Tabs
           value={currentTab}
-          onChange={handleTabChange}
+          onChange={(event, newValue) => setCurrentTab(newValue)}
           indicatorColor="primary"
           textColor="primary"
           variant="scrollable"
@@ -248,21 +371,30 @@ const MarkdownRenderer = () => {
         </Tabs>
       </AppBar>
 
-      {sections.map((section, index) => (
-        <TabPanel key={index} value={currentTab} index={index}>
-          <Box
-            sx={{
-              maxWidth: "800px",
-              margin: "0 auto",
-              padding: theme.spacing(3),
-            }}
-          >
-            <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
-              {section}
-            </ReactMarkdown>
-          </Box>
-        </TabPanel>
-      ))}
+      <Box sx={{ mt: 6 }}>
+        {sections.map((section, index) => (
+          <TabPanel key={index} value={currentTab} index={index}>
+            <Box
+              sx={{
+                maxWidth: { xs: "100vw", sm: "800px" },
+                width: "100%",
+                margin: "0 auto",
+                padding: { xs: "8px", sm: "24px" },
+                overflow: "hidden",
+                wordBreak: "break-word",
+                overflowWrap: "anywhere",
+              }}
+            >
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={components}
+              >
+                {section}
+              </ReactMarkdown>
+            </Box>
+          </TabPanel>
+        ))}
+      </Box>
     </Box>
   );
 };

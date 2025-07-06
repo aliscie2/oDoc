@@ -357,7 +357,11 @@ export const idlFactory = ({ IDL }) => {
   });
   const StoredContract = IDL.Variant({ CustomContract: CustomContract });
   const Result_9 = IDL.Variant({ Ok: StoredContract, Err: IDL.Text });
-  const UserFE = IDL.Record({ id: IDL.Text, name: IDL.Text });
+  const UserFE = IDL.Record({
+    id: IDL.Text,
+    name: IDL.Text,
+    photo: IDL.Vec(IDL.Nat8),
+  });
   const PostUser = IDL.Record({
     id: IDL.Text,
     creator: UserFE,

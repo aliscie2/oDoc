@@ -42,6 +42,7 @@ fn search_posts(text_to_find: String) -> Vec<PostUser> {
                         let creator = UserFE {
                             id: user.id.clone(),
                             name: user.name.clone(),
+                            photo: vec![],
                         };
                         PostUser {
                             id: post.id.clone(),

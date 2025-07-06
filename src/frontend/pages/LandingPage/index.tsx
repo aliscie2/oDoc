@@ -240,16 +240,14 @@ export default function OdocLandingPage() {
                 spacing={1}
                 sx={{ justifyContent: "center", flexWrap: "wrap", gap: 1 }}
               >
-                {["Open Source", "Decentralized", "Unified", "All-in-One"].map(
-                  (label) => (
-                    <Chip
-                      key={label}
-                      label={label}
-                      size="small"
-                      variant="outlined"
-                    />
-                  ),
-                )}
+                {["Open Source", "Decentralized", "All-in-One"].map((label) => (
+                  <Chip
+                    key={label}
+                    label={label}
+                    size="small"
+                    variant="outlined"
+                  />
+                ))}
               </Stack>
             </Box>
           }
@@ -260,9 +258,9 @@ export default function OdocLandingPage() {
             color="text.secondary"
             sx={{ mb: 3 }}
           >
-            C• oDoc is A decentralized freelance crypto Agreement platform
+            oDoc is a decentralized freelance crypto agreement platform,
             designed to obviate the need for middlemen, spreadsheets, documents,
-            or task managers. Powered by AI & ICP
+            or task managers. Powered by AI and ICP blockchain.
           </Typography>
         </FeatureSection>
         {/* Job Matching Section */}

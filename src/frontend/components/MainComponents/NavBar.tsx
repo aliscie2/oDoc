@@ -122,7 +122,7 @@ const NavBar = (props: any) => {
       icon: <WorkspacePremiumIcon />,
     },
     { label: "White Paper", to: "/white_paper", icon: <ReceiptIcon /> },
-    { label: "Vote", to: "/vote", icon: <HowToVoteIcon /> },
+    // { label: "Vote", to: "/vote", icon: <HowToVoteIcon /> },
   ];
 
   const handleNavClose = () => {

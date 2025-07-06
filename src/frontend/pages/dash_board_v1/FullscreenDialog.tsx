@@ -10,6 +10,7 @@ import {
 import { Close } from "@mui/icons-material";
 
 // Shared Fullscreen Dialog Component
+
 export const FullscreenDialog = ({
   open,
   onClose,
@@ -27,58 +28,44 @@ export const FullscreenDialog = ({
       PaperProps={{
         sx: {
           margin: 0,
-          maxHeight: "100vh",
           height: "100vh",
           width: "100vw",
           borderRadius: 0,
         },
       }}
     >
-      <DialogTitle
-        sx={{
-          display: "flex",
-          justifyContent: showTitle ? "space-between" : "flex-end",
-          alignItems: "center",
-          padding: "8px 16px",
-          margin: 0,
-          minHeight: "auto",
-        }}
-      >
-        {showTitle && <Typography variant="h6">{title}</Typography>}
-        <IconButton
-          onClick={onClose}
-          sx={{
-            color: "grey.500",
-            "&:hover": { color: "grey.700" },
-            padding: "4px",
-          }}
-        >
-          <Close />
-        </IconButton>
-      </DialogTitle>
-
       <DialogContent
         sx={{
           padding: 0,
           margin: 0,
-          overflow: "hidden",
-          height: "calc(100vh - 56px)", // Subtract header height
+          overflow: "auto",
+          height: "100vh",
           width: "100%",
+          position: "relative",
         }}
       >
-        <Box
+        {children}
+
+        <IconButton
+          onClick={onClose}
           sx={{
-            height: "100%",
-            width: "100%",
-            padding: 0,
-            margin: 0,
+            position: "fixed",
+            bottom: 16,
+            left: 16,
+            backgroundColor: "background.paper",
+            color: "grey.700",
+            boxShadow: 3,
+            zIndex: 9999,
+            "&:hover": {
+              backgroundColor: "grey.100",
+              boxShadow: 6,
+            },
           }}
         >
-          {children}
-        </Box>
+          <Close />
+        </IconButton>
       </DialogContent>
     </Dialog>
   );
 };
-
 export default FullscreenDialog;

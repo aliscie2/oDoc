@@ -525,7 +525,7 @@ type User = record {
   email : text;
   photo : blob;
 };
-type UserFE = record { id : text; name : text };
+type UserFE = record { id : text; name : text; photo : blob };
 type UserProfile = record {
   id : principal;
   actions_rate : float64;
