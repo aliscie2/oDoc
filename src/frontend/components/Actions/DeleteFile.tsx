@@ -19,37 +19,13 @@ const DeleteFile: React.FC<DeleteFileProps> = ({ item }) => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
   const handleDeleteFile = async (e: MouseEvent<HTMLSpanElement>) => {
-    if (!backendActor) {
-      enqueueSnackbar("Failed to delete: Backend actor not available", {
-        variant: "error",
-      });
-      return;
-    }
-
-    const loading = enqueueSnackbar(
-      <span>
-        Deleting {item.name}... <span className="loader" />
-      </span>,
-      { variant: "info" },
-    );
-
-    try {
-      const res = await backendActor.delete_file(item.id);
-
-      dispatch({
-        type: "REMOVE",
-        id: item.id,
-      });
-      enqueueSnackbar(`${item.name} is deleted`, { variant: "success" });
-      return res;
-    } catch (error) {
-      console.log({ error });
-      enqueueSnackbar(`Failed to delete ${item.name}`, { variant: "error" });
-    } finally {
-      console.log("done");
-      closeSnackbar(loading);
-    }
-    return { Ok: "" };
+    const res = await backendActor.delete_file(item.id);
+    // if (!res[0]){
+    //   return {Err:"File not found"}
+    // }
+    dispatch({ type: "REMOVE_FILE", id: item.id });
+    // enqueueSnackbar(`${item.name} is deleted`, { variant: "success" });
+    return { Ok: "File Deleted" };
   };
 
   return (

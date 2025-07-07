@@ -1,67 +1,49 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useSnackbar } from "notistack";
-import { TextField } from "@mui/material";
-import Autocomplete from "@mui/material/Autocomplete";
+import { TextField, Autocomplete } from "@mui/material";
 
-const ChangeWorkSpace = (props: any) => {
+const ChangeWorkSpace = ({ readOnly }: { readOnly?: boolean }) => {
   const dispatch = useDispatch();
-
   const { workspaces, files } = useSelector((state: any) => state.filesState);
-  const fileId = window.location.pathname.split("/")[1];
-  const current_file = files.find((file: any) => file.id === fileId);
 
-  const handleWorkSpaceChange = (value) => {
-    let updatedWorkspaces = value.map((w) => {
-      return w.id;
-    });
-    dispatch({
-      type: "UPDATE_FILE_WORKSPACES",
-      id: current_file.id,
-      workspaces: updatedWorkspaces,
-    });
-  };
-  let theFile = current_file && files.find((f) => f.id == current_file.id);
-  theFile.workspaces = theFile.workspaces.filter(
-    (w) => w === "default" || workspaces.find((ws) => ws.id === w),
+  const fileId = window.location.pathname.split("/")[1];
+  const currentFile = files.find((file: any) => file.id === fileId);
+
+  if (!currentFile) return null;
+
+  const filteredWorkspaces = currentFile.workspaces.filter(
+    (w: string) => w === "default" || workspaces.find((ws: any) => ws.id === w),
   );
 
-  const defaultValue =
-    theFile &&
-    theFile.workspaces.map((workspaceId) => {
-      const W = workspaces.find((w) => w.id == workspaceId);
-      return { title: W?.name, id: W?.id };
+  const selectedWorkspaces = filteredWorkspaces.map((workspaceId: string) => {
+    const workspace = workspaces.find((w: any) => w.id === workspaceId);
+    return { title: workspace?.name, id: workspace?.id };
+  });
+
+  const workspaceOptions = workspaces.map((workspace: any) => ({
+    title: workspace.name,
+    id: workspace.id,
+  }));
+
+  const handleChange = (value: any) => {
+    dispatch({
+      type: "UPDATE_FILE_WORKSPACES",
+      id: currentFile.id,
+      workspaces: value.map((w: any) => w.id),
     });
+  };
 
   return (
     <Autocomplete
       multiple
-      disabled={props.readOnly}
-      onChange={(e, value) => handleWorkSpaceChange(value)}
+      disabled={readOnly}
+      onChange={(_, value) => handleChange(value)}
       limitTags={3}
-      id="multiple-limit-tags"
-      options={workspaces.map((workspace) => {
-        return { title: workspace.name, id: workspace.id };
-      })}
+      options={workspaceOptions}
       getOptionLabel={(option) => option.title}
-      value={defaultValue || []}
-      renderInput={(params) => (
-        <TextField
-          {...params}
-          label={"workspaces"}
-          // placeholder="Favorites"
-        />
-      )}
-      // sx={{ width: "250px" }}
+      value={selectedWorkspaces}
+      renderInput={(params) => <TextField {...params} label="workspaces" />}
     />
-
-    // <Select onChange={handleWorkSpaceChange}>
-    //   {workSpaceNames.map((name, index) => (
-    //     <MenuItem key={index} value={name}>
-    //       {name}
-    //     </MenuItem>
-    //   ))}
-    // </Select>
   );
 };
 

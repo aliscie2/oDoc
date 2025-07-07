@@ -43,7 +43,7 @@ export interface InitialState {
 export type FilesActions =
   | { type: "SET_WALLET"; wallet: Wallet }
   | { type: "ADD_FILE"; new_file: FileNode }
-  | { type: "REMOVE"; id: string }
+  | { type: "REMOVE_FILE"; id: string }
   | { type: "UPDATE"; id: string; file: Partial<FileNode> }
   | { type: "GET" }
   | { type: "GET_ALL" }

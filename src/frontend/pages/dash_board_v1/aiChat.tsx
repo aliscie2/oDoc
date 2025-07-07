@@ -119,7 +119,11 @@ export const AIChatComponent = ({
                 ×
               </IconButton>
             </Box>
-            <RunawayJellyfish thinking={isLoading} runaway={true} />
+            <RunawayJellyfish
+              die={aiAgent.remainingCredits() == 0}
+              thinking={isLoading}
+              runaway={true}
+            />
             <Box
               ref={chatContainerRef}
               sx={{ flex: 1, overflowY: "auto", mb: 2 }}

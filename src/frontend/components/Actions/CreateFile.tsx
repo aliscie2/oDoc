@@ -20,6 +20,13 @@ const CreateFile: React.FC = () => {
 
   const handleCreateFile = async () => {
     const id = randomString();
+    let workspaces: Array<string> = [];
+    if (
+      currentWorkspace.id &&
+      currentWorkspace.id.toLowerCase() !== "default"
+    ) {
+      workspaces = [currentWorkspace.id];
+    }
     const new_file: FileNode = {
       id,
       permission: {
@@ -28,7 +35,7 @@ const CreateFile: React.FC = () => {
       content_id: [],
       share_id: [],
       name: "Untitled",
-      workspaces: currentWorkspace.id ? [currentWorkspace.id] : [],
+      workspaces,
       children: [],
       author: profile.id,
       users_permissions: [],

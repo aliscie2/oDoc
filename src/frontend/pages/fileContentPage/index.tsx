@@ -140,8 +140,8 @@ function FileContentPage() {
     }
   }, 250);
 
-  // Check for 404 case first (when initialization is complete but no files exist)
-  if (inited && files.length === 0) {
+  // Show loading spinner while files are being loaded (and user is logged in)
+  if (!inited && isLoggedIn) {
     return (
       <Box
         display="flex"
@@ -149,33 +149,27 @@ function FileContentPage() {
         alignItems="center"
         minHeight="100vh" // or whatever height you want
       >
-        <RunawayJellyfish thinking={true} scale={1.3} />
+        <RunawayJellyfish thinking={true} scale={isMobile ? 1.5 : 2} />
       </Box>
     );
   }
 
-  // Show loading spinner while files are being loaded (and user is logged in)
-  if (files.length === 0 && isLoggedIn) {
-    return <CircularProgress />;
-  }
-
-  // If no current file is found, show 404
-  // make it in center
-  if (!currentFile) {
+  // Check for 404 case first (when initialization is complete but no files exist)
+  if (!currentFile || (inited && files.length === 0)) {
     return (
       <Box
         display="flex"
         justifyContent="center"
         alignItems="center"
-        minHeight="100vh" // or whatever height you want
+        minHeight="100vh"
       >
         <RunawayJellyfish
-          thinking={true}
-          logoSvgScale={isMobile ? 2 : 3}
+          jellyfishOffsetX={-200}
+          jellyfishOffsetY={isMobile ? 50 : 20}
+          logoSvgScale={isMobile ? 1.2 : 3}
           LogoSvg={NOTFOUND404}
-          jellyfishOffsetX={-150}
-          jellyfishOffsetY={25}
-          scale={2}
+          thinking={true}
+          scale={isMobile ? 1 : 2}
         />
       </Box>
     );

@@ -11,17 +11,6 @@ export function filesReducer(
   state: InitialState = initialState,
   action: FilesActions,
 ): InitialState {
-  function changeFile(newFile: FileNode) {
-    if (state.changes.files.find((file) => file.id === newFile.id)) {
-      state.changes.files = state.changes.files.map((file) =>
-        file.id === file.id ? newFile : file,
-      );
-    } else {
-      state.changes.files.push(newFile);
-    }
-    return { ...state };
-  }
-
   switch (action.type) {
     case "INIT_FILES_STATE":
       let all_friends = [action.data.Profile];
@@ -146,9 +135,11 @@ export function filesReducer(
         ),
       };
 
-    case "REMOVE":
+    case "REMOVE_FILE":
       return {
         ...state,
+        current_file:
+          state.current_file?.id === action.id ? null : state.current_file,
         files: state.files.filter((file) => file.id !== action.id),
         changes: {
           ...state.changes,
@@ -1628,55 +1619,6 @@ export function filesReducer(
       };
     }
 
-    // case "RENAME_SMART_CONTRACT": {
-    //   const { contract_id, new_name } = action;
-
-    //   // Update contract name
-    //   const updatedContracts = {
-    //     ...state.contracts,
-    //     [contract_id]: {
-    //       ...state.contracts[contract_id],
-    //       name: new_name,
-    //     },
-    //   };
-
-    //   // Update changes
-    //   const contractsArray = Array.isArray(state.changes.contracts)
-    //     ? state.changes.contracts
-    //     : [];
-    //   const existingContractIndex = contractsArray.findIndex(
-    //     (c) => c.id === contract_id,
-    //   );
-    //   let updatedChangesContracts;
-
-    //   if (existingContractIndex !== -1) {
-    //     updatedChangesContracts = contractsArray.map((c, index) =>
-    //       index === existingContractIndex ? { ...c, name: [new_name] } : c,
-    //     );
-    //   } else {
-    //     const newContractUpdate = {
-    //       id: contract_id,
-    //       permissions: [],
-    //       promises_indexes: [],
-    //       name: [new_name],
-    //       delete_tables: [],
-    //       tables: [],
-    //       delete_promises: [],
-    //       promises: [],
-    //     };
-    //     updatedChangesContracts = [...contractsArray, newContractUpdate];
-    //   }
-
-    //   return {
-    //     ...state,
-    //     contracts: updatedContracts,
-    //     changes: {
-    //       ...state.changes,
-    //       contracts: updatedChangesContracts,
-    //     },
-    //   };
-    // }
-
     case "ADD_TABLE": {
       const { contract_id, table } = action;
 
@@ -1865,31 +1807,59 @@ export function filesReducer(
       };
 
     case "UPDATE_FILE_WORKSPACES":
-      let newFile = state.files.find((file) => file.id === action.id)!;
-      newFile.workspaces = action.workspaces;
-      state = changeFile(newFile);
-      return <InitialState>{
+      return {
         ...state,
         files: state.files.map((file) =>
           file.id === action.id
             ? { ...file, workspaces: action.workspaces }
             : file,
         ),
-        current_file: { ...state.current_file, workspaces: action.workspaces },
+        current_file:
+          state.current_file?.id === action.id
+            ? { ...state.current_file, workspaces: action.workspaces }
+            : state.current_file,
+        changes: {
+          ...state.changes,
+          files: state.changes.files.find((f) => f.id === action.id)
+            ? state.changes.files.map((f) =>
+                f.id === action.id
+                  ? { ...f, workspaces: action.workspaces }
+                  : f,
+              )
+            : [
+                ...state.changes.files,
+                {
+                  ...state.files.find((f) => f.id === action.id)!,
+                  workspaces: action.workspaces,
+                },
+              ],
+        },
       };
 
     case "UPDATE_FILE_TITLE":
-      const updatedFile = {
-        ...state.files.find((file) => file.id === action.id),
-        name: action.title,
-      };
-      state = changeFile(updatedFile);
       return {
         ...state,
         files: state.files.map((file) =>
           file.id === action.id ? { ...file, name: action.title } : file,
         ),
-        current_file: { ...state.current_file, name: action.title },
+        current_file:
+          state.current_file?.id === action.id
+            ? { ...state.current_file, name: action.title }
+            : state.current_file,
+        changes: {
+          ...state.changes,
+          files: state.changes.files.find((f) => f.id === action.id)
+            ? state.changes.files.map((f) =>
+                f.id === action.id ? { ...f, name: action.title } : f,
+              )
+            : [
+                ...state.changes.files,
+                {
+                  ...state.files.find((f) => f.id === action.id)!,
+                  name: action.title,
+                },
+              ],
+        },
       };
 
     case "UPDATE_BALANCE":
