@@ -8,6 +8,14 @@ import { BackendProvider } from "./contexts/BackendContext";
 import { SnackbarProvider } from "notistack";
 
 import { _SERVICE } from "$/declarations/backend/backend.did";
+import * as Sentry from "@sentry/react";
+
+if (import.meta.env.VITE_DFX_NETWORK === "ic") {
+  Sentry.init({
+    dsn: import.meta.env.VITE_SENTRY_DNS,
+    sendDefaultPii: true,
+  });
+}
 
 const rootElement = document.getElementById("root");
 

@@ -4,9 +4,18 @@
     "capabilities": ["nodejs"]
   },
   "canisters": {
-    "llm": {
-      "type": "pull",
-      "id": "w36hm-eqaaa-aaaal-qr76a-cai"
+    "internet_identity": {
+      "type": "custom",
+      "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
+      "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz",
+      "remote": {
+        "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
+        "id": {
+          "ic": "rdmx6-jaaaa-aaaaa-aaadq-cai",
+          "staging": "rdmx6-jaaaa-aaaaa-aaadq-cai",
+          "integration": "rdmx6-jaaaa-aaaaa-aaadq-cai"
+        }
+      }
     },
     "ckusdc_ledger": {
       "type": "custom",
@@ -21,8 +30,7 @@
     "backend": {
       "candid": "src/backend/backend.did",
       "package": "backend",
-      "type": "rust",
-      "dependencies": ["llm"]
+      "type": "rust"
     },
     "frontend": {
       "dependencies": ["backend"],

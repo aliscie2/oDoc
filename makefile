@@ -70,6 +70,8 @@ get_logs:
 # 	dfx generate ic_siwe_provider
 
 deploy-all: 
+	dfx killall
+	dfx start --background --clean
 	dfx canister create --all
 	sh scripts/did.sh backend
 	dfx generate backend
