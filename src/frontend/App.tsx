@@ -19,11 +19,102 @@ import getckUsdcBalance from "./utils/getBalance";
 import { RootState } from "./redux/reducers";
 
 import RegistrationForm from "./components/MainComponents/RegistrationForm";
-import GetStartedHelper from "./components/creature/getStartedhelper";
 import {
   AvailabilityTimezone,
   EventTimezone,
 } from "./pages/dash_board_v1/calindarView/serializers";
+
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  FormControlLabel,
+  Checkbox,
+  Typography,
+} from "@mui/material";
+import { Job } from "$/declarations/backend/backend.did";
+
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+}
+
+const PWAInstallPrompt = () => {
+  const [showPrompt, setShowPrompt] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] =
+    useState<BeforeInstallPromptEvent | null>(null);
+  const [dontShowAgain, setDontShowAgain] = useState(false);
+
+  const isMobile = () =>
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent,
+    );
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
+
+      const hasDeclined = localStorage.getItem("pwa-install-declined");
+      // if (isMobile() && !hasDeclined) {
+      setShowPrompt(true);
+      // }
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    return () =>
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt,
+      );
+  }, []);
+
+  const handleInstall = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      setDeferredPrompt(null);
+      setShowPrompt(false);
+    }
+  };
+
+  const handleCancel = () => {
+    if (dontShowAgain) {
+      localStorage.setItem("pwa-install-declined", "true");
+    }
+    setShowPrompt(false);
+  };
+
+  if (!showPrompt) return null;
+
+  return (
+    <Dialog open={showPrompt} onClose={() => {}}>
+      <DialogTitle>Install App</DialogTitle>
+      <DialogContent>
+        <Typography variant="body1" gutterBottom>
+          Install this app on your phone for a better experience!
+        </Typography>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={dontShowAgain}
+              onChange={(e) => setDontShowAgain(e.target.checked)}
+            />
+          }
+          label="Do not show again"
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleCancel}>Cancel</Button>
+        <Button onClick={handleInstall} variant="contained">
+          OK
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
 
 // import LoaderComponent from "./components/creature";
 
@@ -58,6 +149,15 @@ const LoadingContainer = styled(Box)(({ theme }) => ({
 }));
 
 const App: React.FC = () => {
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("/sw.js")
+        .then((registration) => console.log("SW registered"))
+        .catch((error) => console.log("SW registration failed"));
+    }
+  }, []);
+
   const { isLoggedIn, isRegistered } = useSelector(
     (state: any) => state.uiState,
   );
@@ -67,6 +167,26 @@ const App: React.FC = () => {
   const { backendActor, ckUSDCActor } = useBackendContext();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const theme = useTheme();
+
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        const res: { jobs: Job[]; matching_jobs: Job[] } =
+          await backendActor.get_my_jobs();
+        dispatch({
+          type: "INIT_JOBS",
+          jobs: res.jobs,
+          matchingJobs: res.matching_jobs,
+        });
+      } catch (error) {
+        console.error("Error fetching jobs:", error);
+      }
+    };
+
+    if (isLoggedIn && backendActor && !isFetching) {
+      fetchJobs();
+    }
+  }, [backendActor]);
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -338,10 +458,8 @@ const App: React.FC = () => {
 
   return (
     <BrowserRouter>
-      {isRegistered &&
-        localStorage.getItem("helper") !== "true" &&
-        files.length < 2 && <GetStartedHelper />}
       <MainContent>
+        <PWAInstallPrompt />
         <SearchPopper />
 
         <TopNavBar />

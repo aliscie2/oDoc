@@ -50,18 +50,13 @@ impl User {
     pub fn new(profile: RegisterUser) -> Self {
         let user = User {
             id: caller().to_text(),
-            name: profile.clone().name.unwrap().clone(),
-            email: profile.clone().email.unwrap().clone(),
-            description: profile.description.unwrap().clone(),
-            photo: profile.photo.unwrap(),
+            name: profile.name.unwrap_or_default(),
+            email: profile.email.unwrap_or_default(),
+            description: profile.description.unwrap_or_default(),
+            photo: profile.photo.unwrap_or_default(),
         };
         let principal_id = ic_cdk::api::caller();
 
-        // ID_STORE.with(|id_store| {
-        //     id_store
-        //         .borrow_mut()
-        //         .insert(profile.name.unwrap().clone(), principal_id);
-        // });
         PROFILE_STORE.with(|profile_store| {
             profile_store
                 .borrow_mut()
@@ -70,7 +65,6 @@ impl User {
 
         user
     }
-
     // Get a user from their principal
     pub fn get_user_from_text_principal(principal_str: &String) -> Option<User> {
         let principal = Principal::from_text(principal_str).ok()?;

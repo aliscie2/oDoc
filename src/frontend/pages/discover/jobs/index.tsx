@@ -12,6 +12,7 @@ import JobSearchComponent from "./JobSearchComponent";
 import { useBackendContext } from "@/contexts/BackendContext";
 import LoginButton from "@/components/MainComponents/topNavBar/loginButton";
 import { Login } from "@mui/icons-material";
+import { use } from "chai";
 
 // interface Message {
 //   id: string;
@@ -46,24 +47,6 @@ const JobsPage: React.FC = () => {
   useEffect(() => {
     currentJobRef.current = jobs.find((job: Job) => job.id === currentJobId);
   }, [currentJobId, jobs]);
-
-  useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        const res: { jobs: Job[]; matching_jobs: Job[] } =
-          await backendActor.get_my_jobs();
-        dispatch({
-          type: "INIT_JOBS",
-          jobs: res.jobs,
-          matchingJobs: res.matching_jobs,
-        });
-      } catch (error) {
-        console.error("Error fetching jobs:", error);
-      }
-    };
-
-    fetchJobs();
-  }, [dispatch]);
 
   const { profile } = useSelector((state: any) => state.filesState);
 

@@ -1,4 +1,5 @@
 :root {
+  --cream-color: #ffefce;
   --color: black;
   --secondary-text-color: #525252;
   --hover-color: #327b98;
@@ -60,6 +61,7 @@ a {
 }
 
 .dark {
+  --cream-color: #ffefce;
   --hover-color: #3b8cb0;
   --color: #d9d9d9;
   --secondary-text-color: #939393;

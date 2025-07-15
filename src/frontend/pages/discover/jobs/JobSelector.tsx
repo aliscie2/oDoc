@@ -48,6 +48,7 @@ import JobBriefData from "./quickBar";
 const JobSelector: React.FC = () => {
   const dispatch = useDispatch();
   const { currentJobId, jobs } = useSelector((state: any) => state.jobState);
+  console.log({ currentJobId, jobs });
   const [expanded, setExpanded] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);

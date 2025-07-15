@@ -4,9 +4,7 @@ import { textToJson } from "../discover/jobs/utils/processResponseJobs";
 import PROMPTS from "../discover/jobs/utils/prompts";
 import { ActionProcessor, CalendarFormatter, TimeFormatter } from "./gemeniAi";
 
-import { classifyMessage } from "../discover/jobs/utils/mainChatProblm";
 import compactMessage from "../discover/jobs/utils/compactMessage";
-import { mockCalendarAIResponse } from "../discover/jobs/utils/mockCalendarAIRes";
 import { mockJobAIResponse } from "../discover/jobs/utils/mockJobAIRes";
 
 export const useChatHandler = () => {
@@ -57,7 +55,7 @@ export const useChatHandler = () => {
     //   parsed,
     //   actions: eventRes,
     // };
-    console.log({ eventRes, x: eventRes.map((e) => e.feedback).join(" ") });
+    // console.log({ eventRes, x: eventRes.map((e) => e.feedback).join(" ") });
     return {
       action_type: "CALENDAR",
       feedback:
@@ -76,18 +74,19 @@ export const useChatHandler = () => {
     `;
     let parsedJob = {};
 
-    // if (import.meta.env.VITE_DFX_NETWORK !== "ic") {
-    //   parsedJob = mockJobAIResponse(
-    //     currentJobRef.current,
-    //     jobs,
-    //     message.split("//")[1],
-    //   );
-    // } else {
-    //   const jobRes = await aiAgent.sendMessage(prompt, false);
-    //   parsedJob = textToJson(jobRes).extractedData;
-    // }
-    const jobRes = await aiAgent.sendMessage(prompt, false);
-    parsedJob = textToJson(jobRes).extractedData;
+    if (import.meta.env.VITE_DFX_NETWORK !== "ic") {
+      parsedJob = mockJobAIResponse(
+        currentJobRef.current,
+        jobs,
+        message.split("//")[1],
+      );
+    } else {
+      const jobRes = await aiAgent.sendMessage(prompt, false);
+      parsedJob = textToJson(jobRes).extractedData;
+    }
+    // const jobRes = await aiAgent.sendMessage(prompt, false);
+    // parsedJob = textToJson(jobRes).extractedData;
+    // parsedJob = mockJobAIResponse(currentJobRef.current,jobs,prompt)
 
     // Validation logic
     if (!currentJobId) {
@@ -151,7 +150,12 @@ export const useChatHandler = () => {
       message.length > 2000 ? compactMessage(message) : message;
 
     try {
-      let parsed = classifyMessage(compact_message);
+      // let classifyMessageRes = await aiAgent.sendMessage(`
+      //   ${PROMPTS.CLASSIFY}
+      //   Message:${compact_message}
+      //   `);
+      // const parsed = textToJson(classifyMessageRes).extractedData;
+      const parsed = { type: "JOBS" };
 
       if (!parsed.type) {
         return {

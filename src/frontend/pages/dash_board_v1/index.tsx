@@ -1,31 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  LinearProgress,
-  Chip,
-  IconButton,
-  TextField,
-  Button,
-  Avatar,
-  Divider,
-  Collapse,
-  Fade,
-} from "@mui/material";
-import {
-  Search,
-  Event,
-  Folder,
-  Warning,
-  Chat,
-  Send,
-  Refresh,
-  Undo,
-  Redo,
-  Person,
-} from "@mui/icons-material";
+import { Box } from "@mui/material";
 import { JobMatchesCard } from "./jobs";
 import { PostsCard } from "./postsCard";
 import { AlertsCard } from "./alerts";

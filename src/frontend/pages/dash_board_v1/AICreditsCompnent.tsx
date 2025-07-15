@@ -7,12 +7,10 @@ import { Link } from "react-router-dom";
 
 const AICreditsComponent = ({ credits }) => {
   const { wallet } = useSelector((state: any) => state.filesState);
-
   const [showBuyPanel, setShowBuyPanel] = useState(false);
   const [buyAmount, setBuyAmount] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
-
   const { backendActor } = useBackendContext();
   const { aiAgent } = useSelector((state) => state.AIState);
 
@@ -45,11 +43,9 @@ const AICreditsComponent = ({ credits }) => {
         await aiAgent.addCredits(buyAmount, true);
         dispatch({ type: "ADD_AI_CREDITS", credits: buyAmount, isFree: false });
       }
-
       setShowBuyPanel(false);
     } catch (error) {
       alert(error);
-      // console.error("Failed to buy credits:", error);
     } finally {
       setIsLoading(false);
     }
@@ -141,12 +137,29 @@ const AICreditsComponent = ({ credits }) => {
         >
           <div
             style={{
-              fontSize: "14px",
-              fontWeight: "600",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
               marginBottom: "12px",
             }}
           >
-            Credits: {credits.toFixed(1)}/5
+            <div style={{ fontSize: "14px", fontWeight: "600" }}>
+              Credits: {credits.toFixed(1)}/5
+            </div>
+            <button
+              onClick={() => setShowBuyPanel(false)}
+              style={{
+                background: "none",
+                border: "none",
+                color: "#ccc",
+                fontSize: "16px",
+                cursor: "pointer",
+                padding: "0",
+                lineHeight: "1",
+              }}
+            >
+              ×
+            </button>
           </div>
           <div
             style={{
@@ -157,7 +170,6 @@ const AICreditsComponent = ({ credits }) => {
           >
             Balance: {wallet.balance}$
           </div>
-
           <div style={{ fontSize: "12px", color: "#ccc", marginBottom: "8px" }}>
             Amount (1-5):
           </div>
@@ -209,5 +221,4 @@ const AICreditsComponent = ({ credits }) => {
     </div>
   );
 };
-
 export default AICreditsComponent;

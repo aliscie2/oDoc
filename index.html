@@ -1,23 +1,21 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <script
-      type="text/javascript"
-      src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"
-    ></script>
-    <script type="text/javascript">
-      (function () {
-        emailjs.init({
-          publicKey: "4tsXOwa-NLLAY5Bta",
-        });
-      })();
-    </script>
-
     <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+
+    <!-- Primary Meta Tags -->
     <title>
-      ODOC - Decentralized Document Management | crypto agreements platform on
-      the Internet Computer Protocol
+      ODOC - Decentralized Document Management | Crypto Agreements Platform on
+      ICP
     </title>
+    <meta
+      name="title"
+      content="ODOC - Decentralized Document Management | Crypto Agreements Platform on ICP"
+    />
     <meta
       name="description"
       content="Secure blockchain-based document management platform leveraging ICP's trustless architecture for immutable records and smart contract automation."
@@ -27,12 +25,14 @@
       content="crypto agreement platform, blockchain contracts, ICP smart agreements, decentralized crypto contracts, Web3 legal documents, AI-powered agreements, no-middleman contracts, global crypto agreements, business crypto contracts, lawyer blockchain agreements, freelancer crypto payments, escrow smart contracts, transparent crypto deals, cross-border blockchain agreements, immutable contract records, crypto document management, ICP agreement automation, trustless crypto contracts, enterprise blockchain documents, secure crypto paperwork"
     />
     <meta name="author" content="ODOC Team" />
+    <link rel="canonical" href="https://odoc.app/" />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://odoc.app" />
     <meta
       property="og:title"
-      content="ODOC | crypto agreements | Trustless Document Management on Blockchain"
+      content="ODOC | Crypto Agreements | Trustless Document Management on Blockchain"
     />
     <meta
       property="og:description"
@@ -40,102 +40,114 @@
     />
     <meta
       property="og:image"
-      content="https://github-production-user-asset-6210df.s3.amazonaws.com/211784761/451950216-17beffab-d1c3-4eb6-a778-e05fd9d4d08f.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250605%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250605T152802Z&X-Amz-Expires=300&X-Amz-Signature=23302c9378814c431735a686c20096bbab28ef63f87800b5284eac8638c35a2c&X-Amz-SignedHeaders=host"
+      content="https://sdmntprcentralus.oaiusercontent.com/files/00000000-f430-61f5-b9bf-27793c1fd2da/raw?se=2025-07-15T09%3A01%3A58Z&sp=r&sv=2024-08-04&sr=b&scid=d401979e-664f-56e4-8720-a8f8f0ce65b3&skoid=f71d6506-3cac-498e-b62a-67f9228033a9&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-07-14T13%3A09%3A41Z&ske=2025-07-15T13%3A09%3A41Z&sks=b&skv=2024-08-04&sig=sZmo99Sha0XYIIUiUTvalHmN5Vp4LOjeU1tq9/ujwno%3D"
     />
-    <meta property="og:url" content="https://odoc.app" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content="ODOC" />
 
     <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:site" content="@odoc_ic" />
-    <meta property="twitter:creator" content="@odoc_ic" />
-    <meta property="twitter:title" content="ODOC | crypto agreements" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://odoc.app" />
+    <meta name="twitter:title" content="ODOC | Crypto Agreements" />
     <meta
-      property="twitter:description"
+      name="twitter:description"
       content="Decentralized workflow automation with ICP-based smart contracts and immutable audit trails."
     />
     <meta
-      property="twitter:image"
-      content="https://github-production-user-asset-6210df.s3.amazonaws.com/211784761/451950216-17beffab-d1c3-4eb6-a778-e05fd9d4d08f.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250605%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250605T152802Z&X-Amz-Expires=300&X-Amz-Signature=23302c9378814c431735a686c20096bbab28ef63f87800b5284eac8638c35a2c&X-Amz-SignedHeaders=host"
+      name="twitter:image"
+      content="https://sdmntprcentralus.oaiusercontent.com/files/00000000-f430-61f5-b9bf-27793c1fd2da/raw?se=2025-07-15T09%3A01%3A58Z&sp=r&sv=2024-08-04&sr=b&scid=d401979e-664f-56e4-8720-a8f8f0ce65b3&skoid=f71d6506-3cac-498e-b62a-67f9228033a9&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-07-14T13%3A09%3A41Z&ske=2025-07-15T13%3A09%3A41Z&sks=b&skv=2024-08-04&sig=sZmo99Sha0XYIIUiUTvalHmN5Vp4LOjeU1tq9/ujwno%3D"
     />
+    <meta name="twitter:site" content="@odoc_ic" />
+    <meta name="twitter:creator" content="@odoc_ic" />
 
-    <!-- Existing tags -->
+    <!-- Favicon -->
     <link rel="icon" href="src/frontend/public/logo.png" type="image/x-icon" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
-    <link rel="canonical" href="https://odoc.app/" />
-
-    <!-- Social Media Integration -->
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <!-- <link rel="manifest.jsonn"  href="./manifest.json"> -->
 
-    <!-- Schema Markup -->
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="apple-touch-icon" href="/pwa-192x192.png" />
+
+    <!-- EmailJS -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script>
+      (function () {
+        emailjs.init({ publicKey: "4tsXOwa-NLLAY5Bta" });
+      })();
+    </script>
+
+    <!-- PostHog Analytics -->
+    <script>
+      !(function (t, e) {
+        var o, n, p, r;
+        e.__SV ||
+          ((window.posthog = e),
+          (e._i = []),
+          (e.init = function (i, s, a) {
+            function g(t, e) {
+              var o = e.split(".");
+              2 == o.length && ((t = t[o[0]]), (e = o[1])),
+                (t[e] = function () {
+                  t.push([e].concat(Array.prototype.slice.call(arguments, 0)));
+                });
+            }
+            ((p = t.createElement("script")).type = "text/javascript"),
+              (p.crossOrigin = "anonymous"),
+              (p.async = !0),
+              (p.src =
+                s.api_host.replace(".i.posthog.com", "-assets.i.posthog.com") +
+                "/static/array.js"),
+              (r = t.getElementsByTagName("script")[0]).parentNode.insertBefore(
+                p,
+                r,
+              );
+            var u = e;
+            for (
+              void 0 !== a ? (u = e[a] = []) : (a = "posthog"),
+                u.people = u.people || [],
+                u.toString = function (t) {
+                  var e = "posthog";
+                  return (
+                    "posthog" !== a && (e += "." + a), t || (e += " (stub)"), e
+                  );
+                },
+                u.people.toString = function () {
+                  return u.toString(1) + ".people (stub)";
+                },
+                o =
+                  "init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug getPageViewId".split(
+                    " ",
+                  ),
+                n = 0;
+              n < o.length;
+              n++
+            )
+              g(u, o[n]);
+            e._i.push([i, s, a]);
+          }),
+          (e.__SV = 1));
+      })(document, window.posthog || []);
+      posthog.init("phc_5yqVb6IL2oqoWCEcTenaG69DuIaCYhpqzmrSYQ9z2gc", {
+        api_host: "https://us.i.posthog.com",
+        person_profiles: "identified_only",
+      });
+    </script>
+
+    <!-- Schema.org Structured Data -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "Organization",
         "name": "ODOC",
         "url": "https://odoc.app",
-        "logo": "https://github.com/user-attachments/assets/348ffa36-a363-426b-9a4e-626aeea7f222",
-        "sameAs": ["https://x.com/odoc_ic", "https://www.youtube.com/@odoc_ic"]
+        "logo": "https://odoc.app/logo.png",
+        "sameAs": ["https://x.com/odoc_ic", "https://www.youtube.com/@odoc_ic"],
+        "description": "Secure blockchain-based document management platform leveraging ICP's trustless architecture for immutable records and smart contract automation."
       }
     </script>
   </head>
-  <script>
-    !(function (t, e) {
-      var o, n, p, r;
-      e.__SV ||
-        ((window.posthog = e),
-        (e._i = []),
-        (e.init = function (i, s, a) {
-          function g(t, e) {
-            var o = e.split(".");
-            2 == o.length && ((t = t[o[0]]), (e = o[1])),
-              (t[e] = function () {
-                t.push([e].concat(Array.prototype.slice.call(arguments, 0)));
-              });
-          }
-          ((p = t.createElement("script")).type = "text/javascript"),
-            (p.crossOrigin = "anonymous"),
-            (p.async = !0),
-            (p.src =
-              s.api_host.replace(".i.posthog.com", "-assets.i.posthog.com") +
-              "/static/array.js"),
-            (r = t.getElementsByTagName("script")[0]).parentNode.insertBefore(
-              p,
-              r,
-            );
-          var u = e;
-          for (
-            void 0 !== a ? (u = e[a] = []) : (a = "posthog"),
-              u.people = u.people || [],
-              u.toString = function (t) {
-                var e = "posthog";
-                return (
-                  "posthog" !== a && (e += "." + a), t || (e += " (stub)"), e
-                );
-              },
-              u.people.toString = function () {
-                return u.toString(1) + ".people (stub)";
-              },
-              o =
-                "init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug getPageViewId".split(
-                  " ",
-                ),
-              n = 0;
-            n < o.length;
-            n++
-          )
-            g(u, o[n]);
-          e._i.push([i, s, a]);
-        }),
-        (e.__SV = 1));
-    })(document, window.posthog || []);
-    posthog.init("phc_5yqVb6IL2oqoWCEcTenaG69DuIaCYhpqzmrSYQ9z2gc", {
-      api_host: "https://us.i.posthog.com",
-      person_profiles: "identified_only", // or 'always' to create profiles for anonymous users as well
-    });
-  </script>
 
   <body class="dark">
     <noscript>You need to enable JavaScript to run this app.</noscript>

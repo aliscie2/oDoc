@@ -58,78 +58,105 @@ import getckUsdcBalance from "@/utils/getBalance";
 import { canisterId } from "$/declarations/backend";
 import { useBackendContext } from "@/contexts/BackendContext";
 
-
 const StatsSection = () => {
- const [stats, setStats] = useState({ users: 0, activeUsers: 0, totalDeposit: 0 });
- const [isVisible, setIsVisible] = useState(false);
- const { backendActor, ckUSDCActor } = useBackendContext();
- const statsRef = useRef(null);
+  const [stats, setStats] = useState({
+    users: 0,
+    activeUsers: 0,
+    totalDeposit: 0,
+  });
+  const [isVisible, setIsVisible] = useState(false);
+  const { backendActor, ckUSDCActor } = useBackendContext();
+  const statsRef = useRef(null);
 
- useEffect(() => {
-   const observer = new IntersectionObserver(([entry]) => setIsVisible(entry.isIntersecting), { threshold: 0.5 });
-   if (statsRef.current) observer.observe(statsRef.current);
-   return () => observer.disconnect();
- }, []);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsVisible(entry.isIntersecting),
+      { threshold: 0.5 },
+    );
+    if (statsRef.current) observer.observe(statsRef.current);
+    return () => observer.disconnect();
+  }, []);
 
- useEffect(() => {
-   if (!isVisible) return;
-   
-   const fetchStats = async () => {
-     try {
-       const [snsResponse, balance] = await Promise.all([
-         backendActor.get_sns_status(),
-         getckUsdcBalance(ckUSDCActor, canisterId)
-       ]);
-       
-       if (snsResponse.Ok) {
-         const { number_users, active_users } = snsResponse.Ok;
-         
-         const animateCount = (target, setter) => {
-           let current = 0;
-           const increment = target / 50;
-           const timer = setInterval(() => {
-             current += increment;
-             if (current >= target) {
-               setter(Math.floor(target));
-               clearInterval(timer);
-             } else {
-               setter(Math.floor(current));
-             }
-           }, 30);
-         };
+  useEffect(() => {
+    if (!isVisible) return;
 
-         animateCount(number_users, (val) => setStats(prev => ({...prev, users: val})));
-         animateCount(active_users, (val) => setStats(prev => ({...prev, activeUsers: val})));
-         animateCount(balance, (val) => setStats(prev => ({...prev, totalDeposit: val})));
-       }
-     } catch (error) {
-       console.error('Failed to fetch stats:', error);
-     }
-   };
+    const fetchStats = async () => {
+      try {
+        const [snsResponse, balance] = await Promise.all([
+          backendActor.get_sns_status(),
+          getckUsdcBalance(ckUSDCActor, canisterId),
+        ]);
 
-   fetchStats();
- }, [isVisible, backendActor, ckUSDCActor]);
+        if (snsResponse.Ok) {
+          const { number_users, active_users } = snsResponse.Ok;
 
- return (
-   <Box ref={statsRef} sx={{ width: '100%', p: 2, mb: 3, background: 'linear-gradient(135deg, rgba(25,118,210,0.1) 0%, rgba(156,39,176,0.1) 100%)', borderRadius: 2 }}>
-     <Grid container spacing={2} textAlign="center">
-       {[
-         { value: stats.users, label: 'Total Users' },
-         { value: stats.activeUsers, label: 'Active Users' },
-         { value: stats.totalDeposit, label: 'Total Deposits', prefix: '$' }
-       ].map((stat, i) => (
-         <Grid item xs={4} key={i}>
-           <Typography variant="h5" fontWeight="bold" color="primary">
-             {stat.prefix || ''}{stat.value.toLocaleString()}
-           </Typography>
-           <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
-             {stat.label}
-           </Typography>
-         </Grid>
-       ))}
-     </Grid>
-   </Box>
- );
+          const animateCount = (target, setter) => {
+            let current = 0;
+            const increment = target / 50;
+            const timer = setInterval(() => {
+              current += increment;
+              if (current >= target) {
+                setter(Math.floor(target));
+                clearInterval(timer);
+              } else {
+                setter(Math.floor(current));
+              }
+            }, 30);
+          };
+
+          animateCount(number_users, (val) =>
+            setStats((prev) => ({ ...prev, users: val })),
+          );
+          animateCount(active_users, (val) =>
+            setStats((prev) => ({ ...prev, activeUsers: val })),
+          );
+          animateCount(balance, (val) =>
+            setStats((prev) => ({ ...prev, totalDeposit: val })),
+          );
+        }
+      } catch (error) {
+        console.error("Failed to fetch stats:", error);
+      }
+    };
+
+    fetchStats();
+  }, [isVisible, backendActor, ckUSDCActor]);
+
+  return (
+    <Box
+      ref={statsRef}
+      sx={{
+        width: "100%",
+        p: 2,
+        mb: 3,
+        background:
+          "linear-gradient(135deg, rgba(25,118,210,0.1) 0%, rgba(156,39,176,0.1) 100%)",
+        borderRadius: 2,
+      }}
+    >
+      <Grid container spacing={2} textAlign="center">
+        {[
+          { value: stats.users, label: "Total Users" },
+          { value: stats.activeUsers, label: "Active Users" },
+          { value: stats.totalDeposit, label: "Total Deposits", prefix: "$" },
+        ].map((stat, i) => (
+          <Grid item xs={4} key={i}>
+            <Typography variant="h5" fontWeight="bold" color="primary">
+              {stat.prefix || ""}
+              {stat.value.toLocaleString()}
+            </Typography>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ whiteSpace: "nowrap" }}
+            >
+              {stat.label}
+            </Typography>
+          </Grid>
+        ))}
+      </Grid>
+    </Box>
+  );
 };
 
 // Hook for scroll-based visibility
@@ -160,103 +187,101 @@ const useScrollVisibility = () => {
 
 // Enhanced Feature Section with better visual hierarchy
 const FeatureSection = ({
- title,
- icon,
- children,
- reversed = false,
- sectionIndex,
- visibleSection,
+  title,
+  icon,
+  children,
+  reversed = false,
+  sectionIndex,
+  visibleSection,
 }) => {
- const isMobile = useMediaQuery("(max-width:900px)");
- const isVisible = sectionIndex === visibleSection;
+  const isMobile = useMediaQuery("(max-width:900px)");
+  const isVisible = sectionIndex === visibleSection;
 
- return (
-   <Box
-     data-section
-     sx={{
-       py: 6,
-       minHeight: "100vh",
-       display: "flex",
-       alignItems: "center",
-       opacity: isVisible ? 1 : 0.3,
-       transition: "opacity 0.5s ease-in-out",
-     }}
-   >
-     <Grid
-       container
-       spacing={6}
-       direction={reversed && !isMobile ? "row-reverse" : "row"}
-       alignItems="center"
-     >
-       <Grid item xs={12} md={6}>
-         <Box
-           sx={{
-             display: "flex",
-             flexDirection: "column",
-             alignItems: isMobile ? "center" : "flex-start",
-           }}
-         >
-           {isMobile && <Box sx={{ mb: 3 }}>{icon}</Box>}
-           <Typography
-             variant="h3"
-             gutterBottom
-             sx={{
-               fontWeight: 700,
-               background: "linear-gradient(45deg, #1976d2, #9c27b0)",
-               backgroundClip: "text",
-               WebkitBackgroundClip: "text",
-               WebkitTextFillColor: "transparent",
-               mb: 3,
-               fontSize: { xs: '1.5rem', sm: '2rem', md: '3rem' },
-               textAlign: isMobile ? "center" : "left",
-               wordWrap: "break-word",
-               overflowWrap: "break-word",
-             }}
-           >
-             {title}
-           </Typography>
-           <Box sx={{ textAlign: "left", width: "100%" }}>
-             {children}
-           </Box>
-         </Box>
-       </Grid>
-       {!isMobile && (
-         <Grid item md={6}>
-           <Box
-             sx={{
-               display: "flex",
-               justifyContent: "center",
-               alignItems: "center",
-               height: "100%",
-               position: "relative",
-             }}
-           >
-             <Box
-               sx={{
-                 position: "relative",
-                 "&::before": {
-                   content: '""',
-                   position: "absolute",
-                   top: "50%",
-                   left: "50%",
-                   transform: "translate(-50%, -50%)",
-                   width: 200,
-                   height: 200,
-                   background:
-                     "radial-gradient(circle, rgba(25,118,210,0.1) 0%, transparent 70%)",
-                   borderRadius: "50%",
-                   zIndex: -1,
-                 },
-               }}
-             >
-               {icon}
-             </Box>
-           </Box>
-         </Grid>
-       )}
-     </Grid>
-   </Box>
- );
+  return (
+    <Box
+      data-section
+      sx={{
+        py: 6,
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        opacity: isVisible ? 1 : 0.3,
+        transition: "opacity 0.5s ease-in-out",
+      }}
+    >
+      <Grid
+        container
+        spacing={6}
+        direction={reversed && !isMobile ? "row-reverse" : "row"}
+        alignItems="center"
+      >
+        <Grid item xs={12} md={6}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: isMobile ? "center" : "flex-start",
+            }}
+          >
+            {isMobile && <Box sx={{ mb: 3 }}>{icon}</Box>}
+            <Typography
+              variant="h3"
+              gutterBottom
+              sx={{
+                fontWeight: 700,
+                background: "linear-gradient(45deg, #1976d2, #9c27b0)",
+                backgroundClip: "text",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                mb: 3,
+                fontSize: { xs: "1.5rem", sm: "2rem", md: "3rem" },
+                textAlign: isMobile ? "center" : "left",
+                wordWrap: "break-word",
+                overflowWrap: "break-word",
+              }}
+            >
+              {title}
+            </Typography>
+            <Box sx={{ textAlign: "left", width: "100%" }}>{children}</Box>
+          </Box>
+        </Grid>
+        {!isMobile && (
+          <Grid item md={6}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "100%",
+                position: "relative",
+              }}
+            >
+              <Box
+                sx={{
+                  position: "relative",
+                  "&::before": {
+                    content: '""',
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    width: 200,
+                    height: 200,
+                    background:
+                      "radial-gradient(circle, rgba(25,118,210,0.1) 0%, transparent 70%)",
+                    borderRadius: "50%",
+                    zIndex: -1,
+                  },
+                }}
+              >
+                {icon}
+              </Box>
+            </Box>
+          </Grid>
+        )}
+      </Grid>
+    </Box>
+  );
 };
 
 export default function OdocLandingPage() {
@@ -344,7 +369,7 @@ export default function OdocLandingPage() {
             designed to obviate the need for middlemen, spreadsheets, documents,
             or task managers. Powered by AI and ICP blockchain.
           </Typography>
-            <StatsSection/>
+          <StatsSection />
         </FeatureSection>
 
         {/* Job Matching Section */}

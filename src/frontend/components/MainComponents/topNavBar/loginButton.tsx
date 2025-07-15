@@ -28,7 +28,6 @@ const LoginButton: React.FC<LoginButtonProps> = ({
         sx={{
           width: isMobile ? "100%" : 120,
           height: 10,
-          borderRadius: 2,
         }}
       />
     );
@@ -48,7 +47,6 @@ const LoginButton: React.FC<LoginButtonProps> = ({
       sx={{
         fontWeight: 600,
         textTransform: "none",
-        borderRadius: 3,
         height: "100%",
         minHeight: 48,
         px: 3,

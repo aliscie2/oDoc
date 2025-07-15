@@ -226,10 +226,10 @@ export class AIAgent {
 
       // Add current message
       contents.push({ role: "user", parts: [{ text: message }] });
-      const model =
-        message.length > 3000
-          ? "gemini-2.0-flash-lite"
-          : "gemini-2.5-flash-preview-05-20";
+      const model = "gemini-2.5-flash-preview-05-20";
+      // message.length > 3000
+      //   ? "gemini-2.0-flash-lite"
+      //   : "gemini-2.5-flash-preview-05-20";
       //  const model = "gemini-2.5-flash-preview-05-20"
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${this.apiKey}`,
