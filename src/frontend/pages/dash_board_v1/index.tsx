@@ -259,14 +259,14 @@ const Dashboard = () => {
           onMouseLeave={() => handleCardHover("events", false)}
           onClick={() => handleCardClick("events")}
         />
-        <PostsCard
+        {/* <PostsCard
           isHovered={hoveredCard === "PostsCard"}
           isExpanded={expandedCard === "PostsCard"}
           onMouseEnter={() => handleCardHover("PostsCard", true)}
           onMouseLeave={() => handleCardHover("PostsCard", false)}
           onClick={() => handleCardClick("PostsCard")}
-        />
-        <AchievementCard />
+        /> */}
+        {/* <AchievementCard /> */}
       </Box>
 
       <AIChatComponent

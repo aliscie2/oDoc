@@ -73,7 +73,7 @@ export const useChatHandler = () => {
       Current Job Data: ${JSON.stringify(currentJobRef.current)}
     `;
     let parsedJob = {};
-
+    
     if (import.meta.env.VITE_DFX_NETWORK !== "ic") {
       parsedJob = mockJobAIResponse(
         currentJobRef.current,
@@ -87,7 +87,9 @@ export const useChatHandler = () => {
     // const jobRes = await aiAgent.sendMessage(prompt, false);
     // parsedJob = textToJson(jobRes).extractedData;
     // parsedJob = mockJobAIResponse(currentJobRef.current,jobs,prompt)
-
+    if (parsedJob.done) {
+      dispatch({type:"IS_PROFILE_COMPELETE"})
+    }
     // Validation logic
     if (!currentJobId) {
       if (

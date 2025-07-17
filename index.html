@@ -40,7 +40,7 @@
     />
     <meta
       property="og:image"
-      content="https://sdmntprcentralus.oaiusercontent.com/files/00000000-f430-61f5-b9bf-27793c1fd2da/raw?se=2025-07-15T09%3A01%3A58Z&sp=r&sv=2024-08-04&sr=b&scid=d401979e-664f-56e4-8720-a8f8f0ce65b3&skoid=f71d6506-3cac-498e-b62a-67f9228033a9&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-07-14T13%3A09%3A41Z&ske=2025-07-15T13%3A09%3A41Z&sks=b&skv=2024-08-04&sig=sZmo99Sha0XYIIUiUTvalHmN5Vp4LOjeU1tq9/ujwno%3D"
+      content="src/frontend/public/icpjobs_thumnail.png"
     />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -56,7 +56,7 @@
     />
     <meta
       name="twitter:image"
-      content="https://sdmntprcentralus.oaiusercontent.com/files/00000000-f430-61f5-b9bf-27793c1fd2da/raw?se=2025-07-15T09%3A01%3A58Z&sp=r&sv=2024-08-04&sr=b&scid=d401979e-664f-56e4-8720-a8f8f0ce65b3&skoid=f71d6506-3cac-498e-b62a-67f9228033a9&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-07-14T13%3A09%3A41Z&ske=2025-07-15T13%3A09%3A41Z&sks=b&skv=2024-08-04&sig=sZmo99Sha0XYIIUiUTvalHmN5Vp4LOjeU1tq9/ujwno%3D"
+      content="src/frontend/public/icpjobs_thumnail.png"
     />
     <meta name="twitter:site" content="@odoc_ic" />
     <meta name="twitter:creator" content="@odoc_ic" />
@@ -64,7 +64,6 @@
     <!-- Favicon -->
     <link rel="icon" href="src/frontend/public/logo.png" type="image/x-icon" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <!-- <link rel="manifest.jsonn"  href="./manifest.json"> -->
 
     <meta name="theme-color" content="#ffffff" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -73,6 +72,21 @@
     <!-- EmailJS -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script>
+
+        (function() {
+            const currentDomain = window.location.hostname;
+            const twitterImageMeta = document.querySelector('meta[name="twitter:image"]');
+            const ogImageMeta = document.querySelector('meta[name="og:image"]');
+            
+            if (currentDomain === 'odoc.app') {
+              twitterImageMeta.setAttribute('content', 'src/frontend/public/odoc_thumnail.png');
+              ogImageMeta.setAttribute('content', 'src/frontend/public/odoc_thumnail.png');
+            } else if (currentDomain === 'icpjobs.com') {
+              twitterImageMeta.setAttribute('content', 'src/frontend/public/icpjobs_thumnail.png');
+              ogImageMeta.setAttribute('content', 'src/frontend/public/icpjobs_thumnail.png');
+            }
+          })();
+
       (function () {
         emailjs.init({ publicKey: "4tsXOwa-NLLAY5Bta" });
       })();
@@ -142,7 +156,7 @@
         "@type": "Organization",
         "name": "ODOC",
         "url": "https://odoc.app",
-        "logo": "https://odoc.app/logo.png",
+        "logo": "src/frontend/public/logo.png",
         "sameAs": ["https://x.com/odoc_ic", "https://www.youtube.com/@odoc_ic"],
         "description": "Secure blockchain-based document management platform leveraging ICP's trustless architecture for immutable records and smart contract automation."
       }

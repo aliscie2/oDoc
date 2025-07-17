@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Card,
@@ -14,6 +14,7 @@ import { useSelector } from "react-redux";
 import MarkdownMessage from "./markDownMessageRdnder"; // Import the new component
 import AICreditsComponent from "./AICreditsCompnent";
 import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
+import { Job } from "$/declarations/backend/backend.did";
 
 export const AIChatComponent = ({
   isExpanded,
@@ -24,14 +25,57 @@ export const AIChatComponent = ({
   onUndoMessage,
   onRedoMessage,
 }) => {
+
+
+
+
+  const { currentJobId, jobs, is_profile_complete } = useSelector((state: any) => state.jobState);
+  const { calendar } = useSelector((state: any) => state.calendarState);
+
+  const hasActiveJobs = jobs.some((job:Job) => job.active);
+    const hasAvailabilities = calendar?.availabilities?.length > 0;
+    
   const [message, setMessage] = useState("");
   const [isFirstTime, setIsFirstTime] = useState(
-    !localStorage.getItem("aiChatUsed"),
-  );
+        jobs.length === 0 || (hasActiveJobs && !hasAvailabilities)
+      );
+
   const [welcomeText, setWelcomeText] = useState("");
-  const fullWelcomeText =
-    "Hello, are you looking for a job, or you want to post a job, describe with details what you looking for.";
+
+
+  
+
+    
+
+    let fullWelcomeText = "";
+    if (jobs.length === 0) {
+      fullWelcomeText = "Hello, are you looking for a job, or you want to post a job, describe with details what you looking for.";
+    } else if (hasActiveJobs && !hasAvailabilities) {
+      fullWelcomeText = "Good job now for other people to find you, let them know when are you available. For example, tell me 'I am available every day from 9 AM to 1 PM except sundays'";
+    }
+
+
+
+  
+
   const inputRef = React.useRef(null);
+
+
+
+  useEffect(() => {
+      const handleBeforeUnload = (e) => {
+        if (hasActiveJobs && !hasAvailabilities) {
+          e.preventDefault();
+          setIsFirstTime(true)
+          e.returnValue = 'Set your avialblities please.';
+          return 'Set your avialblities please.';
+        }
+      };
+
+      window.addEventListener('beforeunload', handleBeforeUnload);
+      return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+}, [hasActiveJobs, hasAvailabilities]);
+
 
   const handleSend = async () => {
     if (!message.trim()) return;

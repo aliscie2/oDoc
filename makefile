@@ -78,8 +78,6 @@ deploy-all:
 	dfx deploy backend
 	sh scripts/deploy_ledger.sh
 	dfx deploy internet_identity
-	PATH_FOUND=$(find . -name "internet_identity.wasm.gz" -type f)
-	dfx canister install internet_identity --wasm "$PATH_FOUND" --mode reinstall --argument "(opt record { captcha_config = opt record { max_unsolved_captchas= 50:nat64; captcha_trigger = variant {Static = variant { CaptchaDisabled }}}; related_origins = opt vec { \"https://id.ai\" }; new_flow_origins = opt vec { \"https://id.ai\" }; dummy_auth = opt opt record { prompt_for_index = true }})"
 	sh scripts/set_env.sh
 	yarn start
 	

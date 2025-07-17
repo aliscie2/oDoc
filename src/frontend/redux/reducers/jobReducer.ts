@@ -375,6 +375,14 @@ export function jobReducer(
         isChanged: true,
       };
 
+
+      case 'IS_PROFILE_COMPELETE':
+        return {
+        ...state,
+        is_profile_complete:true,
+      };
+
+
     default:
       return state;
   }

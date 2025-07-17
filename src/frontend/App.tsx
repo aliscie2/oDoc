@@ -35,6 +35,7 @@ import {
   Typography,
 } from "@mui/material";
 import { Job } from "$/declarations/backend/backend.did";
+import GoogleCalendarOnboarding from "@/components/userBadges/coonectGoogleCalendar";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -461,7 +462,7 @@ const App: React.FC = () => {
       <MainContent>
         <PWAInstallPrompt />
         <SearchPopper />
-
+        <GoogleCalendarOnboarding/>
         <TopNavBar />
         <DndProvider backend={HTML5Backend}>
           <NavBar>

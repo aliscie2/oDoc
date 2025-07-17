@@ -4,7 +4,7 @@ import { useBackendContext } from "@/contexts/BackendContext";
 import sendEmail from "@/utils/sendEmail";
 import { Job } from "$/declarations/backend/backend.did";
 
-export const useSetup = () => {
+export const useGoogleAuth = () => {
   const { profile } = useSelector((state: any) => state.filesState);
   const { calendar } = useSelector((state: any) => state.calendarState);
   const { currentJobId, jobs } = useSelector((state: any) => state.jobState);

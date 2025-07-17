@@ -31,7 +31,7 @@ import {
   ExpandLess as ExpandLessIcon,
 } from "@mui/icons-material";
 import useProgress, { type BadgeType } from "./useProgress";
-import { useSetup } from "./setUpConnect";
+import { useGoogleAuth } from "./setUpConnect";
 import FullscreenDialog from "@/pages/dash_board_v1/FullscreenDialog";
 
 // ODOC Reward Tier System
@@ -76,7 +76,7 @@ const EmailSetup: React.FC<{
     handleGoogleAuth,
     handleSendVerification,
     handleVerifyCode,
-  } = useSetup();
+  } = useGoogleAuth();
 
   const handleGoogleClick = useCallback(
     async (e: React.MouseEvent) => {
@@ -387,7 +387,7 @@ const AchievementCard: React.FC = () => {
 
   const { karmaScore, badges, recentAchievements } = useProgress();
 
-  const { emailCompleted, availabilityCompleted } = useSetup();
+  const { emailCompleted, availabilityCompleted } = useGoogleAuth();
 
   // Create setup badges
   const createSetupBadges = (): BadgeType[] => [

@@ -7,7 +7,7 @@ import type {
 import type { Principal } from "@dfinity/principal";
 import type { IDL } from "@dfinity/candid";
 
-import { _SERVICE } from "./ckusdc_ledger.did";
+import { _SERVICE } from './frontend.did';
 
 export declare const idlFactory: IDL.InterfaceFactory;
 export declare const canisterId: string;
@@ -40,11 +40,11 @@ export declare interface CreateActorOptions {
  */
 export declare const createActor: (
   canisterId: string | Principal,
-  options?: CreateActorOptions,
+  options?: CreateActorOptions
 ) => ActorSubclass<_SERVICE>;
 
 /**
  * Intialized Actor using default settings, ready to talk to a canister using its candid interface
  * @constructs {@link ActorSubClass}
  */
-export declare const ckusdc_ledger: ActorSubclass<_SERVICE>;
+export declare const frontend: ActorSubclass<_SERVICE>;
