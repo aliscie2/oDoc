@@ -28,147 +28,84 @@ import TimeZoneSelector from "./timezone";
 import GoogleCalendarIntegration from "./googleAccounts";
 import GmailConnection from "./GmailConnection";
 
-const CustomToolbar = (toolbar) => {
-  const { calendarChanged, calendar, calendar_actions } = useSelector(
-    (state: RootState) => state.calendarState,
-  );
-  const theme = useTheme();
-  const isDark = theme.palette.mode === "dark";
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const isTablet = useMediaQuery(theme.breakpoints.down("md"));
+const CustomToolbar = ({ onNavigate, onView, label, view, views }) => {
+  const { calendar } = useSelector((state) => state.calendarState);
+  const isMobile = useMediaQuery((theme) => theme.breakpoints.down("sm"));
 
-  // Menu states
-  const [actionMenuAnchor, setActionMenuAnchor] = useState(null);
+  const [menuAnchor, setMenuAnchor] = useState(null);
 
-  const navigate = (action) => {
-    toolbar.onNavigate(action);
-    handleActionMenuClose();
+  const handleNavigate = (action) => {
+    onNavigate(action);
+    setMenuAnchor(null);
   };
 
-  const handleActionMenuClick = (event) => {
-    setActionMenuAnchor(event.currentTarget);
-  };
+  const isCalendarPage = window.location.pathname === "/calendar";
+  const shareLink = `${window.location.href}calendar?id=${calendar?.id}`;
 
-  const handleActionMenuClose = () => {
-    setActionMenuAnchor(null);
-  };
-
-  const viewNames = toolbar.views;
-  const view = toolbar.view;
-  const currentPage = window.location.pathname;
-  const isCalendarPage = currentPage === "/calendar";
-  const copyLink = React.useMemo(() => {
-    return `${window.location.href}calendar?id=${calendar?.id}`;
-  }, [calendar?.id]);
-
-  // Mobile Action Menu
   const ActionMenu = () => (
     <Menu
-      anchorEl={actionMenuAnchor}
-      open={Boolean(actionMenuAnchor)}
-      onClose={handleActionMenuClose}
-      PaperProps={{
-        sx: {
-          mt: 1,
-          borderRadius: 2,
-          minWidth: 200,
-          boxShadow: theme.shadows[8],
-        },
-      }}
+      anchorEl={menuAnchor}
+      open={Boolean(menuAnchor)}
+      onClose={() => setMenuAnchor(null)}
+      PaperProps={{ sx: { mt: 0.5, borderRadius: 1, minWidth: 160 } }}
     >
-      <MenuItem sx={{ py: 1.5 }}>
+      <MenuItem sx={{ py: 0.5 }}>
         <TimeZoneSelector />
       </MenuItem>
       <Divider />
       {!isCalendarPage && (
-        <MenuItem sx={{ py: 1.5 }}>
-          <CopyButton title="Share Calendar" value={copyLink} />
+        <MenuItem sx={{ py: 0.5 }}>
+          <CopyButton title="Share" value={shareLink} />
         </MenuItem>
       )}
-      <MenuItem sx={{ py: 1.5 }}>
+      <MenuItem sx={{ py: 0.5 }}>
         <CalendarManagement />
       </MenuItem>
-      <MenuItem sx={{ py: 1.5 }}>
+      <MenuItem sx={{ py: 0.5 }}>
         <GoogleCalendarIntegration />
       </MenuItem>
-      <MenuItem sx={{ py: 1.5 }}>
+      <MenuItem sx={{ py: 0.5 }}>
         <GmailConnection />
       </MenuItem>
     </Menu>
   );
 
   if (isMobile) {
-    // Mobile Layout - Clean and minimal
     return (
-      <Box
-        sx={{
-          backgroundColor: "inherit",
-          borderBottom: `1px solid ${theme.palette.divider}`,
-          px: 2,
-          py: 1.5,
-        }}
-      >
+      <Box sx={{ borderBottom: 1, borderColor: "divider", px: 1, py: 0.5 }}>
         <Stack
           direction="row"
           alignItems="center"
           justifyContent="space-between"
         >
-          {/* Left: Menu button */}
           <IconButton
-            onClick={handleActionMenuClick}
-            sx={{
-              backgroundColor: theme.palette.action.hover,
-              "&:hover": {
-                backgroundColor: theme.palette.action.focus,
-              },
-            }}
+            onClick={(e) => setMenuAnchor(e.currentTarget)}
+            size="small"
           >
-            <MoreVert />
+            <MoreVert fontSize="small" />
           </IconButton>
 
-          {/* Center: Date and navigation */}
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <IconButton
-              onClick={() => navigate("PREV")}
-              size="small"
-              sx={{ color: "inherit" }}
-            >
-              <NavigateBefore />
+          <Stack direction="row" alignItems="center" spacing={0.5}>
+            <IconButton onClick={() => handleNavigate("PREV")} size="small">
+              <NavigateBefore fontSize="small" />
             </IconButton>
-
             <Typography
-              variant="h6"
-              sx={{
-                fontWeight: 600,
-                minWidth: 140,
-                textAlign: "center",
-                color: "inherit",
-              }}
+              variant="subtitle2"
+              sx={{ minWidth: 120, textAlign: "center" }}
             >
-              {toolbar.label}
+              {label}
             </Typography>
-
-            <IconButton
-              onClick={() => navigate("NEXT")}
-              size="small"
-              sx={{ color: "inherit" }}
-            >
-              <NavigateNext />
+            <IconButton onClick={() => handleNavigate("NEXT")} size="small">
+              <NavigateNext fontSize="small" />
             </IconButton>
           </Stack>
 
-          {/* Right: Today button */}
           <IconButton
-            onClick={() => navigate("TODAY")}
-            sx={{
-              backgroundColor: theme.palette.primary.main,
-              color: theme.palette.primary.contrastText,
-              "&:hover": {
-                backgroundColor: theme.palette.primary.dark,
-              },
-            }}
+            onClick={() => handleNavigate("TODAY")}
+            size="small"
+            sx={{ bgcolor: "primary.main", color: "primary.contrastText" }}
           >
-            <Today />
+            <Today fontSize="small" />
           </IconButton>
 
           <ActionMenu />
@@ -177,142 +114,56 @@ const CustomToolbar = (toolbar) => {
     );
   }
 
-  // Desktop/Tablet Layout - More comprehensive
   return (
-    <Box
-      sx={{
-        backgroundColor: "inherit",
-        borderBottom: `1px solid ${theme.palette.divider}`,
-        px: 3,
-        py: 2,
-      }}
-    >
-      <Stack
-        direction="row"
-        spacing={3}
-        alignItems="center"
-        justifyContent="space-between"
-      >
-        {/* Left: Action buttons */}
-        <Stack direction="row" spacing={1} alignItems="center">
-          <ButtonGroup
-            variant="outlined"
-            size="small"
-            sx={{
-              "& .MuiButton-root": {
-                borderColor: theme.palette.divider,
-                color: "inherit",
-                "&:hover": {
-                  backgroundColor: theme.palette.action.hover,
-                  borderColor: theme.palette.divider,
-                },
-              },
-            }}
-          >
-            {!isCalendarPage && <CopyButton title="Share" value={copyLink} />}
-            <CalendarManagement />
-            <GoogleCalendarIntegration />
-            <GmailConnection />
-          </ButtonGroup>
+    <Box sx={{ borderBottom: 1, borderColor: "divider", px: 2, py: 0.5 }}>
+      <Stack direction="row" alignItems="center" justifyContent="space-between">
+        <Stack direction="row" spacing={0.5}>
+          {!isCalendarPage && (
+            <CopyButton title="Share" value={shareLink} size="small" />
+          )}
+          <CalendarManagement size="small" />
+          <GoogleCalendarIntegration size="small" />
+          <GmailConnection size="small" />
         </Stack>
 
-        {/* Center: Navigation and date */}
-        <Stack direction="row" spacing={2} alignItems="center">
-          <ButtonGroup
-            variant="outlined"
-            size="small"
-            sx={{
-              "& .MuiButton-root": {
-                borderColor: theme.palette.divider,
-                color: "inherit",
-                minWidth: "auto",
-                px: 1,
-                "&:hover": {
-                  backgroundColor: theme.palette.action.hover,
-                  borderColor: theme.palette.divider,
-                },
-              },
-            }}
-          >
-            <Tooltip title="Previous">
-              <IconButton onClick={() => navigate("PREV")} size="small">
-                <NavigateBefore />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Today">
-              <IconButton onClick={() => navigate("TODAY")} size="small">
-                <Today />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Next">
-              <IconButton onClick={() => navigate("NEXT")} size="small">
-                <NavigateNext />
-              </IconButton>
-            </Tooltip>
+        <Stack direction="row" spacing={1} alignItems="center">
+          <ButtonGroup size="small">
+            <IconButton onClick={() => handleNavigate("PREV")} size="small">
+              <NavigateBefore fontSize="small" />
+            </IconButton>
+            <IconButton onClick={() => handleNavigate("TODAY")} size="small">
+              <Today fontSize="small" />
+            </IconButton>
+            <IconButton onClick={() => handleNavigate("NEXT")} size="small">
+              <NavigateNext fontSize="small" />
+            </IconButton>
           </ButtonGroup>
 
           <Typography
-            variant="h5"
-            sx={{
-              fontWeight: 600,
-              color: "inherit",
-              minWidth: 200,
-              textAlign: "center",
-            }}
+            variant="subtitle1"
+            sx={{ minWidth: 150, textAlign: "center" }}
           >
-            {toolbar.label}
+            {label}
           </Typography>
         </Stack>
 
-        {/* Right: View controls and timezone (only show view controls if not mobile) */}
-        <Stack direction="row" spacing={1} alignItems="center">
-          {!isMobile && viewNames.length > 1 && (
-            <ButtonGroup
-              variant="outlined"
-              size="small"
-              sx={{
-                "& .MuiButton-root": {
-                  borderColor: theme.palette.divider,
-                  color: "inherit",
-                  "&:hover": {
-                    backgroundColor: theme.palette.action.hover,
-                    borderColor: theme.palette.divider,
-                  },
-                },
-              }}
-            >
-              {viewNames.map((name) => (
+        <Stack direction="row" spacing={0.5} alignItems="center">
+          {views.length > 1 && (
+            <ButtonGroup size="small">
+              {views.map((name) => (
                 <Button
                   key={name}
-                  onClick={() => toolbar.onView(name)}
+                  onClick={() => onView(name)}
                   variant={view === name ? "contained" : "outlined"}
-                  sx={{
-                    bgcolor:
-                      view === name
-                        ? theme.palette.primary.main
-                        : "transparent",
-                    color:
-                      view === name
-                        ? theme.palette.primary.contrastText
-                        : "inherit",
-                    textTransform: "capitalize",
-                    "&:hover": {
-                      bgcolor:
-                        view === name
-                          ? theme.palette.primary.dark
-                          : theme.palette.action.hover,
-                    },
-                  }}
+                  sx={{ textTransform: "capitalize", py: 0.25, px: 1 }}
+                  size="small"
                 >
                   {name}
                 </Button>
               ))}
             </ButtonGroup>
           )}
-
-          <Box sx={{ ml: 1 }}>
-            <TimeZoneSelector />
-          </Box>
+          <TimeZoneSelector size="small" />
         </Stack>
       </Stack>
     </Box>

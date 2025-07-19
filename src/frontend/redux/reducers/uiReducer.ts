@@ -38,6 +38,7 @@ export function uiReducer(state = initialState, action: Action): State {
     case "LOGOUT":
       return {
         ...state,
+        isRegistered: null,
         isLoggedIn: false,
       };
     case "LOGIN":

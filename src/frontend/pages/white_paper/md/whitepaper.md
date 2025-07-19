@@ -57,6 +57,7 @@ ODOC addresses these problems through:
 3. **AI Job Matching**: Intelligent pairing of freelancers with relevant opportunities
 4. **Direct Payments**: Eliminate intermediary fees and delays
 5. **Decentralized Dispute Resolution**: Community-governed arbitration system
+6. **AI Calendar**: Talk to your calendar and connect it with google calendar.
 
 ### Key Benefits
 

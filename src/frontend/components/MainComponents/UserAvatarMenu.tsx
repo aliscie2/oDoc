@@ -42,7 +42,6 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
   sx,
   hide = [],
 }) => {
-  console.log({ user });
   if (!user) {
     return <CircularProgress />;
   }
@@ -72,6 +71,7 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
   };
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation(); // Add this line
     setAnchorEl(event.currentTarget);
   };
 
@@ -223,7 +223,7 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
       setComment("");
     }
   };
-  console.log({ posts, x: getUserPhoto() });
+
   return (
     <>
       <IconButton disabled={user.id === profile?.id} onClick={handleClick}>

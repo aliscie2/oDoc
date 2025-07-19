@@ -18,10 +18,6 @@ const LoginButton: React.FC<LoginButtonProps> = ({
   const { login } = useBackendContext();
   const { isFetching } = useSelector((state: RootState) => state.uiState);
 
-  const handleLogin = async () => {
-    await login();
-  };
-
   if (isFetching) {
     return (
       <LinearProgress
@@ -36,7 +32,7 @@ const LoginButton: React.FC<LoginButtonProps> = ({
   return (
     <Button
       variant="contained"
-      onClick={handleLogin}
+      onClick={login}
       startIcon={
         <img
           src={DfnIcon}
@@ -49,7 +45,12 @@ const LoginButton: React.FC<LoginButtonProps> = ({
         textTransform: "none",
         height: "100%",
         minHeight: 48,
-        px: 3,
+        px: isMobile ? 2 : 3,
+        fontSize: isMobile ? "0.875rem" : "1rem",
+        whiteSpace: "nowrap",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
         boxShadow: "0 4px 12px rgba(102, 126, 234, 0.3)",
         "&:hover": {
           background: "linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)",
@@ -64,5 +65,4 @@ const LoginButton: React.FC<LoginButtonProps> = ({
     </Button>
   );
 };
-
 export default LoginButton;

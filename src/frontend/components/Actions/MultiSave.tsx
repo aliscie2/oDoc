@@ -75,6 +75,242 @@ const AnimatedButtonWrapper = styled(Box)`
   }
 `;
 
+const CountdownDonut = ({ timeLeft, totalTime }) => {
+  const radius = 16;
+  const circumference = 2 * Math.PI * radius;
+  const progress = ((totalTime - timeLeft) / totalTime) * circumference;
+
+  return (
+    <Box
+      sx={{
+        width: 40,
+        height: 40,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <svg width="36" height="36">
+        <circle
+          cx="18"
+          cy="18"
+          r={radius}
+          fill="none"
+          stroke="#e0e0e0"
+          strokeWidth="2"
+        />
+        <circle
+          cx="18"
+          cy="18"
+          r={radius}
+          fill="none"
+          stroke="#ff9800"
+          strokeWidth="2"
+          strokeDasharray={circumference}
+          strokeDashoffset={circumference - progress}
+          transform="rotate(-90 18 18)"
+          style={{ transition: "stroke-dashoffset 1s linear" }}
+        />
+        <text
+          x="18"
+          y="22"
+          textAnchor="middle"
+          fontSize="10"
+          fill="#ff9800"
+          fontWeight="bold"
+        >
+          {timeLeft}
+        </text>
+      </svg>
+    </Box>
+  );
+};
+
+const BouncingLoader = () => (
+  <Box
+    sx={{
+      width: 40,
+      height: 40,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+    }}
+  >
+    <Box
+      sx={{
+        display: "flex",
+        "& > div": {
+          width: 6,
+          height: 6,
+          bgcolor: "#1976d2",
+          borderRadius: "50%",
+          margin: "0 2px",
+          animation: "bounce 1.4s infinite ease-in-out",
+        },
+      }}
+    >
+      <div style={{ animationDelay: "-0.32s" }}></div>
+      <div style={{ animationDelay: "-0.16s" }}></div>
+      <div></div>
+    </Box>
+  </Box>
+);
+const MultiAutoSave = ({ items }) => {
+  const [countdown, setCountdown] = useState(0);
+  const [isSaving, setIsSaving] = useState(false);
+  const [tooltipOpen, setTooltipOpen] = useState(false);
+  const countdownRef = useRef(null);
+
+  const hasChanges = items.some((item) => item.isChanged);
+  const isAnyLoading = items.some((item) => item.loading);
+  const COUNTDOWN_TIME = 5;
+
+  const saveAll = async () => {
+    setIsSaving(true);
+    try {
+      await Promise.all(
+        items.filter((item) => item.isChanged).map((item) => item.onSave()),
+      );
+    } catch (error) {
+      console.error("Error saving:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const startCountdown = () => {
+    if (countdownRef.current) clearInterval(countdownRef.current);
+    setCountdown(COUNTDOWN_TIME);
+
+    countdownRef.current = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(countdownRef.current);
+          saveAll();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const resetCountdown = () => {
+    if (hasChanges && !isSaving && !isAnyLoading) {
+      startCountdown();
+    }
+  };
+
+  useEffect(() => {
+    if (hasChanges && !isSaving && !isAnyLoading) {
+      startCountdown();
+    } else if (!hasChanges) {
+      if (countdownRef.current) clearInterval(countdownRef.current);
+      setCountdown(0);
+    }
+
+    return () => {
+      if (countdownRef.current) clearInterval(countdownRef.current);
+    };
+  }, [hasChanges, isSaving, isAnyLoading]);
+
+  useEffect(() => {
+    const resetOnActivity = () => resetCountdown();
+    const handleBeforeUnload = (e) => {
+      if (hasChanges && !isSaving && !isAnyLoading) {
+        saveAll();
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+
+    ["mousemove", "keydown", "touchmove"].forEach((event) =>
+      document.addEventListener(event, resetOnActivity),
+    );
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      ["mousemove", "keydown", "touchmove"].forEach((event) =>
+        document.removeEventListener(event, resetOnActivity),
+      );
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [hasChanges, isSaving, isAnyLoading]);
+
+  const getTooltipText = () => {
+    if (isAnyLoading || isSaving) return "Saving changes...";
+    if (countdown > 0) return `Auto-saving in ${countdown} seconds`;
+    return "Auto-save status";
+  };
+
+  const handleClick = () => {
+    setTooltipOpen((prev) => !prev);
+  };
+
+  if (!hasChanges && !isSaving && !isAnyLoading) return null;
+
+  return (
+    <Tooltip
+      title={getTooltipText()}
+      arrow
+      open={tooltipOpen}
+      onClose={() => setTooltipOpen(false)}
+      componentsProps={{
+        tooltip: {
+          sx: {
+            fontSize: "1rem",
+            padding: "8px 12px",
+          },
+        },
+      }}
+    >
+      <Box
+        p={1}
+        display="inline-block"
+        onClick={handleClick}
+        onMouseEnter={() => setTooltipOpen(true)}
+        sx={{ cursor: "pointer" }}
+      >
+        <Box display="flex" alignItems="center" justifyContent="center">
+          {isAnyLoading || isSaving ? (
+            <BouncingLoader />
+          ) : countdown > 0 ? (
+            <CountdownDonut timeLeft={countdown} totalTime={COUNTDOWN_TIME} />
+          ) : null}
+        </Box>
+      </Box>
+    </Tooltip>
+  );
+};
+
+const MultiAutoSaveContainer = () => {
+  const docsHook = useDocsSave();
+  const calendarHook = useCalendarSave();
+  const jobsHook = useJobsSave();
+
+  const saveItems = [
+    {
+      name: "docs",
+      isChanged: docsHook.isChanged,
+      onSave: docsHook.save,
+      loading: docsHook.loading,
+    },
+    {
+      name: "calendar",
+      isChanged: calendarHook.isChanged,
+      onSave: calendarHook.save,
+      loading: calendarHook.loading,
+    },
+    {
+      name: "jobs",
+      isChanged: jobsHook.isChanged,
+      onSave: jobsHook.save,
+      loading: jobsHook.loading,
+    },
+  ];
+
+  return <MultiAutoSave items={saveItems} />;
+};
+
 const FloatingTooltip = styled(Tooltip)(({ theme }) => ({
   "& .MuiTooltip-tooltip": {
     backgroundColor: theme.palette.grey[900],
@@ -396,37 +632,4 @@ const SaveButtons: React.FC<SaveButtonsProps> = ({ items }) => {
   );
 };
 
-// save buttons action compnent
-const SaveButtonsContainer: React.FC = () => {
-  const docsHook = useDocsSave();
-  const calendarHook = useCalendarSave();
-  const jobsHook = useJobsSave();
-
-  const saveItems: SaveButtonItem[] = [
-    {
-      name: "docs",
-      isChanged: docsHook.isChanged,
-      onSave: docsHook.save,
-      onReset: docsHook.reset,
-      loading: docsHook.loading,
-    },
-    {
-      name: "calendar",
-      isChanged: calendarHook.isChanged,
-      onSave: calendarHook.save,
-      onReset: calendarHook.reset,
-      loading: calendarHook.loading,
-    },
-    {
-      name: "jobs",
-      isChanged: jobsHook.isChanged,
-      onSave: jobsHook.save,
-      onReset: jobsHook.reset,
-      loading: jobsHook.loading,
-    },
-  ];
-
-  return <SaveButtons items={saveItems} />;
-};
-
-export default SaveButtonsContainer;
+export default MultiAutoSaveContainer;

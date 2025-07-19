@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, CircularProgress, Tooltip, Box } from "@mui/material";
 import { useSnackbar } from "notistack";
 import sendEmail from "../../../utils/sendEmail";
 import { useDispatch, useSelector } from "react-redux";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
 import { useBackendContext } from "@/contexts/BackendContext";
-import { Calendar, Job, Match } from "$/declarations/backend/backend.did";
+import { Calendar, Job, Match, User } from "$/declarations/backend/backend.did";
+import UserAvatarMenu from "@/components/MainComponents/UserAvatarMenu";
 
 interface ConnectButtonProps {
   jobId: string;
@@ -90,8 +91,27 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({ jobId }) => {
     setConnecting(false);
   };
 
+  const [currUser, setUser] = useState<null | User>(null);
+  const user_id = matchJob?.user_id;
+  console.log("connect");
+  useEffect(() => {
+    (async () => {
+      const response = await backendActor.get_user(user_id);
+      console.log({ response, matchJob });
+      if (response.Ok) {
+        setUser(response.Ok);
+      }
+    })();
+  }, [jobId]);
+
   return (
     <>
+      {currUser && (
+        <UserAvatarMenu
+          user={currUser}
+          // onMessageClick={() => setSelectedUser(otherUser)}
+        />
+      )}
       <Button
         variant="contained"
         color={match?.is_connected ? "success" : "primary"}

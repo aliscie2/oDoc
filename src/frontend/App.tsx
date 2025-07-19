@@ -36,6 +36,7 @@ import {
 } from "@mui/material";
 import { Job } from "$/declarations/backend/backend.did";
 import GoogleCalendarOnboarding from "@/components/userBadges/coonectGoogleCalendar";
+import ChatContainer from "./pages/dash_board_v1/aiChat";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -460,10 +461,11 @@ const App: React.FC = () => {
   return (
     <BrowserRouter>
       <MainContent>
-        <PWAInstallPrompt />
-        <SearchPopper />
-        <GoogleCalendarOnboarding/>
+        {/* <PWAInstallPrompt /> */}
+        {/* <SearchPopper /> */}
+        <GoogleCalendarOnboarding />
         <TopNavBar />
+        {isRegistered && <ChatContainer />}
         <DndProvider backend={HTML5Backend}>
           <NavBar>
             <PageContainer>

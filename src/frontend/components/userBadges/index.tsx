@@ -17,6 +17,7 @@ import {
   Button,
   Divider,
   Collapse,
+  Container,
 } from "@mui/material";
 import {
   Close as CloseIcon,
@@ -32,7 +33,6 @@ import {
 } from "@mui/icons-material";
 import useProgress, { type BadgeType } from "./useProgress";
 import { useGoogleAuth } from "./setUpConnect";
-import FullscreenDialog from "@/pages/dash_board_v1/FullscreenDialog";
 
 // ODOC Reward Tier System
 const getRewardTier = (score: number) => {
@@ -273,7 +273,6 @@ const BadgeCard: React.FC<{
 
   return (
     <Box sx={{ position: "relative" }}>
-      {/* Green checkmark for completed items */}
       {badge.unlocked && (
         <CheckCircleIcon
           sx={{
@@ -291,7 +290,7 @@ const BadgeCard: React.FC<{
       <Paper
         sx={{
           p: 1.5,
-          pl: badge.unlocked ? 2.5 : 1.5, // Add left padding when completed to make room for checkmark
+          pl: badge.unlocked ? 2.5 : 1.5,
           cursor:
             !badge.unlocked &&
             (badge.id === "email-setup" ||
@@ -365,7 +364,6 @@ const BadgeCard: React.FC<{
           {badge.description}
         </Typography>
 
-        {/* Expandable setup content */}
         <Collapse in={expanded}>
           {badge.id === "email-setup" && (
             <EmailSetup onClose={() => setExpanded(false)} />
@@ -379,17 +377,14 @@ const BadgeCard: React.FC<{
   );
 };
 
-// Main Achievement Card Component
-const AchievementCard: React.FC = () => {
-  const [dialogOpen, setDialogOpen] = useState(false);
+// Main Achievement Page Component
+const AchievementPage: React.FC = () => {
   const [selectedBadge, setSelectedBadge] = useState<BadgeType | null>(null);
-  const [videoDialogOpen, setVideoDialogOpen] = useState(false);
+  const [videoOpen, setVideoOpen] = useState(false);
 
   const { karmaScore, badges, recentAchievements } = useProgress();
-
   const { emailCompleted, availabilityCompleted } = useGoogleAuth();
 
-  // Create setup badges
   const createSetupBadges = (): BadgeType[] => [
     {
       id: "email-setup",
@@ -419,268 +414,204 @@ const AchievementCard: React.FC = () => {
   const allBadges = [...createSetupBadges(), ...badges];
   const allUnlockedBadges = allBadges.filter((badge) => badge.unlocked);
 
-  // Calculate current level and reward tier
   const currentLevel = levels.reduce((prev, level) =>
     karmaScore >= level.threshold ? level : prev,
   );
-
   const nextLevel = levels.find((level) => level.threshold > karmaScore);
   const rewardTier = getRewardTier(karmaScore);
 
   const handleVideoClick = (badge: BadgeType) => {
     setSelectedBadge(badge);
-    setVideoDialogOpen(true);
+    setVideoOpen(true);
   };
 
-  const renderBadgeIcon = (badge: BadgeType) => (
-    <Avatar
-      sx={{
-        width: 32,
-        height: 32,
-        fontSize: "1rem",
-        backgroundColor: badge.unlocked ? "transparent" : "grey.200",
-        filter: badge.unlocked ? "none" : "grayscale(100%)",
-        opacity: badge.unlocked ? 1 : 0.5,
-      }}
-    >
-      {badge.icon}
-    </Avatar>
-  );
-
   return (
-    <>
-      {/* Compact Achievement Card */}
-      <Card
+    <Container
+      maxWidth="lg"
+      sx={{ py: { xs: 2, sm: 3 }, px: { xs: 1, sm: 2 } }}
+    >
+      {/* Header Section */}
+      <Paper
         sx={{
-          cursor: "pointer",
-          transition: "all 0.2s ease",
-          "&:hover": { boxShadow: 3 },
+          p: { xs: 2, sm: 3 },
+          mb: 3,
+          background: `linear-gradient(135deg, ${currentLevel.color}20, ${currentLevel.color}10)`,
         }}
-        onClick={() => setDialogOpen(true)}
       >
-        <CardContent>
-          <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-            <Avatar
-              sx={{
-                width: 48,
-                height: 48,
-                fontSize: "1.5rem",
-                backgroundColor: "transparent",
-                mr: 2,
-              }}
-            >
-              {currentLevel.icon}
-            </Avatar>
-            <Box sx={{ flex: 1 }}>
-              <Typography variant="h6" fontWeight="bold">
-                {currentLevel.label}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Karma: {karmaScore.toFixed(1)} • {allUnlockedBadges.length}{" "}
-                badges
-              </Typography>
-            </Box>
-            <Box sx={{ textAlign: "right" }}>
-              <Chip
-                label={`${rewardTier.icon} ${rewardTier.level}`}
-                size="small"
-                sx={{
-                  backgroundColor: currentLevel.color + "20",
-                  color: currentLevel.color,
-                  fontWeight: "bold",
-                  mb: 0.5,
-                }}
-              />
-              <Typography
-                variant="caption"
-                color="success.main"
-                sx={{ display: "block", fontWeight: "bold" }}
-              >
-                +{(rewardTier.percentage * 100).toFixed(0)}% ODOC
-              </Typography>
-            </Box>
-          </Box>
-
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-            <Typography variant="body2" color="text.secondary">
-              Setup:
-            </Typography>
-            {createSetupBadges().map((badge) => (
-              <Tooltip key={badge.id} title={badge.title}>
-                {renderBadgeIcon(badge)}
-              </Tooltip>
-            ))}
-          </Box>
-
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-            <Typography variant="body2" color="text.secondary">
-              Recent:
-            </Typography>
-            {recentAchievements.slice(0, 3).map((badge) => (
-              <Tooltip key={badge.id} title={badge.title}>
-                {renderBadgeIcon(badge)}
-              </Tooltip>
-            ))}
-            {badges.length > 3 && (
-              <Typography variant="body2" color="text.secondary">
-                +{badges.length - 3} more
-              </Typography>
-            )}
-          </Box>
-
-          {nextLevel && (
-            <Box sx={{ mt: 2 }}>
-              <Box
-                sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}
-              >
-                <Typography variant="caption" color="text.secondary">
-                  Next: {nextLevel.label} {nextLevel.icon}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {(nextLevel.threshold - karmaScore).toFixed(1)} points to go
-                </Typography>
-              </Box>
-              <LinearProgress
-                variant="determinate"
-                value={
-                  ((karmaScore - currentLevel.threshold) /
-                    (nextLevel.threshold - currentLevel.threshold)) *
-                  100
-                }
-                sx={{
-                  height: 6,
-                  borderRadius: 3,
-                  backgroundColor: "grey.200",
-                  "& .MuiLinearProgress-bar": {
-                    backgroundColor: currentLevel.color,
-                  },
-                }}
-              />
-            </Box>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Detailed Achievement Fullscreen Dialog */}
-      <FullscreenDialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-        title="Your Achievements"
-        showTitle={true}
-      >
-        <Box sx={{ p: 3, height: "100%", overflow: "auto" }}>
-          {/* Current Status Overview */}
-          <Paper
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
+          <Avatar
             sx={{
-              p: 3,
-              mb: 3,
-              background: `linear-gradient(135deg, ${currentLevel.color}20, ${currentLevel.color}10)`,
+              width: { xs: 48, sm: 56 },
+              height: { xs: 48, sm: 56 },
+              fontSize: { xs: "1.5rem", sm: "1.8rem" },
             }}
           >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
-              <Avatar sx={{ width: 56, height: 56, fontSize: "1.8rem" }}>
-                {currentLevel.icon}
-              </Avatar>
-              <Box>
-                <Typography variant="h5" fontWeight="bold">
-                  Your Achievements
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {currentLevel.label} Level
-                </Typography>
-              </Box>
-            </Box>
-
-            <Grid container spacing={3}>
-              <Grid item xs={6} md={3}>
-                <Box sx={{ textAlign: "center" }}>
-                  <Typography
-                    variant="h3"
-                    fontWeight="bold"
-                    color={currentLevel.color}
-                  >
-                    {karmaScore.toFixed(1)}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Karma Score
-                  </Typography>
-                </Box>
-              </Grid>
-              <Grid item xs={6} md={3}>
-                <Box sx={{ textAlign: "center" }}>
-                  <Typography variant="h3" fontWeight="bold">
-                    {allUnlockedBadges.length}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Badges Earned
-                  </Typography>
-                </Box>
-              </Grid>
-              <Grid item xs={6} md={3}>
-                <Box sx={{ textAlign: "center" }}>
-                  <Typography
-                    variant="h3"
-                    fontWeight="bold"
-                    color="success.main"
-                  >
-                    +{(rewardTier.percentage * 100).toFixed(0)}%
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    ODOC Rewards
-                  </Typography>
-                </Box>
-              </Grid>
-              <Grid item xs={6} md={3}>
-                <Box sx={{ textAlign: "center" }}>
-                  <Typography
-                    variant="h3"
-                    fontWeight="bold"
-                    sx={{ fontSize: "2rem" }}
-                  >
-                    {rewardTier.icon}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {rewardTier.level} Tier
-                  </Typography>
-                </Box>
-              </Grid>
-            </Grid>
-          </Paper>
-
-          {/* All Badges without categories */}
-          <Box sx={{ mb: 4 }}>
-            <Typography
-              variant="h6"
-              sx={{
-                mb: 2,
-                fontWeight: "bold",
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-              }}
-            >
-              All Badges
+            {currentLevel.icon}
+          </Avatar>
+          <Box>
+            <Typography variant="h5" fontWeight="bold">
+              Your Achievements
             </Typography>
-            <Grid container spacing={1.5}>
-              {allBadges.map((badge) => (
-                <Grid item xs={12} sm={6} md={4} key={badge.id}>
-                  <BadgeCard badge={badge} onVideoClick={handleVideoClick} />
-                </Grid>
-              ))}
-            </Grid>
+            <Typography variant="body2" color="text.secondary">
+              {currentLevel.label} Level
+            </Typography>
           </Box>
         </Box>
-      </FullscreenDialog>
 
-      {/* Video Tutorial Fullscreen Dialog */}
-      <FullscreenDialog
-        open={videoDialogOpen}
-        onClose={() => setVideoDialogOpen(false)}
-        title={`${selectedBadge?.title} - Tutorial`}
-        showTitle={true}
-      >
-        <Box sx={{ p: 3, height: "100%" }}>
-          {selectedBadge?.videoUrl && (
+        <Grid container spacing={2}>
+          <Grid item xs={6} sm={3}>
+            <Box sx={{ textAlign: "center" }}>
+              <Typography
+                variant="h3"
+                fontWeight="bold"
+                color={currentLevel.color}
+                sx={{ fontSize: { xs: "1.5rem", sm: "3rem" } }}
+              >
+                {karmaScore.toFixed(1)}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Karma Score
+              </Typography>
+            </Box>
+          </Grid>
+          <Grid item xs={6} sm={3}>
+            <Box sx={{ textAlign: "center" }}>
+              <Typography
+                variant="h3"
+                fontWeight="bold"
+                sx={{ fontSize: { xs: "1.5rem", sm: "3rem" } }}
+              >
+                {allUnlockedBadges.length}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Badges Earned
+              </Typography>
+            </Box>
+          </Grid>
+          <Grid item xs={6} sm={3}>
+            <Box sx={{ textAlign: "center" }}>
+              <Typography
+                variant="h3"
+                fontWeight="bold"
+                color="success.main"
+                sx={{ fontSize: { xs: "1.5rem", sm: "3rem" } }}
+              >
+                +{(rewardTier.percentage * 100).toFixed(0)}%
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                ODOC Rewards
+              </Typography>
+            </Box>
+          </Grid>
+          <Grid item xs={6} sm={3}>
+            <Box sx={{ textAlign: "center" }}>
+              <Typography
+                variant="h3"
+                fontWeight="bold"
+                sx={{ fontSize: { xs: "1.2rem", sm: "2rem" } }}
+              >
+                {rewardTier.icon}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {rewardTier.level} Tier
+              </Typography>
+            </Box>
+          </Grid>
+        </Grid>
+
+        {nextLevel && (
+          <Box sx={{ mt: 3 }}>
+            <Box
+              sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}
+            >
+              <Typography variant="caption" color="text.secondary">
+                Next: {nextLevel.label} {nextLevel.icon}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {(nextLevel.threshold - karmaScore).toFixed(1)} points to go
+              </Typography>
+            </Box>
+            <LinearProgress
+              variant="determinate"
+              value={
+                ((karmaScore - currentLevel.threshold) /
+                  (nextLevel.threshold - currentLevel.threshold)) *
+                100
+              }
+              sx={{
+                height: 6,
+                borderRadius: 3,
+                backgroundColor: "grey.200",
+                "& .MuiLinearProgress-bar": {
+                  backgroundColor: currentLevel.color,
+                },
+              }}
+            />
+          </Box>
+        )}
+      </Paper>
+
+      {/* All Badges */}
+      <Box sx={{ mb: 4 }}>
+        <Typography
+          variant="h6"
+          sx={{
+            mb: 2,
+            fontWeight: "bold",
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+          }}
+        >
+          All Badges
+        </Typography>
+        <Grid container spacing={1.5}>
+          {allBadges.map((badge) => (
+            <Grid item xs={12} sm={6} md={4} key={badge.id}>
+              <BadgeCard badge={badge} onVideoClick={handleVideoClick} />
+            </Grid>
+          ))}
+        </Grid>
+      </Box>
+
+      {/* Video Modal */}
+      {videoOpen && selectedBadge?.videoUrl && (
+        <Box
+          sx={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0,0,0,0.8)",
+            zIndex: 9999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            p: 2,
+          }}
+          onClick={() => setVideoOpen(false)}
+        >
+          <Box
+            sx={{
+              width: "100%",
+              maxWidth: 800,
+              backgroundColor: "white",
+              borderRadius: 2,
+              p: 3,
+              position: "relative",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <IconButton
+              sx={{ position: "absolute", top: 8, right: 8 }}
+              onClick={() => setVideoOpen(false)}
+            >
+              <CloseIcon />
+            </IconButton>
+            <Typography variant="h6" sx={{ mb: 2, pr: 5 }}>
+              {selectedBadge.title} - Tutorial
+            </Typography>
             <Box
               sx={{
                 position: "relative",
@@ -703,14 +634,14 @@ const AchievementCard: React.FC = () => {
                 allowFullScreen
               />
             </Box>
-          )}
-          <Typography variant="body2" color="text.secondary">
-            {selectedBadge?.description}
-          </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {selectedBadge.description}
+            </Typography>
+          </Box>
         </Box>
-      </FullscreenDialog>
-    </>
+      )}
+    </Container>
   );
 };
 
-export default AchievementCard;
+export default AchievementPage;

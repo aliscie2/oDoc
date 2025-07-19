@@ -18,7 +18,7 @@ import {
   Divider,
   Alert,
 } from "@mui/material";
-import { Visibility, Star, Email, Warning } from "@mui/icons-material";
+import { Warning, Visibility } from "@mui/icons-material";
 import { Job, Match } from "$/declarations/backend/backend.did";
 import ConnectButton from "./ConnectButton";
 import { useBackendContext } from "@/contexts/BackendContext";
@@ -207,7 +207,6 @@ const JobSearchComponent: React.FC = () => {
         <Card
           key={job.id}
           sx={{
-            cursor: "pointer",
             transition: "all 0.2s ease",
             "&:hover": {
               transform: "translateY(-1px)",
@@ -215,7 +214,6 @@ const JobSearchComponent: React.FC = () => {
             },
             minHeight: "auto",
           }}
-          onClick={() => handleOpenDialog(job.id)}
         >
           <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
@@ -256,6 +254,17 @@ const JobSearchComponent: React.FC = () => {
               <Typography variant="subtitle2" sx={{ flex: 1, fontWeight: 600 }}>
                 {truncateTitle(job.job_titles?.[0])}
               </Typography>
+
+              <IconButton
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleOpenDialog(job.id);
+                }}
+                size="small"
+                sx={{ color: "primary.main" }}
+              >
+                <Visibility />
+              </IconButton>
 
               <ConnectButton jobId={job.id} />
             </Box>

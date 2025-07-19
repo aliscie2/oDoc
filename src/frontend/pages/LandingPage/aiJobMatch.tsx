@@ -32,7 +32,7 @@ import {
   Code,
   Rocket,
 } from "@mui/icons-material";
-import ConnectWithoutContactIcon from '@mui/icons-material/ConnectWithoutContact';
+import ConnectWithoutContactIcon from "@mui/icons-material/ConnectWithoutContact";
 import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
 import LOGOSVG from "@/components/creature/logoSVG";
 import YouTubeIcon from "@mui/icons-material/YouTube";
@@ -40,6 +40,7 @@ import InstagramIcon from "@mui/icons-material/Instagram";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import { useBackendContext } from "@/contexts/BackendContext";
 import { useSelector } from "react-redux";
+import IcpJopsLogo from "@/public/jobs.png";
 
 const DiscordIcon = (props) => (
   <SvgIcon {...props}>
@@ -52,194 +53,509 @@ const XIcon = (props) => (
   </SvgIcon>
 );
 
+const EcosystemSection = () => {
+  const isMobile = useMediaQuery("(max-width:900px)");
+
+  return (
+    <Box sx={{ mb: 10, overflow: "hidden" }}>
+      <Container maxWidth="lg">
+        <Grid container alignItems="center" spacing={6}>
+          <Grid item xs={12} md={6} order={{ xs: 2, md: 1 }}>
+            <Box
+              sx={{
+                position: "relative",
+                p: 4,
+                borderRadius: 4,
+                background:
+                  "linear-gradient(135deg, rgba(25,118,210,0.03) 0%, rgba(156,39,176,0.03) 100%)",
+                "&::before": {
+                  content: '""',
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  borderRadius: 4,
+                  background:
+                    "linear-gradient(135deg, rgba(25,118,210,0.1) 0%, rgba(156,39,176,0.1) 100%)",
+                  opacity: 0,
+                  transition: "opacity 0.3s ease",
+                },
+                "&:hover::before": { opacity: 1 },
+              }}
+            >
+              <img
+                src={IcpJopsLogo}
+                alt="ICP Ecosystem Growth"
+                style={{
+                  width: "100%",
+                  maxWidth: "400px",
+                  height: "auto",
+                  objectFit: "contain",
+                  filter: "drop-shadow(0 8px 32px rgba(25,118,210,0.15))",
+                  transition: "transform 0.3s ease, filter 0.3s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = "scale(1.02)";
+                  e.target.style.filter =
+                    "drop-shadow(0 12px 40px rgba(25,118,210,0.25))";
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = "scale(1)";
+                  e.target.style.filter =
+                    "drop-shadow(0 8px 32px rgba(25,118,210,0.15))";
+                }}
+              />
+            </Box>
+          </Grid>
+
+          <Grid item xs={12} md={6} order={{ xs: 1, md: 2 }}>
+            <Box sx={{ pl: { md: 4 } }}>
+              <Typography
+                variant="h3"
+                sx={{
+                  fontWeight: 800,
+                  mb: 2,
+                  fontSize: { xs: "2rem", md: "2.75rem" },
+                  background:
+                    "linear-gradient(135deg, #1976d2 0%, #9c27b0 100%)",
+                  backgroundClip: "text",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  letterSpacing: "-0.02em",
+                  lineHeight: 1.2,
+                }}
+              >
+                The Fastest Growing Web3 Ecosystem
+              </Typography>
+
+              <Typography
+                variant="h6"
+                sx={{
+                  color: "text.secondary",
+                  mb: 4,
+                  fontWeight: 400,
+                  lineHeight: 1.6,
+                }}
+              >
+                Internet Computer Protocol is revolutionizing decentralized
+                development with enterprise-grade reliability
+              </Typography>
+
+              <Stack spacing={3}>
+                {[
+                  {
+                    icon: <Rocket sx={{ fontSize: 28 }} />,
+                    metric: "40x",
+                    title: "Developer Growth",
+                    desc: "Fastest-growing Web3 developer ecosystem since 2018",
+                  },
+                  {
+                    icon: <ConnectWithoutContactIcon sx={{ fontSize: 28 }} />,
+                    metric: "30+",
+                    title: "Premium Job Boards",
+                    desc: "Connected to top crypto VC and Web3 talent networks",
+                  },
+                  {
+                    icon: <TrendingUp sx={{ fontSize: 28 }} />,
+                    metric: "∞",
+                    title: "Limitless Scale",
+                    desc: "Enterprise-grade infrastructure attracting Fortune 500 companies",
+                  },
+                ].map((item, idx) => (
+                  <Box
+                    key={idx}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      p: 2,
+                      borderRadius: 2,
+                      transition: "all 0.3s ease",
+                      "&:hover": {
+                        bgcolor: "action.hover",
+                        transform: "translateX(8px)",
+                      },
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: 56,
+                        height: 56,
+                        borderRadius: 2,
+                        background:
+                          "linear-gradient(135deg, rgba(25,118,210,0.1) 0%, rgba(156,39,176,0.1) 100%)",
+                        color: "primary.main",
+                        mr: 3,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {item.icon}
+                    </Box>
+                    <Box>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "baseline",
+                          mb: 0.5,
+                        }}
+                      >
+                        <Typography
+                          variant="h5"
+                          sx={{
+                            fontWeight: 700,
+                            color: "primary.main",
+                            mr: 1,
+                          }}
+                        >
+                          {item.metric}
+                        </Typography>
+                        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                          {item.title}
+                        </Typography>
+                      </Box>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ lineHeight: 1.5 }}
+                      >
+                        {item.desc}
+                      </Typography>
+                    </Box>
+                  </Box>
+                ))}
+              </Stack>
+            </Box>
+          </Grid>
+        </Grid>
+      </Container>
+    </Box>
+  );
+};
+
+const HowItWorksSection = () => {
+  const steps = [
+    {
+      icon: <People sx={{ fontSize: 32 }} />,
+      title: "Create Profile",
+      description:
+        "Share your ICP expertise and career aspirations with our intelligent system",
+    },
+    {
+      icon: <SmartToy sx={{ fontSize: 32 }} />,
+      title: "AI Analysis",
+      description:
+        "Advanced algorithms analyze market trends to identify your perfect opportunities",
+    },
+    {
+      icon: <Notifications sx={{ fontSize: 32 }} />,
+      title: "Smart Matching",
+      description:
+        "Receive curated opportunities or connect instantly with premium matches",
+    },
+    {
+      icon: <CalendarMonth sx={{ fontSize: 32 }} />,
+      title: "Seamless Connect",
+      description:
+        "Schedule interviews effortlessly with our intelligent calendar system",
+    },
+  ];
+
+  return (
+    <Box sx={{ mb: 10 }}>
+      <Container maxWidth="lg">
+        <Typography
+          variant="h3"
+          textAlign="center"
+          sx={{
+            fontWeight: 700,
+            mb: 2,
+            fontSize: { xs: "2rem", md: "2.5rem" },
+            letterSpacing: "-0.01em",
+          }}
+        >
+          How It Works
+        </Typography>
+        <Typography
+          variant="h6"
+          textAlign="center"
+          color="text.secondary"
+          sx={{
+            mb: 6,
+            maxWidth: 600,
+            mx: "auto",
+            fontWeight: 400,
+          }}
+        >
+          Four simple steps to your next career milestone
+        </Typography>
+
+        <Grid container spacing={4}>
+          {steps.map((step, index) => (
+            <Grid item xs={12} sm={6} md={3} key={index}>
+              <Box
+                sx={{
+                  textAlign: "center",
+                  position: "relative",
+                  "&::after":
+                    index < 3
+                      ? {
+                          content: '""',
+                          position: "absolute",
+                          top: 30,
+                          right: -20,
+                          width: 40,
+                          height: 2,
+                          background:
+                            "linear-gradient(90deg, rgba(25,118,210,0.3) 0%, rgba(156,39,176,0.3) 100%)",
+                          display: { xs: "none", md: "block" },
+                        }
+                      : {},
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 80,
+                    height: 80,
+                    borderRadius: 3,
+                    background:
+                      "linear-gradient(135deg, rgba(25,118,210,0.1) 0%, rgba(156,39,176,0.1) 100%)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    mx: "auto",
+                    mb: 3,
+                    color: "primary.main",
+                    transition: "all 0.3s ease",
+                    border: "1px solid transparent",
+                    "&:hover": {
+                      transform: "translateY(-4px)",
+                      boxShadow: "0 12px 40px rgba(25,118,210,0.15)",
+                      background:
+                        "linear-gradient(135deg, rgba(25,118,210,0.15) 0%, rgba(156,39,176,0.15) 100%)",
+                    },
+                  }}
+                >
+                  {step.icon}
+                </Box>
+
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 600,
+                    mb: 1.5,
+                    fontSize: "1.1rem",
+                  }}
+                >
+                  {step.title}
+                </Typography>
+
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{
+                    lineHeight: 1.6,
+                    fontSize: "0.95rem",
+                  }}
+                >
+                  {step.description}
+                </Typography>
+              </Box>
+            </Grid>
+          ))}
+        </Grid>
+      </Container>
+    </Box>
+  );
+};
 
 const PageFooter = () => {
- const { isDarkMode } = useSelector((state) => state.uiState);
+  const { isDarkMode } = useSelector((state) => state.uiState);
 
- const socialLinks = [
-   {
-     name: "GitHub",
-     url: "https://github.com/aliscie2/oDoc",
-     icon: GitHubIcon,
-     color: isDarkMode ? "#24292e" : "#1f2328",
-   },
-   {
-     name: "X",
-     url: "https://x.com/icpjob",
-     icon: XIcon,
-     color: "#000000",
-   },
-   {
-     name: "YouTube",
-     url: "https://www.youtube.com/@odocic",
-     icon: YouTubeIcon,
-     color: isDarkMode ? "#FF0000" : "#dc2626",
-   },
-   {
-     name: "Instagram",
-     url: "https://www.instagram.com/odoc_ic",
-     icon: InstagramIcon,
-     color: isDarkMode ? "#E4405F" : "#db2777",
-   },
-   {
-     name: "Discord",
-     url: "https://discord.gg/uxMJHBk8",
-     icon: DiscordIcon,
-     color: isDarkMode ? "#5865F2" : "#4f46e5",
-   },
- ];
+  const socialLinks = [
+    {
+      name: "GitHub",
+      url: "https://github.com/aliscie2/oDoc",
+      icon: GitHubIcon,
+      color: isDarkMode ? "#24292e" : "#1f2328",
+    },
+    {
+      name: "X",
+      url: "https://x.com/icpjob",
+      icon: XIcon,
+      color: "#000000",
+    },
+    {
+      name: "YouTube",
+      url: "https://www.youtube.com/@odocic",
+      icon: YouTubeIcon,
+      color: isDarkMode ? "#FF0000" : "#dc2626",
+    },
+    {
+      name: "Instagram",
+      url: "https://www.instagram.com/odoc_ic",
+      icon: InstagramIcon,
+      color: isDarkMode ? "#E4405F" : "#db2777",
+    },
+    {
+      name: "Discord",
+      url: "https://discord.gg/uxMJHBk8",
+      icon: DiscordIcon,
+      color: isDarkMode ? "#5865F2" : "#4f46e5",
+    },
+  ];
 
- const handleClick = (url) => {
-   window.open(url, "_blank", "noopener,noreferrer");
- };
+  const handleClick = (url) => {
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
 
- const handleContactClick = () => {
-   window.open("https://x.com/icpjob", "_blank", "noopener,noreferrer");
- };
+  const handleContactClick = () => {
+    window.open("https://x.com/icpjob", "_blank", "noopener,noreferrer");
+  };
 
- return (
-   <Box
-     component="footer"
-     sx={{
-       bgcolor: isDarkMode ? "#1a1a1a" : "#f8f9fa",
-       borderTop: `1px solid ${isDarkMode ? "#333" : "#e9ecef"}`,
-       mt: "auto",
-       py: 6,
-     }}
-   >
-     <Container maxWidth="lg">
-       <Box
-         sx={{
-           display: "flex",
-           flexDirection: "column",
-           alignItems: "center",
-           gap: 4,
-         }}
-       >
-         {/* Brand/Logo Section */}
-         <Box sx={{ textAlign: "center" }}>
-           <Typography
-             variant="h4"
-             sx={{
-               fontSize: "2rem",
-               fontWeight: "bold",
-               mb: 1,
-               color: isDarkMode ? "#fff" : "#212529",
-             }}
-           >
-             ICPJobs.com
-           </Typography>
-           <Typography
-             variant="body1"
-             sx={{
-               color: isDarkMode ? "#adb5bd" : "#6c757d",
-               maxWidth: 400,
-               mx: "auto",
-             }}
-           >
-             AI-powered job matching for the ICP ecosystem. Find your perfect role or talent today.
-           </Typography>
-         </Box>
+  return (
+    <Box
+      component="footer"
+      sx={{
+        bgcolor: isDarkMode ? "#1a1a1a" : "#f8f9fa",
+        borderTop: `1px solid ${isDarkMode ? "#333" : "#e9ecef"}`,
+        mt: "auto",
+        py: 6,
+      }}
+    >
+      <Container maxWidth="lg">
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 4,
+          }}
+        >
+          {/* Brand/Logo Section */}
+          <Box sx={{ textAlign: "center" }}>
+            <Typography
+              variant="h4"
+              sx={{
+                fontSize: "2rem",
+                fontWeight: "bold",
+                mb: 1,
+                color: isDarkMode ? "#fff" : "#212529",
+              }}
+            >
+              ICPJobs.com
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{
+                color: isDarkMode ? "#adb5bd" : "#6c757d",
+                maxWidth: 400,
+                mx: "auto",
+              }}
+            >
+              AI-powered job matching for the ICP ecosystem. Find your perfect
+              role or talent today.
+            </Typography>
+          </Box>
 
-         {/* Social Links */}
-         <Box
-           sx={{
-             display: "flex",
-             justifyContent: "center",
-             flexWrap: "wrap",
-             gap: 3,
-           }}
-         >
-           {socialLinks.map((social) => {
-             const Icon = social.icon;
-             return (
-               <IconButton
-                 key={social.name}
-                 onClick={() => handleClick(social.url)}
-                 aria-label={`Visit our ${social.name}`}
-                 sx={{
-                   width: 48,
-                   height: 48,
-                   background: social.color,
-                   transition: "all 0.3s ease-in-out",
-                   "&:hover": {
-                     background: social.color,
-                     transform: "scale(1.1)",
-                     boxShadow: isDarkMode
-                       ? "0 4px 12px rgba(0,0,0,0.3)"
-                       : "0 4px 12px rgba(0,0,0,0.15)",
-                     "& .MuiSvgIcon-root": {
-                       transform: "rotate(12deg)",
-                     },
-                   },
-                   "& .MuiSvgIcon-root": {
-                     color: "#fff",
-                     transition: "transform 0.3s ease-in-out",
-                     fontSize: social.name === "X" ? 20 : 24,
-                   },
-                 }}
-               >
-                 <Icon />
-               </IconButton>
-             );
-           })}
-         </Box>
+          {/* Social Links */}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              flexWrap: "wrap",
+              gap: 3,
+            }}
+          >
+            {socialLinks.map((social) => {
+              const Icon = social.icon;
+              return (
+                <IconButton
+                  key={social.name}
+                  onClick={() => handleClick(social.url)}
+                  aria-label={`Visit our ${social.name}`}
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    background: social.color,
+                    transition: "all 0.3s ease-in-out",
+                    "&:hover": {
+                      background: social.color,
+                      transform: "scale(1.1)",
+                      boxShadow: isDarkMode
+                        ? "0 4px 12px rgba(0,0,0,0.3)"
+                        : "0 4px 12px rgba(0,0,0,0.15)",
+                      "& .MuiSvgIcon-root": {
+                        transform: "rotate(12deg)",
+                      },
+                    },
+                    "& .MuiSvgIcon-root": {
+                      color: "#fff",
+                      transition: "transform 0.3s ease-in-out",
+                      fontSize: social.name === "X" ? 20 : 24,
+                    },
+                  }}
+                >
+                  <Icon />
+                </IconButton>
+              );
+            })}
+          </Box>
 
-         {/* Contact Section */}
-         <Box sx={{ textAlign: "center" }}>
-           <Typography
-             variant="body2"
-             sx={{
-               color: isDarkMode ? "#adb5bd" : "#6c757d",
-               mb: 1,
-             }}
-           >
-             Have questions or want to get in touch?
-           </Typography>
-           <Typography
-             variant="body2"
-             onClick={handleContactClick}
-             sx={{
-               color: isDarkMode ? "#4fc3f7" : "#0d6efd",
-               cursor: "pointer",
-               textDecoration: "underline",
-               "&:hover": {
-                 color: isDarkMode ? "#29b6f6" : "#0a58ca",
-               },
-             }}
-           >
-             Contact us on Twitter
-           </Typography>
-         </Box>
+          {/* Contact Section */}
+          <Box sx={{ textAlign: "center" }}>
+            <Typography
+              variant="body2"
+              sx={{
+                color: isDarkMode ? "#adb5bd" : "#6c757d",
+                mb: 1,
+              }}
+            >
+              Have questions or want to get in touch?
+            </Typography>
+            <Typography
+              variant="body2"
+              onClick={handleContactClick}
+              sx={{
+                color: isDarkMode ? "#4fc3f7" : "#0d6efd",
+                cursor: "pointer",
+                textDecoration: "underline",
+                "&:hover": {
+                  color: isDarkMode ? "#29b6f6" : "#0a58ca",
+                },
+              }}
+            >
+              Contact us on Twitter
+            </Typography>
+          </Box>
 
-         <Divider
-           sx={{
-             width: "100%",
-             bgcolor: isDarkMode ? "#333" : "#dee2e6",
-           }}
-         />
+          <Divider
+            sx={{
+              width: "100%",
+              bgcolor: isDarkMode ? "#333" : "#dee2e6",
+            }}
+          />
 
-         {/* Copyright */}
-         <Typography
-           variant="body2"
-           sx={{
-             color: isDarkMode ? "#6c757d" : "#868e96",
-             textAlign: "center",
-           }}
-         >
-           © {new Date().getFullYear()} ICPJobs.com. Made by oDoc.app team. All rights reserved.
-         </Typography>
-       </Box>
-     </Container>
-   </Box>
- );
+          {/* Copyright */}
+          <Typography
+            variant="body2"
+            sx={{
+              color: isDarkMode ? "#6c757d" : "#868e96",
+              textAlign: "center",
+            }}
+          >
+            © {new Date().getFullYear()} ICPJobs.com. Made by oDoc.app team.
+            All rights reserved.
+          </Typography>
+        </Box>
+      </Container>
+    </Box>
+  );
 };
 const StatsSection = () => {
-  const [stats, setStats] = useState({
-    users: 0,
-    jobs: 0,
-    talents: 0,
-  });
+  const [stats, setStats] = useState({ users: 0, jobs: 0, talents: 0 });
   const [isVisible, setIsVisible] = useState(false);
   const { backendActor } = useBackendContext();
   const statsRef = useRef(null);
@@ -247,7 +563,7 @@ const StatsSection = () => {
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => setIsVisible(entry.isIntersecting),
-      { threshold: 0.5 }
+      { threshold: 0.3 },
     );
     if (statsRef.current) observer.observe(statsRef.current);
     return () => observer.disconnect();
@@ -255,16 +571,14 @@ const StatsSection = () => {
 
   useEffect(() => {
     if (!isVisible) return;
-
     const fetchStats = async () => {
       try {
         const response = await backendActor.get_sns_status();
         if (response.Ok) {
           const { number_users, jobs_count, talents_count } = response.Ok;
-
           const animateCount = (target, setter) => {
             let current = 0;
-            const increment = target / 50;
+            const increment = target / 60;
             const timer = setInterval(() => {
               current += increment;
               if (current >= target) {
@@ -273,45 +587,83 @@ const StatsSection = () => {
               } else {
                 setter(Math.floor(current));
               }
-            }, 30);
+            }, 25);
           };
-
-          animateCount(number_users, (val) => setStats(prev => ({ ...prev, users: val })));
-          animateCount(jobs_count || 0, (val) => setStats(prev => ({ ...prev, jobs: val })));
-          animateCount(talents_count || 0, (val) => setStats(prev => ({ ...prev, talents: val })));
+          animateCount(number_users, (val) =>
+            setStats((prev) => ({ ...prev, users: val })),
+          );
+          animateCount(jobs_count || 0, (val) =>
+            setStats((prev) => ({ ...prev, jobs: val })),
+          );
+          animateCount(talents_count || 0, (val) =>
+            setStats((prev) => ({ ...prev, talents: val })),
+          );
         }
       } catch (error) {
         console.error("Failed to fetch stats:", error);
       }
     };
-
     fetchStats();
   }, [isVisible, backendActor]);
 
   return (
-    <Box
-      ref={statsRef}
-      sx={{
-        width: "100%",
-        p: 3,
-        mb: 4,
-        background: "linear-gradient(135deg, rgba(25,118,210,0.1) 0%, rgba(156,39,176,0.1) 100%)",
-        borderRadius: 3,
-      }}
-    >
-      <Grid container spacing={3} textAlign="center">
+    <Box ref={statsRef} sx={{ width: "100%", py: 4 }}>
+      <Grid container spacing={6} textAlign="center">
         {[
-          { value: stats.users, label: "Active Users", icon: <People /> },
-          { value: stats.jobs, label: "ICP Jobs", icon: <Work /> },
-          { value: stats.talents, label: "ICP Talents", icon: <Code /> },
+          {
+            value: stats.users,
+            label: "Users",
+            icon: <People sx={{ fontSize: 32 }} />,
+          },
+          {
+            value: stats.jobs,
+            label: "Jobs",
+            icon: <Work sx={{ fontSize: 32 }} />,
+          },
+          {
+            value: stats.talents,
+            label: "Talents",
+            icon: <Code sx={{ fontSize: 32 }} />,
+          },
         ].map((stat, i) => (
           <Grid item xs={4} key={i}>
-            <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-              {stat.icon}
-              <Typography variant="h4" fontWeight="bold" color="primary" sx={{ mt: 1 }}>
-                {stat.value.toLocaleString()}
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                transition: "transform 0.3s ease",
+                "&:hover": { transform: "translateY(-4px)" },
+              }}
+            >
+              <Box
+                sx={{
+                  color: "primary.main",
+                  mb: 1.5,
+                  opacity: 0.9,
+                }}
+              >
+                {stat.icon}
+              </Box>
+              <Typography
+                variant="h3"
+                fontWeight={700}
+                color="primary"
+                sx={{
+                  fontSize: { xs: "2rem", md: "2.5rem" },
+                  letterSpacing: "-0.02em",
+                }}
+              >
+                {stat.value.toLocaleString()}+
               </Typography>
-              <Typography variant="caption" color="text.secondary">
+              <Typography
+                variant="body1"
+                color="text.secondary"
+                sx={{
+                  fontWeight: 500,
+                  mt: 0.5,
+                }}
+              >
                 {stat.label}
               </Typography>
             </Box>
@@ -345,7 +697,6 @@ const FeatureCard = ({ title, description, icon, features }) => (
     </CardContent>
   </Card>
 );
-
 export default function ICPJobsLandingPage() {
   const isMobile = useMediaQuery("(max-width:900px)");
 
@@ -353,209 +704,273 @@ export default function ICPJobsLandingPage() {
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
       <Container maxWidth="lg" sx={{ py: 4 }}>
         {/* Hero Section */}
-        <Box sx={{ textAlign: "center", py: 8, mb: 6 }}>
-          <RunawayJellyfish
-            LogoSvg={LOGOSVG}
-            jellyfishOffsetX={-135}
-            jellyfishOffsetY={5}
-            scale={1.3}
-          />
+        <Box sx={{ textAlign: "center", py: { xs: 6, md: 10 }, mb: 8 }}>
           <Typography
-            variant="h2"
-            component="h1"
+            variant="h1"
             sx={{
-              fontWeight: 700,
-              mb: 2,
-              background: "linear-gradient(45deg, #1976d2, #9c27b0)",
+              fontWeight: 800,
+              mb: 3,
+              fontSize: { xs: "2.5rem", md: "4rem" },
+              background: "linear-gradient(135deg, #1976d2 0%, #9c27b0 100%)",
               backgroundClip: "text",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
+              letterSpacing: "-0.02em",
+              lineHeight: 1.1,
             }}
           >
             ICPJobs.com
           </Typography>
-          <Typography variant="h5" color="text.secondary" sx={{ mb: 3 }}>
-            AI-Powered Job Matching for the ICP Ecosystem
+
+          <Typography
+            variant="h4"
+            color="text.secondary"
+            sx={{
+              mb: 4,
+              fontSize: { xs: "1.5rem", md: "2rem" },
+              fontWeight: 400,
+              maxWidth: 700,
+              mx: "auto",
+              lineHeight: 1.4,
+            }}
+          >
+            AI-Powered Career Matching for the Internet Computer Ecosystem, and
+            everyone.
           </Typography>
-          <Stack direction="row" spacing={1} sx={{ justifyContent: "center", flexWrap: "wrap", gap: 1 }}>
-            {["AI Matching", "ICP Focused", "Smart Calendar", "Instant Alerts"].map((label) => (
-              <Chip key={label} label={label} variant="outlined" />
+
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{
+              justifyContent: "center",
+              flexWrap: "wrap",
+              gap: 1,
+              mb: 6,
+            }}
+          >
+            {[
+              "AI Precision",
+              "ICP Expertise",
+              "Smart Scheduling",
+              "Instant Alerts",
+            ].map((label) => (
+              <Chip
+                key={label}
+                label={label}
+                variant="outlined"
+                sx={{
+                  borderRadius: 6,
+                  px: 1,
+                  fontWeight: 500,
+                  "&:hover": {
+                    bgcolor: "primary.main",
+                    color: "white",
+                    borderColor: "primary.main",
+                  },
+                }}
+              />
             ))}
           </Stack>
-          <Box sx={{ mt: 4 }}>
-            <StatsSection />
-          </Box>
+
+          <StatsSection />
         </Box>
 
-        {/* ICP Ecosystem Growth */}
-        <Box sx={{ mb: 8 }}>
-          <Typography variant="h4" textAlign="center" gutterBottom>
-            The Fastest Growing Web3 Ecosystem
-          </Typography>
-          <Typography variant="h6" textAlign="center" color="text.secondary" sx={{ mb: 4 }}>
-            Internet Computer Protocol is revolutionizing decentralized development
-          </Typography>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={4}>
-              <Paper sx={{ p: 3, textAlign: "center", borderRadius: 3 }}>
-                <Rocket sx={{ fontSize: 40, color: "primary.main", mb: 2 }} />
-                <Typography variant="h6" gutterBottom>40x Developer Growth</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Since 2018, full-time ICP developers grew 40x, making it one of the fastest-growing ecosystems
-                </Typography>
-              </Paper>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <Paper sx={{ p: 3, textAlign: "center", borderRadius: 3 }}>
-                <ConnectWithoutContactIcon sx={{ fontSize: 40, color: "primary.main", mb: 2 }} />
-                <Typography variant="h6" gutterBottom>30+ Job Boards</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Connected to major crypto VC job boards specifically for Web3 professionals
-                </Typography>
-              </Paper>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <Paper sx={{ p: 3, textAlign: "center", borderRadius: 3 }}>
-                <TrendingUp sx={{ fontSize: 40, color: "primary.main", mb: 2 }} />
-                <Typography variant="h6" gutterBottom>Developer's Haven</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  A secure, scalable network that's attracting top talent from around the world
-                </Typography>
-              </Paper>
-            </Grid>
-          </Grid>
-        </Box>
+        <EcosystemSection />
 
-        {/* Main Features */}
-        <Box sx={{ mb: 8 }}>
-          <Typography variant="h4" textAlign="center" gutterBottom>
-            Why Choose ICPJobs.com?
-          </Typography>
-          <Grid container spacing={4} sx={{ mt: 2 }}>
-            <Grid item xs={12} md={6}>
-              <FeatureCard
-                title="AI Job Matching"
-                description="Our advanced AI analyzes your skills and matches you with perfect ICP opportunities"
-                icon={<SmartToy sx={{ color: "primary.main", fontSize: 30 }} />}
-                features={[
-                  "Intelligent skill matching algorithm",
-                  "Personalized job recommendations",
-                  "Cover letter generation",
-                  "Resume optimization suggestions"
-                ]}
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <FeatureCard
-                title="Smart Calendar Integration"
-                description="Talk to your calendar AI and never miss important meetings or deadlines"
-                icon={<CalendarMonth sx={{ color: "primary.main", fontSize: 30 }} />}
-                features={[
-                  "AI-powered scheduling assistant",
-                  "Meeting conflict detection",
-                  "Automatic reminder system",
-                  "Integration with popular calendar apps"
-                ]}
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <FeatureCard
-                title="Instant Notifications"
-                description="Get alerted immediately when we find your perfect match"
-                icon={<Notifications sx={{ color: "primary.main", fontSize: 30 }} />}
-                features={[
-                  "Real-time email alerts",
-                  "High-quality match filtering",
-                  "Spam prevention system",
-                  "Customizable notification preferences"
-                ]}
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <FeatureCard
-                title="ICP-Focused Network"
-                description="Exclusively designed for the Internet Computer Protocol ecosystem"
-                icon={<Code sx={{ color: "primary.main", fontSize: 30 }} />}
-                features={[
-                  "Specialized ICP job board",
-                  "Curated talent pool",
-                  "Web3 and DeFi opportunities",
-                  "Canister development roles"
-                ]}
-              />
-            </Grid>
-          </Grid>
-        </Box>
+        {/* Main Features - Simplified */}
+        <Box sx={{ mb: 10 }}>
+          <Container maxWidth="lg">
+            <Typography
+              variant="h3"
+              textAlign="center"
+              sx={{
+                fontWeight: 700,
+                mb: 2,
+                fontSize: { xs: "2rem", md: "2.5rem" },
+              }}
+            >
+              Enterprise-Grade Features
+            </Typography>
+            <Typography
+              variant="h6"
+              textAlign="center"
+              color="text.secondary"
+              sx={{
+                mb: 6,
+                maxWidth: 600,
+                mx: "auto",
+              }}
+            >
+              Professional tools designed for serious career advancement
+            </Typography>
 
-        {/* How It Works */}
-        <Box sx={{ mb: 8 }}>
-          <Typography variant="h4" textAlign="center" gutterBottom>
-            How It Works
-          </Typography>
-          <Grid container spacing={4} sx={{ mt: 2 }}>
-            {[
-              {
-                step: "1",
-                title: "Create Your Profile",
-                description: "Tell us about your ICP skills, experience, and career goals"
-              },
-              {
-                step: "2",
-                title: "AI Analysis",
-                description: "Our AI analyzes your profile and the job market to find perfect matches"
-              },
-              {
-                step: "3",
-                title: "Get Matched",
-                description: "If you find good match click on connect button or, wait to receive email notifications when high-quality matches are found"
-              },
-              {
-                step: "4",
-                title: "Schedule & Connect",
-                description: "Use our smart calendar to schedule interviews and meetings"
-              }
-            ].map((item, index) => (
-              <Grid item xs={12} md={3} key={index}>
-                <Box sx={{ textAlign: "center" }}>
-                  <Box
+            <Grid container spacing={4}>
+              {[
+                {
+                  title: "AI Job Matching",
+                  description:
+                    "Precision matching powered by machine learning algorithms",
+                  icon: <SmartToy sx={{ fontSize: 32 }} />,
+                  features: [
+                    "Intelligent skill analysis",
+                    "Personalized recommendations",
+                    "Auto-generated applications",
+                    "Success rate optimization",
+                  ],
+                },
+                {
+                  title: "Smart Calendar AI",
+                  description:
+                    "Never miss opportunities with intelligent scheduling",
+                  icon: <CalendarMonth sx={{ fontSize: 32 }} />,
+                  features: [
+                    "AI scheduling assistant",
+                    "Conflict resolution",
+                    "Automated reminders",
+                    "Multi-platform sync",
+                  ],
+                },
+                {
+                  title: "Notifications",
+                  description: "Instant alerts for high-value opportunities",
+                  icon: <Notifications sx={{ fontSize: 32 }} />,
+                  features: [
+                    "Real-time job alerts",
+                    "Quality filtering",
+                    "Spam protection",
+                    "Custom preferences",
+                  ],
+                },
+                {
+                  title: "ICP Ecosystem Focus",
+                  description:
+                    "Specialized network for Internet Computer professionals",
+                  icon: <Code sx={{ fontSize: 32 }} />,
+                  features: [
+                    "Curated ICP opportunities",
+                    "Web3 talent pool",
+                    "Blockchain expertise",
+                    "Canister development",
+                  ],
+                },
+              ].map((feature, idx) => (
+                <Grid item xs={12} md={6} key={idx}>
+                  <Card
                     sx={{
-                      width: 60,
-                      height: 60,
-                      borderRadius: "50%",
-                      bgcolor: "primary.main",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      mx: "auto",
-                      mb: 2
+                      height: "100%",
+                      borderRadius: 3,
+                      border: "1px solid",
+                      borderColor: "divider",
+                      transition: "all 0.3s ease",
+                      "&:hover": {
+                        borderColor: "primary.main",
+                        transform: "translateY(-4px)",
+                        boxShadow: "0 12px 40px rgba(25,118,210,0.1)",
+                      },
                     }}
                   >
-                    <Typography variant="h5" color="white" fontWeight="bold">
-                      {item.step}
-                    </Typography>
-                  </Box>
-                  <Typography variant="h6" gutterBottom>
-                    {item.title}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {item.description}
-                  </Typography>
-                </Box>
-              </Grid>
-            ))}
-          </Grid>
+                    <CardContent sx={{ p: 4 }}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", mb: 3 }}
+                      >
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            width: 56,
+                            height: 56,
+                            borderRadius: 2,
+                            background:
+                              "linear-gradient(135deg, rgba(25,118,210,0.1) 0%, rgba(156,39,176,0.1) 100%)",
+                            color: "primary.main",
+                            mr: 2,
+                          }}
+                        >
+                          {feature.icon}
+                        </Box>
+                        <Typography variant="h5" fontWeight={600}>
+                          {feature.title}
+                        </Typography>
+                      </Box>
+                      <Typography
+                        variant="body1"
+                        color="text.secondary"
+                        sx={{ mb: 3, lineHeight: 1.6 }}
+                      >
+                        {feature.description}
+                      </Typography>
+                      <List dense sx={{ "& .MuiListItem-root": { pl: 0 } }}>
+                        {feature.features.map((item, i) => (
+                          <ListItem key={i}>
+                            <CheckCircle
+                              sx={{
+                                color: "success.main",
+                                mr: 1.5,
+                                fontSize: 18,
+                              }}
+                            />
+                            <ListItemText
+                              primary={item}
+                              sx={{
+                                "& .MuiTypography-root": { fontSize: "0.9rem" },
+                              }}
+                            />
+                          </ListItem>
+                        ))}
+                      </List>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </Container>
         </Box>
 
-        {/* CTA Section */}
-        <Box sx={{ textAlign: "center", py: 6, mb: 4 }}>
-          <Typography variant="h4" gutterBottom>
-            Ready to Find Your Perfect ICP Role?
+        <HowItWorksSection />
+
+        {/* CTA Section - More Professional */}
+        <Box
+          sx={{
+            textAlign: "center",
+            py: 8,
+            mb: 4,
+            background:
+              "linear-gradient(135deg, rgba(25,118,210,0.02) 0%, rgba(156,39,176,0.02) 100%)",
+            borderRadius: 4,
+          }}
+        >
+          <Typography
+            variant="h3"
+            sx={{
+              fontWeight: 700,
+              mb: 2,
+              fontSize: { xs: "2rem", md: "2.5rem" },
+            }}
+          >
+            Ready to Advance Your ICP Career?
           </Typography>
-          <Typography variant="h6" color="text.secondary" sx={{ mb: 3 }}>
-            Join the fastest-growing Web3 ecosystem today
+          <Typography
+            variant="h6"
+            color="text.secondary"
+            sx={{
+              mb: 4,
+              maxWidth: 500,
+              mx: "auto",
+              lineHeight: 1.5,
+            }}
+          >
+            Join thousands of professionals building the future of Web3
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ fontStyle: "italic" }}>
-            Built by the oDoc.app team - Connecting talent with opportunity in the ICP ecosystem
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{
+              fontStyle: "italic",
+              opacity: 0.8,
+            }}
+          >
+            Crafted by the oDoc.app team — Trusted by the ICP community
           </Typography>
         </Box>
       </Container>

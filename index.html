@@ -72,20 +72,37 @@
     <!-- EmailJS -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script>
+      (function () {
+        const currentDomain = window.location.hostname;
+        const twitterImageMeta = document.querySelector(
+          'meta[name="twitter:image"]',
+        );
+        const ogImageMeta = document.querySelector('meta[name="og:image"]');
 
-        (function() {
-            const currentDomain = window.location.hostname;
-            const twitterImageMeta = document.querySelector('meta[name="twitter:image"]');
-            const ogImageMeta = document.querySelector('meta[name="og:image"]');
-            
-            if (currentDomain === 'odoc.app') {
-              twitterImageMeta.setAttribute('content', 'src/frontend/public/odoc_thumnail.png');
-              ogImageMeta.setAttribute('content', 'src/frontend/public/odoc_thumnail.png');
-            } else if (currentDomain === 'icpjobs.com') {
-              twitterImageMeta.setAttribute('content', 'src/frontend/public/icpjobs_thumnail.png');
-              ogImageMeta.setAttribute('content', 'src/frontend/public/icpjobs_thumnail.png');
-            }
-          })();
+        if (currentDomain === "odoc.app") {
+          twitterImageMeta.setAttribute(
+            "content",
+            "src/frontend/public/odoc_thumnail.png",
+          );
+          ogImageMeta.setAttribute(
+            "content",
+            "src/frontend/public/odoc_thumnail.png",
+          );
+          document.querySelector('link[rel="icon"]').href =
+            "src/frontend/public/logo.png";
+        } else if (currentDomain === "icpjobs.com") {
+          twitterImageMeta.setAttribute(
+            "content",
+            "src/frontend/public/icpjobs_thumnail.png",
+          );
+          ogImageMeta.setAttribute(
+            "content",
+            "src/frontend/public/icpjobs_thumnail.png",
+          );
+          document.querySelector('link[rel="icon"]').href =
+            "src/frontend/public/icpjobs_logo.png";
+        }
+      })();
 
       (function () {
         emailjs.init({ publicKey: "4tsXOwa-NLLAY5Bta" });

@@ -6,9 +6,12 @@ import { ActionProcessor, CalendarFormatter, TimeFormatter } from "./gemeniAi";
 
 import compactMessage from "../discover/jobs/utils/compactMessage";
 import { mockJobAIResponse } from "../discover/jobs/utils/mockJobAIRes";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export const useChatHandler = () => {
   const { calendar } = useSelector((state: any) => state.calendarState);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const dispatch = useDispatch();
   const [messageResponses, setMessageResponses] = useState({});
@@ -73,7 +76,7 @@ export const useChatHandler = () => {
       Current Job Data: ${JSON.stringify(currentJobRef.current)}
     `;
     let parsedJob = {};
-    
+
     if (import.meta.env.VITE_DFX_NETWORK !== "ic") {
       parsedJob = mockJobAIResponse(
         currentJobRef.current,
@@ -84,11 +87,12 @@ export const useChatHandler = () => {
       const jobRes = await aiAgent.sendMessage(prompt, false);
       parsedJob = textToJson(jobRes).extractedData;
     }
+    console.log({ parsedJob });
     // const jobRes = await aiAgent.sendMessage(prompt, false);
     // parsedJob = textToJson(jobRes).extractedData;
     // parsedJob = mockJobAIResponse(currentJobRef.current,jobs,prompt)
     if (parsedJob.done) {
-      dispatch({type:"IS_PROFILE_COMPELETE"})
+      dispatch({ type: "IS_PROFILE_COMPELETE" });
     }
     // Validation logic
     if (!currentJobId) {
@@ -166,6 +170,13 @@ export const useChatHandler = () => {
           actions: [],
           done: true,
         };
+      }
+
+      if (parsed.type === "JOBS" && location.pathname !== "/") {
+        navigate("/");
+      }
+      if (parsed.type === "CALENDAR" && location.pathname !== "/calendar") {
+        navigate("/calendar");
       }
 
       let result;

@@ -20,8 +20,11 @@ import AffiliateRedirect from "./affiliateRedirect";
 
 import ContractPage from "./profile/ContractPage";
 import { useNavigate, Link, Navigate } from "react-router-dom";
-import Dashboard from "./dash_board_v1";
+// import Dashboard from "./dash_board_v1";
 import CalendarView from "./dash_board_v1/calindarView/calendar";
+import JobsPage from "./discover/jobs";
+import AchievementPage from "@/components/userBadges";
+import ICPJobsLandingPage from "./LandingPage/aiJobMatch";
 
 function Pages() {
   const navigate = useNavigate();
@@ -32,14 +35,18 @@ function Pages() {
   );
 
   const { isLoggedIn } = useSelector((state: any) => state.uiState);
-
+  const currentDomain = window.location.hostname;
   const MainPage = () => {
     if (isLoggedIn) {
-      return <Dashboard />;
+      return <JobsPage />;
     }
-    // return <ICPJobsLandingPage />;
-    return <LandingPage />;
+    if (currentDomain == "odoc.app") {
+      return <LandingPage />;
+    } else {
+      return <ICPJobsLandingPage />;
+    }
   };
+
   return (
     <Routes>
       <Route path="/" element={<MainPage />} />
@@ -71,6 +78,7 @@ function Pages() {
       <Route path="/f" element={<AffiliateRedirect />} />
       <Route path="/*" element={<FileContentPage />} />
       <Route path="/calendar" element={<CalendarView />} />
+      <Route path="/achievementCard" element={<AchievementPage />} />
     </Routes>
   );
 }

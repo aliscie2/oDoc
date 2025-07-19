@@ -1,41 +1,16 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import { Box } from "@mui/material";
 
-import { v4 as uuidv4 } from "uuid";
-import { textToJson } from "./utils/processResponseJobs";
 import { useDispatch, useSelector } from "react-redux";
-import { Job, JobUpdate } from "$/declarations/backend/backend.did";
-import { BUILD_JOB_PROMPT } from "./utils/buildProfilePrompt";
+import { Job } from "$/declarations/backend/backend.did";
+
 import JobSelector from "@/pages/discover/jobs/JobSelector";
 import JobSearchComponent from "./JobSearchComponent";
 
-import { useBackendContext } from "@/contexts/BackendContext";
 import LoginButton from "@/components/MainComponents/topNavBar/loginButton";
 import { Login } from "@mui/icons-material";
-import { use } from "chai";
-
-// interface Message {
-//   id: string;
-//   content: string;
-//   sender: "user" | "ai";
-//   timestamp: Date;
-// }
-
-// interface ProcessedJobResponse {
-//   done: boolean;
-//   feedback: string;
-//   actions: Array<
-//     | { type: "SET_CURRENT_JOB"; job: Job }
-//     | { type: "UPDATE_JOB"; update: JobUpdate }
-//     | { type: "SET_JOBS"; jobs: Job[] }
-//     | { type: "ADD_JOB"; job: Job }
-//     | { type: "DELETE_JOB"; id: string }
-//   >;
-// }
 
 const JobsPage: React.FC = () => {
-  const { backendActor } = useBackendContext();
-
   const { isChanged, currentJobId, jobs, matchingJobs } = useSelector(
     (state: any) => state.jobState,
   );
@@ -65,12 +40,22 @@ const JobsPage: React.FC = () => {
         overflowX: "hidden",
         display: "flex",
         flexDirection: "column",
+        // Center content with max width like Twitter
+        maxWidth: { xs: "100%", sm: "600px", md: "800px" },
+        marginX: { xs: 0, sm: "auto" },
       }}
     >
-      <JobSelector />
+      <Box
+        sx={{
+          // Mobile: add left margin to avoid sandwich button overlap
+          marginLeft: { xs: "60px", sm: 0 },
+          marginRight: { xs: "16px", sm: 0 },
+        }}
+      >
+        <JobSelector />
+      </Box>
       <JobSearchComponent />
     </Box>
   );
 };
-
 export default JobsPage;

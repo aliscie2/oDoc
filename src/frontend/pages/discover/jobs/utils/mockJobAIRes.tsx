@@ -14,7 +14,7 @@ export function mockJobAIResponse(
     required_match_score: currentJob?.required_match_score || 7.0,
     feedback: "",
     updates: [],
-    category: Object.keys(currentJob?.category || {})[0] || "Talent",
+    category: Object.keys(currentJob?.category || {})[0] || "Job",
     done: false,
     isBreakingChanges: false,
   };
