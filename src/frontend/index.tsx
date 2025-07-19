@@ -6,7 +6,8 @@ import store from "./redux/store";
 import ThemeProvider from "./ThemeProvider";
 import { BackendProvider } from "./contexts/BackendContext";
 import { SnackbarProvider } from "notistack";
-
+import  { Helmet } from "react-helmet-async"
+import ShareThumnail from "@/public/icpjobs_thumnail.png";
 import { _SERVICE } from "$/declarations/backend/backend.did";
 import * as Sentry from "@sentry/react";
 
@@ -28,6 +29,7 @@ const root = createRoot(rootElement);
 root.render(
   <StrictMode>
     <Provider store={store}>
+      
       <ThemeProvider>
         <BackendProvider>
           <SnackbarProvider
