@@ -7,6 +7,7 @@ import { ActionProcessor, CalendarFormatter, TimeFormatter } from "./gemeniAi";
 import compactMessage from "../discover/jobs/utils/compactMessage";
 import { mockJobAIResponse } from "../discover/jobs/utils/mockJobAIRes";
 import { useLocation, useNavigate } from "react-router-dom";
+import { mockCalendarAIResponse } from "../discover/jobs/utils/mockCalendarAIRes";
 
 export const useChatHandler = () => {
   const { calendar } = useSelector((state: any) => state.calendarState);
@@ -36,15 +37,12 @@ export const useChatHandler = () => {
     `;
     let eventRes = [];
 
-    // if (import.meta.env.VITE_DFX_NETWORK !== "ic") {
-    //   eventRes = mockCalendarAIResponse(calendar, message.split("//")[1]);
-    // } else {
-    //   let calendarRes = await aiAgent.sendMessage(prompt);
-    //   eventRes = textToJson(calendarRes).extractedData;
-    // }
-
-    let calendarRes = await aiAgent.sendMessage(prompt);
-    eventRes = textToJson(calendarRes).extractedData;
+    if (import.meta.env.VITE_DFX_NETWORK !== "ic") {
+      eventRes = mockCalendarAIResponse(calendar, message.split("//")[1]);
+    } else {
+      let calendarRes = await aiAgent.sendMessage(prompt);
+      eventRes = textToJson(calendarRes).extractedData;
+    }
 
     eventRes?.forEach((action) => {
       if (action.data.type !== "CALENDAR_QUERY") {
@@ -87,10 +85,7 @@ export const useChatHandler = () => {
       const jobRes = await aiAgent.sendMessage(prompt, false);
       parsedJob = textToJson(jobRes).extractedData;
     }
-    console.log({ parsedJob });
-    // const jobRes = await aiAgent.sendMessage(prompt, false);
-    // parsedJob = textToJson(jobRes).extractedData;
-    // parsedJob = mockJobAIResponse(currentJobRef.current,jobs,prompt)
+  
     if (parsedJob.done) {
       dispatch({ type: "IS_PROFILE_COMPELETE" });
     }
@@ -156,12 +151,20 @@ export const useChatHandler = () => {
       message.length > 2000 ? compactMessage(message) : message;
 
     try {
-      // let classifyMessageRes = await aiAgent.sendMessage(`
-      //   ${PROMPTS.CLASSIFY}
-      //   Message:${compact_message}
-      //   `);
-      // const parsed = textToJson(classifyMessageRes).extractedData;
-      const parsed = { type: "JOBS" };
+      let parsed = {}
+      if (import.meta.env.VITE_DFX_NETWORK !== "ic") {
+
+        let classifyMessageRes = await aiAgent.sendMessage(`
+        ${PROMPTS.CLASSIFY}
+        Message:${compact_message}
+        `);
+          parsed = textToJson(classifyMessageRes).extractedData;
+      } else {
+          parsed = { type: "JOBS" };
+      }
+
+      
+      
 
       if (!parsed.type) {
         return {
