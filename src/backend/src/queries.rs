@@ -8,6 +8,7 @@ use crate::contracts::Contract;
 use crate::files::FileNode;
 use crate::files_content::ContentNode;
 use crate::friends::Friend;
+use crate::job_matcher::pallet::Job;
 use crate::storage_schema::{ContentTree, ContractId, FileId};
 use crate::user::User;
 use crate::user_history::UserHistory;
@@ -28,15 +29,21 @@ pub struct InitialData {
 pub struct SNSStatus {
     number_users: f64,
     active_users: f64,
+    talents_count: f64,
+    jobs_count: f64,
 }
 
 #[query]
 fn get_sns_status() -> Result<SNSStatus, String> {
     let number_users = User::get_number_of_users();
     let active_users = UserHistory::get_number_of_active_users();
+    let talents_count = Job::get_talents_count()  as f64;
+    let jobs_count = Job::get_jobs_count() as f64;
     Ok(SNSStatus {
         number_users,
         active_users,
+        talents_count,
+        jobs_count
     })
 }
 

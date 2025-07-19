@@ -470,7 +470,12 @@ type Row = record {
   contract : opt Contract;
   cells : opt vec record { text; text };
 };
-type SNSStatus = record { number_users : float64; active_users : float64 };
+type SNSStatus = record {
+  talents_count : float64;
+  number_users : float64;
+  active_users : float64;
+  jobs_count : float64;
+};
 type ScheduleType = variant {
   DateRange : record { end_date : float64; start_date : float64 };
   WeeklyRecurring : record { days : vec nat32; valid_until : opt float64 };
