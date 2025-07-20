@@ -176,47 +176,50 @@ VITE_PUBLIC_TELEGRAM_BOT_TOKEN=<telegram-bot-token>
 ```
 
 ## ✨ Key Features
+# ODoc.app
 
-### 🔌 Plugins
+A comprehensive platform designed to streamline freelancer workflows from job matching to project completion.
 
-Customizable extensions for your workspace (grammar correction, machine learning, etc.)
+## Features
 
-### 🧩 Components
+### AI Job Matcher
+- Intelligent job-talent matching system
+- Interactive AI consultant for career guidance
+- Resume and company requirement analysis
+- Automated cover letter generation
+- Smart match scoring (0-100%)
+- Automatic filtering of low-quality matches
 
-Custom interactive elements like tables, flashcards, and more
+### AI Calendar Management
+- Voice-activated scheduling: "book me event 9 am"
+- Natural language availability setting: "available every day 9am-6pm"
+- Automated interview and event booking
+- Smart calendar optimization
 
-### 🌐 Services
+### Crypto Agreement System
+- Unified task and payment management
+- Blockchain-based agreements
+- Secure milestone tracking
+- Automated payment releases
 
-Publish and share your custom plugins and components with the community
+### Karma Score System
+- Behavioral tracking and scoring
+- Dynamic resume building based on performance
+- Reputation management
+- Trust indicators for clients and freelancers
 
-### 🔍 Advanced Search
+## Deployment Strategy
 
-- Word search within files
-- File name search
-- Global search across directories
-- Regular expressions
-- Saved search results
+Primary domains for SEO optimization:
+- **icpjobs.com** - Job matching focus
+- **calendarTalk.com** - Calendar management focus
 
-### 📊 Spreadsheets
+*Core application accessible at odoc.app*
 
-Excel-like functionality with:
-
-- Custom formulas and plugins
-- Column-level permissions
-- View-based access control
-- Smart contract integration
-
-### 🏆 NFT Ownership
-
-Own your creations as NFTs and monetize through:
-
-- Direct sales
-- Revenue sharing
-- Subscription models
-
-### 🔒 Privacy & Security
-
-Decentralized data storage on the Internet Computer blockchain
+## Target Users
+- Freelancers seeking streamlined workflow management
+- Companies looking for talent acquisition solutions
+- Remote workers needing integrated project management tools
 
 ## 🧪 Testing
 
