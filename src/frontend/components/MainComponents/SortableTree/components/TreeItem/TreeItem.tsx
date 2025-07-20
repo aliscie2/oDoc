@@ -60,7 +60,7 @@ export const TreeItem = forwardRef<HTMLDivElement, Props>(
     const dispatch = useDispatch();
     const handleItemClick = () => {
       navigate(id);
-      let file = files.find((file) => file.id === id);
+      const file = files.find((file) => file.id === id);
       dispatch({ type: "CURRENT_FILE", file });
     };
 

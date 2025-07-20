@@ -1,7 +1,7 @@
 import { CustomContract } from "../../../declarations/backend/backend.did";
 
 test("Test update cell", async () => {
-  let custom_contract: CustomContract = {
+  const custom_contract: CustomContract = {
     id: "t7k6mw",
     permissions: [],
     creator: global.user.getPrincipal(),
@@ -76,7 +76,7 @@ test("Test update cell", async () => {
   expect(res).toEqual({ Ok: "Updates applied successfully." });
 
   //// ------------------- Update cell by others-------------------
-  let newUser = await global.newUser();
+  const newUser = await global.newUser();
   global.actor.setIdentity(newUser);
   custom_contract.contracts[0].rows[0].cells[0].value = "CHANGE BY OTHERS";
   to_store = {

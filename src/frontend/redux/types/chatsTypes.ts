@@ -27,7 +27,7 @@ export type ChatActions =
   | { type: typeof UPDATE_NOTIFICATION; message: Message }
   | { type: typeof SET_CHATS_NOTIFICATIONS; messages: Message[] }
   | { type: typeof DELETE_CHATS_NOTIFICATIONS; chat_id: string }
-  | { type: typeof DELETE_CHAT; id: String }
+  | { type: typeof DELETE_CHAT; id: string }
   | { type: typeof UPDATE_CHAT; chat: FEChat }
   | { type: typeof ADD_CHATS_NOTIFICATIONS; message: Message }
   | { type: typeof ADD_CHAT; chat: FEChat };

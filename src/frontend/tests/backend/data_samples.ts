@@ -10,9 +10,9 @@ export function newContract(): {
   custom_contract: CustomContract;
   promise: CPayment;
 } {
-  let contract_id: string = randomString();
-  let promise: CPayment = createNewPromis(Principal.fromText("2vxsx-fae"));
-  let custom_contract: CustomContract = {
+  const contract_id: string = randomString();
+  const promise: CPayment = createNewPromis(Principal.fromText("2vxsx-fae"));
+  const custom_contract: CustomContract = {
     id: contract_id,
     creator: Principal.fromText("2vxsx-fae"),
     date_created: 0,

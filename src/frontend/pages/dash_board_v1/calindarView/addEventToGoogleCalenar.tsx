@@ -64,9 +64,9 @@ const GoogleCalendarButton: React.FC<GoogleCalendarButtonProps> = ({
       //   calendarUrl,
       // };
       // for email in calendar.googleIds
-      for (let email of calendar?.googleIds) {
+      for (const email of calendar?.googleIds) {
         // let isEmailSent = await sendEmail("New event","You have new event created" ,[email],data,"new_event");
-        let isEmailSent = await sendEmail(
+        const isEmailSent = await sendEmail(
           `New event`,
           `event created at oDoc by${profile.name}, click here to add to google: ${calendarUrl}`,
           [email],

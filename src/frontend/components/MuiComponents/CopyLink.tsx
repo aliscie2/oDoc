@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   Button,
   Menu,
-  MenuItem,
   TextField,
   Autocomplete,
   CircularProgress,
@@ -11,7 +10,6 @@ import {
   Typography,
 } from "@mui/material";
 import ShareIcon from "@mui/icons-material/Share";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { useDispatch, useSelector } from "react-redux";
 import { Principal } from "@dfinity/principal";
 import { useBackendContext } from "../../contexts/BackendContext";
@@ -154,7 +152,7 @@ const ShareFileButton = () => {
         users_permissions: userPermissions,
       };
 
-      let res = await backendActor.share_file(shareFileInput);
+      const res = await backendActor.share_file(shareFileInput);
       if (res.Err) {
         enqueueSnackbar(
           res.Err + " Click on the save button first then try again.",

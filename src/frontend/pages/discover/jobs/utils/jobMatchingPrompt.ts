@@ -1,6 +1,6 @@
 import { Match } from "$/declarations/backend/backend.did";
 
-let match: Match = {
+const match: Match = {
   matching_skills: ["python", "fastapi", "django"],
   user_id: "567-723-waef-231",
   score: 8.6,

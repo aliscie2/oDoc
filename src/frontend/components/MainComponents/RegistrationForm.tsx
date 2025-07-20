@@ -7,7 +7,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { Add, WindowOutlined } from "@mui/icons-material";
+import { Add } from "@mui/icons-material";
 import { useSnackbar } from "notistack";
 import { useBackendContext } from "../../contexts/BackendContext";
 import { RegisterUser } from "../../../declarations/backend/backend.did";

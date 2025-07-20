@@ -8,31 +8,31 @@ import { Principal } from "@dfinity/principal";
 import { randomString } from "../../DataProcessing/dataSamples";
 
 test("Test render login", async () => {
-  let input: RegisterUser = {
+  const input: RegisterUser = {
     name: ["name1"],
     description: ["Somthing"],
     photo: [[]],
   };
   // register user 1
-  let res = await global.actor.register(input);
+  const res = await global.actor.register(input);
   expect("Ok" in res).toBeTruthy();
 
   // register user 2
   const user2: Identity = createIdentity("2");
   global.actor.setIdentity(user2);
   input.name = ["name2"];
-  let res2 = await global.actor.register(input);
+  const res2 = await global.actor.register(input);
   expect("Ok" in res2).toBeTruthy();
 
   // rate user 1
-  let rating: Rating = {
+  const rating: Rating = {
     id: randomString(),
     date: Date.now() * 1e6,
     user_id: Principal.anonymous(),
     comment: "He is a nice person",
     rating: 0.4,
   };
-  let res3 = await global.actor.rate_user(
+  const res3 = await global.actor.rate_user(
     Principal.fromText(res.Ok.id),
     rating,
   );

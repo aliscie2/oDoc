@@ -1,4 +1,3 @@
-import { useCallback } from "react";
 import { Principal } from "@dfinity/principal";
 
 const getckUsdcBalance = async (ckUSDCActor, userPrincipal) => {

@@ -145,7 +145,7 @@ export function jobReducer(
         isChanged: true,
       };
     case "UPDATE_FIELDS":
-      let category: any = {};
+      const category: any = {};
       category[action.category] = null;
       let jobUpdate: JobUpdate = {
         id: state.currentJobId,
@@ -219,7 +219,7 @@ export function jobReducer(
 
     case "UPDATE_MATCHING_JOBS":
       //  is newMatches action.matches + state.currentJobId)?.matches if job_id is repeated we replace with match from action.matches
-      let newMatches2 =
+      const newMatches2 =
         state.jobs
           .find((j) => j.id === state.currentJobId)
           ?.matches.filter(
@@ -228,7 +228,7 @@ export function jobReducer(
 
       newMatches2.push(...action.matches);
 
-      let newmMtchingJobs = state.matchingJobs.filter(
+      const newmMtchingJobs = state.matchingJobs.filter(
         (j) => !action.matchingJobs.some((m) => m.id == j.id),
       );
       newmMtchingJobs.push(...action.matchingJobs);
@@ -335,13 +335,13 @@ export function jobReducer(
       };
 
     case "DELETE_MATCH":
-      let newMatches =
+      const newMatches =
         state.jobs
           .find((j) => j.id === state.currentJobId)
           ?.matches.filter((match) => match.job_id !== action.id) || [];
 
       // Calculate updated jobChanges once
-      let updatedJobChanges = state.jobChanges.some(
+      const updatedJobChanges = state.jobChanges.some(
         (j) => j.id === state.currentJobId,
       )
         ? state.jobChanges.map((j) =>

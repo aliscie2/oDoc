@@ -10,16 +10,13 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControl,
   IconButton,
-  InputLabel,
   List,
   ListItem,
   ListItemAvatar,
   ListItemText,
   Menu,
   MenuItem,
-  Select,
   TextField,
   Typography,
   CircularProgress,
@@ -35,7 +32,7 @@ import ChatWindow from "./chatWindow";
 import { useBackendContext } from "../../contexts/BackendContext";
 import { useDispatch, useSelector } from "react-redux";
 
-import { Chat, Message } from "../../../declarations/backend/backend.did";
+import { Chat } from "../../../declarations/backend/backend.did";
 import { Principal } from "@dfinity/principal";
 import { randomString } from "../../DataProcessing/dataSamples";
 import { convertToBlobLink } from "@/DataProcessing/imageToVec";
@@ -237,7 +234,7 @@ const ChatList = memo(
       <Box sx={{ width: "100%" }}>
         <List sx={{ padding: 0, width: "100%" }}>
           {chatsWithUnread.map((chat) => {
-            let isOdoc =
+            const isOdoc =
               chat.members.find((m) => m.toText() !== profile?.id) ==
               "tgwpc-6xuon-k3a6y-ey7lt-xksjs-qx22h-ikhbt-4yp3a-6stco-rymbe-pqe";
             const otherUser = getOtherUser(chat);

@@ -1,24 +1,16 @@
 import React, { useRef, useState, useEffect } from "react";
 import {
   Box,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
   Typography,
   Paper,
   Container,
   useTheme,
   useMediaQuery,
   alpha,
-  Divider,
   IconButton,
-  Collapse,
-  Fade,
 } from "@mui/material";
 import { tutorials } from "./landingPageData";
 import {
-  PlayArrow,
   ChevronLeft,
   ChevronRight,
   CheckCircle,

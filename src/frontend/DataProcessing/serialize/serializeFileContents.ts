@@ -1,6 +1,5 @@
 import { randomString } from "../dataSamples";
 import {
-  ContentData,
   ContentNode,
 } from "../../../declarations/backend/backend.did";
 
@@ -24,24 +23,24 @@ export function convertStyleArrayToObject(styleArray) {
 
 function de_nesting(nested: any[]) {
   let queue = [];
-  let data = [];
+  const data = [];
   let parent = [];
   nested.forEach((rootItem) => {
     queue.push(rootItem);
 
     while (queue.length > 0) {
-      let item = queue.pop();
-      let formats = getFormats(item);
+      const item = queue.pop();
+      const formats = getFormats(item);
       item.url && formats.push(URLKEYLEAFE + item.url);
-      let id = item.id || randomString();
-      let children: ContentNode[] = item.children
+      const id = item.id || randomString();
+      const children: ContentNode[] = item.children
         ? item.children.map((child) => {
-            let id = String(child.id || randomString());
+            const id = String(child.id || randomString());
             return { id, parent: [String(id)], ...child };
           })
         : [];
 
-      let obj: ContentNode = {
+      const obj: ContentNode = {
         id: String(id),
         formats,
         value: item.value || "",
@@ -73,8 +72,8 @@ function serializeFileContents(
 ) {
   Object.keys(content).forEach((key) => {
     let change = [];
-    let item = content[key];
-    let de_nested: Array<ContentNode> = de_nesting(item);
+    const item = content[key];
+    const de_nested: Array<ContentNode> = de_nesting(item);
     change = [key, de_nested];
     data.push([change]);
   });

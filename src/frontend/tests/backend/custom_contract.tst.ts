@@ -2,7 +2,7 @@ import { StoredContract } from "../../../declarations/backend/backend.did";
 import { newContract } from "./data_samples";
 
 test("Basic testing", async () => {
-  let newUser = await global.newUser();
+  const newUser = await global.newUser();
   let res = await global.actor.deposit_usdt(100);
 
   const { custom_contract, promise } = newContract();
@@ -14,7 +14,7 @@ test("Basic testing", async () => {
   custom_contract.creator = global.user.getPrincipal();
   expect("Ok" in res).toBeTruthy();
 
-  let to_store: StoredContract = {
+  const to_store: StoredContract = {
     CustomContract: custom_contract,
   };
   res = await global.actor.multi_updates([], [], [to_store], [], []);

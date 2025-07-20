@@ -142,7 +142,7 @@ const Listbox = styled("ul")(
 );
 
 export default function MultiAutoComplete(props: any) {
-  let args = {
+  const args = {
     id: "customized-hook-demo",
 
     multiple: props.multiple, // TODO if false value will be a Hashmap instead of an array

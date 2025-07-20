@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Typography, Paper } from "@mui/material";
+import { Typography, Paper } from "@mui/material";
 
 const Talents: React.FC = () => {
   return (

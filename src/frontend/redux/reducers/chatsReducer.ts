@@ -1,14 +1,11 @@
 import {
   ADD_CHAT,
-  ADD_CHATS_NOTIFICATIONS,
   ADD_NOTIFICATION,
   ChatActions,
   ChatState,
   DELETE_CHAT,
   DELETE_CHATS_NOTIFICATIONS,
   initialChatsState,
-  OPEN_CHAT,
-  SEND_MESSAGE,
   SET_CHATS,
   SET_CHATS_NOTIFICATIONS,
   UPDATE_CHAT,
@@ -18,7 +15,6 @@ import {
 import {
   FEChat,
   Message,
-  UserFE,
 } from "../../../declarations/backend/backend.did";
 
 export function chatsReducer(

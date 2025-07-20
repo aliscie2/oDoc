@@ -6,7 +6,6 @@ import {
   paperClasses,
   tableCellClasses,
 } from "@mui/material";
-import { theme } from "flowbite-react";
 
 // Used only to create transitions
 const muiTheme = createTheme();

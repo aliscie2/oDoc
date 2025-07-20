@@ -1,18 +1,11 @@
-import React, { useState } from "react";
-import {
-  Box,
-  Typography,
-  Chip,
-  Avatar,
-  Divider,
-  Collapse,
-  IconButton,
-} from "@mui/material";
-import { Search, MoreHoriz, Close } from "@mui/icons-material";
+import React from "react";
+
+
+import { Search } from "@mui/icons-material";
 import { useSelector } from "react-redux";
 import { BaseCard, CardHeader } from "./card";
 import JobsPage from "../discover/jobs";
-import FullscreenDialog from "./FullscreenDialog"; // Import the shared dialog
+// Import the shared dialog
 import { Job } from "$/declarations/backend/backend.did";
 
 export const JobMatchesCard = ({

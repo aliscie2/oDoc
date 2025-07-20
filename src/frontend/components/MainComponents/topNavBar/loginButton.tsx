@@ -1,7 +1,6 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import { Button, LinearProgress, BottomNavigationAction } from "@mui/material";
-import { Person2 as Person2Icon } from "@mui/icons-material";
+import { Button, LinearProgress } from "@mui/material";
 import { RootState } from "../../../redux/reducers";
 import { useBackendContext } from "../../../contexts/BackendContext";
 import DfnIcon from "@/assets/dfn.svg";

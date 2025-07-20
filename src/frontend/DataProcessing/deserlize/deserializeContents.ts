@@ -5,7 +5,7 @@ import {
 } from "../serialize/serializeFileContents";
 
 export interface SlateNode {
-  id: String;
+  id: string;
   language?: string;
   type?: string;
   language?: string;
@@ -20,8 +20,8 @@ function nesting(
   alL_contents: Array<ContentNode>,
   visited: any[] = [],
 ) {
-  let children = content_node.children.map((child_id: string) => {
-    let child: ContentNode = alL_contents.find(
+  const children = content_node.children.map((child_id: string) => {
+    const child: ContentNode = alL_contents.find(
       (node: ContentNode) => node.id === child_id,
     );
     visited.push(child.id);
@@ -29,7 +29,7 @@ function nesting(
   });
   const indent = content_node.indent ? Number(content_node.indent) : null;
   const formats = convertStyleArrayToObject(content_node.formats);
-  let item = {
+  const item = {
     id: content_node.id,
     type: content_node._type,
     data: content_node.data,
@@ -66,12 +66,12 @@ function nesting(
 }
 
 export function deserializeContentTree(contentList: Array<ContentNode>) {
-  let contentTree: Array<SlateNode> = [];
-  let visited = [];
+  const contentTree: Array<SlateNode> = [];
+  const visited = [];
   contentList.map((node: ContentNode) => {
     if (!visited.includes(node.id) && node.parent && !node.parent.id) {
       visited.push(node.id);
-      let slate_node: SlateNode = nesting(node, contentList, visited);
+      const slate_node: SlateNode = nesting(node, contentList, visited);
       contentTree.push(slate_node);
     }
   });
@@ -87,14 +87,14 @@ export function deserializeContents(
   if (content.length == 0) {
     return [];
   }
-  let data = {};
+  const data = {};
   content.map((node: [string, Array<ContentNode>]) => {
     if (!node[0]) {
       return;
     }
-    let file_id: string = node[0];
-    let file_content: Array<ContentNode> = node[1];
-    let nested_file_content: Array<SlateNode> =
+    const file_id: string = node[0];
+    const file_content: Array<ContentNode> = node[1];
+    const nested_file_content: Array<SlateNode> =
       deserializeContentTree(file_content);
     data[file_id] = nested_file_content;
   });

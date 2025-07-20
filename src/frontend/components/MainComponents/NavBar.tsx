@@ -10,15 +10,11 @@ import {
   useTheme,
   Box,
   styled,
-  IconButton,
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import InfoIcon from "@mui/icons-material/Info";
-import ExploreIcon from "@mui/icons-material/Explore";
 import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
 import ReceiptIcon from "@mui/icons-material/Receipt";
-import HowToVoteIcon from "@mui/icons-material/HowToVote";
-import DashboardIcon from "@mui/icons-material/Dashboard";
 
 import CreateFile from "../Actions/CreateFile";
 
@@ -30,17 +26,8 @@ import GetMoreFiles from "../Actions/GetMoreFiles";
 import { buildTree } from "./SortableTree/utilities";
 
 import {
-  AccountBalanceWallet as AccountBalanceWalletIcon,
-  Close as CloseIcon,
   DarkMode as DarkModeIcon,
-  Gavel as GavelIcon,
   LightMode as LightModeIcon,
-  Logout as LogoutIcon,
-  Menu as MenuIcon,
-  MenuOpen as MenuOpenIcon,
-  Person2 as Person2Icon,
-  Search as SearchIcon,
-  Handshake as HandshakeIcon,
 } from "@mui/icons-material";
 // Styled components for theme-aware styling
 const StyledDrawerPaper = styled(Box)(({ theme }) => ({

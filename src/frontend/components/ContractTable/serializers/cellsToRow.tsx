@@ -1,7 +1,7 @@
 import { CCell } from "../../../../declarations/backend/backend.did";
 
 function cellsToRow(cells: Array<CCell>) {
-  let row = {};
+  const row = {};
   cells.forEach((c) => {
     row[c.field] = c.value;
   });

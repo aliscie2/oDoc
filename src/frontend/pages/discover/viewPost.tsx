@@ -4,7 +4,6 @@ import {
   Button,
   Card,
   CardContent,
-  CircularProgress,
   Collapse,
   Dialog,
   DialogActions,

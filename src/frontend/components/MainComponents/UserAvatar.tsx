@@ -1,7 +1,6 @@
 import { Avatar, IconButton } from "@mui/material";
 import ProgressCircle from "../MuiComponents/ProgressCircle";
 import React from "react";
-import { useSelector } from "react-redux";
 
 interface Props {
   photo: string;
@@ -12,7 +11,7 @@ interface Props {
 }
 
 function UserAvatar(props: Props) {
-  let photo = props.photo;
+  const photo = props.photo;
 
   return (
     <ProgressCircle progress={props.actions_rate}>

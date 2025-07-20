@@ -6,7 +6,6 @@ import { BrowserRouter } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import NavBar from "./components/MainComponents/NavBar";
 import TopNavBar from "./components/MainComponents/topNavBar";
-import SearchPopper from "./components/SearchComponent";
 import useSocket from "./websocket/use_socket";
 import { useBackendContext } from "./contexts/BackendContext";
 import { Box, CircularProgress, styled, useTheme } from "@mui/material";
@@ -233,8 +232,8 @@ const App: React.FC = () => {
         try {
           if (profile) {
             // get notifications
-            let notificationRes = await backendActor.get_user_notifications(0);
-            let chatsList = await backendActor.get_my_chats(0);
+            const notificationRes = await backendActor.get_user_notifications(0);
+            const chatsList = await backendActor.get_my_chats(0);
 
             dispatch({
               type: "UPDATE_NOT_LIST",
@@ -246,17 +245,17 @@ const App: React.FC = () => {
             });
             // get calendar
 
-            let res = await backendActor.get_my_calendar();
-            let aiCredits = await backendActor.get_ai_credits();
+            const res = await backendActor.get_my_calendar();
+            const aiCredits = await backendActor.get_ai_credits();
             if (aiCredits.Err == "User does not exist") {
-              let _ = await backendActor.drop_free_credits();
+              const _ = await backendActor.drop_free_credits();
               dispatch({
                 type: "INIT_AI_CREDITS",
                 credits: 5,
                 isFree: true,
               });
             } else if (!aiCredits.Err) {
-              let isFree = await backendActor.is_ai_free_tier();
+              const isFree = await backendActor.is_ai_free_tier();
               dispatch({
                 type: "INIT_AI_CREDITS",
                 credits: aiCredits.Ok,

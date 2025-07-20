@@ -4,7 +4,6 @@ import { useSnackbar } from "notistack";
 import { useBackendContext } from "@/contexts/BackendContext";
 
 import serializeFileContents from "@/DataProcessing/serialize/serializeFileContents";
-import { StoredContract } from "$/declarations/backend/backend.did";
 
 interface UseDocsSaveReturn {
   isChanged: boolean;

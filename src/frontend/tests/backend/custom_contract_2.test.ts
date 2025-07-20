@@ -3,7 +3,7 @@ import { newContract } from "./data_samples";
 import { randomString } from "../../DataProcessing/dataSamples";
 
 test("Test actions rating", async () => {
-  let contract_id: string = randomString();
+  const contract_id: string = randomString();
 
   // -------- init the test -------- \\
   let res;
@@ -15,14 +15,14 @@ test("Test actions rating", async () => {
 
   async function userObject(user) {
     global.actor.setIdentity(user);
-    let notifications: Array<Notification> =
+    const notifications: Array<Notification> =
       await global.actor.get_user_notifications();
     await Promise.all(
       notifications.map(async (value) => {
-        let payment = value.content.CPaymentContract[0];
-        let contract_id = custom_contract.id;
+        const payment = value.content.CPaymentContract[0];
+        const contract_id = custom_contract.id;
         expect(payment.contract_id).toEqual(contract_id);
-        let res = await global.actor.object_on_cancel(
+        const res = await global.actor.object_on_cancel(
           payment,
           "I don't like it",
         );
@@ -37,7 +37,7 @@ test("Test actions rating", async () => {
   promise.status = { None: null };
 
   /// ---------- dummy promises ---------- \\
-  let newUser1 = await global.newUser();
+  const newUser1 = await global.newUser();
   newUser = newUser1.getPrincipal();
   promises.push(
     ...[1, 2, 3, 4].map((value) => {
@@ -49,7 +49,7 @@ test("Test actions rating", async () => {
     }),
   );
 
-  let newUser2 = await global.newUser();
+  const newUser2 = await global.newUser();
   newUser = newUser2.getPrincipal();
   promises.push(
     ...[1, 2, 3, 4].map((value) => {
@@ -61,7 +61,7 @@ test("Test actions rating", async () => {
     }),
   );
 
-  let newUser3 = await global.newUser();
+  const newUser3 = await global.newUser();
   newUser = newUser3.getPrincipal();
   promises.push(
     ...[1, 2, 3, 4].map((value) => {
@@ -73,7 +73,7 @@ test("Test actions rating", async () => {
     }),
   );
 
-  let newUser4 = await global.newUser();
+  const newUser4 = await global.newUser();
   newUser = newUser4.getPrincipal();
   promises.push(
     ...[3].map((value) => {
@@ -85,7 +85,7 @@ test("Test actions rating", async () => {
     }),
   );
 
-  let newUser5 = await global.newUser();
+  const newUser5 = await global.newUser();
   newUser = newUser5.getPrincipal();
   promises.push(
     ...[3].map((value) => {
@@ -98,7 +98,7 @@ test("Test actions rating", async () => {
   );
 
   promise.status = { Released: null };
-  let promises_3 = await Promise.all(
+  const promises_3 = await Promise.all(
     [1, 2, 3].map(async (value) => {
       newUser = await global.newUser();
       newUser = newUser.getPrincipal();
@@ -160,7 +160,7 @@ test("Test actions rating", async () => {
 });
 
 test("Basic contract action", async () => {
-  let contract_id: string = randomString();
+  const contract_id: string = randomString();
 
   // -------- init the test -------- \\
   let res;

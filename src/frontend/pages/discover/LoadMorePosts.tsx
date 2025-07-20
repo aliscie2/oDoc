@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Box, CircularProgress, Typography, useTheme } from "@mui/material";
 import { useBackendContext } from "../../contexts/BackendContext";

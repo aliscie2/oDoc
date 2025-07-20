@@ -6,9 +6,6 @@ import store from "./redux/store";
 import ThemeProvider from "./ThemeProvider";
 import { BackendProvider } from "./contexts/BackendContext";
 import { SnackbarProvider } from "notistack";
-import  { Helmet } from "react-helmet-async"
-import ShareThumnail from "@/public/icpjobs_thumnail.png";
-import { _SERVICE } from "$/declarations/backend/backend.did";
 import * as Sentry from "@sentry/react";
 
 if (import.meta.env.VITE_DFX_NETWORK === "ic") {

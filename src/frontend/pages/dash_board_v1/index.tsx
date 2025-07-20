@@ -1,18 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Box } from "@mui/material";
 import { JobMatchesCard } from "./jobs";
-import { PostsCard } from "./postsCard";
-import { AlertsCard } from "./alerts";
 import { AIChatComponent } from "./aiChat";
 import { CalendarCard } from "./calendar";
-import AchievementCard from "@/components/userBadges";
 import { useDispatch, useSelector } from "react-redux";
-import PROMPTS from "../discover/jobs/utils/prompts";
-import { textToJson } from "../discover/jobs/utils/processResponseJobs";
 import { Job } from "$/declarations/backend/backend.did";
 import { useChatHandler } from "./useChathandler";
 import { undoCalendarAction, undoJobAction } from "./reverseAction";
-import { ActionProcessor } from "./gemeniAi";
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -86,7 +80,7 @@ const Dashboard = () => {
       }
 
       // Apply any state changes based on result
-      let newState = { ...currentState };
+      const newState = { ...currentState };
       let hasStateChanges = false;
 
       // Example state changes based on action_type or actions
@@ -196,7 +190,7 @@ const Dashboard = () => {
         dispatch(action);
       });
     } else if (message.action_type === "JOBS") {
-      let category = Object.keys(
+      const category = Object.keys(
         message.prev_job.category || message.curr_job.category,
       )[0];
       dispatch({

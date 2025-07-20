@@ -8,7 +8,6 @@ import {
 } from "../../../declarations/backend/backend.did";
 import { randomString } from "../../DataProcessing/dataSamples";
 import { Principal } from "@dfinity/principal";
-import { produce } from "immer";
 
 export function updateCContractColumn(contract, new_column): CContract {
   contract.columns = contract.columns.map((column: CColumn) => {
@@ -47,7 +46,7 @@ export function serializeContractColumn(
       col["width"] = 150;
       col["valueGetter"] = (params: any) => {
         addVarsToParser(params, contract);
-        let ev = evaluate(col.formula_string);
+        const ev = evaluate(col.formula_string);
         if (ev.err) {
           return "Invalid formula";
         }
@@ -70,10 +69,10 @@ export function serializeContractRows(
   columns: Array<CColumn>,
 ) {
   return rows.map((row: CRow) => {
-    let cells: any = {};
+    const cells: any = {};
     row.cells &&
       row.cells.map((cell: CCell) => {
-        let c = {};
+        const c = {};
         cells[cell.field] = cell.value || "";
         return c;
       });
@@ -89,7 +88,7 @@ export function serializeContractRows(
 
 export function deserializeContractRows(rows: Array<any>): Array<CRow> {
   return rows.map((row) => {
-    let cells: Array<any> = [];
+    const cells: Array<any> = [];
     Object.keys(row).map((k: string) => {
       if (k != "id" && k != "cells") {
         cells.push({
@@ -98,7 +97,7 @@ export function deserializeContractRows(rows: Array<any>): Array<CRow> {
         });
       }
     });
-    let de_row: CRow = {
+    const de_row: CRow = {
       id: row["id"],
       cells,
     };
@@ -119,15 +118,15 @@ export function serializeRowToPromise(
   all_users: any[],
   contract,
 ): CPayment {
-  let cells: Array<CCell> = Object.keys(row)
+  const cells: Array<CCell> = Object.keys(row)
     .filter((key) => !PROMISES_CONTRACT_FIELDS.includes(key))
     .map((key) => ({ field: key, value: row[key] || "" }));
-  let status: any = {};
+  const status: any = {};
   status[row.status] = null;
-  let sender = all_users.find((user: any) => user.name === row.sender);
-  let receiver = all_users.find((user: any) => user.name === row.receiver);
+  const sender = all_users.find((user: any) => user.name === row.sender);
+  const receiver = all_users.find((user: any) => user.name === row.receiver);
 
-  let promise: CPayment = {
+  const promise: CPayment = {
     id: row.id,
     status: status,
     date_created: 0,
@@ -158,18 +157,18 @@ export function createCColumn(field: string): CColumn {
 }
 
 export function createCContract(): CContract {
-  let field = randomString();
-  let new_cell: CCell = {
+  const field = randomString();
+  const new_cell: CCell = {
     field,
     value: "",
   };
-  let new_row: CRow = {
+  const new_row: CRow = {
     id: randomString(),
     cells: [new_cell],
   };
 
-  let new_column: CColumn = createCColumn(field);
-  let new_c_contract: CContract = {
+  const new_column: CColumn = createCColumn(field);
+  const new_c_contract: CContract = {
     id: randomString(),
     name: "Untitled",
     columns: [new_column],
@@ -213,8 +212,8 @@ export function updateCustomContractColumns(
 }
 
 export function createNewPromis(sender): CPayment {
-  let status = { None: null };
-  let new_promise: CPayment = {
+  const status = { None: null };
+  const new_promise: CPayment = {
     contract_id: "", // the backend will handle this
     id: "fresh_promise" + randomString(),
     date_created: Date.now() * 1e6,

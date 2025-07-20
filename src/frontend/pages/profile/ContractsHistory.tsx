@@ -9,7 +9,6 @@ import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Divider from "@mui/material/Divider";
 import { v4 as uuidv4 } from "uuid";
-import { RootState } from "../../redux/reducers";
 import NotificationPromises from "../../components/ContractTable/notificationPromises";
 import { Typography } from "@mui/material";
 import React from "react";

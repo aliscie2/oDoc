@@ -1,6 +1,5 @@
 import { FilesActions, InitialState, initialState } from "../types/filesTypes";
 import {
-  FileNode,
   Friend,
   StoredContract,
 } from "../../../declarations/backend/backend.did";
@@ -13,7 +12,7 @@ export function filesReducer(
 ): InitialState {
   switch (action.type) {
     case "INIT_FILES_STATE":
-      let all_friends = [action.data.Profile];
+      const all_friends = [action.data.Profile];
       action.data.Friends.forEach((f: Friend) => {
         if (f.sender.id !== action.data.Profile.id) {
           all_friends.push(f.sender);
@@ -185,7 +184,7 @@ export function filesReducer(
     case "ADD_CONTRACT": {
       const { contract } = action;
       const id = contract.id;
-      let stored_custom: StoredContract = { CustomContract: action.contract };
+      const stored_custom: StoredContract = { CustomContract: action.contract };
       return {
         ...state,
         changes: {
@@ -1903,7 +1902,7 @@ export function filesReducer(
         return sender !== action.id && receiver !== action.id;
       }
 
-      let friends = state.friends.filter((f) => checkf(f));
+      const friends = state.friends.filter((f) => checkf(f));
 
       return { ...state, friends };
 
@@ -1911,8 +1910,8 @@ export function filesReducer(
       return { ...state, friends: [...state.friends, action.friend] };
 
     case "CONFIRM_FRIEND":
-      let sender = action.friend.sender;
-      let receiver = action.friend.receiver;
+      const sender = action.friend.sender;
+      const receiver = action.friend.receiver;
       return {
         ...state,
         friends: state.friends.map((f) => {

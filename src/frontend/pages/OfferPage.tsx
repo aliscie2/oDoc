@@ -10,7 +10,6 @@ import {
   Sparkles,
   Wallet,
   Crown,
-  Infinity,
   Timer,
   Shield,
   Rocket,

@@ -32,7 +32,7 @@ function useCreateChatGroup() {
       message: `${profile.name} just created a new Chat group.`,
       chat_id,
     };
-    let chat: Chat = {
+    const chat: Chat = {
       id: chat_id,
       creator: Principal.fromText(profile.id),
       // members: members?.map((m) => m.id) || [],

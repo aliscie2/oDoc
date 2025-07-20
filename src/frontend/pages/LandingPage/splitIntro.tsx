@@ -26,11 +26,6 @@ import {
   SmartToy,
   Payment,
   Analytics,
-  PersonAdd,
-  Description,
-  AttachMoney,
-  Search,
-  Handshake,
 } from "@mui/icons-material";
 import { businessSteps, freelancerSteps, StepData } from "./landingPageData";
 

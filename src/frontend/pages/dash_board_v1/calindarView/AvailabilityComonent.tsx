@@ -25,8 +25,7 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import DoNotDisturbIcon from "@mui/icons-material/DoNotDisturb";
 import AddIcon from "@mui/icons-material/Add";
-import { formatTime, parseTime } from "./serializers";
-import { LocalizationProvider, TimePicker } from "@mui/x-date-pickers";
+import { formatTime } from "./serializers";
 import EnhancedTimePicker from "./timePicker";
 
 // Types based on Candid definition

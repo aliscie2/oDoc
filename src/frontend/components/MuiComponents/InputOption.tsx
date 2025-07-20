@@ -4,7 +4,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 
 const InputOption = (props: any) => {
   // let input_id = random_number();
-  let ref = React.useRef(null);
+  const ref = React.useRef(null);
   const [isTyping, setIsTyping] = React.useState(false);
 
   const handleCreateFile = async (e: any) => {

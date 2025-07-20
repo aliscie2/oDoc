@@ -1,8 +1,6 @@
 import { TimeFormatter } from "@/pages/dash_board_v1/gemeniAi";
 import {
   Calendar,
-  Event,
-  Availability,
 } from "$/declarations/backend/backend.did";
 
 // Simplified command structure suggestions:

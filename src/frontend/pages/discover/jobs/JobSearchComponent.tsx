@@ -12,10 +12,8 @@ import {
   DialogActions,
   Button,
   Chip,
-  LinearProgress,
   useTheme,
   IconButton,
-  Divider,
   Alert,
 } from "@mui/material";
 import { Warning, Visibility } from "@mui/icons-material";
@@ -26,7 +24,6 @@ import JobDetails from "./JobDetails";
 
 import { textToJson } from "./utils/processResponseJobs";
 import { JOB_MATCHING_PROMPT } from "./utils/jobMatchingPrompt";
-import { mockAIJobMatchResponse } from "./utils/mockJobMatchAiRes";
 
 const JobSearchComponent: React.FC = () => {
   const { backendActor } = useBackendContext();
@@ -391,7 +388,7 @@ const JobSearchComponent: React.FC = () => {
       )}
 
       {sortedMatches.map(({ job }) => {
-        let match = currentJob.matches?.find((m) => m.job_id === job.id);
+        const match = currentJob.matches?.find((m) => m.job_id === job.id);
         return (
           <Dialog
             key={job.id}

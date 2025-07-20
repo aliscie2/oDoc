@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from "react";
-import { Theme, useTheme, styled } from "@mui/material";
+import { useTheme, styled } from "@mui/material";
 import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";

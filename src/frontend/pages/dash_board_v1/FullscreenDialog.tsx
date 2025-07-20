@@ -2,10 +2,7 @@ import React from "react";
 import {
   Dialog,
   DialogContent,
-  DialogTitle,
   IconButton,
-  Typography,
-  Box,
 } from "@mui/material";
 import { Close } from "@mui/icons-material";
 

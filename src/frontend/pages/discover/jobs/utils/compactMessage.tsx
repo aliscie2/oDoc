@@ -10,7 +10,7 @@ export default function compactMessage(message) {
   }
 
   // Basic cleanup - remove punctuation but keep ? and !
-  let cleaned = message
+  const cleaned = message
     .trim()
     .toLowerCase()
     .replace(/[^\w\s?!]/g, " ")

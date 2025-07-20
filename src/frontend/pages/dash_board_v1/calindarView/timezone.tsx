@@ -1,13 +1,6 @@
 import React, { useState, useEffect } from "react";
-import {
-  Box,
-  Autocomplete,
-  TextField,
-  Typography,
-  Paper,
-  useTheme,
-} from "@mui/material";
-import { useDispatch, useSelector } from "react-redux";
+
+
 
 interface TimeZoneSelectorProps {
   onTimeZoneChange: (newTimeZone: string) => void;

@@ -457,8 +457,8 @@ export const SECRUTYSVG = () => (
         y2="94.4376"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#09005D" />
-        <stop offset="1" stop-color="#1A0F91" />
+        <stop stopColor="#09005D" />
+        <stop offset="1" stopColor="#1A0F91" />
       </linearGradient>
       <linearGradient
         id="paint1_linear_149_311"
@@ -468,8 +468,8 @@ export const SECRUTYSVG = () => (
         y2="182.964"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#4042E2" />
-        <stop offset="1" stop-color="#4F52FF" />
+        <stop stopColor="#4042E2" />
+        <stop offset="1" stopColor="#4F52FF" />
       </linearGradient>
       <linearGradient
         id="paint2_linear_149_311"
@@ -479,8 +479,8 @@ export const SECRUTYSVG = () => (
         y2="232.748"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#FE7062" />
-        <stop offset="1" stop-color="#FF928E" />
+        <stop stopColor="#FE7062" />
+        <stop offset="1" stopColor="#FF928E" />
       </linearGradient>
       <linearGradient
         id="paint3_linear_149_311"
@@ -490,8 +490,8 @@ export const SECRUTYSVG = () => (
         y2="236.242"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#FE7062" />
-        <stop offset="1" stop-color="#FF928E" />
+        <stop stopColor="#FE7062" />
+        <stop offset="1" stopColor="#FF928E" />
       </linearGradient>
       <linearGradient
         id="paint4_linear_149_311"
@@ -501,8 +501,8 @@ export const SECRUTYSVG = () => (
         y2="184.128"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#E1473D" />
-        <stop offset="1" stop-color="#E9605A" />
+        <stop stopColor="#E1473D" />
+        <stop offset="1" stopColor="#E9605A" />
       </linearGradient>
       <linearGradient
         id="paint5_linear_149_311"
@@ -512,8 +512,8 @@ export const SECRUTYSVG = () => (
         y2="25.8026"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#DAE3FE" />
-        <stop offset="1" stop-color="#E9EFFD" />
+        <stop stopColor="#DAE3FE" />
+        <stop offset="1" stopColor="#E9EFFD" />
       </linearGradient>
       <linearGradient
         id="paint6_linear_149_311"
@@ -523,8 +523,8 @@ export const SECRUTYSVG = () => (
         y2="3.25754"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#09005D" />
-        <stop offset="1" stop-color="#1A0F91" />
+        <stop stopColor="#09005D" />
+        <stop offset="1" stopColor="#1A0F91" />
       </linearGradient>
       <linearGradient
         id="paint7_linear_149_311"
@@ -534,8 +534,8 @@ export const SECRUTYSVG = () => (
         y2="51.345"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#4042E2" />
-        <stop offset="1" stop-color="#4F52FF" />
+        <stop stopColor="#4042E2" />
+        <stop offset="1" stopColor="#4F52FF" />
       </linearGradient>
       <linearGradient
         id="paint8_linear_149_311"
@@ -545,8 +545,8 @@ export const SECRUTYSVG = () => (
         y2="29.2468"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#FE7062" />
-        <stop offset="1" stop-color="#FF928E" />
+        <stop stopColor="#FE7062" />
+        <stop offset="1" stopColor="#FF928E" />
       </linearGradient>
       <linearGradient
         id="paint9_linear_149_311"
@@ -556,8 +556,8 @@ export const SECRUTYSVG = () => (
         y2="20.5821"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#DAE3FE" />
-        <stop offset="1" stop-color="#E9EFFD" />
+        <stop stopColor="#DAE3FE" />
+        <stop offset="1" stopColor="#E9EFFD" />
       </linearGradient>
       <linearGradient
         id="paint10_linear_149_311"
@@ -567,8 +567,8 @@ export const SECRUTYSVG = () => (
         y2="20.5821"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#09005D" />
-        <stop offset="1" stop-color="#1A0F91" />
+        <stop stopColor="#09005D" />
+        <stop offset="1" stopColor="#1A0F91" />
       </linearGradient>
       <linearGradient
         id="paint11_linear_149_311"
@@ -578,8 +578,8 @@ export const SECRUTYSVG = () => (
         y2="112.076"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#DAE3FE" />
-        <stop offset="1" stop-color="#E9EFFD" />
+        <stop stopColor="#DAE3FE" />
+        <stop offset="1" stopColor="#E9EFFD" />
       </linearGradient>
       <linearGradient
         id="paint12_linear_149_311"
@@ -589,8 +589,8 @@ export const SECRUTYSVG = () => (
         y2="113.443"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#09005D" />
-        <stop offset="1" stop-color="#1A0F91" />
+        <stop stopColor="#09005D" />
+        <stop offset="1" stopColor="#1A0F91" />
       </linearGradient>
       <linearGradient
         id="paint13_linear_149_311"
@@ -600,8 +600,8 @@ export const SECRUTYSVG = () => (
         y2="122.686"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#4042E2" />
-        <stop offset="1" stop-color="#4F52FF" />
+        <stop stopColor="#4042E2" />
+        <stop offset="1" stopColor="#4F52FF" />
       </linearGradient>
       <linearGradient
         id="paint14_linear_149_311"
@@ -611,8 +611,8 @@ export const SECRUTYSVG = () => (
         y2="100.422"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#09005D" />
-        <stop offset="1" stop-color="#1A0F91" />
+        <stop stopColor="#09005D" />
+        <stop offset="1" stopColor="#1A0F91" />
       </linearGradient>
       <linearGradient
         id="paint15_linear_149_311"
@@ -622,8 +622,8 @@ export const SECRUTYSVG = () => (
         y2="113.072"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#FE7062" />
-        <stop offset="1" stop-color="#FF928E" />
+        <stop stopColor="#FE7062" />
+        <stop offset="1" stopColor="#FF928E" />
       </linearGradient>
       <linearGradient
         id="paint16_linear_149_311"
@@ -633,8 +633,8 @@ export const SECRUTYSVG = () => (
         y2="112.716"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#FE7062" />
-        <stop offset="1" stop-color="#FF928E" />
+        <stop stopColor="#FE7062" />
+        <stop offset="1" stopColor="#FF928E" />
       </linearGradient>
       <linearGradient
         id="paint17_linear_149_311"
@@ -644,8 +644,8 @@ export const SECRUTYSVG = () => (
         y2="113.101"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#FE7062" />
-        <stop offset="1" stop-color="#FF928E" />
+        <stop stopColor="#FE7062" />
+        <stop offset="1" stopColor="#FF928E" />
       </linearGradient>
       <linearGradient
         id="paint18_linear_149_311"
@@ -655,8 +655,8 @@ export const SECRUTYSVG = () => (
         y2="127.813"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#09005D" />
-        <stop offset="1" stop-color="#1A0F91" />
+        <stop stopColor="#09005D" />
+        <stop offset="1" stopColor="#1A0F91" />
       </linearGradient>
       <linearGradient
         id="paint19_linear_149_311"
@@ -666,8 +666,8 @@ export const SECRUTYSVG = () => (
         y2="109.669"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#09005D" />
-        <stop offset="1" stop-color="#1A0F91" />
+        <stop stopColor="#09005D" />
+        <stop offset="1" stopColor="#1A0F91" />
       </linearGradient>
       <linearGradient
         id="paint20_linear_149_311"
@@ -677,8 +677,8 @@ export const SECRUTYSVG = () => (
         y2="110.537"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#09005D" />
-        <stop offset="1" stop-color="#1A0F91" />
+        <stop stopColor="#09005D" />
+        <stop offset="1" stopColor="#1A0F91" />
       </linearGradient>
       <linearGradient
         id="paint21_linear_149_311"
@@ -688,8 +688,8 @@ export const SECRUTYSVG = () => (
         y2="111.399"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#09005D" />
-        <stop offset="1" stop-color="#1A0F91" />
+        <stop stopColor="#09005D" />
+        <stop offset="1" stopColor="#1A0F91" />
       </linearGradient>
       <linearGradient
         id="paint22_linear_149_311"
@@ -699,8 +699,8 @@ export const SECRUTYSVG = () => (
         y2="112.267"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#09005D" />
-        <stop offset="1" stop-color="#1A0F91" />
+        <stop stopColor="#09005D" />
+        <stop offset="1" stopColor="#1A0F91" />
       </linearGradient>
       <linearGradient
         id="paint23_linear_149_311"
@@ -710,8 +710,8 @@ export const SECRUTYSVG = () => (
         y2="111.463"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#09005D" />
-        <stop offset="1" stop-color="#1A0F91" />
+        <stop stopColor="#09005D" />
+        <stop offset="1" stopColor="#1A0F91" />
       </linearGradient>
       <linearGradient
         id="paint24_linear_149_311"
@@ -721,8 +721,8 @@ export const SECRUTYSVG = () => (
         y2="112.33"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#09005D" />
-        <stop offset="1" stop-color="#1A0F91" />
+        <stop stopColor="#09005D" />
+        <stop offset="1" stopColor="#1A0F91" />
       </linearGradient>
       <linearGradient
         id="paint25_linear_149_311"
@@ -732,8 +732,8 @@ export const SECRUTYSVG = () => (
         y2="113.193"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#09005D" />
-        <stop offset="1" stop-color="#1A0F91" />
+        <stop stopColor="#09005D" />
+        <stop offset="1" stopColor="#1A0F91" />
       </linearGradient>
       <linearGradient
         id="paint26_linear_149_311"
@@ -743,8 +743,8 @@ export const SECRUTYSVG = () => (
         y2="114.061"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#09005D" />
-        <stop offset="1" stop-color="#1A0F91" />
+        <stop stopColor="#09005D" />
+        <stop offset="1" stopColor="#1A0F91" />
       </linearGradient>
       <linearGradient
         id="paint27_linear_149_311"
@@ -754,8 +754,8 @@ export const SECRUTYSVG = () => (
         y2="113.16"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#09005D" />
-        <stop offset="1" stop-color="#1A0F91" />
+        <stop stopColor="#09005D" />
+        <stop offset="1" stopColor="#1A0F91" />
       </linearGradient>
       <linearGradient
         id="paint28_linear_149_311"
@@ -765,8 +765,8 @@ export const SECRUTYSVG = () => (
         y2="114.028"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#09005D" />
-        <stop offset="1" stop-color="#1A0F91" />
+        <stop stopColor="#09005D" />
+        <stop offset="1" stopColor="#1A0F91" />
       </linearGradient>
       <linearGradient
         id="paint29_linear_149_311"
@@ -776,8 +776,8 @@ export const SECRUTYSVG = () => (
         y2="114.89"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#09005D" />
-        <stop offset="1" stop-color="#1A0F91" />
+        <stop stopColor="#09005D" />
+        <stop offset="1" stopColor="#1A0F91" />
       </linearGradient>
       <linearGradient
         id="paint30_linear_149_311"
@@ -787,8 +787,8 @@ export const SECRUTYSVG = () => (
         y2="115.758"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#09005D" />
-        <stop offset="1" stop-color="#1A0F91" />
+        <stop stopColor="#09005D" />
+        <stop offset="1" stopColor="#1A0F91" />
       </linearGradient>
       <linearGradient
         id="paint31_linear_149_311"
@@ -798,8 +798,8 @@ export const SECRUTYSVG = () => (
         y2="114.814"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#09005D" />
-        <stop offset="1" stop-color="#1A0F91" />
+        <stop stopColor="#09005D" />
+        <stop offset="1" stopColor="#1A0F91" />
       </linearGradient>
       <linearGradient
         id="paint32_linear_149_311"
@@ -809,8 +809,8 @@ export const SECRUTYSVG = () => (
         y2="115.681"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#09005D" />
-        <stop offset="1" stop-color="#1A0F91" />
+        <stop stopColor="#09005D" />
+        <stop offset="1" stopColor="#1A0F91" />
       </linearGradient>
       <linearGradient
         id="paint33_linear_149_311"
@@ -820,8 +820,8 @@ export const SECRUTYSVG = () => (
         y2="116.544"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#09005D" />
-        <stop offset="1" stop-color="#1A0F91" />
+        <stop stopColor="#09005D" />
+        <stop offset="1" stopColor="#1A0F91" />
       </linearGradient>
       <linearGradient
         id="paint34_linear_149_311"
@@ -831,8 +831,8 @@ export const SECRUTYSVG = () => (
         y2="117.411"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#09005D" />
-        <stop offset="1" stop-color="#1A0F91" />
+        <stop stopColor="#09005D" />
+        <stop offset="1" stopColor="#1A0F91" />
       </linearGradient>
       <linearGradient
         id="paint35_linear_149_311"
@@ -842,8 +842,8 @@ export const SECRUTYSVG = () => (
         y2="122.72"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#09005D" />
-        <stop offset="1" stop-color="#1A0F91" />
+        <stop stopColor="#09005D" />
+        <stop offset="1" stopColor="#1A0F91" />
       </linearGradient>
       <linearGradient
         id="paint36_linear_149_311"
@@ -853,8 +853,8 @@ export const SECRUTYSVG = () => (
         y2="122.72"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#09005D" />
-        <stop offset="1" stop-color="#1A0F91" />
+        <stop stopColor="#09005D" />
+        <stop offset="1" stopColor="#1A0F91" />
       </linearGradient>
       <linearGradient
         id="paint37_linear_149_311"
@@ -864,8 +864,8 @@ export const SECRUTYSVG = () => (
         y2="98.1088"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#FE7062" />
-        <stop offset="1" stop-color="#FF928E" />
+        <stop stopColor="#FE7062" />
+        <stop offset="1" stopColor="#FF928E" />
       </linearGradient>
       <linearGradient
         id="paint38_linear_149_311"
@@ -875,8 +875,8 @@ export const SECRUTYSVG = () => (
         y2="124.431"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#FE7062" />
-        <stop offset="1" stop-color="#FF928E" />
+        <stop stopColor="#FE7062" />
+        <stop offset="1" stopColor="#FF928E" />
       </linearGradient>
       <linearGradient
         id="paint39_linear_149_311"
@@ -886,8 +886,8 @@ export const SECRUTYSVG = () => (
         y2="129.506"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#FE7062" />
-        <stop offset="1" stop-color="#FF928E" />
+        <stop stopColor="#FE7062" />
+        <stop offset="1" stopColor="#FF928E" />
       </linearGradient>
       <linearGradient
         id="paint40_linear_149_311"
@@ -897,8 +897,8 @@ export const SECRUTYSVG = () => (
         y2="129.685"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#FE7062" />
-        <stop offset="1" stop-color="#FF928E" />
+        <stop stopColor="#FE7062" />
+        <stop offset="1" stopColor="#FF928E" />
       </linearGradient>
       <linearGradient
         id="paint41_linear_149_311"
@@ -908,8 +908,8 @@ export const SECRUTYSVG = () => (
         y2="115.792"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#FE7062" />
-        <stop offset="1" stop-color="#FF928E" />
+        <stop stopColor="#FE7062" />
+        <stop offset="1" stopColor="#FF928E" />
       </linearGradient>
       <linearGradient
         id="paint42_linear_149_311"
@@ -919,8 +919,8 @@ export const SECRUTYSVG = () => (
         y2="109.79"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#FE7062" />
-        <stop offset="1" stop-color="#FF928E" />
+        <stop stopColor="#FE7062" />
+        <stop offset="1" stopColor="#FF928E" />
       </linearGradient>
       <linearGradient
         id="paint43_linear_149_311"
@@ -930,8 +930,8 @@ export const SECRUTYSVG = () => (
         y2="107.71"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#FE7062" />
-        <stop offset="1" stop-color="#FF928E" />
+        <stop stopColor="#FE7062" />
+        <stop offset="1" stopColor="#FF928E" />
       </linearGradient>
       <linearGradient
         id="paint44_linear_149_311"
@@ -941,8 +941,8 @@ export const SECRUTYSVG = () => (
         y2="115.883"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#FE7062" />
-        <stop offset="1" stop-color="#FF928E" />
+        <stop stopColor="#FE7062" />
+        <stop offset="1" stopColor="#FF928E" />
       </linearGradient>
       <linearGradient
         id="paint45_linear_149_311"
@@ -952,8 +952,8 @@ export const SECRUTYSVG = () => (
         y2="112.751"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#FE7062" />
-        <stop offset="1" stop-color="#FF928E" />
+        <stop stopColor="#FE7062" />
+        <stop offset="1" stopColor="#FF928E" />
       </linearGradient>
       <linearGradient
         id="paint46_linear_149_311"
@@ -963,8 +963,8 @@ export const SECRUTYSVG = () => (
         y2="100.452"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#FE7062" />
-        <stop offset="1" stop-color="#FF928E" />
+        <stop stopColor="#FE7062" />
+        <stop offset="1" stopColor="#FF928E" />
       </linearGradient>
       <linearGradient
         id="paint47_linear_149_311"
@@ -974,8 +974,8 @@ export const SECRUTYSVG = () => (
         y2="98.7966"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#FE7062" />
-        <stop offset="1" stop-color="#FF928E" />
+        <stop stopColor="#FE7062" />
+        <stop offset="1" stopColor="#FF928E" />
       </linearGradient>
       <linearGradient
         id="paint48_linear_149_311"
@@ -985,8 +985,8 @@ export const SECRUTYSVG = () => (
         y2="98.5692"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#FE7062" />
-        <stop offset="1" stop-color="#FF928E" />
+        <stop stopColor="#FE7062" />
+        <stop offset="1" stopColor="#FF928E" />
       </linearGradient>
       <linearGradient
         id="paint49_linear_149_311"
@@ -996,8 +996,8 @@ export const SECRUTYSVG = () => (
         y2="103.06"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#FE7062" />
-        <stop offset="1" stop-color="#FF928E" />
+        <stop stopColor="#FE7062" />
+        <stop offset="1" stopColor="#FF928E" />
       </linearGradient>
       <linearGradient
         id="paint50_linear_149_311"
@@ -1007,8 +1007,8 @@ export const SECRUTYSVG = () => (
         y2="93.2496"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#FE7062" />
-        <stop offset="1" stop-color="#FF928E" />
+        <stop stopColor="#FE7062" />
+        <stop offset="1" stopColor="#FF928E" />
       </linearGradient>
       <linearGradient
         id="paint51_linear_149_311"
@@ -1018,8 +1018,8 @@ export const SECRUTYSVG = () => (
         y2="96.2256"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#FE7062" />
-        <stop offset="1" stop-color="#FF928E" />
+        <stop stopColor="#FE7062" />
+        <stop offset="1" stopColor="#FF928E" />
       </linearGradient>
       <linearGradient
         id="paint52_linear_149_311"
@@ -1029,8 +1029,8 @@ export const SECRUTYSVG = () => (
         y2="82.7432"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#FE7062" />
-        <stop offset="1" stop-color="#FF928E" />
+        <stop stopColor="#FE7062" />
+        <stop offset="1" stopColor="#FF928E" />
       </linearGradient>
       <linearGradient
         id="paint53_linear_149_311"
@@ -1040,8 +1040,8 @@ export const SECRUTYSVG = () => (
         y2="94.4624"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#FE7062" />
-        <stop offset="1" stop-color="#FF928E" />
+        <stop stopColor="#FE7062" />
+        <stop offset="1" stopColor="#FF928E" />
       </linearGradient>
       <linearGradient
         id="paint54_linear_149_311"
@@ -1051,8 +1051,8 @@ export const SECRUTYSVG = () => (
         y2="129.317"
         gradientUnits="userSpaceOnUse"
       >
-        <stop stop-color="#FE7062" />
-        <stop offset="1" stop-color="#FF928E" />
+        <stop stopColor="#FE7062" />
+        <stop offset="1" stopColor="#FF928E" />
       </linearGradient>
     </defs>
   </svg>

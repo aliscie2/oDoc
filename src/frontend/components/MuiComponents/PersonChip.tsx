@@ -11,7 +11,7 @@ interface Props {
 }
 
 export default function AvatarChips(props: Props) {
-  let image_link = convertToBlobLink(props.user && props.user.photo);
+  const image_link = convertToBlobLink(props.user && props.user.photo);
   return (
     <Stack direction="row" spacing={1}>
       <Chip

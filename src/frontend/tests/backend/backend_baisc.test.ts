@@ -1,9 +1,7 @@
-import { StoredContract } from "../../../declarations/backend/backend.did";
-import { newContract } from "./data_samples";
 
 test("Basic testing", async () => {
-  let newUser = await global.newUser();
-  let InitialData = await global.actor.get_initial_data();
+  const newUser = await global.newUser();
+  const InitialData = await global.actor.get_initial_data();
   console.log({ InitialData });
 
   // const { custom_contract, promise } = newContract();

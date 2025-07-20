@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { styled, keyframes } from "@mui/material/styles";
-import { Box, Tooltip, tooltipClasses, TooltipProps } from "@mui/material";
+import { Box } from "@mui/material";
 import { Person } from "@mui/icons-material";
-import ODOCTokenImage from "@/assets/ODOCTOKEN.png";
 
 const appear = keyframes`
   0% { transform: scale(0.8); opacity: 0; }

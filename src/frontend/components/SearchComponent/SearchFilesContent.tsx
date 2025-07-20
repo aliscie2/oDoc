@@ -48,7 +48,7 @@ function useSearchFiles() {
     search_value: string,
     case_sensitive: boolean,
   ): [string] | undefined {
-    let res = [];
+    const res = [];
     Object.values(files).forEach((file: FileNode) => {
       if (file.name.includes(search_value) && case_sensitive) {
         res.push(file.id);

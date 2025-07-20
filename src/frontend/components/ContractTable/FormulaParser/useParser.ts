@@ -43,7 +43,7 @@ function useParser(props: ParserProps) {
     ? [profile, ...all_friends]
     : [profile];
   // const ref = React.useRef<Array<CPayment>>([]);
-  const ref = React.useRef<Map<String, CPayment>>(new Map());
+  const ref = React.useRef<Map<string, CPayment>>(new Map());
   const values: ParserValues = {};
   all_users.forEach((user: User) => {
     if (user) {
@@ -52,13 +52,13 @@ function useParser(props: ParserProps) {
   });
 
   const dispatch = useDispatch();
-  let initial_promises = Array.from(ref.current.values());
+  const initial_promises = Array.from(ref.current.values());
 
   function updatePromises() {
     let changes = false;
-    let new_promises: Array<CPayment> = Array.from(ref.current.values());
+    const new_promises: Array<CPayment> = Array.from(ref.current.values());
     // Initialize with current promises from main_contract to ensure any that aren't updated or added remain
-    let combinedPromises: Array<CPayment> = [
+    const combinedPromises: Array<CPayment> = [
       ...(main_contract?.promises || []),
     ];
 
@@ -88,8 +88,8 @@ function useParser(props: ParserProps) {
 
     // If there were changes, update the contract and dispatch actions
     if (main_contract && changes) {
-      let updatedContract = { ...main_contract, promises: combinedPromises };
-      let to_store: StoredContract = {
+      const updatedContract = { ...main_contract, promises: combinedPromises };
+      const to_store: StoredContract = {
         CustomContract: updatedContract,
       };
       dispatch({ type: "UPDATE_CONTRACT", contract: to_store });
@@ -119,7 +119,7 @@ function useParser(props: ParserProps) {
     };
 
     // check if promise.id == payment.id in main_contract?.payments
-    let is_in: boolean = main_contract?.payments?.some(
+    const is_in: boolean = main_contract?.payments?.some(
       (payment) => payment.id === promise.id,
     );
     if (is_in) {
@@ -144,13 +144,13 @@ function useParser(props: ParserProps) {
 
   function addVarsToParser(params: any, view: CContract) {
     // Temporary storage for evaluated formula results to avoid re-evaluation
-    let formulaResults = {};
+    const formulaResults = {};
 
     view.columns.forEach((column: CColumn) => {
       // Check if this is a formula column that hasn't been processed yet
       if (column.formula_string && formulaResults[column.field] === undefined) {
         // Evaluate the formula and store the result
-        let result = evaluate(column.formula_string).value;
+        const result = evaluate(column.formula_string).value;
         formulaResults[column.field] = result;
         values[column.headerName] = result;
       } else if (!column.formula_string) {

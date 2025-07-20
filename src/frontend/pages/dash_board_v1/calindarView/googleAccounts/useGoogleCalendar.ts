@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
-import { Event as ODOCEvent } from "$/declarations/backend/backend.did.d.js";
 import { odocToGoogle } from "./eventConverter";
 import { useDispatch, useSelector } from "react-redux";
 import { useBackendContext } from "@/contexts/BackendContext";
-let accessToken = "";
+const accessToken = "";
 
 export const useGoogleCalendar = () => {
   const { profile } = useSelector((state) => state.filesState);
@@ -282,7 +281,7 @@ export const useGoogleCalendar = () => {
 
   const connectCal = async () => {
     // First try to use existing access token
-    let currentAccessToken =
+    const currentAccessToken =
       accessToken || localStorage.getItem("googleCalendarToken");
 
     if (!currentAccessToken) {

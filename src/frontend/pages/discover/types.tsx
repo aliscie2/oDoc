@@ -1,4 +1,4 @@
-import { Post, PostUser } from "../../../declarations/backend/backend.did";
+import { PostUser } from "../../../declarations/backend/backend.did";
 
 export interface ICommentFormProps {
   postId: string;

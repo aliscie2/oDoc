@@ -9,7 +9,7 @@ interface MenuOption {
   content: any;
   icon?: React.ReactNode;
   onClick?: () => void;
-  to?: String;
+  to?: string;
   pure?: boolean;
 }
 

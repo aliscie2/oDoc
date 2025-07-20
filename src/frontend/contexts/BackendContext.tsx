@@ -105,7 +105,7 @@ async function handleAgent(client: AuthClient) {
 
   let principal: string;
 
-  let identity = await client.getIdentity();
+  const identity = await client.getIdentity();
   principal = identity.getPrincipal().toString();
 
   const agent = await createHttpAgent(identity, host);

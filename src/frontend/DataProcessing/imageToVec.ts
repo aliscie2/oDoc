@@ -23,7 +23,7 @@ export async function convertToBytes(image) {
 }
 
 export async function fileToLink(file) {
-  let imageArray = new Uint8Array(file);
+  const imageArray = new Uint8Array(file);
   return URL.createObjectURL(
     new Blob([imageArray?.buffer], { type: "image/png" }),
   );

@@ -14,7 +14,6 @@ import { useSelector } from "react-redux";
 import MarkdownMessage from "./markDownMessageRdnder"; // Import the new component
 import AICreditsComponent from "./AICreditsCompnent";
 import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
-import { Job } from "$/declarations/backend/backend.did";
 
 export const AIChatComponent = ({
   isExpanded,
@@ -465,7 +464,7 @@ const ChatContainer = () => {
     if (message.action_type === "CALENDAR") {
       message.actions.forEach((action) => dispatch(action));
     } else if (message.action_type === "JOBS") {
-      let category = Object.keys(
+      const category = Object.keys(
         message.prev_job.category || message.curr_job.category,
       )[0];
       dispatch({

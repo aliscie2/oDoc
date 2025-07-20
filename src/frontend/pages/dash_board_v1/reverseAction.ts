@@ -144,7 +144,7 @@ export const undoJobAction = (message) => {
       });
     }
   });
-  let category = Object.keys(
+  const category = Object.keys(
     message.prev_job.category || message.curr_job.category,
   )[0];
 

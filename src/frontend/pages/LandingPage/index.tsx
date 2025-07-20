@@ -10,37 +10,18 @@ import {
   ListItem,
   ListItemText,
   Chip,
-  LinearProgress,
   useTheme,
   useMediaQuery,
-  Button,
-  Avatar,
-  Rating,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Divider,
   Stack,
-  Paper,
-  IconButton,
 } from "@mui/material";
 import {
-  Search,
-  Handshake,
-  Security,
   Analytics,
   Star,
   Warning,
-  ExpandMore,
   CheckCircle,
   TrendingUp,
   Speed,
   Shield,
-  People,
-  Email,
-  LinkedIn,
-  Twitter,
-  GitHub,
 } from "@mui/icons-material";
 
 import OdocStrecture from "./oDocStrecture";
@@ -50,8 +31,6 @@ import PlatformProgress from "./platformProgress";
 import PageFooter from "./socialButton";
 import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
 import LOGOSVG, {
-  AUTOMATIONSVG,
-  FriendlyCharacter,
   SECRUTYSVG,
 } from "@/components/creature/logoSVG";
 import getckUsdcBalance from "@/utils/getBalance";

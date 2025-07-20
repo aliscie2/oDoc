@@ -1,9 +1,7 @@
-import FaceIcon from "@mui/icons-material/Face";
 import {
   Avatar,
   Card,
   CardContent,
-  Chip,
   Tooltip,
   Typography,
 } from "@mui/material";

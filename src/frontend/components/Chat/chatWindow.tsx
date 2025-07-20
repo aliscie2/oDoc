@@ -15,7 +15,6 @@ import { AdminsSelect, MembersSelect, WorkspaceSelect } from "./index";
 import {
   ArrowBack,
   Check,
-  DragIndicator,
   OpenInFull,
   Send,
   Settings,

@@ -2,7 +2,6 @@ import React, { CSSProperties } from "react";
 import classNames from "classnames";
 
 import styles from "./Action.module.css";
-import { Button } from "@mui/material";
 
 export interface Props extends React.HTMLAttributes<HTMLButtonElement> {
   active?: {

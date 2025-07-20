@@ -25,7 +25,7 @@ export default function SlateCustomContract(props: any) {
     (async () => {
       if (!contract && is_share) {
         setLoading(true);
-        let contract: undefined | { Ok: StoredContract } | { Err: string } =
+        const contract: undefined | { Ok: StoredContract } | { Err: string } =
           backendActor &&
           current_file &&
           (await backendActor.get_contract(current_file.author, id));

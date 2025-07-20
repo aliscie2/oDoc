@@ -14,12 +14,6 @@ import {
   alpha,
 } from "@mui/material";
 import {
-  AccessTime,
-  Security,
-  Gavel,
-  Psychology,
-  Code,
-  AccountTree,
   Star,
 } from "@mui/icons-material";
 import { benefitsData } from "./landingPageData";

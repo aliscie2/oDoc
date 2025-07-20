@@ -1,9 +1,7 @@
 import React from "react";
-import { Principal } from "@dfinity/principal";
 import { useSnackbar } from "notistack";
 import { useBackendContext } from "../contexts/BackendContext";
 import { useState } from "react";
-import { logger } from "../DevUtils/logData";
 import { useSelector } from "react-redux";
 
 interface FriendshipButtonProps {

@@ -1,8 +1,7 @@
 import React, { memo, useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { debounce, truncate } from "lodash";
+import { debounce } from "lodash";
 import {
-  CircularProgress,
   Input,
   styled,
   Box,
@@ -90,7 +89,7 @@ function FileContentPage() {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const { isLoggedIn } = useSelector((state: any) => state.uiState);
   const [showContentTabs, setShowContentTabs] = useState(false);
-  let fileId = window.location.pathname.split("/")[1];
+  const fileId = window.location.pathname.split("/")[1];
   const dispatch = useDispatch();
 
   const { inited, files_content, profile, files, current_file } = useSelector(

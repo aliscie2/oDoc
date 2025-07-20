@@ -1,6 +1,5 @@
 import { useBackendContext } from "@/contexts/BackendContext";
-import { Box, Typography, TextField } from "@mui/material";
-import { Popover, Button } from "flowbite-react";
+import { Button } from "flowbite-react";
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
@@ -38,7 +37,7 @@ const AICreditsComponent = ({ credits }) => {
   const handleBuyCredits = async () => {
     setIsLoading(true);
     try {
-      let res = await backendActor.buy_ai_credits(buyAmount);
+      const res = await backendActor.buy_ai_credits(buyAmount);
       if (res.Ok) {
         await aiAgent.addCredits(buyAmount, true);
         dispatch({ type: "ADD_AI_CREDITS", credits: buyAmount, isFree: false });

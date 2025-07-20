@@ -7,11 +7,11 @@ import {
   SharesContract,
 } from "../../declarations/backend/backend.did";
 
-let paymentContractId = randomString();
-let sharesContractId = randomString();
-let firstShareId = randomString();
+const paymentContractId = randomString();
+const sharesContractId = randomString();
+const firstShareId = randomString();
 
-export let custom_contract: CustomContract = {
+export const custom_contract: CustomContract = {
   id: "change_later",
   name: "Custom contract",
   creator: Principal.fromText("2vxsx-fae"),
@@ -24,17 +24,17 @@ export let custom_contract: CustomContract = {
   permissions: [],
 };
 
-export let note_page_content = [
+export const note_page_content = [
   { id: 4, children: [{ id: 5, text: "", type: "h1" }] },
 ];
-export let file_data = {
+export const file_data = {
   id: "0000",
   content: "0",
   name: "NameTest",
   children: {},
   parent: [],
 };
-let column: Column = {
+const column: Column = {
   _type: "",
   field: "receiver",
   filters: [],
@@ -44,7 +44,7 @@ let column: Column = {
   formula: [],
   id: randomString(),
 };
-export let dataGrid = {
+export const dataGrid = {
   id: randomString(),
   children: [
     {
@@ -125,7 +125,7 @@ export const sharesContract = {
   type: "shares_contract",
 };
 
-export let customContract: CustomContract = {
+export const customContract: CustomContract = {
   id: randomString(),
   name: "Custom contract",
   creator: Principal.fromText("2vxsx-fae"),
@@ -138,7 +138,7 @@ export let customContract: CustomContract = {
   permissions: [],
 };
 
-export let slateCustomContract = {
+export const slateCustomContract = {
   id: customContract.id,
   children: [
     {
@@ -150,7 +150,7 @@ export let slateCustomContract = {
   type: "custom_contract",
 };
 
-export let paymentContract = {
+export const paymentContract = {
   id: paymentContractId,
   children: [
     {
@@ -185,11 +185,11 @@ export let paymentContract = {
   type: "payment_contract",
 };
 
-export let fileContentSample = [{ type: "p", children: [{ text: "" }] }];
-export let payment_contract_row = { Contract: { PaymentContract: "0" } };
-export let payment_contract_row2 = { Contract: { PaymentContract: "1" } };
+export const fileContentSample = [{ type: "p", children: [{ text: "" }] }];
+export const payment_contract_row = { Contract: { PaymentContract: "0" } };
+export const payment_contract_row2 = { Contract: { PaymentContract: "1" } };
 
-export let contracts_sample = {
+export const contracts_sample = {
   "4": {
     contract_id: "4",
     sender: {
@@ -227,7 +227,7 @@ export let contracts_sample = {
     },
   },
 };
-export let paymentContractSample: PaymentContract = {
+export const paymentContractSample: PaymentContract = {
   contract_id: paymentContractId,
   sender: Principal.fromText("2vxsx-fae")!,
   receiver: Principal.fromText("2vxsx-fae")!,
@@ -239,7 +239,7 @@ export let paymentContractSample: PaymentContract = {
   extra_cells: [],
 };
 
-let shareSample: Share = {
+const shareSample: Share = {
   share_contract_id: firstShareId,
   accumulation: BigInt(0),
   confirmed: false,
@@ -248,14 +248,14 @@ let shareSample: Share = {
   extra_cells: [],
 };
 
-let paymentOption: SharePaymentOption = {
+const paymentOption: SharePaymentOption = {
   id: "",
   title: "",
   date: "",
   description: "",
   amount: BigInt(0),
 };
-export let sharesContractSample: SharesContract = {
+export const sharesContractSample: SharesContract = {
   shares: [shareSample],
   payments: [],
   contract_id: sharesContractId,
@@ -264,7 +264,7 @@ export let sharesContractSample: SharesContract = {
   author: "2vxsx-fae",
 };
 
-export let contractIdSample = { Contract: { PaymentContract: "18" } };
+export const contractIdSample = { Contract: { PaymentContract: "18" } };
 
 export function randomString() {
   return Math.random().toString(36).substring(2, 8);

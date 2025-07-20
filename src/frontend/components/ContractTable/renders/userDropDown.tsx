@@ -9,15 +9,15 @@ export function UserDropDown(props) {
   const { all_friends, profile } = useSelector(
     (state: any) => state.filesState,
   );
-  let users = [...all_friends, profile];
-  let u = users.find((u) => u.id == props.value);
+  const users = [...all_friends, profile];
+  const u = users.find((u) => u.id == props.value);
 
   const dispatch = useDispatch();
   function handleChanges(newValue) {
     props.onChange && props.onChange(newValue);
-    let user = users.find((i) => i.name == newValue);
+    const user = users.find((i) => i.name == newValue);
 
-    let contract = { ...props.contract };
+    const contract = { ...props.contract };
     const id = props.data.id == "0" ? randomString() : props.data.id;
 
     let promise: CPayment | null = contract.promises.find(

@@ -21,7 +21,6 @@ import {
 
 import {
   AccountBalanceWallet as AccountBalanceWalletIcon,
-  Close as CloseIcon,
   DarkMode as DarkModeIcon,
   Gavel as GavelIcon,
   LightMode as LightModeIcon,
@@ -29,7 +28,6 @@ import {
   Menu as MenuIcon,
   MenuOpen as MenuOpenIcon,
   Person2 as Person2Icon,
-  Search as SearchIcon,
   Handshake as HandshakeIcon,
   CalendarToday as CalendarIcon,
 } from "@mui/icons-material";

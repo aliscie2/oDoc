@@ -6,7 +6,6 @@ import {
   Friend,
   InitialData,
   StoredContract,
-  User,
   UserProfile,
   Wallet,
   WorkSpace,

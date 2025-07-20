@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Job } from "$/declarations/backend/backend.did";
 import {
@@ -17,29 +17,11 @@ import {
   useTheme,
   useMediaQuery,
   Collapse,
-  Fade,
-  Slide,
 } from "@mui/material";
 import {
   Visibility,
   Delete,
   Add,
-  Work,
-  LocationOn,
-  AttachMoney,
-  Schedule,
-  TrendingUp,
-  KeyboardArrowDown,
-  KeyboardArrowUp,
-  Business,
-  Email,
-  CalendarToday,
-  CheckCircle,
-  Cancel,
-  Star,
-  Assignment,
-  CardGiftcard,
-  Person,
 } from "@mui/icons-material";
 import JobDetails from "./JobDetails";
 import { useBackendContext } from "@/contexts/BackendContext";

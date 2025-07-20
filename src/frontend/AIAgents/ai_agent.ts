@@ -106,7 +106,7 @@ export class AIAgent {
     const recentMessages = history.slice(-this.MAX_HISTORY_MESSAGES);
 
     // If still too many tokens, summarize older messages
-    let totalTokens = recentMessages.reduce(
+    const totalTokens = recentMessages.reduce(
       (sum, msg) => sum + this.estimateTokenCount(msg.parts[0]),
       0,
     );
@@ -430,7 +430,7 @@ export class AIAgent {
     if (!usageMetadata) return 0;
     // TODO update this later
     // const pricing = this.getCurrentPricing();
-    let cost = 0.05;
+    const cost = 0.05;
 
     // if (usageMetadata.promptTokenCount) {
     //   GeminiAgent.MYSTATICS.totalInputTokens += usageMetadata.promptTokenCount;

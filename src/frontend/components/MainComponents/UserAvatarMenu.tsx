@@ -25,7 +25,6 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../redux/reducers";
 import { randomString } from "../../DataProcessing/dataSamples";
 import { convertToBlobLink } from "@/DataProcessing/imageToVec";
-import { logger } from "@/DevUtils/logData";
 
 interface UserAvatarMenuProps {
   user: {

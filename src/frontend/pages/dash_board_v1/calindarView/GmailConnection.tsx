@@ -1,4 +1,3 @@
-import { useBackendContext } from "@/contexts/BackendContext";
 import {
   Button,
   IconButton,
@@ -7,7 +6,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSelector } from "react-redux";
 import DeleteIcon from "@mui/icons-material/Delete";
 import StarIcon from "@mui/icons-material/Star";

@@ -3,29 +3,19 @@
 import React, {
   useCallback,
   useMemo,
-  useRef,
   useState,
-  StrictMode,
-  useEffect,
 } from "react";
-import { createRoot } from "react-dom/client";
 import { AgGridReact } from "ag-grid-react";
 // import "./style.css";
 import { AgChartsEnterpriseModule } from "ag-charts-enterprise";
 import {
-  CellSelectionOptions,
   ClientSideRowModelModule,
   ColDef,
-  ColGroupDef,
-  GetContextMenuItems,
   GetContextMenuItemsParams,
-  GridApi,
-  GridOptions,
   GridReadyEvent,
   MenuItemDef,
   ModuleRegistry,
   ValidationModule,
-  createGrid,
   RowDragModule,
   SelectEditorModule,
   TooltipModule,
@@ -62,7 +52,7 @@ ModuleRegistry.registerModules([
 ]);
 
 const AgGridDataGrid = (props) => {
-  let contextMenu = props.contextMenu || [];
+  const contextMenu = props.contextMenu || [];
   const [gridApi, setGridApi] = useState(null);
 
   const containerStyle = useMemo(() => ({ width: "100%", height: "100%" }), []);

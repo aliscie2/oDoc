@@ -7,7 +7,7 @@ function useGetUser() {
   const { profile, all_friends } = useSelector(
     (state: any) => state.filesState,
   );
-  let users = all_friends && [...all_friends, profile];
+  const users = all_friends && [...all_friends, profile];
 
   async function getUser(userId: string): Promise<User | null> {
     if (userId == "" || !userId) {
@@ -19,7 +19,7 @@ function useGetUser() {
       ``;
       return friend;
     }
-    let user: undefined | { Ok: User } | { Err: string } =
+    const user: undefined | { Ok: User } | { Err: string } =
       await backendActor.get_user(userId.toString());
     if ("Ok" in user) {
       // TODO save this user somewhere in order to prevent calling unnecessary queries again and again.

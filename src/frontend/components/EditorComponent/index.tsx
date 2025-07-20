@@ -7,8 +7,6 @@ import createContractPlugin, {
 import TableChartIcon from "@mui/icons-material/TableChart";
 
 import { custom_contract } from "../../DataProcessing/dataSamples";
-import { HTML5Backend } from "react-dnd-html5-backend";
-import { DndProvider } from "react-dnd";
 
 interface Props {
   handleOnInsertComponent?: any;

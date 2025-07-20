@@ -10,7 +10,7 @@ export function mockJobAIResponse(
   const commandValue = command.substring(3);
 
   // Initialize response structure
-  let response = {
+  const response = {
     required_match_score: currentJob?.required_match_score || 7.0,
     feedback: "",
     updates: [],
@@ -330,7 +330,7 @@ function inferJobTitles(description, skills) {
 
 function assessTrust(currentJob, updates) {
   let score = 7.0;
-  let notes = [];
+  const notes = [];
 
   // Check for email presence
   const hasEmail =

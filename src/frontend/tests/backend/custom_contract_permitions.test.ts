@@ -17,7 +17,7 @@ test("Test custom contract update permissions", async () => {
   let res = await global.actor.deposit_usdt(100);
 
   const { custom_contract, promise } = newContract();
-  let new_c_contract: CContract = createCContract();
+  const new_c_contract: CContract = createCContract();
   custom_contract.creator = global.user.getPrincipal();
   new_c_contract.rows[0].cells[0].value = "INIT VALUE";
   custom_contract.contracts = [new_c_contract];
@@ -36,7 +36,7 @@ test("Test custom contract update permissions", async () => {
   // });
 
   // -------------------------- Other user try to update the cell -------------------------- \\
-  let newUser = await global.newUser();
+  const newUser = await global.newUser();
   global.actor.setIdentity(newUser);
   custom_contract.contracts[0].rows[0].cells[0].value = "NEW VALUE";
   to_store = {
@@ -94,14 +94,14 @@ test("Test custom contract view permissions", async () => {
   const contract_id = custom_contract.id;
   const newUser = await global.newUser();
 
-  let new_c_contract: CContract = createCContract();
+  const new_c_contract: CContract = createCContract();
   custom_contract.creator = global.user.getPrincipal();
   new_c_contract.rows[0].cells[0].value = "INIT VALUE";
   custom_contract.contracts = [new_c_contract];
   expect("Ok" in res).toBeTruthy();
   custom_contract.contracts[0].columns[0].permissions = [];
   // custom_contract.contracts[0].columns[0].permissions = [{'View': newUser.getPrincipal()}];
-  let to_store: StoredContract = {
+  const to_store: StoredContract = {
     CustomContract: custom_contract,
   };
 

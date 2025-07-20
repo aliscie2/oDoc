@@ -1,8 +1,6 @@
 import CustomContractComponent from "../../components/ContractTable";
 import React from "react";
-import { CustomContract } from "../../../declarations/backend/backend.did";
 import { useDispatch, useSelector } from "react-redux";
-import { LinearProgress } from "@mui/material";
 
 function ContractPage() {
   // url = http://localhost:5173/contract?id=224e02a4-3f3d-4702-ae74-030a952f1b44

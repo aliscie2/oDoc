@@ -7,7 +7,6 @@ import Posts from "../discover/posts";
 import FullscreenDialog from "./FullscreenDialog"; // Import the shared dialog
 import { formatRelativeTime } from "@/utils/time";
 import { RootState } from "@/redux/reducers";
-import { logger } from "@/DevUtils/logData";
 import extractFiveWordsMax from "@/utils/getTextFromTree";
 
 export const PostsCard = ({

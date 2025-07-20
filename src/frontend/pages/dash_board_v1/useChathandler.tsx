@@ -26,7 +26,7 @@ export const useChatHandler = () => {
   currentJobRef.current = jobs.find((job) => job.id === currentJobId);
 
   const handleCalendarCase = async (message, parsed, isQuick) => {
-    let now = Date.now() * 1e6;
+    const now = Date.now() * 1e6;
     const prompt = `
       ${PROMPTS.CALENDAR}
       Current time: ${TimeFormatter.formatTime(now)} ${TimeFormatter.formatDate(now)}
@@ -40,13 +40,13 @@ export const useChatHandler = () => {
     if (import.meta.env.VITE_DFX_NETWORK !== "ic") {
       eventRes = mockCalendarAIResponse(calendar, message.split("//")[1]);
     } else {
-      let calendarRes = await aiAgent.sendMessage(prompt);
+      const calendarRes = await aiAgent.sendMessage(prompt);
       eventRes = textToJson(calendarRes).extractedData;
     }
 
     eventRes?.forEach((action) => {
       if (action.data.type !== "CALENDAR_QUERY") {
-        let parsedActions = ActionProcessor.processAction(action.data);
+        const parsedActions = ActionProcessor.processAction(action.data);
         dispatch(parsedActions);
       }
     });
@@ -147,14 +147,14 @@ export const useChatHandler = () => {
   };
 
   const processMessage = async (message, messageId, isQuick = true) => {
-    let compact_message =
+    const compact_message =
       message.length > 2000 ? compactMessage(message) : message;
 
     try {
       let parsed = {}
       if (import.meta.env.VITE_DFX_NETWORK !== "ic") {
 
-        let classifyMessageRes = await aiAgent.sendMessage(`
+        const classifyMessageRes = await aiAgent.sendMessage(`
         ${PROMPTS.CLASSIFY}
         Message:${compact_message}
         `);

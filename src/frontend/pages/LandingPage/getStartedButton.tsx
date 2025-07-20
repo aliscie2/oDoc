@@ -5,11 +5,10 @@ import {
   Tooltip,
   Box,
   keyframes,
-  CircularProgress,
   useTheme,
   useMediaQuery,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { useBackendContext } from "../../contexts/BackendContext";
 import { ClickAwayListener } from "@mui/base";

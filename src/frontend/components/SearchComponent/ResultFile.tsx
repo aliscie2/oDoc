@@ -22,15 +22,15 @@ const resultFileContainerStyle: React.CSSProperties = {
 // };
 
 function ResultFile(props: Props) {
-  let dispatch = useDispatch();
+  const dispatch = useDispatch();
 
   const { files, files_content } = useSelector(
     (state: any) => state.filesState,
   );
-  let file: FileNode = files.find((file: FileNode) => file.id == props.file_id);
+  const file: FileNode = files.find((file: FileNode) => file.id == props.file_id);
 
-  let title = file && file.name;
-  let content = files_content[props.file_id];
+  const title = file && file.name;
+  const content = files_content[props.file_id];
   return (
     <div
       onMouseDown={() => {

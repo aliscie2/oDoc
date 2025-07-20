@@ -5,10 +5,8 @@ import {
   Menu,
   MenuItem,
   Stack,
-  Tooltip,
   Typography,
   useMediaQuery,
-  useTheme,
   Box,
   Divider,
 } from "@mui/material";
@@ -16,7 +14,6 @@ import CalendarManagement from "./AvailabilityComonent";
 import React, { useState } from "react";
 import CopyButton from "../../../components/MuiComponents/copyButton";
 import { useSelector } from "react-redux";
-import { RootState } from "../../../redux/reducers";
 
 import {
   MoreVert,

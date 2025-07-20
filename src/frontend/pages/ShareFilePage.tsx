@@ -10,9 +10,7 @@ import {
 import EditorComponent from "../components/EditorComponent";
 import { useBackendContext } from "../contexts/BackendContext";
 import { CircularProgress, Input, Typography } from "@mui/material";
-import UserAvatarMenu from "../components/MainComponents/UserAvatarMenu";
 import { Link } from "react-router-dom";
-import { Link as MuiLink } from "@mui/material";
 
 export type FileQuery =
   | undefined
@@ -20,18 +18,18 @@ export type FileQuery =
   | { Err: string };
 
 function ShareFilePage(props: any) {
-  let url = window.location.search;
-  let id = url.split("=")[1];
+  const url = window.location.search;
+  const id = url.split("=")[1];
 
   const { files, files_content } = useSelector(
     (state: any) => state.filesState,
   );
-  let file_id: null | String = files.find(
+  const file_id: null | string = files.find(
     (file: FileNode) => file && file.share_id[0] == id,
   );
 
-  let [file, setFile] = useState<null | FileNode>(files[file_id]);
-  let [state, setState]: any = useState(file ? files_content[file.id] : null);
+  const [file, setFile] = useState<null | FileNode>(files[file_id]);
+  const [state, setState]: any = useState(file ? files_content[file.id] : null);
   const dispatch = useDispatch();
 
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
@@ -40,20 +38,20 @@ function ShareFilePage(props: any) {
   useEffect(() => {
     if (!file) {
       (async () => {
-        let loading = enqueueSnackbar(
+        const loading = enqueueSnackbar(
           <span>
             <span className={"loader"} />
           </span>,
         );
 
-        let res: FileQuery = await backendActor.get_shared_file(id);
+        const res: FileQuery = await backendActor.get_shared_file(id);
 
         closeSnackbar(loading);
 
         if ("Ok" in res) {
-          let file: FileNode = res.Ok[0];
-          let contentTree: Array<[string, ContentNode]> = res.Ok[1];
-          let normalized_tree: Array<SlateNode> =
+          const file: FileNode = res.Ok[0];
+          const contentTree: Array<[string, ContentNode]> = res.Ok[1];
+          const normalized_tree: Array<SlateNode> =
             deserializeContentTree(contentTree);
           setFile(file);
           setState(normalized_tree);

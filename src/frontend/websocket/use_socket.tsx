@@ -2,7 +2,7 @@ import { backend, canisterId } from "../../declarations/backend";
 import IcWebSocket, { createWsConfig } from "ic-websocket-js";
 import { SignIdentity } from "@dfinity/agent";
 import { useDispatch, useSelector } from "react-redux";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { AuthClient } from "@dfinity/auth-client";
 import { AppMessage } from "../../declarations/backend/backend.did";
 

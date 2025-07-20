@@ -1,4 +1,3 @@
-import { RenderEditCellProps } from "react-data-grid";
 import convertCamelToTitle from "../../../utils/convertCamelToTitle";
 import { MenuItem, Select } from "@mui/material";
 
@@ -28,7 +27,7 @@ export function StatusDropDown(props) {
   );
 
   const onCellValueChanged = (value: PaymentStatus) => {
-    let contract = { ...props.contract };
+    const contract = { ...props.contract };
 
     let promise: CPayment = props.contract.promises.find(
       (p) => p.id === props.data.id,
@@ -62,7 +61,7 @@ export function StatusDropDown(props) {
       fullWidth={true}
       value={props.value}
       onChange={(event) => {
-        let value: PaymentStatus | {} = {};
+        const value: PaymentStatus | {} = {};
         value[event.target.value] = null;
         onCellValueChanged(value);
         // onRowChange({ ...row, status: event.target.value }, true);

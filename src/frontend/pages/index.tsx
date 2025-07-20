@@ -19,7 +19,7 @@ import AffiliateDashboard from "./affiliate";
 import AffiliateRedirect from "./affiliateRedirect";
 
 import ContractPage from "./profile/ContractPage";
-import { useNavigate, Link, Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 // import Dashboard from "./dash_board_v1";
 import CalendarView from "./dash_board_v1/calindarView/calendar";
 import JobsPage from "./discover/jobs";

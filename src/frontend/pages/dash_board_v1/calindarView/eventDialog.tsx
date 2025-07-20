@@ -18,9 +18,7 @@ import {
 } from "@mui/material";
 import format from "date-fns/format";
 import { RootState } from "../../../redux/reducers";
-import GoogleCalendarButton, {
-  createGoogleCalendarUrl,
-} from "./addEventToGoogleCalenar";
+import GoogleCalendarButton from "./addEventToGoogleCalenar";
 import { Link } from "react-router-dom";
 import { useGoogleCalendar } from "./googleAccounts/useGoogleCalendar";
 import { useBackendContext } from "@/contexts/BackendContext";
@@ -181,7 +179,7 @@ const EventDialog = ({ open, onClose, slotInfo, selectedEvent = null }) => {
       setShowRecurrence(selectedEvent.recurrence?.length > 0);
     } else {
       // Create mode: potentially use job data
-      let initialData = {
+      const initialData = {
         title: "",
         description: "",
         recurrence: {

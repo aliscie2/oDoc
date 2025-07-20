@@ -1,11 +1,8 @@
-import { AuthClient } from "@dfinity/auth-client";
-import { Actor, HttpAgent } from "@dfinity/agent";
+import { Actor } from "@dfinity/agent";
 import {
   _SERVICE,
-  Account,
 } from "../../declarations/ckusdc_ledger/ckusdc_ledger.did";
 import { canisterId, idlFactory } from "../../declarations/ckusdc_ledger";
-import { Principal } from "@dfinity/principal";
 
 async function getLedgerActor(agent) {
   // let host = "https://ic0.app";

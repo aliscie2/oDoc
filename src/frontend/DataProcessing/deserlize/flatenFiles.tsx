@@ -1,5 +1,5 @@
 function flattenTree(tree) {
-  let result = [];
+  const result = [];
 
   function recursiveFlatten(node) {
     // Flatten children to just an array of their ids

@@ -12,7 +12,7 @@ import { newContract } from "./data_samples";
 //     3. in promise.sender == caller() (caller can not save a promise with sender != caller())
 
 test("Test custom contract", async () => {
-  let newUser = await global.newUser();
+  const newUser = await global.newUser();
   let res = await global.actor.deposit_usdt(100);
 
   const { custom_contract, promise } = newContract();
@@ -31,10 +31,10 @@ test("Test custom contract", async () => {
 
   // --------------------- Confirm the promise ---------------------  \\
   global.actor.setIdentity(newUser);
-  let notifications: Array<Notification> =
+  const notifications: Array<Notification> =
     await global.actor.get_user_notifications();
-  let payment = notifications[0].content.CPaymentContract[0];
-  let contract_id = custom_contract.id;
+  const payment = notifications[0].content.CPaymentContract[0];
+  const contract_id = custom_contract.id;
   expect(payment.contract_id).toEqual(contract_id);
   res = await global.actor.confirmed_c_payment(payment);
   expect(res).toEqual({ Ok: null });
@@ -51,7 +51,7 @@ test("Test custom contract", async () => {
 
   // custom_contract.promises[0].status = {RequestCancellation: null};
   custom_contract.promises[0] = { ...promise, amount: 0 }; // test can't update value after is confirmed
-  let to_store3: StoredContract = {
+  const to_store3: StoredContract = {
     CustomContract: custom_contract,
   };
   res = await global.actor.multi_updates([], [], [to_store3], [], []);
@@ -82,7 +82,7 @@ test("Test custom contract", async () => {
     expect(value[1].CustomContract.promises).toEqual([]);
   });
 
-  let profile_history: { Ok: UserProfile } | { Err: string } =
+  const profile_history: { Ok: UserProfile } | { Err: string } =
     await global.actor.get_user_profile(global.user.getPrincipal());
   expect(profile_history.Ok.actions_rate).toBeGreaterThan(0);
   global.pic.tearDown();
@@ -90,14 +90,14 @@ test("Test custom contract", async () => {
 
 async function userConfirm(user, g) {
   g.actor.setIdentity(user);
-  let notifications: Array<Notification> =
+  const notifications: Array<Notification> =
     await global.actor.get_user_notifications();
   await Promise.all(
     notifications.map(async (value) => {
-      let payment = value.content.CPaymentContract[0];
-      let contract_id = "custom_contract.id";
+      const payment = value.content.CPaymentContract[0];
+      const contract_id = "custom_contract.id";
       expect(payment.contract_id).toEqual(contract_id);
-      let res = await global.actor.confirmed_c_payment(payment);
+      const res = await global.actor.confirmed_c_payment(payment);
       expect(res).toEqual({ Ok: null });
     }),
   );

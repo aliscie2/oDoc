@@ -1,15 +1,11 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import {
-  Card,
-  CardContent,
   Box,
   Typography,
   IconButton,
   Grid,
-  Chip,
   LinearProgress,
   Avatar,
-  Tooltip,
   Paper,
   TextField,
   Alert,
@@ -22,9 +18,7 @@ import {
 import {
   Close as CloseIcon,
   PlayArrow as PlayIcon,
-  Lock as LockIcon,
   CheckCircle as CheckCircleIcon,
-  TrendingUp as TrendingUpIcon,
   Email as EmailIcon,
   CalendarToday as CalendarIcon,
   Google as GoogleIcon,
@@ -33,7 +27,6 @@ import {
 } from "@mui/icons-material";
 import useProgress, { type BadgeType } from "./useProgress";
 
-import { useSelector } from "react-redux";
 import { useGoogleCalendar } from "@/pages/dash_board_v1/calindarView/googleAccounts/useGoogleCalendar";
 
 // ODOC Reward Tier System

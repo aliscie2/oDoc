@@ -2,7 +2,6 @@ import {
   Availability,
   Calendar,
   CalendarActions,
-  Event,
 } from "$/declarations/backend/backend.did";
 
 const calendar_actions: CalendarActions = {

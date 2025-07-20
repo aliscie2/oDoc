@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Button, CircularProgress, Tooltip, Box } from "@mui/material";
+import { Button, CircularProgress } from "@mui/material";
 import { useSnackbar } from "notistack";
 import sendEmail from "../../../utils/sendEmail";
 import { useDispatch, useSelector } from "react-redux";
-import DoneAllIcon from "@mui/icons-material/DoneAll";
 import { useBackendContext } from "@/contexts/BackendContext";
 import { Calendar, Job, Match, User } from "$/declarations/backend/backend.did";
 import UserAvatarMenu from "@/components/MainComponents/UserAvatarMenu";
@@ -21,7 +20,7 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({ jobId }) => {
   );
   const currentJob: Job = jobs?.find((job: any) => job.id === currentJobId);
   const matchJob: Job = matchingJobs?.find((job: any) => job.id === jobId);
-  let match: Match = currentJob.matches?.find(
+  const match: Match = currentJob.matches?.find(
     (match: any) => match.job_id === jobId,
   );
 
@@ -29,9 +28,9 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({ jobId }) => {
   const [connecting, setConnecting] = useState(false);
 
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-  let bookEvent = `${window.location.origin}/calendar?id=${calendar.id}&jobid=${currentJob.id}`;
-  let category = Object.keys(currentJob.category)[0];
-  let message =
+  const bookEvent = `${window.location.origin}/calendar?id=${calendar.id}&jobid=${currentJob.id}`;
+  const category = Object.keys(currentJob.category)[0];
+  const message =
     category == "Job"
       ? "We find a new job opertunity for you."
       : "We found a new talent that may meets your requrments.";
@@ -50,22 +49,22 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({ jobId }) => {
       }
     }
 
-    let res: [Calendar] = await backendActor.get_calendar_by_author(
+    const res: [Calendar] = await backendActor.get_calendar_by_author(
       matchJob?.user_id,
     );
-    let calendar = res[0];
-    let emails = calendar?.googleIds || [];
+    const calendar = res[0];
+    const emails = calendar?.googleIds || [];
     emails.push(...matchJob.emails);
     if (emails.length == 0) {
       alert("User did not set thier email yet, try to contact them via oDoc.");
     }
-    for (let email of emails) {
-      let jobData = {
+    for (const email of emails) {
+      const jobData = {
         job: { ...currentJob, category },
         match: { ...match, score: match?.score * 10 },
         bookEvent,
       };
-      let isEmailSent = await sendEmail(
+      const isEmailSent = await sendEmail(
         "oDoc AI job matcher",
         message,
         [email],

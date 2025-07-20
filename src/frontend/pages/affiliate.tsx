@@ -4,7 +4,6 @@ import {
   Card,
   CardContent,
   Typography,
-  Button,
   Grid,
   Table,
   TableBody,
@@ -18,7 +17,6 @@ import {
   Tooltip,
   Alert,
   Snackbar,
-  Divider,
   List,
   ListItem,
   ListItemIcon,
@@ -28,13 +26,9 @@ import {
 } from "@mui/material";
 import {
   ContentCopy,
-  Person,
   Star,
-  Payment,
   Info,
-  History,
   MonetizationOn,
-  CheckCircle,
 } from "@mui/icons-material";
 import { useBackendContext } from "../contexts/BackendContext";
 import { useSelector } from "react-redux";

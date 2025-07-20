@@ -110,7 +110,7 @@ function SearchPopper() {
   const handleSelectSearchOption = (event: any, options: any) => {
     setOptions(options.map((opt) => opt.value));
   };
-  let { SearchFilesContent, SearchFilesTitles } = useSearchFiles();
+  const { SearchFilesContent, SearchFilesTitles } = useSearchFiles();
   useEffect(() => {
     let case_sensitive = false;
     if (currentOptions.includes("case_sensitive")) {
@@ -118,7 +118,7 @@ function SearchPopper() {
     }
     setSearchRes([]);
     if (currentOptions.includes("files_contents")) {
-      let res: [string] | undefined = SearchFilesContent(
+      const res: [string] | undefined = SearchFilesContent(
         searchValue,
         case_sensitive,
       );
@@ -130,7 +130,7 @@ function SearchPopper() {
       }
     }
     if (currentOptions.includes("files_titles")) {
-      let res: [string] | undefined = SearchFilesTitles(
+      const res: [string] | undefined = SearchFilesTitles(
         searchValue,
         case_sensitive,
       );

@@ -89,8 +89,9 @@ upgrade-backend:
 
 # call it before each commit please.
 format:
-	prettier --write .
+	prettier --write ./src/frontend
 	cargo fmt
+	npx tsc --noUnusedLocals --noUnusedParameters --noEmit --skipLibCheck
 
 getting_pulls:
 	git fetch origin pull/<pr_number>/head:pr-<pr_number>

@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-import { useTheme } from "@mui/material/styles";
+import React, { useState } from "react";
 
 // import odocIcon from "@/assets/infograph/odocIcon.png";
 import { odocStrecutre } from "./landingPageData";

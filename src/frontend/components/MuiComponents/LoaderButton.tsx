@@ -26,11 +26,11 @@ interface LoaderButtonProps {
 
 function LoaderButton(props: LoaderButtonProps) {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-  let [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   async function handleClick() {
     setLoading(true);
-    let res: { Ok?: any; Err?: any } = props.onClick && (await props.onClick());
+    const res: { Ok?: any; Err?: any } = props.onClick && (await props.onClick());
     if (res?.Ok !== undefined) {
       props.successMessage &&
         enqueueSnackbar(props.successMessage, { variant: "success" });

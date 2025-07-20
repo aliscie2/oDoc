@@ -164,7 +164,7 @@ function NotificationPromises() {
     const result = [];
     notifications.forEach((n) => {
       if ("CPaymentContract" in n.content) {
-        let p = n.content.CPaymentContract[0];
+        const p = n.content.CPaymentContract[0];
         if (Object.keys(p.status)[0] !== "Released") {
           result.push({ ...p, is_seen: n.is_seen });
         }

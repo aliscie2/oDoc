@@ -1,6 +1,6 @@
 function extractFiveWordsMax(contentTree) {
   let wordsExtracted = 0;
-  let result = [];
+  const result = [];
 
   // Iterate through content_tree
   contentTree.forEach((node) => {

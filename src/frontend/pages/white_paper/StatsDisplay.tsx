@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Box, Chip, Fade, Stack, Typography } from "@mui/material";
+import { Chip, Fade, Stack } from "@mui/material";
 import {
   People as PeopleIcon,
   Assignment as AssignmentIcon,

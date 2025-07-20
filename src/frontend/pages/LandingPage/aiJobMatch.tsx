@@ -12,18 +12,13 @@ import {
   Chip,
   useMediaQuery,
   Stack,
-  Paper,
   Divider,
   IconButton,
   SvgIcon,
 } from "@mui/material";
 import {
-  Search,
-  Analytics,
-  Star,
   CheckCircle,
   TrendingUp,
-  Speed,
   People,
   Work,
   SmartToy,
@@ -33,8 +28,6 @@ import {
   Rocket,
 } from "@mui/icons-material";
 import ConnectWithoutContactIcon from "@mui/icons-material/ConnectWithoutContact";
-import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
-import LOGOSVG from "@/components/creature/logoSVG";
 import YouTubeIcon from "@mui/icons-material/YouTube";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import GitHubIcon from "@mui/icons-material/GitHub";

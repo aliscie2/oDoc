@@ -24,7 +24,7 @@ const CalendarView = () => {
   useEffect(() => {
     const fetchCal = async () => {
       const idValue = new URLSearchParams(window.location.search).get("id");
-      let res = await backendActor.get_calendar(idValue);
+      const res = await backendActor.get_calendar(idValue);
       dispatch({
         type: "SET_CALENDAR",
         calendar: res[0],

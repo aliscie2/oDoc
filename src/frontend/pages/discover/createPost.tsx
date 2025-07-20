@@ -1,7 +1,6 @@
 import React, { useRef, useState } from "react";
-import { Box, Button, Card, CardContent, IconButton } from "@mui/material";
+import { Button, Card, CardContent } from "@mui/material";
 import { Hash, Image as ImageIcon, Send, Smile } from "lucide-react";
-import { keyframes, styled } from "@mui/material/styles";
 import EditorComponent from "../../components/EditorComponent";
 import { Post } from "../../../declarations/backend/backend.did";
 import { useDispatch, useSelector } from "react-redux";
@@ -22,7 +21,7 @@ const CreatePost: React.FC<CreatePostProps> = () => {
   const postContent = useRef([]);
   const dispatch = useDispatch();
   const handleSubmit = async () => {
-    let content_tree = serializeFileContents(postContent.current)[0][0][1];
+    const content_tree = serializeFileContents(postContent.current)[0][0][1];
 
     const newPostObj: Post = {
       id: randomString(),
@@ -63,7 +62,7 @@ const CreatePost: React.FC<CreatePostProps> = () => {
               key={loading}
               contentEditable={true}
               onChange={(content) => {
-                let c = {};
+                const c = {};
                 c[""] = content;
                 postContent.current = c;
               }}
