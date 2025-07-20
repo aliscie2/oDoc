@@ -39,8 +39,10 @@ const CustomToolbar = ({ onNavigate, onView, label, view, views }) => {
     setMenuAnchor(null);
   };
 
-  const isCalendarPage = window.location.pathname === "/calendar";
-  const shareLink = `${window.location.href}calendar?id=${calendar?.id}`;
+  const isShareCalendarPage =
+    window.location.pathname === "/calendar" &&
+    window.location.search.includes("id=");
+  const shareLink = `${window.location.origin}/calendar?id=${calendar?.id}`;
 
   const ActionMenu = () => (
     <Menu
@@ -53,7 +55,7 @@ const CustomToolbar = ({ onNavigate, onView, label, view, views }) => {
         <TimeZoneSelector />
       </MenuItem>
       <Divider />
-      {!isCalendarPage && (
+      {!isShareCalendarPage && (
         <MenuItem sx={{ py: 0.5 }}>
           <CopyButton title="Share" value={shareLink} />
         </MenuItem>
@@ -118,7 +120,7 @@ const CustomToolbar = ({ onNavigate, onView, label, view, views }) => {
     <Box sx={{ borderBottom: 1, borderColor: "divider", px: 2, py: 0.5 }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between">
         <Stack direction="row" spacing={0.5}>
-          {!isCalendarPage && (
+          {!isShareCalendarPage && (
             <CopyButton title="Share" value={shareLink} size="small" />
           )}
           <CalendarManagement size="small" />

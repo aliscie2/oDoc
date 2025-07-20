@@ -1,5 +1,5 @@
 // CalendarView.js - UI Component
-import React from "react";
+import React, { useEffect } from "react";
 import { Box } from "@mui/material";
 import format from "date-fns/format";
 import { Calendar, dateFnsLocalizer } from "react-big-calendar";
@@ -12,8 +12,33 @@ import EventDialog from "./EventDialog";
 import CustomToolbar from "./toolsBar";
 import useCalendarStyles from "./style";
 import { useCalendarLogic } from "./calendarLogic";
+import { useBackendContext } from "@/contexts/BackendContext";
+import { useDispatch } from "react-redux";
+import { useGoogleCalendar } from "./googleAccounts/useGoogleCalendar";
 
 const CalendarView = () => {
+  const { backendActor } = useBackendContext();
+  const dispatch = useDispatch();
+  const { connectCal } = useGoogleCalendar();
+
+  useEffect(() => {
+    const fetchCal = async () => {
+      const idValue = new URLSearchParams(window.location.search).get("id");
+      let res = await backendActor.get_calendar(idValue);
+      dispatch({
+        type: "SET_CALENDAR",
+        calendar: res[0],
+      });
+      await connectCal();
+    };
+    const isShareCalendarPage =
+      window.location.pathname === "/calendar" &&
+      window.location.search.includes("id=");
+    if (backendActor && isShareCalendarPage) {
+      fetchCal();
+    }
+  }, []);
+
   const {
     currentDate,
     currentView,

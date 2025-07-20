@@ -13,19 +13,13 @@ interface TimeZoneSelectorProps {
   onTimeZoneChange: (newTimeZone: string) => void;
 }
 
-const TimeZoneSelector: React.FC<TimeZoneSelectorProps> = ({
-  onTimeZoneChange,
-}) => {
-  const dispatch = useDispatch();
-  const theme = useTheme();
-  const { current_timezone } = useSelector((state: any) => state.calendarState);
-  const [timeZones] = useState(Intl.supportedValuesOf("timeZone"));
+const TimeZoneSelector: React.FC<TimeZoneSelectorProps> = ({}) => {
   const [currentTime, setCurrentTime] = useState("");
 
   useEffect(() => {
     const updateTime = () => {
       const formatter = new Intl.DateTimeFormat("en-US", {
-        timeZone: current_timezone,
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",
@@ -37,15 +31,15 @@ const TimeZoneSelector: React.FC<TimeZoneSelectorProps> = ({
     const timer = setInterval(updateTime, 1000);
 
     return () => clearInterval(timer);
-  }, [current_timezone]);
+  }, []);
 
-  const handleChange = (newZone: string | null) => {
-    if (newZone && timeZones.includes(newZone)) {
-      dispatch({ type: "SET_TIMEZONE", current_timezone: newZone });
-      // setCurrent_timezone(newZone);
-      onTimeZoneChange(newZone);
-    }
-  };
+  // const handleChange = (newZone: string | null) => {
+  //   if (newZone && timeZones.includes(newZone)) {
+  //     dispatch({ type: "SET_TIMEZONE", current_timezone: newZone });
+  //     // setCurrent_timezone(newZone);
+  //     onTimeZoneChange(newZone);
+  //   }
+  // };
 
   // return (
   //   <Autocomplete
@@ -61,7 +55,9 @@ const TimeZoneSelector: React.FC<TimeZoneSelectorProps> = ({
   //     )}
   //   />
   // );
-  return <> {currentTime + " " + current_timezone}</>;
+  return (
+    <> {currentTime + " " + Intl.DateTimeFormat().resolvedOptions().timeZone}</>
+  );
 };
 
 export default TimeZoneSelector;

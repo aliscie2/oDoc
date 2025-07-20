@@ -12,21 +12,22 @@ import {
   CalendarToday as CalendarIcon,
 } from "@mui/icons-material";
 import { useSelector } from "react-redux";
-import { useGoogleAuth } from "./setUpConnect";
+
+import { useGoogleCalendar } from "@/pages/dash_board_v1/calindarView/googleAccounts/useGoogleCalendar";
 
 const GoogleCalendarOnboarding = () => {
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [hasTriedToClose, setHasTriedToClose] = useState(false);
-
-  const { jobs } = useSelector((state: any) => state.jobState);
-  const { calendar } = useSelector((state: any) => state.calendarState);
-  const { handleGoogleAuth } = useGoogleAuth();
+  const { jobs } = useSelector((state) => state.jobState);
+  const {
+    emailCompleted,
+    availabilityCompleted,
+    connectGoogleCalendar,
+    loading,
+  } = useGoogleCalendar();
 
   const hasActiveJobs = jobs.some((job) => job.active);
-  const hasAvailabilities = calendar?.availabilities?.length > 0;
-  const isGoogleConnected = calendar?.googleIds?.length > 0;
-  const shouldShow = hasActiveJobs && hasAvailabilities && !isGoogleConnected;
+  const shouldShow = hasActiveJobs && availabilityCompleted && !emailCompleted;
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     if (shouldShow && !hasTriedToClose) {
@@ -37,7 +38,7 @@ const GoogleCalendarOnboarding = () => {
 
   useEffect(() => {
     const handleBeforeUnload = (e) => {
-      if (shouldShow && !isGoogleConnected) {
+      if (shouldShow && !emailCompleted) {
         e.preventDefault();
         e.returnValue =
           "You have unsaved changes. Are you sure you want to leave?";
@@ -48,7 +49,7 @@ const GoogleCalendarOnboarding = () => {
 
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [shouldShow, isGoogleConnected]);
+  }, [shouldShow, emailCompleted]);
 
   const handleClose = () => {
     setOpen(false);
@@ -56,14 +57,11 @@ const GoogleCalendarOnboarding = () => {
   };
 
   const handleGoogleConnect = async () => {
-    setLoading(true);
     try {
-      await handleGoogleAuth();
+      await connectGoogleCalendar();
       setOpen(false);
     } catch (error) {
       console.error("Google auth failed:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -104,5 +102,4 @@ const GoogleCalendarOnboarding = () => {
     </Dialog>
   );
 };
-
 export default GoogleCalendarOnboarding;

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -32,7 +32,9 @@ import {
   ExpandLess as ExpandLessIcon,
 } from "@mui/icons-material";
 import useProgress, { type BadgeType } from "./useProgress";
-import { useGoogleAuth } from "./setUpConnect";
+
+import { useSelector } from "react-redux";
+import { useGoogleCalendar } from "@/pages/dash_board_v1/calindarView/googleAccounts/useGoogleCalendar";
 
 // ODOC Reward Tier System
 const getRewardTier = (score: number) => {
@@ -73,18 +75,18 @@ const EmailSetup: React.FC<{
     setShowVerification,
     loading,
     error,
-    handleGoogleAuth,
+    connectGoogleCalendar,
     handleSendVerification,
     handleVerifyCode,
-  } = useGoogleAuth();
+  } = useGoogleCalendar();
 
   const handleGoogleClick = useCallback(
     async (e: React.MouseEvent) => {
       e.stopPropagation();
-      await handleGoogleAuth();
+      await connectGoogleCalendar();
       onClose();
     },
-    [handleGoogleAuth, onClose],
+    [connectGoogleCalendar, onClose],
   );
 
   const handleSendCode = useCallback(
@@ -383,7 +385,7 @@ const AchievementPage: React.FC = () => {
   const [videoOpen, setVideoOpen] = useState(false);
 
   const { karmaScore, badges, recentAchievements } = useProgress();
-  const { emailCompleted, availabilityCompleted } = useGoogleAuth();
+  const { emailCompleted, availabilityCompleted } = useGoogleCalendar();
 
   const createSetupBadges = (): BadgeType[] => [
     {

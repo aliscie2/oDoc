@@ -330,29 +330,30 @@ const App: React.FC = () => {
   const { posts } = useSelector((state: RootState) => state.filesState);
 
   useEffect(() => {
-    if (posts.length == 0) {
-      (async () => {
-        try {
-          // setLoading(true);
+    const fetchPosts = async () => {
+      try {
+        // setLoading(true);
 
-          const fetchedPosts = await backendActor.get_posts(0, 10);
+        const fetchedPosts = await backendActor?.get_posts(0, 10);
 
-          if (fetchedPosts.length === 0) {
-            // setHasMore(false);
-          } else {
-            dispatch({
-              type: "ADD_POSTS",
-              posts: fetchedPosts,
-            });
-          }
-        } catch (error) {
-          console.error("Error fetching more posts:", error);
-        } finally {
-          // setLoading(false);
+        if (fetchedPosts.length === 0) {
+          // setHasMore(false);
+        } else {
+          dispatch({
+            type: "ADD_POSTS",
+            posts: fetchedPosts,
+          });
         }
-      })();
-    }
+      } catch (error) {
+        console.error("Error fetching more posts:", error);
+      } finally {
+        // setLoading(false);
+      }
+    };
 
+    if (backendActor && posts.length) {
+      fetchPosts();
+    }
     // return () => {
     //   if (loadingRef.current) {
     //     observer.unobserve(loadingRef.current);

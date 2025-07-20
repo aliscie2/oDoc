@@ -1,351 +1,381 @@
 import { useState, useEffect } from "react";
 import { Event as ODOCEvent } from "$/declarations/backend/backend.did.d.js";
 import { odocToGoogle } from "./eventConverter";
+import { useDispatch, useSelector } from "react-redux";
+import { useBackendContext } from "@/contexts/BackendContext";
 let accessToken = "";
-export const useGoogleCalendar = () => {
-  const [isConnected, setIsConnected] = useState(false);
-  const [isApiReady, setIsApiReady] = useState(false);
 
-  // Remove: const [calendarId, setCalendarId] = useState('primary');
+export const useGoogleCalendar = () => {
+  const { profile } = useSelector((state) => state.filesState);
+  const { calendar } = useSelector((state) => state.calendarState);
+  const { currentJobId, jobs } = useSelector((state) => state.jobState);
+  const { backendActor } = useBackendContext();
+  const dispatch = useDispatch();
+
+  const [isConnected, setIsConnected] = useState(false);
+  const [verificationCode, setVerificationCode] = useState("");
+  const [generatedCode, setGeneratedCode] = useState("");
+  const [showVerification, setShowVerification] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [emailInput, setEmailInput] = useState("");
+  const [emails, setEmails] = useState(calendar?.googleIds || []);
 
   const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
   const SCOPES =
-    "https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/calendar.events";
+    "email profile https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events";
+
+  let accessToken = localStorage.getItem("googleCalendarToken") || "";
+  const calendarId = localStorage.getItem("googleCalendarId");
+  const emailCompleted = emails.length > 0;
+  const availabilityCompleted = (calendar?.availabilities || []).length > 0;
 
   useEffect(() => {
-    const storedToken = localStorage.getItem("googleCalendarToken");
-    if (storedToken) {
-      accessToken = storedToken;
-
-      setIsConnected(true);
-    }
-
+    if (accessToken) setIsConnected(true);
     const script = document.createElement("script");
     script.src = "https://accounts.google.com/gsi/client";
-    script.async = true;
-    script.defer = true;
+    script.async = script.defer = true;
     document.body.appendChild(script);
-
-    return () => {
-      document.body.removeChild(script);
-    };
+    return () =>
+      document.body.contains(script) && document.body.removeChild(script);
   }, []);
 
-  const initializeGoogleApi = async () => {
-    return new Promise((resolve) => {
-      const script = document.createElement("script");
-      script.src = "https://apis.google.com/js/api.js";
-      script.onload = () => {
-        setIsApiReady(true);
-        resolve(true);
-      };
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
-    });
+  useEffect(() => {
+    const currentJob = jobs.find((job) => job.id === currentJobId);
+    if (currentJob?.emails?.[0] && !emailInput)
+      setEmailInput(currentJob.emails[0]);
+  }, [currentJobId, jobs, emailInput]);
+
+  useEffect(() => {
+    if (calendar?.googleIds) setEmails(calendar.googleIds);
+  }, [calendar?.googleIds]);
+
+  const storeTokens = (token, calId) => {
+    localStorage.setItem("googleCalendarToken", token);
+    localStorage.setItem("googleCalendarId", calId);
+    accessToken = token;
+    setIsConnected(true);
   };
 
-  const connectCalendar = async () => {
-    if (!window.google) return;
-
-    const tokenClient = google.accounts.oauth2.initTokenClient({
-      client_id: CLIENT_ID,
-      scope: SCOPES,
-      callback: async (tokenResponse) => {
-        if (tokenResponse?.access_token) {
-          localStorage.setItem(
-            "googleCalendarToken",
-            tokenResponse.access_token,
-          );
-          accessToken = tokenResponse.access_token;
-          setIsConnected(true);
-          await initializeGoogleApi();
-
-          try {
-            const response = await fetch(
-              "https://www.googleapis.com/calendar/v3/calendars/primary",
-              {
-                headers: {
-                  Authorization: `Bearer ${accessToken}`,
-                  Accept: "application/json",
-                },
-              },
-            );
-
-            if (response.ok) {
-              const data = await response.json();
-              localStorage.setItem("googleCalendarId", data.id); // Store directly in localStorage
-            }
-          } catch (error) {
-            console.log("Error fetching calendar ID:", error);
-          }
-        }
-      },
-      error_callback: (error) => {
-        console.log("Error signing in", error);
-        disConnectCalendar();
-      },
-    });
-
-    tokenClient.requestAccessToken();
-  };
-
-  const disConnectCalendar = () => {
+  const clearTokens = () => {
     localStorage.removeItem("googleCalendarToken");
     localStorage.removeItem("googleCalendarId");
     accessToken = "";
     setIsConnected(false);
-    setIsApiReady(false);
   };
 
-  const filterFutureEvents = (events: any[]) => {
-    const now = new Date();
-    return events.filter((event) => {
-      const eventStart = new Date(event.start.dateTime || event.start.date);
-      return eventStart >= now;
+  const resetDialog = () => {
+    setEmailInput("");
+    setVerificationCode("");
+    setGeneratedCode("");
+    setShowVerification(false);
+    setError("");
+    setLoading(false);
+  };
+
+  const addEmailToBackend = async (email) => {
+    const result = await backendActor.add_google_calendar_id(calendar.id, [
+      email,
+    ]);
+    if ("Err" in result) throw new Error("Error adding google calendar id");
+    setEmails((prev) => [...prev, email]);
+    dispatch({ type: "ADD_CALENDAR_EMAIL", id: result.Ok, email });
+  };
+
+  const connectCalendar = () => {
+    if (!window.google) return;
+    google.accounts.oauth2
+      .initTokenClient({
+        client_id: CLIENT_ID,
+        scope: SCOPES.replace(
+          "email profile ",
+          "https://www.googleapis.com/auth/calendar.readonly ",
+        ),
+        callback: async (response) => {
+          if (!response.access_token) return;
+          storeTokens(response.access_token, "primary");
+          try {
+            const calRes = await fetch(
+              "https://www.googleapis.com/calendar/v3/calendars/primary",
+              {
+                headers: { Authorization: `Bearer ${response.access_token}` },
+              },
+            );
+            const calData = await calRes.json();
+            localStorage.setItem("googleCalendarId", calData.id);
+            console.log({ y: calData.id });
+            localStorage.setItem(
+              "googleCalendarToken" + calData.id,
+              response.access_token,
+            );
+          } catch (err) {
+            console.error("Error fetching calendar:", err);
+          }
+        },
+        error_callback: () => clearTokens(),
+      })
+      .requestAccessToken();
+  };
+
+  const disConnectCalendar = () => clearTokens();
+
+  const connectGoogleCalendar = () =>
+    new Promise((resolve, reject) => {
+      if (!window.google)
+        return reject(new Error("Google OAuth not available"));
+
+      window.google.accounts.oauth2
+        .initTokenClient({
+          client_id: CLIENT_ID,
+          scope: SCOPES,
+          callback: async (response) => {
+            if (!response.access_token)
+              return reject(new Error("No access token"));
+
+            try {
+              storeTokens(response.access_token, "");
+
+              const [userRes, calRes] = await Promise.all([
+                fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
+                  headers: { Authorization: `Bearer ${response.access_token}` },
+                }),
+                fetch(
+                  "https://www.googleapis.com/calendar/v3/users/me/calendarList",
+                  {
+                    headers: {
+                      Authorization: `Bearer ${response.access_token}`,
+                    },
+                  },
+                ),
+              ]);
+
+              const [userInfo, calData] = await Promise.all([
+                userRes.json(),
+                calRes.json(),
+              ]);
+              const primaryCalendar =
+                calData.items.find((cal) => cal.primary) || calData.items[0];
+
+              localStorage.setItem("googleCalendarId", primaryCalendar.id);
+
+              try {
+                await fetch(
+                  `https://www.googleapis.com/calendar/v3/calendars/${primaryCalendar.id}/acl`,
+                  {
+                    method: "POST",
+                    headers: {
+                      Authorization: `Bearer ${response.access_token}`,
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                      role: "freeBusyReader",
+                      scope: { type: "default" },
+                    }),
+                  },
+                );
+              } catch (aclErr) {
+                console.warn("ACL already exists:", aclErr);
+              }
+
+              await addEmailToBackend(userInfo.email);
+              resetDialog();
+              resolve({
+                email: userInfo.email,
+                calendarId: primaryCalendar.id,
+              });
+            } catch (err) {
+              setError("Failed to get user information");
+              reject(err);
+            }
+          },
+          error_callback: (error) =>
+            reject(new Error(`OAuth failed: ${error.type}`)),
+        })
+        .requestAccessToken();
     });
-  };
-
-  const getEvents = async () => {
-    if (!accessToken) return [];
-
-    try {
-      const url = new URL(
-        "https://www.googleapis.com/calendar/v3/calendars/primary/events",
-      );
-      url.searchParams.append("timeMin", new Date().toISOString());
-      url.searchParams.append("showDeleted", "false");
-      url.searchParams.append("singleEvents", "true");
-      url.searchParams.append("maxResults", "10");
-      url.searchParams.append("orderBy", "startTime");
-
-      const response = await fetch(url.toString(), {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          Accept: "application/json",
-        },
-      });
-      const data = await response.json();
-      return filterFutureEvents(data.items) || [];
-    } catch (err) {
-      console.log("Error fetching events", err);
-      disConnectCalendar();
-      return [];
-    }
-  };
-
-  const getBusyEventsForUser = async (email: string) => {
-    const now = new Date().toISOString();
-    const nextWeek = new Date(
-      Date.now() + 7 * 24 * 60 * 60 * 1000,
-    ).toISOString();
-    try {
-      const response = await fetch(
-        "https://www.googleapis.com/calendar/v3/freeBusy",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            timeMin: now,
-            timeMax: nextWeek,
-            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-            items: [{ id: email }],
-          }),
-        },
-      );
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error?.message || "Failed to fetch busy events");
-      }
-
-      return data.calendars?.[email]?.busy || [];
-    } catch (error) {
-      console.log("Error fetching busy events for user:", error);
-      return [];
-    }
-  };
-
-  const allowViewBusy = async () => {
-    if (!accessToken) return false;
-
-    try {
-      // First check if freeBusyReader rule already exists
-      // const aclListResponse = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/acl', {
-      //   headers: {
-      //     'Authorization': `Bearer ${accessToken}`,
-      //     'Accept': 'application/json'
-      //   }
-      // });
-
-      // if (!aclListResponse.ok) {
-      //   throw new Error('Failed to fetch ACL list');
-      // }
-
-      // const aclList = await aclListResponse.json();
-
-      // const hasFreeBusyReader = aclList.items?.some(
-      //   rule => rule.role === "freeBusyReader" && rule.scope?.type === "default"
-      // );
-
-      // if (hasFreeBusyReader) {
-      //   return true;
-      // }
-
-      // Insert or update the ACL
-      const aclResponse = await fetch(
-        "https://www.googleapis.com/calendar/v3/calendars/primary/acl",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            role: "freeBusyReader",
-            scope: { type: "default" },
-          }),
-        },
-      );
-
-      if (!aclResponse.ok) {
-        throw new Error("Failed to update ACL");
-      }
-
-      console.log("Calendar ACL updated successfully");
-      return true;
-    } catch (error) {
-      console.log("Error setting free/busy view:", error);
-      return false;
-    }
-  };
-
-  const createEvents = async (event: ODOCEvent) => {
-    if (!accessToken) return null;
-
-    try {
-      const googleEvent = odocToGoogle(event);
-      const response = await fetch(
-        "https://www.googleapis.com/calendar/v3/calendars/primary/events",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(googleEvent),
-        },
-      );
-      const data = await response.json();
-      return data;
-    } catch (err) {
-      console.log("Error creating event", err);
-      disConnectCalendar();
-      return null;
-    }
-  };
-
-  const updateEvent = async (event: ODOCEvent) => {
-    const eventId = event.id;
-    if (!accessToken) return null;
-
-    try {
-      const googleEvent = odocToGoogle(event);
-      const response = await fetch(
-        `https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(googleEvent),
-        },
-      );
-      const data = await response.json();
-      return data;
-    } catch (err) {
-      console.log("Error updating event", err);
-      disConnectCalendar();
-      return null;
-    }
-  };
-
-  const deleteEvent = async (eventId: string) => {
-    if (!accessToken) return false;
-
-    try {
-      const response = await fetch(
-        `https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        },
-      );
-      return response.ok;
-    } catch (err) {
-      console.log("Error deleting event", err);
-      disConnectCalendar();
-      return false;
-    }
-  };
-
-  // Update useEffect to load saved calendar ID
-  useEffect(() => {
-    const storedToken = localStorage.getItem("googleCalendarToken");
-
-    if (storedToken) {
-      accessToken = storedToken;
-      setIsConnected(true);
-    }
-
-    const script = document.createElement("script");
-    script.src = "https://accounts.google.com/gsi/client";
-    script.async = true;
-    script.defer = true;
-    document.body.appendChild(script);
-
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
 
   const executeGoogleAction = async (action) => {
-    if (!isConnected) return false;
+    if (!isConnected || !accessToken) return false;
+
+    const headers = {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    };
+    const baseUrl =
+      "https://www.googleapis.com/calendar/v3/calendars/primary/events";
 
     try {
+      let response;
       switch (action.type) {
         case "ADD_EVENT":
-          return await createEvents(action.event);
-
+          response = await fetch(baseUrl, {
+            method: "POST",
+            headers,
+            body: JSON.stringify(odocToGoogle(action.event)),
+          });
+          break;
         case "UPDATE_EVENT":
-          return await updateEvent(action.event);
-
+          response = await fetch(`${baseUrl}/${action.event.id}`, {
+            method: "PUT",
+            headers,
+            body: JSON.stringify(odocToGoogle(action.event)),
+          });
+          break;
         case "DELETE_EVENT":
-          return await deleteEvent(action.id);
-
+          response = await fetch(`${baseUrl}/${action.id}`, {
+            method: "DELETE",
+            headers,
+          });
+          return response.ok;
         default:
-          console.error(`Unsupported action type: ${action.type}`);
           return false;
       }
+      return await response.json();
     } catch (error) {
       console.error("Error executing Google action:", error);
+      clearTokens();
       return false;
     }
   };
+
+  const handleSendVerification = async () => {
+    if (!emailInput?.includes("@"))
+      return setError("Please enter a valid email"), false;
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      setGeneratedCode(code);
+      await sendEmail(
+        "Email Verification Code",
+        `Your verification code is: ${code}`,
+        [emailInput],
+      );
+      setShowVerification(true);
+      return true;
+    } catch {
+      return setError("Failed to send verification email"), false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyCode = async () => {
+    if (verificationCode !== generatedCode)
+      return setError("Invalid verification code"), false;
+
+    try {
+      await addEmailToBackend(emailInput);
+      resetDialog();
+      return true;
+    } catch {
+      return setError("Failed to add email"), false;
+    }
+  };
+
+  const setDefaultEmail = (email) =>
+    setEmails((prev) => [email, ...prev.filter((e) => e !== email)]);
+  const removeEmail = (email) =>
+    setEmails((prev) => prev.filter((e) => e !== email));
+
+  const connectCal = async () => {
+    // First try to use existing access token
+    let currentAccessToken =
+      accessToken || localStorage.getItem("googleCalendarToken");
+
+    if (!currentAccessToken) {
+      console.error(
+        "No access token available. Please connect calendar first.",
+      );
+      return;
+    }
+
+    try {
+      const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const emails = calendar?.googleIds;
+      const now = new Date().toISOString();
+      const allEvents = [];
+
+      for (const email of emails) {
+        try {
+          const x = localStorage.getItem("googleCalendarToken" + email);
+          console.log({ x, email });
+          const eventsRes = await fetch(
+            `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(email)}/events?timeMin=${now}&maxResults=50&singleEvents=true&orderBy=startTime&timeZone=${userTimeZone}`,
+            {
+              headers: { Authorization: `Bearer ${x}` },
+            },
+          );
+
+          // If token expired, try to refresh or reconnect
+          if (eventsRes.status === 401) {
+            console.log("Token expired, need to reconnect");
+            disConnectCalendar();
+            return;
+          }
+
+          const eventsData = await eventsRes.json();
+          const processedEvents = (eventsData.items || []).map((event) => ({
+            id: event.id,
+            title: event.summary || "Untitled",
+            start_time:
+              new Date(event.start.dateTime || event.start.date).getTime() *
+              1000000,
+            end_time:
+              new Date(event.end.dateTime || event.end.date).getTime() *
+              1000000,
+            description: event.description || "",
+            created_by: email,
+            isGoogleEvent: true,
+          }));
+
+          allEvents.push(...processedEvents);
+        } catch (emailErr) {
+          console.error(`Error fetching events for ${email}:`, emailErr);
+        }
+      }
+
+      dispatch({ type: "SET_GOOGLE_CALENDAR", events: allEvents });
+    } catch (err) {
+      console.error("Error fetching calendar data:", err);
+    }
+  };
+
+  useEffect(() => {
+    const isShareCalendarPage =
+      window.location.pathname === "/calendar" &&
+      window.location.search.includes("id=");
+    if (!isShareCalendarPage && calendar?.googleIds?.length > 0) {
+      (async () => {
+        connectCal();
+      })();
+    }
+  }, [calendar, backendActor]);
+
   return {
+    connectCal,
+    emailCompleted,
+    availabilityCompleted,
+    connectGoogleCalendar,
+    loading,
+    emailInput,
+    setEmailInput,
+    verificationCode,
+    setVerificationCode,
+    showVerification,
+    setShowVerification,
+    error,
+    handleSendVerification,
+    handleVerifyCode,
     executeGoogleAction,
+    isConnected,
+    calendarId,
+    emails,
+    setDefaultEmail,
+    removeEmail,
     connectCalendar,
     disConnectCalendar,
-    isConnected,
-    getEvents,
-    getBusyEventsForUser,
-    allowViewBusy,
-    isApiReady,
-    calendarId: localStorage.getItem("googleCalendarId"),
   };
 };
