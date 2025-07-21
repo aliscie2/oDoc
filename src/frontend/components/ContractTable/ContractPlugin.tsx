@@ -6,7 +6,6 @@ import {
   insertTableColumn,
 } from "@udecode/plate-table";
 const CONTRACT_KEY = "custom_contract";
-const TABLE_KEY = "table";
 
 interface Props {
   children: any;
@@ -99,13 +98,5 @@ const tableFloatingOptions = {
   },
 };
 
-const createCustomTablePlugin = () =>
-  createTablePlugin({
-    options: {
-      initialTableWidth: 600,
-    },
-    ...tableFloatingOptions,
-  });
-
-export { CONTRACT_KEY, TABLE_KEY, createCustomTablePlugin };
+export { CONTRACT_KEY };
 export default createContractPlugin;

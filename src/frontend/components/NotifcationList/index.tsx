@@ -165,7 +165,7 @@ const NotificationsButton = () => {
     }
     try {
       setIsMarkingAllRead(true);
-      const res = await backendActor?.see_notifications(unreadNotificationIds);
+      const _ = await backendActor?.see_notifications(unreadNotificationIds);
 
       const updatedNotifications = notifications.map((notification) => {
         if (unreadNotificationIds.includes(notification.id)) {

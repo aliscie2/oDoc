@@ -1,13 +1,5 @@
 import React from "react";
-import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  Fade,
-} from "@mui/material";
-
-
+import { Box, Card, CardContent, Typography, Fade } from "@mui/material";
 
 // Base Card Component
 

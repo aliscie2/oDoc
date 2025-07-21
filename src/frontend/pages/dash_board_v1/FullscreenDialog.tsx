@@ -1,9 +1,5 @@
 import React from "react";
-import {
-  Dialog,
-  DialogContent,
-  IconButton,
-} from "@mui/material";
+import { Dialog, DialogContent, IconButton } from "@mui/material";
 import { Close } from "@mui/icons-material";
 
 // Shared Fullscreen Dialog Component

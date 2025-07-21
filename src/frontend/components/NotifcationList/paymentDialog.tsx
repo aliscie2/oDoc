@@ -21,6 +21,7 @@ import {
 import { formatRelativeTime } from "../../utils/time";
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
+import { CPayment } from "$/declarations/backend/backend.did";
 
 const StyledDetailGrid = styled(Grid)(({ theme }) => ({
   marginBottom: theme.spacing(2),
@@ -40,7 +41,7 @@ const ActionSection = styled(Paper)(({ theme }) => ({
   marginTop: theme.spacing(2),
 }));
 
-const PaymentDialog = ({ payment, onClose }) => {
+const PaymentDialog = ({ payment, onClose }: { payment: CPayment }) => {
   const [selectedAction, setSelectedAction] = useState("");
   const [objectionReason, setObjectionReason] = useState("");
   const [isLoading, setIsLoading] = useState(false);

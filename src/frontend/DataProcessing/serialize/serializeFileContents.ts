@@ -1,7 +1,5 @@
 import { randomString } from "../dataSamples";
-import {
-  ContentNode,
-} from "../../../declarations/backend/backend.did";
+import { ContentNode } from "../../../declarations/backend/backend.did";
 
 const stylesToCheck = ["bold", "italic", "underline", "strikethrough", "code"];
 export const URLKEYLEAFE = "URLKEYLEAFE";

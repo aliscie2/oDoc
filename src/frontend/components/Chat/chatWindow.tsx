@@ -1,4 +1,13 @@
-import React, { memo, useCallback, useEffect, useRef, useState } from "react";
+import { Principal } from "@dfinity/principal";
+import {
+  ArrowBack,
+  Check,
+  Close,
+  Minimize,
+  OpenInFull,
+  Send,
+  Settings,
+} from "@mui/icons-material";
 import {
   AppBar,
   Box,
@@ -11,21 +20,12 @@ import {
   Toolbar,
   Typography,
 } from "@mui/material";
-import { AdminsSelect, MembersSelect, WorkspaceSelect } from "./index";
-import {
-  ArrowBack,
-  Check,
-  OpenInFull,
-  Send,
-  Settings,
-  Minimize,
-  Close,
-} from "@mui/icons-material";
-import { useBackendContext } from "../../contexts/BackendContext";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Principal } from "@dfinity/principal";
-import formatTimestamp from "../../utils/time";
 import { Link } from "react-router-dom";
+import { useBackendContext } from "../../contexts/BackendContext";
+import formatTimestamp from "../../utils/time";
+import { AdminsSelect, MembersSelect, WorkspaceSelect } from "./index";
 
 // Custom hooks for better separation of concerns
 const useDragHandler = (isDragEnabled, onPositionChange, chatId) => {

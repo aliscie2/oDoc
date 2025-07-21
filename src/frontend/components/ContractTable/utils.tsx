@@ -9,102 +9,6 @@ import {
 import { randomString } from "../../DataProcessing/dataSamples";
 import { Principal } from "@dfinity/principal";
 
-export function updateCContractColumn(contract, new_column): CContract {
-  contract.columns = contract.columns.map((column: CColumn) => {
-    if (column.id === new_column.id) {
-      return { ...column, ...new_column };
-    }
-    return column;
-  });
-  return contract;
-}
-
-export function updateContractColumn(
-  contract: CustomContract,
-  updated_column,
-  view: any,
-): CustomContract {
-  return {
-    ...contract,
-    contracts: contract.contracts.map((c: CContract) => {
-      if (c.id === view.id) {
-        return updateCContractColumn(c, updated_column);
-      }
-      return c;
-    }),
-  };
-}
-
-export function serializeContractColumn(
-  contract,
-  addVarsToParser,
-  evaluate,
-  all_users?,
-): Array<CColumn> {
-  return contract.columns.map((col: CColumn) => {
-    if (col.formula_string && col.formula_string.length > 0) {
-      col["width"] = 150;
-      col["valueGetter"] = (params: any) => {
-        addVarsToParser(params, contract);
-        const ev = evaluate(col.formula_string);
-        if (ev.err) {
-          return "Invalid formula";
-        }
-        return ev.value;
-      };
-    } else {
-      delete col["valueGetter"];
-    }
-    col["type"] = col.column_type;
-    if (col.column_type == "user") {
-      col["type"] = "singleSelect";
-      col["valueOptions"] = all_users ? all_users.map((user) => user.name) : [];
-    }
-    return col;
-  });
-}
-
-export function serializeContractRows(
-  rows: Array<CRow>,
-  columns: Array<CColumn>,
-) {
-  return rows.map((row: CRow) => {
-    const cells: any = {};
-    row.cells &&
-      row.cells.map((cell: CCell) => {
-        const c = {};
-        cells[cell.field] = cell.value || "";
-        return c;
-      });
-    if (row.cells.length < 1) {
-      for (let i = 0; i < columns.length; i++) {
-        cells[columns[i].field] = "";
-      }
-    }
-
-    return { id: row.id, ...cells };
-  });
-}
-
-export function deserializeContractRows(rows: Array<any>): Array<CRow> {
-  return rows.map((row) => {
-    const cells: Array<any> = [];
-    Object.keys(row).map((k: string) => {
-      if (k != "id" && k != "cells") {
-        cells.push({
-          value: String(row[k]) || "",
-          field: k,
-        });
-      }
-    });
-    const de_row: CRow = {
-      id: row["id"],
-      cells,
-    };
-    return de_row;
-  });
-}
-
 export const PROMISES_CONTRACT_FIELDS = [
   "amount",
   "sender",
@@ -112,35 +16,6 @@ export const PROMISES_CONTRACT_FIELDS = [
   "receiver",
   "id",
 ];
-
-export function serializeRowToPromise(
-  row: any,
-  all_users: any[],
-  contract,
-): CPayment {
-  const cells: Array<CCell> = Object.keys(row)
-    .filter((key) => !PROMISES_CONTRACT_FIELDS.includes(key))
-    .map((key) => ({ field: key, value: row[key] || "" }));
-  const status: any = {};
-  status[row.status] = null;
-  const sender = all_users.find((user: any) => user.name === row.sender);
-  const receiver = all_users.find((user: any) => user.name === row.receiver);
-
-  const promise: CPayment = {
-    id: row.id,
-    status: status,
-    date_created: 0,
-    date_released: 0,
-    cells,
-    contract_id: contract.id,
-    sender: Principal.fromText(sender.id),
-    amount: Number(row.amount),
-    receiver: receiver
-      ? Principal.fromText(receiver.id)
-      : Principal.fromText("2vxsx-fae"),
-  };
-  return promise;
-}
 
 export function createCColumn(field: string): CColumn {
   return {
@@ -153,61 +28,6 @@ export function createCColumn(field: string): CColumn {
     formula_string: "",
     editable: true,
     deletable: false,
-  };
-}
-
-export function createCContract(): CContract {
-  const field = randomString();
-  const new_cell: CCell = {
-    field,
-    value: "",
-  };
-  const new_row: CRow = {
-    id: randomString(),
-    cells: [new_cell],
-  };
-
-  const new_column: CColumn = createCColumn(field);
-  const new_c_contract: CContract = {
-    id: randomString(),
-    name: "Untitled",
-    columns: [new_column],
-    rows: [new_row],
-    date_created: 0,
-    creator: Principal.fromText("2vxsx-fae"),
-  };
-  return new_c_contract;
-}
-
-export function updateCustomContractRows(
-  contract: CustomContract,
-  new_rows: Array<CRow>,
-  view_id: string,
-): CustomContract {
-  return {
-    ...contract,
-    contracts: contract.contracts.map((c: CContract) => {
-      if (c.id === view_id) {
-        return { ...c, rows: new_rows };
-      }
-      return c;
-    }),
-  };
-}
-
-export function updateCustomContractColumns(
-  contract: CustomContract,
-  new_columns,
-  view: any,
-): CustomContract {
-  return {
-    ...contract,
-    contracts: contract.contracts.map((c: CContract) => {
-      if (c.id === view.id) {
-        return { ...c, columns: new_columns };
-      }
-      return c;
-    }),
   };
 }
 
@@ -226,51 +46,6 @@ export function createNewPromis(sender): CPayment {
   };
   return new_promise;
 }
-
-export const handleCustomCellChange = (params) => {
-  const { data, colDef, newValue, context } = params;
-  const contract = context.contractsState;
-  const paymentId = data.id;
-  const fieldName = colDef.field;
-
-  // Update the promises array
-  const updatedPromises = contract.promises.map((promise) => {
-    if (promise.id !== paymentId) return promise;
-
-    // Find and update or add the cell
-    const updatedCells = [...promise.cells];
-    const cellIndex = updatedCells.findIndex(
-      (cell) => cell.field === fieldName,
-    );
-
-    if (cellIndex >= 0) {
-      // Update existing cell
-      updatedCells[cellIndex] = {
-        ...updatedCells[cellIndex],
-        value: newValue,
-      };
-    } else {
-      // Add new cell
-      updatedCells.push({
-        id: `${paymentId}_${fieldName}`,
-        field: fieldName,
-        value: newValue,
-      });
-    }
-
-    return {
-      ...promise,
-      cells: updatedCells,
-    };
-  });
-
-  context.dispatch({
-    type: "UPDATE_PROMISES",
-    contract_id: contract.id,
-    promises: updatedPromises,
-  });
-  return true;
-};
 
 export const transformPromisesDataAndColumns = (
   promises,

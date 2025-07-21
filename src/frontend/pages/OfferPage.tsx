@@ -6,14 +6,7 @@ import {
   keyframes,
 } from "@mui/material/styles";
 import { Box, Card, CardContent, Button } from "@mui/material";
-import {
-  Sparkles,
-  Wallet,
-  Crown,
-  Timer,
-  Shield,
-  Rocket,
-} from "lucide-react";
+import { Sparkles, Wallet, Crown, Timer, Shield, Rocket } from "lucide-react";
 import { useBackendContext } from "@/contexts/BackendContext";
 
 // Keyframe Animations

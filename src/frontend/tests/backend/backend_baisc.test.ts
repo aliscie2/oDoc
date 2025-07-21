@@ -1,4 +1,3 @@
-
 test("Basic testing", async () => {
   const newUser = await global.newUser();
   const InitialData = await global.actor.get_initial_data();

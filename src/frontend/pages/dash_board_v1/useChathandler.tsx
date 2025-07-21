@@ -85,7 +85,7 @@ export const useChatHandler = () => {
       const jobRes = await aiAgent.sendMessage(prompt, false);
       parsedJob = textToJson(jobRes).extractedData;
     }
-  
+
     if (parsedJob.done) {
       dispatch({ type: "IS_PROFILE_COMPELETE" });
     }
@@ -151,20 +151,16 @@ export const useChatHandler = () => {
       message.length > 2000 ? compactMessage(message) : message;
 
     try {
-      let parsed = {}
+      let parsed = {};
       if (import.meta.env.VITE_DFX_NETWORK !== "ic") {
-
         const classifyMessageRes = await aiAgent.sendMessage(`
         ${PROMPTS.CLASSIFY}
         Message:${compact_message}
         `);
-          parsed = textToJson(classifyMessageRes).extractedData;
+        parsed = textToJson(classifyMessageRes).extractedData;
       } else {
-          parsed = { type: "JOBS" };
+        parsed = { type: "JOBS" };
       }
-
-      
-      
 
       if (!parsed.type) {
         return {

@@ -13,9 +13,7 @@ import {
   Collapse,
   alpha,
 } from "@mui/material";
-import {
-  Star,
-} from "@mui/icons-material";
+import { Star } from "@mui/icons-material";
 import { benefitsData } from "./landingPageData";
 
 interface ODocInfographicProps {

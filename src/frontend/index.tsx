@@ -1,12 +1,13 @@
-import React, { StrictMode } from "react";
+import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
 import App from "./App";
-import store from "./redux/store";
+
+import * as Sentry from "@sentry/react";
+import { SnackbarProvider } from "notistack";
 import ThemeProvider from "./ThemeProvider";
 import { BackendProvider } from "./contexts/BackendContext";
-import { SnackbarProvider } from "notistack";
-import * as Sentry from "@sentry/react";
+import store from "./redux/reducers";
 
 if (import.meta.env.VITE_DFX_NETWORK === "ic") {
   Sentry.init({
@@ -26,7 +27,6 @@ const root = createRoot(rootElement);
 root.render(
   <StrictMode>
     <Provider store={store}>
-      
       <ThemeProvider>
         <BackendProvider>
           <SnackbarProvider

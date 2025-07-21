@@ -18,11 +18,7 @@ import {
   useMediaQuery,
   Collapse,
 } from "@mui/material";
-import {
-  Visibility,
-  Delete,
-  Add,
-} from "@mui/icons-material";
+import { Visibility, Delete, Add } from "@mui/icons-material";
 import JobDetails from "./JobDetails";
 import { useBackendContext } from "@/contexts/BackendContext";
 import JobBriefData from "./quickBar";

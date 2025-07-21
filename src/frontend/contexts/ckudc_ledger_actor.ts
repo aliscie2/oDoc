@@ -1,7 +1,5 @@
 import { Actor } from "@dfinity/agent";
-import {
-  _SERVICE,
-} from "../../declarations/ckusdc_ledger/ckusdc_ledger.did";
+import { _SERVICE } from "../../declarations/ckusdc_ledger/ckusdc_ledger.did";
 import { canisterId, idlFactory } from "../../declarations/ckusdc_ledger";
 
 async function getLedgerActor(agent) {

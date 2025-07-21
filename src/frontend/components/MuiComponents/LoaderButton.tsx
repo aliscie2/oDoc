@@ -30,7 +30,8 @@ function LoaderButton(props: LoaderButtonProps) {
 
   async function handleClick() {
     setLoading(true);
-    const res: { Ok?: any; Err?: any } = props.onClick && (await props.onClick());
+    const res: { Ok?: any; Err?: any } =
+      props.onClick && (await props.onClick());
     if (res?.Ok !== undefined) {
       props.successMessage &&
         enqueueSnackbar(props.successMessage, { variant: "success" });

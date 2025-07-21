@@ -19,12 +19,13 @@ import useSearchFiles from "./SearchFilesContent";
 import ResultFile from "./ResultFile";
 import TitleIcon from "@mui/icons-material/Title";
 import { Z_INDEX_SEARCH_POPPER } from "../../constants/zIndex";
+import { RootState } from "@/redux/reducers";
 
 //TODO use this import CustomizedInputBase from "../genral/search_tools";
 
-export function OptionItem(props: any) {
+export function OptionItem(props: { title: string; icon: React.ReactElement }) {
   return (
-    <Tooltip {...props} title={props.title}>
+    <Tooltip title={props.title}>
       <IconButton color={"secondary"}>{props.icon}</IconButton>
     </Tooltip>
   );
@@ -70,7 +71,7 @@ function SearchPopper() {
   const dispatch = useDispatch();
 
   const { searchValue, searchTool } = useSelector(
-    (state: any) => state.uiState,
+    (state: RootState) => state.uiState,
   );
   const [width, setWidth] = React.useState(250);
   const [currentOptions, setOptions] = React.useState([]);

@@ -1,14 +1,6 @@
 import React from "react";
-import {
-  Box,
-  Typography,
-  Chip,
-  Divider,
-  Collapse,
-} from "@mui/material";
-import {
-  Warning,
-} from "@mui/icons-material";
+import { Box, Typography, Chip, Divider, Collapse } from "@mui/material";
+import { Warning } from "@mui/icons-material";
 import { BaseCard, CardHeader } from "./card";
 
 // Alerts Component

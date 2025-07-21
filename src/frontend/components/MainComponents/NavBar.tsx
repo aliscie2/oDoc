@@ -61,7 +61,7 @@ const MobileHeader = styled(Box)(({ theme }) => ({
   },
 }));
 
-export const StyledListItemButton = styled(ListItemButton)(({ theme }) => ({
+const StyledListItemButton = styled(ListItemButton)(({ theme }) => ({
   margin: "8px 0",
   padding: "12px 16px",
   borderRadius: "8px",

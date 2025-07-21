@@ -1,4 +1,5 @@
 import { tutorials } from "@/pages/LandingPage/landingPageData";
+import { RootState } from "@/redux/reducers";
 import { useMemo } from "react";
 import { useSelector } from "react-redux";
 
@@ -172,10 +173,7 @@ const badgeDefinitions: Omit<BadgeType, "unlocked" | "progress">[] = [
 ];
 
 const useProgress = (): ProgressData => {
-  const state = {
-    uiState: useSelector((state: any) => state.uiState),
-    filesState: useSelector((state: any) => state.filesState),
-  };
+  const state = useSelector((state: RootState) => state);
 
   const data = useMemo(() => {
     const { profile, wallet, all_friends } = state.filesState;
@@ -185,7 +183,8 @@ const useProgress = (): ProgressData => {
     const karmaScore = wallet?.actions_rate || 0;
 
     // Improved user type detection - check both sent and received payments
-    let userType: "freelancer" | "business_owner" | "unknown" = "unknown";
+    let userType: "both" | "freelancer" | "business_owner" | "unknown" =
+      "unknown";
 
     if (wallet?.exchanges?.length > 0) {
       const receivedPayments = wallet.exchanges.filter(

@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
 
-
-
 interface TimeZoneSelectorProps {
   onTimeZoneChange: (newTimeZone: string) => void;
 }

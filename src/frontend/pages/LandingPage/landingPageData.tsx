@@ -32,7 +32,6 @@ import {
   Hub,
 } from "@mui/icons-material";
 
-
 interface Tutorial {
   title: string;
   videoUrl: string;

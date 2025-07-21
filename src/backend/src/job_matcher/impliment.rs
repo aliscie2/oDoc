@@ -260,21 +260,22 @@ impl Job {
         })
     }
     pub fn get_jobs_count() -> usize {
-    crate::JOBS_MATCH_STORE.with(|store| {
-        store.borrow()
-            .iter()
-            .filter(|(_, job)| job.category == Category::Job)
-            .count()
-    })
-}
+        crate::JOBS_MATCH_STORE.with(|store| {
+            store
+                .borrow()
+                .iter()
+                .filter(|(_, job)| job.category == Category::Job)
+                .count()
+        })
+    }
 
-
-pub fn get_talents_count() -> usize {
-    crate::JOBS_MATCH_STORE.with(|store| {
-        store.borrow()
-            .iter()
-            .filter(|(_, job)| job.category == Category::Talent)
-            .count()
-    })
-}
+    pub fn get_talents_count() -> usize {
+        crate::JOBS_MATCH_STORE.with(|store| {
+            store
+                .borrow()
+                .iter()
+                .filter(|(_, job)| job.category == Category::Talent)
+                .count()
+        })
+    }
 }

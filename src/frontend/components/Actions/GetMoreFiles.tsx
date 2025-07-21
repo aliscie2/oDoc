@@ -2,11 +2,7 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, Tooltip } from "@mui/material";
 
-
-
-import {
-  ContentNode,
-} from "../../../declarations/backend/backend.did";
+import { ContentNode } from "../../../declarations/backend/backend.did";
 import { useSnackbar } from "notistack";
 import { useBackendContext } from "../../contexts/BackendContext";
 

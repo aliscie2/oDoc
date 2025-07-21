@@ -24,12 +24,7 @@ import {
   useMediaQuery,
   CircularProgress,
 } from "@mui/material";
-import {
-  ContentCopy,
-  Star,
-  Info,
-  MonetizationOn,
-} from "@mui/icons-material";
+import { ContentCopy, Star, Info, MonetizationOn } from "@mui/icons-material";
 import { useBackendContext } from "../contexts/BackendContext";
 import { useSelector } from "react-redux";
 

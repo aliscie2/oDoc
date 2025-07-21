@@ -405,7 +405,7 @@ const ActionButton = styled(Button)(({ theme }) => ({
 }));
 
 // Types
-export interface SaveButtonItem {
+interface SaveButtonItem {
   name: string;
   isChanged: boolean;
   onSave: () => Promise<void> | void;

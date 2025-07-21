@@ -1,22 +1,34 @@
-import { combineReducers } from "redux";
-
-import { uiReducer } from "./uiReducer";
-import { filesReducer } from "./filesReducer";
-import { chatsReducer } from "./chatsReducer";
-import { notificationReducer } from "./notificationReducer";
-import { calendarReducer } from "./calendarReducer";
-import { jobReducer } from "./jobReducer";
+import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { AIReducer } from "./AIReducer";
+import { calendarReducer } from "./calendarReducer";
+import { chatsReducer } from "./chatsReducer";
+import { filesReducer } from "./filesReducer";
+import { jobReducer } from "./jobReducer";
+import { notificationReducer } from "./notificationReducer";
+import { uiReducer } from "./uiReducer";
 
-const rootReducer = combineReducers({
-  ui: uiReducer,
-  files: filesReducer,
-  chats: chatsReducer,
-  notification: notificationReducer,
-  calendar: calendarReducer,
-  jobs: jobReducer,
-  Ai: AIReducer,
-});
+const allStoreReducers = {
+  uiState: uiReducer,
+  filesState: filesReducer,
+  chatsState: chatsReducer,
+  notificationState: notificationReducer,
+  calendarState: calendarReducer,
+  jobState: jobReducer,
+  AIState: AIReducer,
+};
+const rootReducer = combineReducers(allStoreReducers);
 
+export function setupStore(preloadedState?: Partial<RootState>) {
+  return configureStore({
+    reducer: allStoreReducers,
+    preloadedState,
+    // middleware: (getDefaultMiddleware) =>
+    //   getDefaultMiddleware({
+    //     serializableCheck: false,
+    //   }),
+  });
+}
+const store = setupStore();
+export default store;
 export type RootState = ReturnType<typeof rootReducer>;
-export default rootReducer;
+// export default rootReducer;

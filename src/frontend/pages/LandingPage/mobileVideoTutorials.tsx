@@ -10,11 +10,7 @@ import {
   IconButton,
 } from "@mui/material";
 import { tutorials } from "./landingPageData";
-import {
-  ChevronLeft,
-  ChevronRight,
-  CheckCircle,
-} from "@mui/icons-material";
+import { ChevronLeft, ChevronRight, CheckCircle } from "@mui/icons-material";
 import VideoPlayer from "../videoTutorial/videoPlayer";
 import { useSelector } from "react-redux";
 

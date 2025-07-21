@@ -20,7 +20,6 @@ const RunawayJellyfish = ({
   const [isReturning, setIsReturning] = useState(false);
   const [isDead, setIsDead] = useState(false);
   const [movementDirection, setMovementDirection] = useState(0);
-  const [velocity, setVelocity] = useState({ x: 0, y: 0 });
   const [squishFactor, setSquishFactor] = useState(1);
   const [initialAnimationComplete, setInitialAnimationComplete] =
     useState(false);
@@ -217,7 +216,6 @@ const RunawayJellyfish = ({
 
           const velX = newX - prevPositionRef.current.x;
           const velY = newY - prevPositionRef.current.y;
-          setVelocity({ x: velX, y: velY });
 
           const totalSpeed = Math.sqrt(velX * velX + velY * velY);
           setSquishFactor(Math.max(0.7, 1 - totalSpeed * 0.03));
@@ -249,7 +247,6 @@ const RunawayJellyfish = ({
                     clearInterval(returnIntervalRef.current);
                     returnIntervalRef.current = null;
                     setIsReturning(false);
-                    setVelocity({ x: 0, y: 0 });
                     return originalPosition;
                   }
 
@@ -258,14 +255,12 @@ const RunawayJellyfish = ({
                     x: current.x + dx * speed,
                     y: current.y + dy * speed,
                   };
-                  setVelocity({ x: dx * speed, y: dy * speed });
                   return newPos;
                 });
               }, 16);
             }
           } else {
             setIsReturning(false);
-            setVelocity({ x: 0, y: 0 });
           }
         }
       }
@@ -318,11 +313,8 @@ const RunawayJellyfish = ({
 
   // Animation calculations
   const breathScale = 1 + Math.sin(Date.now() * 0.003) * 0.02;
-  const shiverIntensity = shiver ? Math.sin(Date.now() * 0.05) * 3 : 0;
-  const moveRotation = isMoving ? Math.sin(Date.now() * 0.02) * 15 : 0;
-  const thinkingTilt = thinking ? Math.sin(Date.now() * 0.004) * 10 : 0;
+
   const bodySquish = isMoving ? squishFactor : breathScale;
-  const panicShake = panic ? Math.sin(Date.now() * 0.03) * 2 : 0;
 
   // Animation keyframes
   const bounceKeyframes = `

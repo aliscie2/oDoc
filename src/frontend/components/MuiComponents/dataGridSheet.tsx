@@ -1,10 +1,6 @@
 "use client";
 
-import React, {
-  useCallback,
-  useMemo,
-  useState,
-} from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { AgGridReact } from "ag-grid-react";
 // import "./style.css";
 import { AgChartsEnterpriseModule } from "ag-charts-enterprise";

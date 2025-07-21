@@ -2,7 +2,7 @@ import { createTheme as createMuiTheme } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 
 // Enhanced palette with improved morphism support
-export function createPalette(isDarkMode: boolean) {
+function createPalette(isDarkMode: boolean) {
   const baseColors = {
     error: {
       lightest: "#FEF3F2",
@@ -212,7 +212,7 @@ export function createPalette(isDarkMode: boolean) {
 }
 
 // Enhanced shadows for morphism effect with better differentiation
-export const createShadows = (isDarkMode?: boolean) => {
+const createShadows = (isDarkMode?: boolean) => {
   const shadowColor = isDarkMode ? "rgba(0, 0, 0, 0.8)" : "rgba(0, 0, 0, 0.15)";
   const highlightColor = isDarkMode
     ? "rgba(255, 255, 255, 0.08)"
@@ -255,7 +255,7 @@ export const createShadows = (isDarkMode?: boolean) => {
   ];
 };
 
-export const createTypography = () => {
+const createTypography = () => {
   return {
     fontFamily:
       '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
@@ -339,7 +339,7 @@ export const createTypography = () => {
 };
 
 // Enhanced components with advanced morphism styling
-export const createComponents = ({ palette }: { palette: any }) => {
+const createComponents = ({ palette }: { palette: any }) => {
   return {
     MuiCssBaseline: {
       styleOverrides: {
@@ -621,36 +621,3 @@ export function createTheme(isDarkMode: boolean) {
     typography,
   });
 }
-
-// Utility function to create morphism styles for custom components
-export const createMorphismStyles = (palette: any, isDarkMode: boolean) => ({
-  glass: {
-    background: palette.morphism.glass.background,
-    backdropFilter: palette.morphism.glass.backdropFilter,
-    WebkitBackdropFilter: palette.morphism.glass.backdropFilter,
-    border: `1px solid ${palette.morphism.border}`,
-    borderRadius: 16,
-    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-  },
-  card: {
-    background: palette.morphism.card.background,
-    backdropFilter: palette.morphism.card.backdropFilter,
-    WebkitBackdropFilter: palette.morphism.card.backdropFilter,
-    border: palette.morphism.card.border,
-    borderRadius: palette.morphism.card.borderRadius,
-    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-    cursor: "pointer",
-    "&:hover": palette.morphism.card.hover,
-  },
-  neumorphism: {
-    background: isDarkMode ? "#1a1a2e" : "#f0f0f0",
-    boxShadow: palette.morphism.neumorphism.inset,
-    borderRadius: 20,
-    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-  },
-  container: {
-    minHeight: "100vh",
-    background: palette.background.gradient,
-    padding: 3,
-  },
-});

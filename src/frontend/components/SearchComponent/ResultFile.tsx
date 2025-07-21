@@ -4,6 +4,7 @@ import { FileNode } from "../../../declarations/backend/backend.did";
 import { useDispatch, useSelector } from "react-redux";
 
 import EditorComponent from "../EditorComponent";
+import { RootState } from "@/redux/reducers";
 
 interface Props {
   file_id: string;
@@ -25,9 +26,11 @@ function ResultFile(props: Props) {
   const dispatch = useDispatch();
 
   const { files, files_content } = useSelector(
-    (state: any) => state.filesState,
+    (state: RootState) => state.filesState,
   );
-  const file: FileNode = files.find((file: FileNode) => file.id == props.file_id);
+  const file: FileNode | undefined = files.find(
+    (file: FileNode) => file.id == props.file_id,
+  );
 
   const title = file && file.name;
   const content = files_content[props.file_id];

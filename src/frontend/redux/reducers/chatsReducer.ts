@@ -12,10 +12,7 @@ import {
   UPDATE_MESSAGE,
   UPDATE_NOTIFICATION,
 } from "../types/chatsTypes";
-import {
-  FEChat,
-  Message,
-} from "../../../declarations/backend/backend.did";
+import { FEChat, Message } from "../../../declarations/backend/backend.did";
 
 export function chatsReducer(
   state: ChatState = initialChatsState,

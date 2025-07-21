@@ -92,6 +92,7 @@ format:
 	prettier --write ./src/frontend
 	cargo fmt
 	npx tsc --noUnusedLocals --noUnusedParameters --noEmit --skipLibCheck
+	npx ts-unused-exports tsconfig.json
 
 getting_pulls:
 	git fetch origin pull/<pr_number>/head:pr-<pr_number>

@@ -30,9 +30,7 @@ import DeskTopTutorials from "../videoTutorial";
 import PlatformProgress from "./platformProgress";
 import PageFooter from "./socialButton";
 import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
-import LOGOSVG, {
-  SECRUTYSVG,
-} from "@/components/creature/logoSVG";
+import LOGOSVG, { SECRUTYSVG } from "@/components/creature/logoSVG";
 import getckUsdcBalance from "@/utils/getBalance";
 import { canisterId } from "$/declarations/backend";
 import { useBackendContext } from "@/contexts/BackendContext";

@@ -232,7 +232,8 @@ const App: React.FC = () => {
         try {
           if (profile) {
             // get notifications
-            const notificationRes = await backendActor.get_user_notifications(0);
+            const notificationRes =
+              await backendActor.get_user_notifications(0);
             const chatsList = await backendActor.get_my_chats(0);
 
             dispatch({

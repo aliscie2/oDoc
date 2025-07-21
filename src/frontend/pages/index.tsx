@@ -25,6 +25,7 @@ import CalendarView from "./dash_board_v1/calindarView/calendar";
 import JobsPage from "./discover/jobs";
 import AchievementPage from "@/components/userBadges";
 import ICPJobsLandingPage from "./LandingPage/aiJobMatch";
+import Posts from "./discover/posts";
 
 function Pages() {
   const navigate = useNavigate();
@@ -79,6 +80,7 @@ function Pages() {
       <Route path="/*" element={<FileContentPage />} />
       <Route path="/calendar" element={<CalendarView />} />
       <Route path="/achievementCard" element={<AchievementPage />} />
+      <Route path="/posts" element={<Posts />} />
     </Routes>
   );
 }
