@@ -1,4 +1,3 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 
 import { Calendar } from "../../../declarations/backend/backend.did";
 
@@ -291,4 +290,3 @@ export class ActionProcessor {
     }
   }
 }
-

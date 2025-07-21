@@ -1,10 +1,6 @@
 import { Principal } from "@dfinity/principal";
 import {
-  Column,
   CustomContract,
-  Share,
-  SharePaymentOption,
-  SharesContract,
 } from "../../declarations/backend/backend.did";
 
 const paymentContractId = randomString();

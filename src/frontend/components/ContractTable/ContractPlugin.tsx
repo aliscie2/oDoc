@@ -1,7 +1,6 @@
 import { createPluginFactory } from "@udecode/plate-common";
 import SlateCustomContract from "./SlateCustomContract";
 import {
-  createTablePlugin,
   insertTableRow,
   insertTableColumn,
 } from "@udecode/plate-table";

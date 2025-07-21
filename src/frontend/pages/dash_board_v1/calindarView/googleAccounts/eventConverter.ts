@@ -31,7 +31,6 @@ interface GoogleEvent {
   guestsCanSeeOtherGuests?: boolean;
 }
 
-
 export function serlizeEeventToGooggleEvent(odocEvent: ODOCEvent): GoogleEvent {
   const startDate = new Date(odocEvent.start_time / 1000000);
   const endDate = new Date(odocEvent.end_time / 1000000);

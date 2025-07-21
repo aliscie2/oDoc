@@ -73,7 +73,7 @@
     "**/*": "prettier --write --ignore-unknown"
   },
   "scripts": {
-    "lint": "eslint . --fix",
+    "lint": "eslint ./src --fix",
     "dfx": "dfx start --clean",
     "start": "vite serve",
     "build": "vite build",

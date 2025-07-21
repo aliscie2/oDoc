@@ -10,7 +10,6 @@ export interface Workspace {
   admins: Principal[];
 }
 
-
 interface Profile {
   id: string;
 }

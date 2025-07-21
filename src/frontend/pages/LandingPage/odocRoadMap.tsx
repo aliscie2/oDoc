@@ -1,13 +1,3 @@
-import SmartContractIcon from "@mui/icons-material/AccountBalanceWallet";
-import ProfileIcon from "@mui/icons-material/Person";
-import TaskIcon from "@mui/icons-material/Assignment";
-import FormulaIcon from "@mui/icons-material/Functions";
-import ViewIcon from "@mui/icons-material/Visibility";
-import SocialIcon from "@mui/icons-material/Share";
-import DesktopIcon from "@mui/icons-material/DesktopWindows";
-import ProtectionIcon from "@mui/icons-material/Security";
-import HowToVoteIcon from "@mui/icons-material/HowToVote";
-
 
 const roadMap = [
   {

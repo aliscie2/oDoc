@@ -1,5 +1,3 @@
-
-
 // Action Interfaces
 interface ToggleNavAction {
   type: "TOGGLE_NAV";

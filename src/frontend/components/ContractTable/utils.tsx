@@ -1,14 +1,11 @@
 import {
   CCell,
   CColumn,
-  CContract,
   CPayment,
-  CRow,
   CustomContract,
 } from "../../../declarations/backend/backend.did";
 import { randomString } from "../../DataProcessing/dataSamples";
 import { Principal } from "@dfinity/principal";
-
 
 export function createCColumn(field: string): CColumn {
   return {

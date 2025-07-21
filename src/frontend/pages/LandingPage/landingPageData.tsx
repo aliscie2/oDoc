@@ -1,4 +1,3 @@
-
 interface Tutorial {
   title: string;
   videoUrl: string;
@@ -72,7 +71,6 @@ export const tutorials: Tutorial[] = [
     },
   },
 ];
-
 
 export const odocStrecutre: Element[] = [
   {

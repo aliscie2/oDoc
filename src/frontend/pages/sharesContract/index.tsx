@@ -17,7 +17,7 @@ import {
   User,
   CPayment,
 } from "../../../declarations/backend/backend.did";
-import PaymentHistory  from "./PaymentHistory";
+import PaymentHistory from "./PaymentHistory";
 import PaymentDialog from "./PaymentDialog";
 import BeneficiariesTable from "./AddBeneficiaryDialog";
 import { useSelector } from "react-redux";
@@ -260,7 +260,7 @@ const initialContract: CustomContract = {
   promises: [],
 };
 
- const DummyShares: React.FC = () => {
+const DummyShares: React.FC = () => {
   const [contractData, setContractData] =
     useState<CustomContract>(initialContract);
 

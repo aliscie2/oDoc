@@ -7,8 +7,6 @@ export const formatTime = (time: bigint, hour12 = false): string => {
   });
 };
 
-
-
 export const microsecondsToDate = (time: number): Date => {
   return new Date(Number(time) / 1e6);
 };

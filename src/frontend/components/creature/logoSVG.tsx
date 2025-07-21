@@ -17,7 +17,6 @@ const LOGOSVG = () => (
   </svg>
 );
 
-
 export const SECRUTYSVG = () => (
   <svg
     width="140"
@@ -966,7 +965,6 @@ export const SECRUTYSVG = () => (
     </defs>
   </svg>
 );
-
 
 export const NOTFOUND404 = () => (
   <svg
