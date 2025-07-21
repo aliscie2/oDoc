@@ -96,6 +96,7 @@ frontend-format:
 
 backend-format:
 	cargo fmt
+	cargo clippy
 
 
 getting_pulls:
