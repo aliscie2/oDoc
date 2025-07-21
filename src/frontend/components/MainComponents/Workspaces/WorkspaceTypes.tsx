@@ -10,12 +10,8 @@ export interface Workspace {
   admins: Principal[];
 }
 
-export interface WorkspaceState {
-  workspaces: Workspace[];
-  currentWorkspace: Workspace;
-}
 
-export interface Profile {
+interface Profile {
   id: string;
 }
 

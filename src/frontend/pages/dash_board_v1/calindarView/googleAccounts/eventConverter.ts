@@ -31,32 +31,8 @@ interface GoogleEvent {
   guestsCanSeeOtherGuests?: boolean;
 }
 
-export function googleToODOC(
-  googleEvent: GoogleEvent | { start: string; end: string },
-): ODOCEvent {
-  const isBusyEvent = !("summary" in googleEvent);
 
-  return {
-    id: googleEvent.id || "",
-    title: isBusyEvent ? "Busy" : googleEvent.summary,
-    description: isBusyEvent ? "Busy time slot" : googleEvent.description || "",
-    start_time:
-      new Date(
-        isBusyEvent ? googleEvent.start : googleEvent.start.dateTime,
-      ).getTime() * 1000000,
-    end_time:
-      new Date(
-        isBusyEvent ? googleEvent.end : googleEvent.end.dateTime,
-      ).getTime() * 1000000,
-    attendees:
-      "attendees" in googleEvent
-        ? googleEvent.attendees?.map((attendee) => attendee.email) || []
-        : [],
-    created_by: "created_by" in googleEvent ? googleEvent.created_by : "",
-  };
-}
-
-export function odocToGoogle(odocEvent: ODOCEvent): GoogleEvent {
+export function serlizeEeventToGooggleEvent(odocEvent: ODOCEvent): GoogleEvent {
   const startDate = new Date(odocEvent.start_time / 1000000);
   const endDate = new Date(odocEvent.end_time / 1000000);
 

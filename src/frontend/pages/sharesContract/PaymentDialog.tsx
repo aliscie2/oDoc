@@ -28,7 +28,7 @@ interface PaymentDialogProps {
   onSubmit: () => void;
 }
 
-export const PaymentDialog: React.FC<PaymentDialogProps> = ({
+const PaymentDialog: React.FC<PaymentDialogProps> = ({
   open,
   amount,
   loading,

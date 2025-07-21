@@ -121,11 +121,11 @@ export function buildTree(flattenedItems: FlattenedItem[]): TreeItems {
   return root.children;
 }
 
-export function findItem(items: TreeItem[], itemId: string) {
+ function findItem(items: TreeItem[], itemId: string) {
   return items.find(({ id }) => id === itemId);
 }
 
-export function findItemDeep(
+function findItemDeep(
   items: TreeItems,
   itemId: string,
 ): TreeItem | undefined {

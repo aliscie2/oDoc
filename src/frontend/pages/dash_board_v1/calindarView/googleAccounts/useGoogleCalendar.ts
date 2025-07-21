@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { odocToGoogle } from "./eventConverter";
+import { serlizeEeventToGooggleEvent } from "./eventConverter";
 import { useDispatch, useSelector } from "react-redux";
 import { useBackendContext } from "@/contexts/BackendContext";
 const accessToken = "";
@@ -210,14 +210,14 @@ export const useGoogleCalendar = () => {
           response = await fetch(baseUrl, {
             method: "POST",
             headers,
-            body: JSON.stringify(odocToGoogle(action.event)),
+            body: JSON.stringify(serlizeEeventToGooggleEvent(action.event)),
           });
           break;
         case "UPDATE_EVENT":
           response = await fetch(`${baseUrl}/${action.event.id}`, {
             method: "PUT",
             headers,
-            body: JSON.stringify(odocToGoogle(action.event)),
+            body: JSON.stringify(serlizeEeventToGooggleEvent(action.event)),
           });
           break;
         case "DELETE_EVENT":

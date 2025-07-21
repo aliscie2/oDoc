@@ -19,7 +19,7 @@ interface BeneficiariesTableProps {
   onUpdate: (promises: CPayment[]) => void;
 }
 
-export const BeneficiariesTable: React.FC<BeneficiariesTableProps> = ({
+const BeneficiariesTable: React.FC<BeneficiariesTableProps> = ({
   promises,
   isCreator = false,
   onUpdate,

@@ -15,7 +15,7 @@ export interface BadgeType {
   userType?: "freelancer" | "business_owner" | "both";
 }
 
-export interface KarmaLevel {
+interface KarmaLevel {
   threshold: number;
   color: string;
   label: string;
@@ -23,7 +23,7 @@ export interface KarmaLevel {
   personality: string;
 }
 
-export interface ProgressData {
+interface ProgressData {
   karmaScore: number;
   userType: "freelancer" | "business_owner" | "unknown";
   badges: BadgeType[];

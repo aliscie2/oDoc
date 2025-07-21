@@ -9,13 +9,6 @@ import {
 import { randomString } from "../../DataProcessing/dataSamples";
 import { Principal } from "@dfinity/principal";
 
-export const PROMISES_CONTRACT_FIELDS = [
-  "amount",
-  "sender",
-  "status",
-  "receiver",
-  "id",
-];
 
 export function createCColumn(field: string): CColumn {
   return {

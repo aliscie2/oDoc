@@ -18,7 +18,7 @@ const allStoreReducers = {
 };
 const rootReducer = combineReducers(allStoreReducers);
 
-export function setupStore(preloadedState?: Partial<RootState>) {
+function setupStore(preloadedState?: Partial<RootState>) {
   return configureStore({
     reducer: allStoreReducers,
     preloadedState,

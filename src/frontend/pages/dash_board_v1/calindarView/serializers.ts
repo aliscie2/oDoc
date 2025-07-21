@@ -7,12 +7,7 @@ export const formatTime = (time: bigint, hour12 = false): string => {
   });
 };
 
-export const parseTime = (timeStr: string): bigint => {
-  const [hours, minutes] = timeStr.split(":").map(Number);
-  const date = new Date();
-  date.setHours(hours, minutes, 0, 0);
-  return BigInt(date.getTime() * 1000); // Convert milliseconds to microseconds
-};
+
 
 export const microsecondsToDate = (time: number): Date => {
   return new Date(Number(time) / 1e6);

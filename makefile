@@ -88,11 +88,15 @@ upgrade-backend:
 	dfx deploy backend
 
 # call it before each commit please.
-format:
+frontend-format:
+	yarn run lint
 	prettier --write ./src/frontend
-	cargo fmt
 	npx tsc --noUnusedLocals --noUnusedParameters --noEmit --skipLibCheck
 	npx ts-unused-exports tsconfig.json
+
+backend-format:
+	cargo fmt
+
 
 getting_pulls:
 	git fetch origin pull/<pr_number>/head:pr-<pr_number>

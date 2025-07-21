@@ -15,7 +15,7 @@ import MarkdownMessage from "./markDownMessageRdnder"; // Import the new compone
 import AICreditsComponent from "./AICreditsCompnent";
 import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
 
-export const AIChatComponent = ({
+const AIChatComponent = ({
   isExpanded,
   onToggle,
   chatHistory,

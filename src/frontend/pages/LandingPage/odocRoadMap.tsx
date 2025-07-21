@@ -7,63 +7,7 @@ import SocialIcon from "@mui/icons-material/Share";
 import DesktopIcon from "@mui/icons-material/DesktopWindows";
 import ProtectionIcon from "@mui/icons-material/Security";
 import HowToVoteIcon from "@mui/icons-material/HowToVote";
-const features = [
-  {
-    title: "Secure Smart Contracts",
-    content:
-      "Experience truly decentralized freelancing through our blockchain-powered smart contracts. We empower freelancers in challenging regions with guaranteed payments and transparent transactions.",
-    icon: <SmartContractIcon />,
-  },
-  {
-    title: "Trust & Reputation System",
-    content:
-      "Build your professional reputation through our comprehensive trust score system. Your profile showcases verified work history, client ratings, and detailed contract performance metrics.",
-    icon: <ProfileIcon />,
-  },
 
-  {
-    title: "Enterprise-Grade Task Management",
-    content:
-      "Manage projects with our military-grade encrypted task management system. Features include advanced spreadsheet functionality, intelligent text editing, and automated grammar enhancement - perfect for handling sensitive organizational data.",
-    icon: <TaskIcon />,
-  },
-  {
-    title: "Advanced Data Processing",
-    content:
-      "Leverage powerful spreadsheet capabilities with our formula engine. Seamlessly integrate with front-end components while maintaining data integrity and calculation accuracy.",
-    icon: <FormulaIcon />,
-  },
-  {
-    title: "Dynamic Data Visualization",
-    content:
-      "Transform your data into compelling visual stories. Choose from multiple view options including interactive charts, customizable galleries, and professional presentation formats.",
-    icon: <ViewIcon />,
-  },
-  {
-    title: "Thriving Professional Network",
-    content:
-      "Connect with opportunities in our vibrant marketplace. Post jobs, discover projects, and build meaningful professional relationships within our secure ecosystem.",
-    icon: <SocialIcon />,
-  },
-  {
-    title: "Optimized Desktop Experience",
-    content:
-      "Boost your productivity with our specialized desktop application. Enjoy seamless note-taking and collaboration features while maintaining the security of decentralized storage.",
-    icon: <DesktopIcon />,
-  },
-  {
-    title: "Inclusive Protection Framework",
-    content:
-      "Benefit from our advanced SNS-migration system that ensures data integrity and user protection. Smart resource management automatically optimizes inactive storage while preserving your important information.",
-    icon: <ProtectionIcon />,
-  },
-  {
-    title: "Community-Driven Voting System",
-    content:
-      "Shape the future of the platform by voting on new features and updates. Your voice matters in building a platform that serves you better.",
-    icon: <HowToVoteIcon />,
-  },
-];
 
 const roadMap = [
   {
@@ -167,23 +111,4 @@ const roadMap = [
       "Automatically track tasks and overdo. An Automatically recognize new events from chats to schedule them on your calendar and sync it with google calendar.",
   },
 ];
-
-const steps = [
-  {
-    label: "Create Your Account",
-    description:
-      "Sign up with your email or wallet to start exploring ODOC's features",
-  },
-  {
-    label: "Visit the Discover Page",
-    description:
-      "Browse projects, connect with professionals, and join our community",
-  },
-  {
-    label: "Start Collaborating",
-    description:
-      "Create contracts, manage tasks, and work securely with your team",
-  },
-];
-
-export { features, roadMap, steps };
+export { roadMap };

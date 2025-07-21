@@ -1,40 +1,33 @@
-export type UiActions =
-  | "TOGGLE_NAV"
-  | "SEARCH"
-  | "TOGGLE_DARK"
-  | "LOGOUT"
-  | "LOGIN"
-  | "SEARCH_TOOL"
-  | "POST_VOTE";
+
 
 // Action Interfaces
-export interface ToggleNavAction {
+interface ToggleNavAction {
   type: "TOGGLE_NAV";
 }
 
-export interface PostVoteAction {
+interface PostVoteAction {
   type: "POST_VOTE";
   postVote: any; // Adjust the type of postVote as needed
 }
 
-export interface ToggleDarkModeAction {
+interface ToggleDarkModeAction {
   type: "TOGGLE_DARK";
 }
 
-export interface SearchAction {
+interface SearchAction {
   type: "SEARCH";
   searchValue: string;
 }
 
-export interface LogoutAction {
+interface LogoutAction {
   type: "LOGOUT";
 }
 
-export interface LoginAction {
+interface LoginAction {
   type: "LOGIN";
 }
 
-export interface ToggleSearchToolAction {
+interface ToggleSearchToolAction {
   type: "SEARCH_TOOL";
 }
 
@@ -50,7 +43,7 @@ export type Action =
   | { type: "IS_FETCHING"; isFetching: boolean };
 
 // State Interface
-export interface InitialState {
+interface InitialState {
   isFetching: boolean;
   isRegistered: boolean;
   count: number;

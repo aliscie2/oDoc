@@ -12,7 +12,7 @@ import { useBackendContext } from "../contexts/BackendContext";
 import { CircularProgress, Input, Typography } from "@mui/material";
 import { Link } from "react-router-dom";
 
-export type FileQuery =
+type FileQuery =
   | undefined
   | { Ok: [FileNode, Array<[string, ContentNode]>] }
   | { Err: string };

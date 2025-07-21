@@ -17,9 +17,9 @@ import {
   User,
   CPayment,
 } from "../../../declarations/backend/backend.did";
-import { PaymentHistory } from "./PaymentHistory";
-import { PaymentDialog } from "./PaymentDialog";
-import { BeneficiariesTable } from "./AddBeneficiaryDialog";
+import PaymentHistory  from "./PaymentHistory";
+import PaymentDialog from "./PaymentDialog";
+import BeneficiariesTable from "./AddBeneficiaryDialog";
 import { useSelector } from "react-redux";
 import { Principal } from "@dfinity/principal";
 
@@ -40,7 +40,7 @@ interface BeneficiaryShare {
   date_created: number;
 }
 
-export const Shares: React.FC<SharesProps> = ({
+const Shares: React.FC<SharesProps> = ({
   contract = {
     id: "",
     permissions: [],
@@ -260,7 +260,7 @@ const initialContract: CustomContract = {
   promises: [],
 };
 
-export const DummyShares: React.FC = () => {
+ const DummyShares: React.FC = () => {
   const [contractData, setContractData] =
     useState<CustomContract>(initialContract);
 

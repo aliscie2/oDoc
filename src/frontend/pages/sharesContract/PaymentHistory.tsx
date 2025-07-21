@@ -23,7 +23,7 @@ interface PaymentHistoryProps {
   onMakePayment: () => void;
 }
 
-export const PaymentHistory: React.FC<PaymentHistoryProps> = ({
+const PaymentHistory: React.FC<PaymentHistoryProps> = ({
   payments,
   isBeneficiary,
   remainingShares,

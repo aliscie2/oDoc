@@ -32,8 +32,9 @@ import {
   setProperty,
 } from "./utilities";
 import type { FlattenedItem, SensorContext, TreeItems } from "./types";
-import { SortableTreeItem } from "./components";
+// import { SortableTreeItem } from "./components";
 import { useSelector } from "react-redux";
+import { SortableTreeItem } from "./components/TreeItem";
 
 const measuring = {
   droppable: {

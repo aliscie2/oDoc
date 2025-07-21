@@ -1,8 +1,7 @@
-import React from "react";
-import { Box, Container, Typography } from "@mui/material";
 import CheckCircle from "@mui/icons-material/CheckCircle";
 import Schedule from "@mui/icons-material/Schedule";
-import { roadMap } from "./data";
+import { Box, Container, Typography } from "@mui/material";
+import { roadMap } from "./odocRoadMap";
 
 const PlatformProgress = () => {
   return (

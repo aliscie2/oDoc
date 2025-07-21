@@ -1,20 +1,20 @@
 import { AIAgent } from "@/AIAgents/ai_agent";
 
-export interface InitialState {
+interface InitialState {
   aiAgent: AIAgent;
   credits: number;
   initialCredits: number;
   isFreeAITire: boolean;
 }
 
-export const initialState: InitialState = {
+const initialState: InitialState = {
   aiAgent: new AIAgent(0, true),
   credits: 0,
   initialCredits: 0,
   isFreeAITire: false,
 };
 
-export type Action =
+type Action =
   | { type: "INIT_AI_AGENT"; aiAgent: AIAgent }
   | { type: "ADD_AI_CREDITS"; credits: number; isFree: boolean }
   | { type: "INIT_AI_CREDITS"; credits: number; isFree: boolean }
