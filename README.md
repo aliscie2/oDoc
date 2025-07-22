@@ -17,6 +17,9 @@ oDoc revolutionizes the entire freelance lifecycle - from job discovery to proje
 - Reputation system with verifiable work history
 - Integrated communication and collaboration tools
 
+
+## [Join discord](https://discord.gg/HD2MbpuN)
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -252,6 +255,8 @@ Building the future of freelance work:
 2. **Follow conventions** - TypeScript/Rust standards with tests
 3. **Test thoroughly** - Ensure blockchain operations work correctly  
 4. **Document well** - Clear code comments and feature descriptions
+5. join our discord
+6. check list of tasks here https://discord.gg/HD2MbpuN
 
 ## 📄 License
 
