@@ -219,9 +219,10 @@ yarn start
 
 ### Phase 1: Core Workflow (Current)
 - [x] AI job matching algorithm
-- [x] Voice calendar commands  
+- [x] Tolk to your calendar  
 - [x] Blockchain payment system
-- [ ] Karma scoring system
+- [x] Promise escrow contract
+- [X] Karma scoring system
 
 ### Phase 2: Advanced Automation
 - [ ] AI project managers
