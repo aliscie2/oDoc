@@ -160,13 +160,14 @@ export const useChatHandler = () => {
         `);
         parsed = textToJson(classifyMessageRes).extractedData;
       } else {
-        if (compact_message.split("//") < 1) {
+        console.log({x:compact_message.split("//")})
+        if (compact_message.split("//").length > 1) {
           const type = compact_message.split("//")[0].toUpperCase();
           parsed = { type: type == "TALENT" ? "JOB" : type };
         } else {
           parsed = {
             feedback:
-              "Locally you can make a command like `Talent//as>icp,rut` to create talent with 2 skills. `as` stand for add skills",
+              "Locally you can make a command like `calendar//aa>title>09:00>17:00>1,2,3,4,5>false` to  (add availability - Mon-Fri, not blocked) or  `Talent//as>icp,rut` to create talent with 2 skills. `as` stand for add skills",
           };
         }
       }
