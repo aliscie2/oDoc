@@ -31,5 +31,5 @@ echo
 echo == Deploy.
 echo
 
-# yarn run start
+# yarn start
 # dfx deploy

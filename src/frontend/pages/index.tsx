@@ -6,7 +6,7 @@ import ShareFilePage from "./ShareFilePage";
 import ProfilePage from "./profile";
 import UserProfile from "./User";
 import ContractsHistory from "./Profile/ContractsHistory";
-import Web3WalletUI from "../components/MuiComponents/walletUi";
+
 import { useSelector } from "react-redux";
 
 import OfferPage from "./OfferPage";
@@ -26,6 +26,7 @@ import JobsPage from "./discover/jobs";
 import AchievementPage from "@/components/userBadges";
 import ICPJobsLandingPage from "./LandingPage/aiJobMatch";
 import Posts from "./discover/posts";
+import WalletPage from "./walletPage";
 
 function Pages() {
   const navigate = useNavigate();
@@ -52,7 +53,7 @@ function Pages() {
     <Routes>
       <Route path="/" element={<MainPage />} />
       <Route path="/about" element={<LandingPage />} />
-      <Route path="/wallet" element={<Web3WalletUI wallet={wallet} />} />
+      <Route path="/wallet" element={<WalletPage wallet={wallet} />} />
       <Route
         path="/profile"
         element={

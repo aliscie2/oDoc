@@ -142,7 +142,7 @@ if [ -n "$IC_SIWE_ID" ]; then
 fi
 echo ""
 echo "📋 Next steps (Step 6 from README):"
-echo "  yarn run start                    # Start dev server"
+echo "  yarn start                    # Start dev server"
 echo "  open http://127.0.0.1:5173/   # Open the app (Step 7 from README)"
 echo ""
 echo "🛑 To stop:"

@@ -1,5 +1,5 @@
 run_fe:
-	yarn run start
+	yarn start
 run_be:
 	dfx deploy backend
 
@@ -94,6 +94,8 @@ frontend-format:
 	prettier --write ./src/frontend
 	npx tsc --noUnusedLocals --noUnusedParameters --noEmit --skipLibCheck
 	npx ts-unused-exports tsconfig.json
+	# install npm-check globally npm install npm-check -g
+	npm-check
 
 backend-format:
 	cargo fmt

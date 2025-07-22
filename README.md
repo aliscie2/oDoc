@@ -53,7 +53,7 @@ sh scripts/deploy_ledger.sh
 dfx generate
 
 # 6. Start frontend development server
-yarn run start
+yarn start
 
 # 7. Open the application
 open http://127.0.0.1:5173/
@@ -77,7 +77,7 @@ dfx start --background --clean
 make deploy-all
 
 # Start frontend development server
-yarn run start
+yarn start
 
 # Access the app at http://127.0.0.1:5173/
 ```

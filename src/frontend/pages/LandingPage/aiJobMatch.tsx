@@ -438,7 +438,7 @@ const PageFooter = () => {
                 color: isDarkMode ? "#fff" : "#212529",
               }}
             >
-              ICPJobs.com
+              xx.com
             </Typography>
             <Typography
               variant="body1"
@@ -712,7 +712,7 @@ export default function ICPJobsLandingPage() {
               lineHeight: 1.1,
             }}
           >
-            ICPJobs.com
+            ICPJobsdd.com
           </Typography>
 
           <Typography

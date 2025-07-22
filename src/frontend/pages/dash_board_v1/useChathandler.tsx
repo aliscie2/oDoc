@@ -160,7 +160,7 @@ export const useChatHandler = () => {
         `);
         parsed = textToJson(classifyMessageRes).extractedData;
       } else {
-        console.log({x:compact_message.split("//")})
+        console.log({ x: compact_message.split("//") });
         if (compact_message.split("//").length > 1) {
           const type = compact_message.split("//")[0].toUpperCase();
           parsed = { type: type == "TALENT" ? "JOB" : type };

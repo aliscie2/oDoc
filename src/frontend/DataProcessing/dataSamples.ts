@@ -1,7 +1,6 @@
 import { Principal } from "@dfinity/principal";
 import { CustomContract } from "../../declarations/backend/backend.did";
 
-
 export const custom_contract: CustomContract = {
   id: "change_later",
   name: "Custom contract",
