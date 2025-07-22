@@ -413,10 +413,10 @@ const ChatContainer = () => {
           canRedo: false,
           canRetry: hasActions,
           done: result.done,
-          curr_cal: result.action_type == "JOBS" ? null : calendar,
-          curr_job: result.action_type == "JOBS" ? currentJob : null,
-          prev_job: result.action_type == "JOBS" ? prev_job : null,
-          perv_cal: result.action_type == "JOBS" ? null : perv_cal,
+          curr_cal: result.action_type == "JOB" ? null : calendar,
+          curr_job: result.action_type == "JOB" ? currentJob : null,
+          prev_job: result.action_type == "JOB" ? prev_job : null,
+          perv_cal: result.action_type == "JOB" ? null : perv_cal,
         },
       ]);
     } catch (error) {
@@ -443,7 +443,7 @@ const ChatContainer = () => {
     if (message.action_type === "CALENDAR") {
       const undoAction = undoCalendarAction(message);
       undoAction.forEach((action) => dispatch(action));
-    } else if (message.action_type === "JOBS") {
+    } else if (message.action_type === "JOB") {
       const undoAction = undoJobAction(message);
       dispatch(undoAction);
     }
@@ -463,7 +463,7 @@ const ChatContainer = () => {
 
     if (message.action_type === "CALENDAR") {
       message.actions.forEach((action) => dispatch(action));
-    } else if (message.action_type === "JOBS") {
+    } else if (message.action_type === "JOB") {
       const category = Object.keys(
         message.prev_job.category || message.curr_job.category,
       )[0];

@@ -69,7 +69,7 @@ export const useChatHandler = () => {
 
   const handleJobsCase = async (message, parsed, isQuick) => {
     const prompt = `
-      ${PROMPTS.JOBS}
+      ${PROMPTS.JOB}
       User Input: ${message.trim()},
       Current Job Data: ${JSON.stringify(currentJobRef.current)}
     `;
@@ -80,6 +80,7 @@ export const useChatHandler = () => {
         currentJobRef.current,
         jobs,
         message.split("//")[1],
+        message.split("//")[0],
       );
     } else {
       const jobRes = await aiAgent.sendMessage(prompt, false);
@@ -121,7 +122,7 @@ export const useChatHandler = () => {
     }
 
     return {
-      action_type: "JOBS",
+      action_type: "JOB",
       feedback: parsedJob.feedback,
       actions: parsedJob.updates || [],
       done: parsedJob.done || false,
@@ -152,14 +153,22 @@ export const useChatHandler = () => {
 
     try {
       let parsed = {};
-      if (import.meta.env.VITE_DFX_NETWORK !== "ic") {
+      if (import.meta.env.VITE_DFX_NETWORK === "ic") {
         const classifyMessageRes = await aiAgent.sendMessage(`
         ${PROMPTS.CLASSIFY}
         Message:${compact_message}
         `);
         parsed = textToJson(classifyMessageRes).extractedData;
       } else {
-        parsed = { type: "JOBS" };
+        if (compact_message.split("//") < 1) {
+          const type = compact_message.split("//")[0].toUpperCase();
+          parsed = { type: type == "TALENT" ? "JOB" : type };
+        } else {
+          parsed = {
+            feedback:
+              "Locally you can make a command like `Talent//as>icp,rut` to create talent with 2 skills. `as` stand for add skills",
+          };
+        }
       }
 
       if (!parsed.type) {
@@ -171,7 +180,7 @@ export const useChatHandler = () => {
         };
       }
 
-      if (parsed.type === "JOBS" && location.pathname !== "/") {
+      if (parsed.type === "JOB" && location.pathname !== "/") {
         navigate("/");
       }
       if (parsed.type === "CALENDAR" && location.pathname !== "/calendar") {
@@ -184,7 +193,7 @@ export const useChatHandler = () => {
         case "CALENDAR":
           result = await handleCalendarCase(compact_message, parsed, isQuick);
           break;
-        case "JOBS":
+        case "JOB":
           result = await handleJobsCase(compact_message, parsed, isQuick);
           break;
         case "QUESTIONS":

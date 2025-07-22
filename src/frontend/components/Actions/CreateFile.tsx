@@ -87,9 +87,6 @@ const CreateFile: React.FC = () => {
             ...(files.length === 0 && {
               backgroundColor: "primary.main",
               color: "white",
-              "&:hover": {
-                backgroundColor: "primary.dark",
-              },
               padding: "6px 12px",
               display: "flex",
               alignItems: "center",

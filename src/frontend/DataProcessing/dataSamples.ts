@@ -1,11 +1,6 @@
 import { Principal } from "@dfinity/principal";
-import {
-  CustomContract,
-} from "../../declarations/backend/backend.did";
+import { CustomContract } from "../../declarations/backend/backend.did";
 
-const paymentContractId = randomString();
-const sharesContractId = randomString();
-const firstShareId = randomString();
 
 export const custom_contract: CustomContract = {
   id: "change_later",

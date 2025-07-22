@@ -341,7 +341,6 @@ const MarkdownRenderer = () => {
           width: "100%",
           maxWidth: "900px",
           left: "50%",
-          transform: "translateX(-50%)",
           top: isMobile ? 0 : 45,
           transition: "transform 0.3s ease-in-out",
           transform: showAppBar

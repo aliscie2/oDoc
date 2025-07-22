@@ -114,7 +114,6 @@ const BeneficiariesTable: React.FC<BeneficiariesTableProps> = ({
         headerName: "Beneficiary",
         editable: true,
         cellEditor: "agSelectCellEditor",
-        cellEditor: "agSelectCellEditor",
         onCellValueChanged: (params) => {
           const { data, newValue } = params;
           const selectedFriend = all_friends.find(

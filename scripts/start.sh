@@ -20,4 +20,4 @@ fi
 
 # Start your project with yarn at the end
 echo "Starting project with yarn..."
-yarn start
+yarn run  start

@@ -5,6 +5,6 @@ import { CLASSSIFER_PRPT } from "./mainChatProblm";
 const PROMPTS = {
   CLASSIFY: CLASSSIFER_PRPT,
   CALENDAR: CALENDAR_PROMPT,
-  JOBS: BUILD_JOB_PROMPT,
+  JOB: BUILD_JOB_PROMPT,
 };
 export default PROMPTS;

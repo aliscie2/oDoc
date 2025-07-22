@@ -1,4 +1,3 @@
-
 const roadMap = [
   {
     is_done: true,

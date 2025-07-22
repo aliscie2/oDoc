@@ -1,5 +1,5 @@
 run_fe:
-	yarn start
+	yarn run start
 run_be:
 	dfx deploy backend
 
@@ -71,6 +71,7 @@ get_logs:
 
 deploy-all: 
 	dfx killall
+	dfx stop
 	dfx start --background --clean
 	dfx canister create --all
 	sh scripts/did.sh backend
@@ -79,7 +80,7 @@ deploy-all:
 	sh scripts/deploy_ledger.sh
 	dfx deploy internet_identity
 	sh scripts/set_env.sh
-	yarn start
+
 	
 	
 upgrade-backend: 

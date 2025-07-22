@@ -4,6 +4,7 @@ export function mockJobAIResponse(
   currentJob: Job,
   jobs: Array<Job>,
   command: string,
+  category: string,
 ) {
   // Parse command type and values
   const commandType = command.substring(0, 2);
@@ -14,7 +15,7 @@ export function mockJobAIResponse(
     required_match_score: currentJob?.required_match_score || 7.0,
     feedback: "",
     updates: [],
-    category: Object.keys(currentJob?.category || {})[0] || "Job",
+    category: category,
     done: false,
     isBreakingChanges: false,
   };
@@ -133,7 +134,7 @@ export function mockJobAIResponse(
       response.feedback = "Contact information added successfully.";
       break;
 
-    case "uc": // Update contacts (replace entirely)
+    case "ucon": // Update contacts (replace entirely)
       const updateContacts = commandValue
         .split(",")
         .map((contact) => contact.trim());

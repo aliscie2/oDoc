@@ -120,7 +120,7 @@ export function undoCalendarAction(message) {
 
 export const undoJobAction = (message) => {
   if (
-    message.action_type !== "JOBS" ||
+    message.action_type !== "JOB" ||
     !message.actions?.length ||
     !message.prev_job
   )
