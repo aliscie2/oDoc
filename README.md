@@ -1,91 +1,138 @@
 # oDoc
 
-<h3 align="center">SAVES YOUR TIME</h3>
+**A centralized freelance A-to-Z workflow platform built on decentralized architecture - combining AI automation with blockchain security.**
 
-<img align="left" src="https://i.ibb.co/xzJXxWK/logo2.png" style="width:100%">
+<p align="center">
+  <img src="https://pbs.twimg.com/media/GtaU37aWAAAea3F?format=jpg&name=medium" alt="oDoc Platform" width="100%">
+</p>
 
-**oDoc** is an open-source note-taking application that combines the best features of Notion, Roam Research, and Obsidian with powerful automation capabilities built on the Internet Computer blockchain.
+## 🎯 What is oDoc?
+
+oDoc revolutionizes the entire freelance lifecycle - from job discovery to project completion and payment - through a unified platform. While providing centralized workflow management, it's built on decentralized Internet Computer blockchain for data ownership, security, and censorship resistance.
+
+**The Complete Freelance Solution:**
+- AI-powered job matching and application automation
+- Voice-activated calendar and scheduling management  
+- Blockchain-based project agreements and payments
+- Reputation system with verifiable work history
+- Integrated communication and collaboration tools
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-Before starting, ensure you have:
-
-- [Node.js](https://nodejs.org/) and [Yarn](https://yarnpkg.com/)
-- [Rust](https://rustup.rs/) and Cargo
-- [DFX](https://smartcontracts.org/docs/quickstart/quickstart-intro.html) (Internet Computer SDK)
-
-### First Time Setup
-
-Choose one of the following options:
-
-#### Option 1: Automated Setup (Recommended)
-
 ```bash
-# Run the complete setup script
-sh scripts/set_env.sh
-sh scripts/first_time_run.sh
+# Required tools
+Node.js 18+ and Yarn
+Rust and Cargo  
+DFX (Internet Computer SDK)
 ```
 
-#### Option 2: Manual Setup
+### One-Command Setup
 
 ```bash
-# 1. Start dfx with clean state
-dfx start --background --clean
-
-# 2. Deploy backend
-dfx deploy backend
-
-# 3. Deploy Internet Identity
-dfx deploy internet_identity
-
-PATH_FOUND=$(find . -name "internet_identity.wasm.gz" -type f)
-
-dfx canister install internet_identity --wasm "$PATH_FOUND" --mode reinstall --argument "(opt record { captcha_config = opt record { max_unsolved_captchas= 50:nat64; captcha_trigger = variant {Static = variant { CaptchaDisabled }}}; related_origins = opt vec { \"https://id.ai\" }; new_flow_origins = opt vec { \"https://id.ai\" }; dummy_auth = opt opt record { prompt_for_index = true }})"
-
-
-
-# 4. Deploy ledger (if script exists)
-sh scripts/deploy_ledger.sh
-
-# 5. Generate declarations
-dfx generate
-
-# 6. Start frontend development server
-yarn start
-
-# 7. Open the application
-open http://127.0.0.1:5173/
-```
-
-The setup script will automatically:
-
-- Install dependencies
-- Deploy all required canisters
-- Generate type declarations
-- Create/update your `.env` file with canister IDs
-- Build the frontend
-
-## 📋 Daily Development Workflow
-
-```bash
-# Start dfx (if not running)
-dfx start --background --clean
-
-# Deploy all canisters
+git clone https://github.com/your-org/odoc.git
+cd odoc
 make deploy-all
-
-# Start frontend development server
-yarn start
-
-# Access the app at http://127.0.0.1:5173/
 ```
 
-### Common Commands
+### Port Configuration (Important!)
+After deployment, get your DFX port and update Vite config:
 
 ```bash
-# Deploy specific canisters
+dfx info webserver-port
+```
+
+Then edit `vite.config.ts` and change line:
+```typescript
+target: "http://localhost:YOUR_DFX_PORT"  // Replace with your port
+```
+
+### Access Your Application
+```bash
+yarn start
+# Open http://127.0.0.1:5173/
+```
+### [Click here to watch odoc code video tutorials](https://www.youtube.com/watch?v=Pcba0_JW2Xc&list=PLZ54FkZk9dwFjC0AyFv6elMA4VGE6N50T)
+
+## [Demo](https://youtu.be/aZCgwIt5j7s)
+## [Contract Demo](https://youtu.be/3UYPuOPWa9A)
+## 🏗️ Tech Stack
+
+### Frontend
+- **React 18** - Modern UI with concurrent features
+- **TypeScript** - Type-safe development
+- **Vite** - Lightning-fast build tool
+- **Tailwind CSS** - Utility-first styling
+
+### Decentralized Backend
+- **Internet Computer** - Web3 blockchain for scalable dApps
+- **Rust** - High-performance canister development
+- **WebAssembly** - Efficient blockchain execution
+- **Candid** - Type-safe service interfaces
+
+### AI Integration
+- **Multiple Providers** - Anthropic, Google Gemini, DeepSeek
+- **Natural Language Processing** - Voice commands and parsing
+- **Machine Learning** - Smart matching and behavioral analysis
+
+## ✨ Complete Freelance Workflow
+
+### 🔍 Job Discovery & Applications
+- **AI Job Matcher** - Intelligent opportunity matching with scoring
+- **Automated Applications** - Resume analysis and cover letter generation  
+- **Quality Filtering** - Remove low-value opportunities automatically
+- **Market Intelligence** - Salary insights and demand analytics
+
+### 📅 Scheduling & Communication
+- **Voice Calendar** - "Book client call tomorrow 2pm"
+- **Availability Management** - "Available weekdays 9-5"
+- **Interview Automation** - Smart scheduling and reminders
+- **Client Communication** - Integrated messaging and video calls
+
+### 💼 Project Management
+- **Smart Contracts** - Blockchain-based project agreements
+- **Milestone Tracking** - Automated progress monitoring
+- **Time Tracking** - Built-in productivity analytics
+- **File Collaboration** - Real-time document editing
+
+### 💰 Payments & Finance
+- **Crypto Payments** - Native cryptocurrency processing
+- **Automated Invoicing** - Smart contract-based billing
+- **Escrow Services** - Secure milestone-based payments
+- **Financial Analytics** - Income tracking and tax reporting
+
+### 📊 Reputation & Growth
+- **Karma Score** - Blockchain-verified work history
+- **Dynamic Profiles** - Auto-updating portfolios
+- **Skill Verification** - Decentralized credential system
+- **Network Building** - Trust-based professional connections
+
+## 🌟 Vision: Centralized Experience, Decentralized Foundation
+
+### The Complete Freelance Operating System
+Transform fragmented freelance tools into one seamless workflow:
+- **Single Dashboard** - Manage jobs, projects, payments, and growth
+- **AI Automation** - Eliminate repetitive tasks and optimize workflows  
+- **End-to-End Integration** - From job search to payment completion
+- **Professional Growth** - Built-in career development and skill tracking
+
+### Decentralized Advantages
+While providing centralized convenience, built on blockchain for:
+- **Data Ownership** - Freelancers own their work history and reputation
+- **Censorship Resistance** - No platform can block or manipulate records
+- **Global Access** - Works anywhere without banking restrictions
+- **Transparent Payments** - Immutable payment and contract history
+
+## 🛠️ Development Commands
+
+```bash
+# Daily development workflow
+dfx start --background
+make deploy-all
+yarn start
+
+# Deploy specific components
 dfx deploy backend
 dfx deploy frontend
 dfx deploy internet_identity
@@ -93,189 +140,32 @@ dfx deploy internet_identity
 # Upgrade backend only
 make upgrade-backend
 
-# Stop dfx when done
+# Check TypeScript issues
+npx tsc --noUnusedLocals --noUnusedParameters --noEmit
+
+# Stop development environment
 dfx stop
 ```
-
-## 🔧 Environment Variables
-
-The setup script automatically configures these variables in your `.env` file:
-
-### Core Configuration (Auto-configured)
-
-```env
-# DFX Configuration
-VITE_DFX_NETWORK=local
-VITE_DFX_PORT=4943
-VITE_IC_HOST=http://localhost:4943
-
-# Canister IDs (Auto-generated by setup script)
-VITE_BACKEND_CANISTER_ID=<auto-generated>
-VITE_FRONTEND_CANISTER_ID=<auto-generated>
-VITE_INTERNET_IDENTITY=<auto-generated>
-VITE_IC_SIWE_PROVIDER_ID=<auto-generated>
-
-# Testing & Development
-POCKET_IC_BIN=<path-to-pocket-ic>
-VITE_POCKET_IC_BIN=<path-to-pocket-ic>
-BACKEND_WASM=<path-to-backend.wasm>
-```
-
-### DFX Canister Environment Variables (Auto-generated)
-
-```env
-DFX_VERSION=<dfx-version>
-DFX_NETWORK=local
-CANISTER_ID_INTERNET_IDENTITY=<auto-generated>
-CANISTER_ID_IC_SIWE_PROVIDER=<auto-generated>
-CANISTER_ID_FRONTEND=<auto-generated>
-CANISTER_ID_CKUSDC_LEDGER=<auto-generated>
-CANISTER_ID_BACKEND=<auto-generated>
-CANISTER_ID=<auto-generated>
-CANISTER_CANDID_PATH=<auto-generated>
-```
-
-### Optional Configuration (Manual setup required)
-
-```env
-# Project Configuration
-ODOC_CEO_ID=<your-ceo-id>
-VITE_TEST_ENV=<test-environment>
-VITE_PUBLIC_BASE_PATH=<base-path>
-SECRET=<your-secret>
-
-# AI API Keys
-VITE_ANTHROPIC_API_KEY=<your-anthropic-key>
-VITE_ANTHROPIC_SECRET_KEY=<your-anthropic-secret>
-VITE_GEMINI_API_KEY=<your-gemini-key>
-VITE_DEEPSEEK_API_KEY=<your-deepseek-key>
-
-# Development Tools
-AIDER_COMMAND=<aider-command>
-ZEROSTEP_TOKEN=<zerostep-token>
-
-# Google Services
-VITE_GOOGLE_CLIENT_ID=<your-google-client-id>
-VITE_GOOGLE_API_KEY=<your-google-api-key>
-VITE_GOOGLE_CLIENT_SECRET=<your-google-client-secret>
-VITE_GMAIL_AUTH_CLIENT_ID=<your-gmail-auth-client>
-
-# Email Services
-VITE_REACT_APP_EMAILJS_SERVICE_ID=<emailjs-service-id>
-VITE_REACT_APP_EMAILJS_USER_ID=<emailjs-user-id>
-VITE_REACT_APP_EMAILJS_TEMPLATE_ID=<emailjs-template-id>
-VITE_MAILGUN_KEY=<mailgun-key>
-VITE_MAINGUN_SECRET_KEY=<mailgun-secret>
-VITE_MAILJET_KEY=<mailjet-key>
-VITE_MAILJET_SECRET_KEY=<mailjet-secret>
-VITE_BREVO_SECRET_KEY=<brevo-secret>
-VITE_MAIL_TRAP=<mailtrap-config>
-
-# Social & Communication
-VITE_PUBLIC_TELEGRAM_BOT_TOKEN=<telegram-bot-token>
-```
-
-## ✨ Key Features
-# ODoc.app
-
-A comprehensive platform designed to streamline freelancer workflows from job matching to project completion.
-
-## Features
-
-### AI Job Matcher
-- Intelligent job-talent matching system
-- Interactive AI consultant for career guidance
-- Resume and company requirement analysis
-- Automated cover letter generation
-- Smart match scoring (0-100%)
-- Automatic filtering of low-quality matches
-
-### AI Calendar Management
-- Voice-activated scheduling: "book me event 9 am"
-- Natural language availability setting: "available every day 9am-6pm"
-- Automated interview and event booking
-- Smart calendar optimization
-
-### Crypto Agreement System
-- Unified task and payment management
-- Blockchain-based agreements
-- Secure milestone tracking
-- Automated payment releases
-
-### Karma Score System
-- Behavioral tracking and scoring
-- Dynamic resume building based on performance
-- Reputation management
-- Trust indicators for clients and freelancers
-
-## Deployment Strategy
-
-Primary domains for SEO optimization:
-- **icpjobs.com** - Job matching focus
-- **calendarTalk.com** - Calendar management focus
-
-*Core application accessible at odoc.app*
-
-## Target Users
-- Freelancers seeking streamlined workflow management
-- Companies looking for talent acquisition solutions
-- Remote workers needing integrated project management tools
 
 ## 🧪 Testing
 
 ```bash
-# Run end-to-end tests
+# Full test suite
 yarn playwright test
 
-# Interactive UI mode
-yarn playwright test --ui
+# Interactive debugging
+yarn playwright test --ui --debug
 
-# Specific browser testing
+# Browser-specific testing  
 yarn playwright test --project=chromium
 
-# Debug mode
-yarn playwright test --debug
-
-# Generate tests automatically
+# Generate new tests
 yarn playwright codegen
 ```
-
-## 📚 Documentation & Resources
-
-- [Project Documentation](https://docs.google.com/document/d/1lOJONK7QhtGGkzSGia37pD7fytTbpIoh5R8lXGuJ7Hw/edit)
-- [Project Overview](https://lnkd.in/eUh_4JfV)
-- [Custom Smart Contracts](https://youtu.be/HqogGj0xKuE)
-- [Privacy Plan](https://lnkd.in/e6wC_-fW)
-- [Drag and Drop Demo](https://lnkd.in/e9XDMjie)
-- [Live Collaboration](https://lnkd.in/ekTH46iu)
-
-## 🛠️ Development Setup
-
-### Additional Dependencies
-
-For desktop app development, install:
-
-```bash
-# macOS
-brew install zstd llvm clang openssl gcc rocksdb
-brew tap homebrew/versions
-brew install gcc7 --use-llvm
-
-# Add Rust WASM target
-rustup target add wasm32-unknown-unknown
-```
-
-### Useful Development Links
-
-- [IC Quick Start](https://smartcontracts.org/docs/quickstart/quickstart-intro.html)
-- [Rust Canister Development Guide](https://smartcontracts.org/docs/rust-guide/rust-intro.html)
-- [ic-cdk Documentation](https://docs.rs/ic-cdk)
-- [Candid Introduction](https://smartcontracts.org/docs/candid-guide/candid-intro.html)
 
 ## 🐛 Troubleshooting
 
 ### WASM Target Issues
-
 ```bash
 rustup target remove wasm32-unknown-unknown
 rustup self uninstall
@@ -286,32 +176,78 @@ rustup target add wasm32-unknown-unknown
 cargo clean && cargo update
 ```
 
-### TypeScript Unused Variables
-
-We will need that to cleanup and reduce frontend size.
-
+### Desktop Development (macOS)
 ```bash
-npx tsc --noUnusedLocals --noUnusedParameters --noEmit
+brew install zstd llvm clang openssl gcc rocksdb
+brew tap homebrew/versions
+brew install gcc7 --use-llvm
+rustup target add wasm32-unknown-unknown
 ```
 
-## 🌟 Vision
+## 📚 Manual Setup (Advanced)
 
-oDoc aims to revolutionize productivity by:
+```bash
+# 1. Clean start
+dfx start --background --clean
 
-- Replacing traditional office suites with a unified, customizable platform
-- Providing secure, decentralized data storage
-- Enabling unlimited customization through plugins and components
-- Creating a marketplace for productivity tools
-- Supporting real-time collaboration and data sharing
+# 2. Deploy backend
+dfx deploy backend
 
-## 📄 License
+# 3. Deploy and configure Internet Identity
+dfx deploy internet_identity
+PATH_FOUND=$(find . -name "internet_identity.wasm.gz" -type f)
+dfx canister install internet_identity --wasm "$PATH_FOUND" --mode reinstall --argument "(opt record { captcha_config = opt record { max_unsolved_captchas= 50:nat64; captcha_trigger = variant {Static = variant { CaptchaDisabled }}}; related_origins = opt vec { \"https://id.ai\" }; new_flow_origins = opt vec { \"https://id.ai\" }; dummy_auth = opt opt record { prompt_for_index = true }})"
 
-This project is open source. See the [old version repository](https://github.com/aliscie/Odoc-old) for previous iterations.
+# 4. Deploy ledger (if available)
+sh scripts/deploy_ledger.sh
+
+# 5. Generate declarations and install dependencies
+dfx generate
+yarn install
+
+# 6. Start development server
+yarn start
+```
+
+## 🎯 Strategic Domains
+
+- **icpjobs.com** - AI-powered job matching platform
+- **calendarTalk.com** - Voice-activated scheduling system
+- **odoc.app** - Complete freelance workflow suite
+
+## 🗺️ Roadmap
+
+### Phase 1: Core Workflow (Current)
+- [x] AI job matching algorithm
+- [x] Voice calendar commands  
+- [x] Blockchain payment system
+- [ ] Karma scoring system
+
+### Phase 2: Advanced Automation
+- [ ] AI project managers
+- [ ] Automated client onboarding
+- [ ] Smart contract templates
+- [ ] Advanced analytics dashboard
+
+### Phase 3: Ecosystem Growth
+- [ ] Plugin marketplace
+- [ ] Multi-blockchain support
+- [ ] DAO governance
+- [ ] Global freelancer network
 
 ## 🤝 Contributing
 
-We welcome contributions! Please check our development guidelines and feel free to submit issues and pull requests.
+Building the future of freelance work:
+
+1. **Fork and branch** - Create feature branches for development
+2. **Follow conventions** - TypeScript/Rust standards with tests
+3. **Test thoroughly** - Ensure blockchain operations work correctly  
+4. **Document well** - Clear code comments and feature descriptions
+
+## 📄 License
+
+Open source under MIT License. Previous versions at [Odoc-old repository](https://github.com/aliscie/Odoc-old).
 
 ---
 
-**Note**: This project is built on the Internet Computer blockchain using Rust, WASM, and modern web technologies for maximum performance and durability.
+**Transforming freelance work through centralized experience on decentralized infrastructure.**

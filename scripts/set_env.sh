@@ -3,149 +3,58 @@
 # Environment setup script for oDoc project
 set -e
 
-# Colors
-GREEN='\033[0;32m'
-BLUE='\033[0;34m'
-YELLOW='\033[1;33m'
-RED='\033[0;31m'
-NC='\033[0m'
-
+# Colors and logging functions
+GREEN='\033[0;32m'; BLUE='\033[0;34m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; NC='\033[0m'
 log() { echo -e "${BLUE}[INFO]${NC} $1"; }
 success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
 warn() { echo -e "${YELLOW}[WARNING]${NC} $1"; }
-error() { echo -e "${RED}[ERROR]${NC} $1"; exit 1; }
 
 echo -e "${GREEN}🔧 oDoc Environment Setup${NC}"
 
-# Get current dfx port
+# Get current settings
 DFX_PORT=$(dfx info webserver-port 2>/dev/null || echo "4943")
+get_canister_id() { dfx canister id "$1" 2>/dev/null || echo ""; }
 
-# Get canister IDs
-II_ID=$(dfx canister id internet_identity 2>/dev/null || echo "")
-BACKEND_ID=$(dfx canister id backend 2>/dev/null || echo "")
-FRONTEND_ID=$(dfx canister id frontend 2>/dev/null || echo "")
-IC_SIWE_ID=$(dfx canister id ic_siwe_provider 2>/dev/null || echo "")
+# Get all canister IDs
+II_ID=$(get_canister_id internet_identity)
+BACKEND_ID=$(get_canister_id backend)
+FRONTEND_ID=$(get_canister_id frontend)
+IC_SIWE_ID=$(get_canister_id ic_siwe_provider)
 POCKET_IC=$(which pocket-ic 2>/dev/null || echo "")
 
-if [ -f ".env" ]; then
-    log "Updating existing .env file..."
-    
-    # Update existing variables or add new ones
-    grep -q "VITE_DFX_NETWORK=" .env && sed -i "s/VITE_DFX_NETWORK=.*/VITE_DFX_NETWORK=local/" .env || echo "VITE_DFX_NETWORK=local" >> .env
-    grep -q "VITE_DFX_PORT=" .env && sed -i "s/VITE_DFX_PORT=.*/VITE_DFX_PORT=$DFX_PORT/" .env || echo "VITE_DFX_PORT=$DFX_PORT" >> .env
-    grep -q "VITE_IC_HOST=" .env && sed -i "s|VITE_IC_HOST=.*|VITE_IC_HOST=http://localhost:$DFX_PORT|" .env || echo "VITE_IC_HOST=http://localhost:$DFX_PORT" >> .env
-    
-    # Update canister ID variables
-    if [ -n "$II_ID" ]; then
-        grep -q "VITE_INTERNET_IDENTITY=" .env && sed -i "s/VITE_INTERNET_IDENTITY=.*/VITE_INTERNET_IDENTITY=$II_ID/" .env || echo "VITE_INTERNET_IDENTITY=$II_ID" >> .env
-    else
-        warn "Internet Identity canister ID not found"
-    fi
-    
-    if [ -n "$BACKEND_ID" ]; then
-        grep -q "VITE_BACKEND_CANISTER_ID=" .env && sed -i "s/VITE_BACKEND_CANISTER_ID=.*/VITE_BACKEND_CANISTER_ID=$BACKEND_ID/" .env || echo "VITE_BACKEND_CANISTER_ID=$BACKEND_ID" >> .env
-    else
-        warn "Backend canister ID not found"
-    fi
-    
-    if [ -n "$FRONTEND_ID" ]; then
-        grep -q "VITE_FRONTEND_CANISTER_ID=" .env && sed -i "s/VITE_FRONTEND_CANISTER_ID=.*/VITE_FRONTEND_CANISTER_ID=$FRONTEND_ID/" .env || echo "VITE_FRONTEND_CANISTER_ID=$FRONTEND_ID" >> .env
-    else
-        warn "Frontend canister ID not found"
-    fi
-    
-    if [ -n "$IC_SIWE_ID" ]; then
-        grep -q "VITE_IC_SIWE_PROVIDER_ID=" .env && sed -i "s/VITE_IC_SIWE_PROVIDER_ID=.*/VITE_IC_SIWE_PROVIDER_ID=$IC_SIWE_ID/" .env || echo "VITE_IC_SIWE_PROVIDER_ID=$IC_SIWE_ID" >> .env
-    fi
-    
-    if [ -n "$POCKET_IC" ]; then
-        grep -q "POCKET_IC_BIN=" .env && sed -i "s|POCKET_IC_BIN=.*|POCKET_IC_BIN=$POCKET_IC|" .env || echo "POCKET_IC_BIN=$POCKET_IC" >> .env
-    fi
-    
-else
-    log "Creating new .env file..."
-    
-    # Create new .env file with all variables
-    cat > .env <<EOF
-VITE_DFX_NETWORK=local
-VITE_DFX_PORT=$DFX_PORT
-VITE_IC_HOST=http://localhost:$DFX_PORT
-EOF
+update_or_add_env() {
+    local key="$1" value="$2"
+    grep -q "^$key=" .env 2>/dev/null && sed -i "s|^$key=.*|$key=$value|" .env || echo "$key=$value" >> .env
+}
 
-    # Add canister IDs if they exist
-    if [ -n "$II_ID" ]; then
-        echo "VITE_INTERNET_IDENTITY=$II_ID" >> .env
-    else
-        warn "Internet Identity canister ID not found"
-    fi
-    
-    if [ -n "$BACKEND_ID" ]; then
-        echo "VITE_BACKEND_CANISTER_ID=$BACKEND_ID" >> .env
-    else
-        warn "Backend canister ID not found"
-    fi
-    
-    if [ -n "$FRONTEND_ID" ]; then
-        echo "VITE_FRONTEND_CANISTER_ID=$FRONTEND_ID" >> .env
-    else
-        warn "Frontend canister ID not found"
-    fi
-    
-    if [ -n "$IC_SIWE_ID" ]; then
-        echo "VITE_IC_SIWE_PROVIDER_ID=$IC_SIWE_ID" >> .env
-    fi
-    
-    if [ -n "$POCKET_IC" ]; then
-        echo "POCKET_IC_BIN=$POCKET_IC" >> .env
-    fi
-fi
+# Create/update .env file
+[ -f ".env" ] && log "Updating .env..." || log "Creating .env..."
+touch .env
 
-# Add DFX environment variables (auto-generated)
-dfx generate --output-env .env 2>/dev/null || warn "Failed to generate additional dfx environment variables"
+# Set core variables
+update_or_add_env "VITE_DFX_NETWORK" "local"
+update_or_add_env "VITE_DFX_PORT" "$DFX_PORT"
+update_or_add_env "VITE_IC_HOST" "http://localhost:$DFX_PORT"
 
-success ".env file updated successfully"
+# Set canister IDs (with warnings for missing ones)
+for var in "VITE_INTERNET_IDENTITY:$II_ID" "VITE_BACKEND_CANISTER_ID:$BACKEND_ID" \
+           "VITE_FRONTEND_CANISTER_ID:$FRONTEND_ID" "VITE_IC_SIWE_PROVIDER_ID:$IC_SIWE_ID" \
+           "POCKET_IC_BIN:$POCKET_IC"; do
+    key="${var%:*}" value="${var#*:}"
+    [ -n "$value" ] && update_or_add_env "$key" "$value" || warn "${key%_*} canister not found"
+done
 
-# Build frontend with all declarations available
-log "Building frontend with all declarations..."
-yarn vite build || error "Frontend build failed"
-success "Frontend built successfully"
+# Add dfx-generated variables
+dfx generate --output-env .env 2>/dev/null || warn "Failed to generate dfx variables"
 
-# Final verification and instructions
-echo -e "\n${GREEN}✅ Setup Complete - All Canisters Deployed!${NC}"
-echo ""
+success ".env file updated"
+
+# Build frontend
+# log "Building frontend..."
+# yarn vite build && success "Frontend built" || warn "Frontend build failed"
+
+# Show results
+echo -e "\n${GREEN}✅ Environment Ready${NC}"
 echo "🌐 Access URLs:"
-if [ -n "$FRONTEND_ID" ]; then
-    echo "Frontend: http://localhost:$DFX_PORT/?canisterId=$FRONTEND_ID"
-    echo "Frontend: http://$FRONTEND_ID.localhost:$DFX_PORT/"
-fi
-echo "Backend:  http://localhost:$DFX_PORT/?canisterId=$BACKEND_ID"
-echo "Internet Identity: http://localhost:$DFX_PORT/?canisterId=$II_ID"
-if [ -n "$IC_SIWE_ID" ]; then
-    echo "ic_siwe_provider: http://localhost:$DFX_PORT/?canisterId=$IC_SIWE_ID"
-fi
-echo ""
-echo "📋 Environment variables set:"
-echo "  Network: local"
-echo "  DFX Port: $DFX_PORT"
-echo "  IC Host: http://localhost:$DFX_PORT"
-if [ -n "$BACKEND_ID" ]; then
-    echo "  Backend: $BACKEND_ID"
-fi
-if [ -n "$FRONTEND_ID" ]; then
-    echo "  Frontend: $FRONTEND_ID"
-fi
-if [ -n "$II_ID" ]; then
-    echo "  Internet Identity: $II_ID"
-fi
-if [ -n "$IC_SIWE_ID" ]; then
-    echo "  ic_siwe_provider: $IC_SIWE_ID"
-fi
-echo ""
-echo "📋 Next steps (Step 6 from README):"
-echo "  yarn start                    # Start dev server"
-echo "  open http://127.0.0.1:5173/   # Open the app (Step 7 from README)"
-echo ""
-echo "🛑 To stop:"
-echo "  dfx stop                      # Stop dfx when done"
-echo ""
-echo "📝 All canister IDs have been saved to .env file"
+[ -n "$FRONTEND_ID" ] && echo "Frontend: http://$FRONTEND_ID.localhost:$DFX_PORT/"
+echo "Backend: http://localhost:$DFX_PORT/?canisterId=$BACKEND_ID"

@@ -69,16 +69,11 @@ get_logs:
 # 	)"
 # 	dfx generate ic_siwe_provider
 
-deploy-all: 
-	dfx killall
-	dfx stop
-	dfx start --background --clean
-	dfx canister create --all
+deploy-all:
+	sh scripts/first_time_run.sh
 	sh scripts/did.sh backend
 	dfx generate backend
-	dfx deploy backend
 	sh scripts/deploy_ledger.sh
-	dfx deploy internet_identity
 	sh scripts/set_env.sh
 
 	
