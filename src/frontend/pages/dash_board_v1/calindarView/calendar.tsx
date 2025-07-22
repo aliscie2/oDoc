@@ -8,7 +8,7 @@ import startOfWeek from "date-fns/startOfWeek";
 import getDay from "date-fns/getDay";
 import enUS from "date-fns/locale/en-US";
 import "react-big-calendar/lib/css/react-big-calendar.css";
-import EventDialog from "./EventDialog";
+import EventDialog from "./eventDialog";
 import CustomToolbar from "./toolsBar";
 import useCalendarStyles from "./style";
 import { useCalendarLogic } from "./calendarLogic";

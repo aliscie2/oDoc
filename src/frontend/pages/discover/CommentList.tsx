@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Box } from "@mui/material";
 import { PostUser } from "../../../declarations/backend/backend.did";
-import Comment from "./Comment";
+import Comment from "./comment";
 import CommentForm from "./CommentForm";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/reducers";

@@ -4,8 +4,8 @@ import LandingPage from "./LandingPage";
 import FileContentPage from "./fileContentPage";
 import ShareFilePage from "./ShareFilePage";
 import ProfilePage from "./profile";
-import UserProfile from "./User";
-import ContractsHistory from "./Profile/ContractsHistory";
+import UserProfile from "./user";
+import ContractsHistory from "./profile/ContractsHistory";
 
 import { useSelector } from "react-redux";
 
