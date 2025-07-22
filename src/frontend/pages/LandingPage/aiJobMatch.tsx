@@ -712,7 +712,7 @@ export default function ICPJobsLandingPage() {
               lineHeight: 1.1,
             }}
           >
-            ICPJobsdd.com
+            ICPJOBS.com
           </Typography>
 
           <Typography

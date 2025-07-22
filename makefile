@@ -104,3 +104,8 @@ backend-format:
 
 getting_pulls:
 	git fetch origin pull/<pr_number>/head:pr-<pr_number>
+
+
+debug-loading-time:
+	npm run start -- --debug hmr
+	# yarn run start -- --debug hmr
