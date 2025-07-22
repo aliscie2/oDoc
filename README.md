@@ -19,7 +19,7 @@ oDoc revolutionizes the entire freelance lifecycle - from job discovery to proje
 
 
 ## [Join discord](https://discord.gg/HD2MbpuN)
-
+## follow us on tweeter [odoc](https://x.com/odoc_ic/) & [icpjobs](https://x.com/icpjob/) 
 ## 🚀 Quick Start
 
 ### Prerequisites
