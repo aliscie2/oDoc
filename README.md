@@ -59,7 +59,7 @@ yarn start
 
 
 ### 📺 oDoc Code Video Tutorials
-[![Watch Tutorial](https://img.youtube.com/vi/Pcba0_JW2Xc/hqdefault.jpg)](https://youtu.be/Pcba0_JW2Xc)
+[![Watch Tutorial](https://img.youtube.com/vi/Pcba0_JW2Xc/hqdefault.jpg)](https://www.youtube.com/watch?v=Pcba0_JW2Xc&list=PLZ54FkZk9dwFjC0AyFv6elMA4VGE6N50T)
 
 ### 🧪 Demo
 [![Watch Demo](https://img.youtube.com/vi/aZCgwIt5j7s/hqdefault.jpg)](https://youtu.be/aZCgwIt5j7s)
