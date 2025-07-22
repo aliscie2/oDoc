@@ -31,7 +31,7 @@ DFX (Internet Computer SDK)
 ### One-Command Setup
 
 ```bash
-git clone https://github.com/your-org/odoc.git
+git clone https://github.com/aliscie2/oDoc
 cd odoc
 make deploy-all
 ```
@@ -53,10 +53,18 @@ target: "http://localhost:YOUR_DFX_PORT"  // Replace with your port
 yarn start
 # Open http://127.0.0.1:5173/
 ```
-### [Click here to watch odoc code video tutorials](https://www.youtube.com/watch?v=Pcba0_JW2Xc&list=PLZ54FkZk9dwFjC0AyFv6elMA4VGE6N50T)
 
-## [Demo](https://youtu.be/aZCgwIt5j7s)
-## [Contract Demo](https://youtu.be/3UYPuOPWa9A)
+
+### 📺 oDoc Code Video Tutorials
+[![Watch Tutorial](https://img.youtube.com/vi/Pcba0_JW2Xc/hqdefault.jpg)](https://youtu.be/Pcba0_JW2Xc)
+
+### 🧪 Demo
+[![Watch Demo](https://img.youtube.com/vi/aZCgwIt5j7s/hqdefault.jpg)](https://youtu.be/aZCgwIt5j7s)
+
+### 🔐 Contract Demo
+[![Watch Contract Demo](https://img.youtube.com/vi/3UYPuOPWa9A/hqdefault.jpg)](https://youtu.be/3UYPuOPWa9A)
+
+
 ## 🏗️ Tech Stack
 
 ### Frontend
