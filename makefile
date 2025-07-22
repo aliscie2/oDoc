@@ -24,7 +24,7 @@ run_gateway_on_special_port:
 	cargo run -- --gateway-address 0.0.0.0:8084 --ic-network-url http://127.0.0.1:8080
 
 generate_candid_file:
-	sh scripts/did.sh
+	bash scripts/did.sh
 	sh scripts/deploy_ic_siwe_provider.sh
 	sh scripts/deploy_canister.sh
 	sh scripts/deploy_ledger.sh
@@ -71,7 +71,7 @@ get_logs:
 
 deploy-all:
 	sh scripts/first_time_run.sh
-	sh scripts/did.sh backend
+	bash scripts/did.sh backend
 	dfx generate backend
 	sh scripts/deploy_ledger.sh
 	sh scripts/set_env.sh
@@ -79,7 +79,7 @@ deploy-all:
 	
 	
 upgrade-backend: 
-	sh scripts/did.sh backend
+	bash scripts/did.sh backend
 	dfx generate backend
 	dfx deploy backend
 
