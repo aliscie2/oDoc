@@ -2,8 +2,8 @@
 
 # Start dfx in the background
 echo "Starting dfx in the background..."
-dfx start --background
-#dfx start --background --clean
+dfx start --background  --port=4943
+#dfx start --background --clean  --port=4943
 
 output=$(dfx canister status backend 2>&1)
 

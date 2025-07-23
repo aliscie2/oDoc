@@ -60,7 +60,7 @@ export default defineConfig({
   },
   proxy: { 
     "/api": { 
-      target: "http://localhost:8080",  // change 8080 to ur dfx port, u can get the port by runing `dfx info webserver-port`
+      target: "http://localhost:4943",  // change 4943 to ur dfx port, u can get the port by runing `dfx info webserver-port`
       changeOrigin: true 
     } 
   },

@@ -9,6 +9,8 @@ start:
 
 kill:
 	kill -INT $(lsof -t -i :8080)
+	kill -INT $(lsof -t -i :4943)
+	
 
 kill_dfx:
 	killall dfx replica
@@ -18,7 +20,8 @@ get_all_localhost:
 	lsof -i 4 -P -n | grep '127.0.0.1'
 
 get_any_port:
-	lsof -i :8080
+	lsof -i :4943
+	
 
 run_gateway_on_special_port:
 	cargo run -- --gateway-address 0.0.0.0:8084 --ic-network-url http://127.0.0.1:8080
