@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import {
   Avatar,
   Box,
+  Button,
   IconButton,
   Stack,
   TextField,
@@ -11,7 +12,6 @@ import { Add } from "@mui/icons-material";
 import { useSnackbar } from "notistack";
 import { useBackendContext } from "../../contexts/BackendContext";
 import { RegisterUser } from "../../../declarations/backend/backend.did";
-import LoaderButton from "../MuiComponents/LoaderButton";
 import compressImage from "@/DataProcessing/compressImage";
 import { useLocation } from "react-router-dom";
 import RunawayJellyfish from "../creature/runAeayJellyFish";
@@ -238,10 +238,16 @@ const RegistrationForm: React.FC = () => {
         />
 
         <TextField
+
+          
+          id="bio"
+          name="bio"
           required
+          fullWidth
           multiline
           rows={3}
-          id="bio"
+          aria-label="Bio"
+
           label="Bio"
           fullWidth
           value={formValues.bio}
@@ -253,26 +259,15 @@ const RegistrationForm: React.FC = () => {
             },
           }}
         />
-
-        <LoaderButton
-          fullWidth
-          variant="contained"
-          onClick={handleRegister}
-          loading={loading}
-          sx={{
-            py: 1.5,
-            mt: 4,
-            borderRadius: 2,
-            textTransform: "none",
-            fontWeight: 500,
-            boxShadow: "none",
-            "&:hover": {
-              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-            },
-          }}
+        <Button
+        disabled={loading}
+        fullWidth
+        variant="contained"
+        onClick={handleRegister}
+        id="submitButton"
         >
-          Complete Registration
-        </LoaderButton>
+            {loading?"...":"Complete Registration"}
+        </Button>
       </Stack>
     </Box>
   );

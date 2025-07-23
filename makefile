@@ -92,3 +92,13 @@ debug-loading-time:
 	npm run start -- --debug hmr
 	# yarn run start -- --debug hmr
 	
+
+test-e2e:
+	# login app.zerostep.com and get ur token
+	# export ZEROSTEP_TOKEN="your_token_here"
+	lsof -ti:5173 | xargs kill -9 || true
+	dfx deploy backend --mode reinstall --yes
+	yarn start &
+	sleep 5
+	yarn playwright test
+	lsof -ti:5173 | xargs kill -9 || true

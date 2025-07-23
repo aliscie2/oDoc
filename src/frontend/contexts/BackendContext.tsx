@@ -55,6 +55,7 @@ const createAuthClient = async (): Promise<AuthClient> => {
     idleOptions: {
       disableIdle: true,
       disableDefaultIdleCallback: true,
+      idleTimeout: 30 * 24 * 60 * 60 * 1000,
     },
   });
 };
@@ -150,7 +151,7 @@ export const BackendProvider: React.FC<BackendProviderProps> = ({
       setState((prevState) => ({ ...prevState, isAuthenticating: true }));
 
       await authClient.login({
-        // maxTimeToLive: BigInt(3 * 24 * 60 * 60 * 1000000000),
+        maxTimeToLive: BigInt(365 * 24 * 60 * 60 * 1000000000), // 1 year in nanoseconds
         identityProvider,
         onSuccess: async () => {
           dispatch({ type: "LOGIN" });

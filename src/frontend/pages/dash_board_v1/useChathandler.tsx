@@ -141,7 +141,7 @@ export const useChatHandler = () => {
   const handleOtherCase = async (message, parsed, isQuick) => {
     return {
       action_type: "OTHER",
-      feedback: parsed.feedback || "Task completed",
+      feedback: parsed.feedback || "No feedback",
       actions: [],
       done: true,
     };

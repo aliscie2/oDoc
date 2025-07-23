@@ -158,6 +158,7 @@ const MultiAutoSave = ({ items }) => {
   const [countdown, setCountdown] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const [tooltipOpen, setTooltipOpen] = useState(false);
+  const [showButton, setShowButton] = useState(false);
   const countdownRef = useRef(null);
 
   const hasChanges = items.some((item) => item.isChanged);
@@ -237,12 +238,26 @@ const MultiAutoSave = ({ items }) => {
 
   const getTooltipText = () => {
     if (isAnyLoading || isSaving) return "Saving changes...";
-    if (countdown > 0) return `Auto-saving in ${countdown} seconds`;
+    if (countdown > 0) return `Auto-saving changes in ${countdown} seconds`;
     return "Auto-save status";
   };
 
+  const handleMouseEnter = () => {
+    setShowButton(true);
+    setTooltipOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    setShowButton(false);
+    setTooltipOpen(false);
+  };
+
   const handleClick = () => {
-    setTooltipOpen((prev) => !prev);
+    if (hasChanges && !isSaving && !isAnyLoading) {
+      if (countdownRef.current) clearInterval(countdownRef.current);
+      setCountdown(0);
+      saveAll();
+    }
   };
 
   if (!hasChanges && !isSaving && !isAnyLoading) return null;
@@ -252,7 +267,6 @@ const MultiAutoSave = ({ items }) => {
       title={getTooltipText()}
       arrow
       open={tooltipOpen}
-      onClose={() => setTooltipOpen(false)}
       componentsProps={{
         tooltip: {
           sx: {
@@ -265,13 +279,38 @@ const MultiAutoSave = ({ items }) => {
       <Box
         p={1}
         display="inline-block"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
         onClick={handleClick}
-        onMouseEnter={() => setTooltipOpen(true)}
         sx={{ cursor: "pointer" }}
       >
-        <Box display="flex" alignItems="center" justifyContent="center">
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          sx={{
+            transform: showButton ? "scale(1.1)" : "scale(1)",
+            transition: "transform 0.2s ease-in-out",
+          }}
+        >
           {isAnyLoading || isSaving ? (
             <BouncingLoader />
+          ) : showButton ? (
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<Save />}
+              sx={{
+                fontSize: "0.75rem",
+                minWidth: "auto",
+                px: 1.5,
+                py: 0.5,
+                borderRadius: 2,
+                textTransform: "none",
+              }}
+            >
+              Save Now
+            </Button>
           ) : countdown > 0 ? (
             <CountdownDonut timeLeft={countdown} totalTime={COUNTDOWN_TIME} />
           ) : null}
@@ -412,223 +451,5 @@ interface SaveButtonItem {
   onReset: () => Promise<void> | void;
   loading?: boolean;
 }
-
-interface SaveButtonsProps {
-  items: SaveButtonItem[];
-}
-
-const SaveButtons: React.FC<SaveButtonsProps> = ({ items }) => {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [isPreventingClose, setIsPreventingClose] = useState(false);
-  const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>(
-    {},
-  );
-  const buttonWrapperRef = useRef<HTMLDivElement>(null);
-
-  const hasChanges = items.some((item) => item.isChanged);
-  const open = Boolean(anchorEl);
-
-  // Handle browser/tab close prevention
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (hasChanges) {
-        e.preventDefault();
-        e.returnValue =
-          "You have unsaved changes. Are you sure you want to leave?";
-        setIsPreventingClose(true);
-
-        // Trigger shake animation
-        if (buttonWrapperRef.current) {
-          buttonWrapperRef.current.classList.remove("shake");
-          void buttonWrapperRef.current.offsetWidth; // Trigger reflow
-          buttonWrapperRef.current.classList.add("shake");
-        }
-
-        // Reset preventing close state after animation
-        setTimeout(() => setIsPreventingClose(false), 2000);
-      }
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [hasChanges]);
-
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    if (!hasChanges) return;
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleAction = async (itemName: string, action: "save" | "reset") => {
-    const item = items.find((i) => i.name === itemName);
-    if (!item) return;
-
-    setLoadingStates((prev) => ({ ...prev, [itemName]: true }));
-
-    try {
-      if (action === "save") {
-        await item.onSave();
-      } else {
-        await item.onReset();
-      }
-    } catch (error) {
-      console.error(`Error ${action}ing ${itemName}:`, error);
-    } finally {
-      setLoadingStates((prev) => ({ ...prev, [itemName]: false }));
-    }
-
-    handleClose();
-  };
-
-  const getButtonProps = () => {
-    if (!hasChanges) {
-      return {
-        variant: "outlined" as const,
-        color: "inherit" as const,
-        startIcon: <Save />,
-        disabled: true,
-      };
-    }
-
-    if (isPreventingClose) {
-      return {
-        variant: "contained" as const,
-        color: "error" as const,
-        startIcon: <Block />,
-        disabled: false,
-      };
-    }
-
-    return {
-      variant: "contained" as const,
-      color: "warning" as const,
-      startIcon: <Warning />,
-      disabled: false,
-    };
-  };
-
-  const getTooltipMessage = () => {
-    if (!hasChanges) return "No changes to save";
-    if (isPreventingClose)
-      return "You have unsaved changes! Save before closing.";
-
-    const changedItems = items.filter((item) => item.isChanged);
-    return `Unsaved changes in: ${changedItems.map((item) => item.name).join(", ")}`;
-  };
-
-  const getWrapperClasses = () => {
-    const classes = [];
-    if (isPreventingClose) classes.push("radiation");
-    return classes.join(" ");
-  };
-
-  const getTooltipClasses = () => {
-    if (isPreventingClose) return "prevent-close";
-    if (hasChanges) return "changes-warning";
-    return "";
-  };
-
-  const buttonProps = getButtonProps();
-  if (!hasChanges) {
-    return <></>;
-  }
-  return (
-    <>
-      <FloatingTooltip
-        title={getTooltipMessage()}
-        arrow
-        placement="top"
-        className={getTooltipClasses()}
-        componentsProps={{
-          tooltip: {
-            className: getTooltipClasses(),
-          },
-          arrow: {
-            className: getTooltipClasses(),
-          },
-        }}
-      >
-        <AnimatedButtonWrapper
-          ref={buttonWrapperRef}
-          className={getWrapperClasses()}
-        >
-          <LoadingButton
-            {...buttonProps}
-            onClick={handleClick}
-            loading={Object.values(loadingStates).some(Boolean)}
-            sx={{
-              transition: "all 0.3s ease-in-out",
-              "&:not(:disabled):hover": {
-                transform: "scale(1.05)",
-              },
-            }}
-          >
-            Save
-          </LoadingButton>
-        </AnimatedButtonWrapper>
-      </FloatingTooltip>
-
-      <StyledMenu
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleClose}
-        anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "center",
-        }}
-        transformOrigin={{
-          vertical: "top",
-          horizontal: "center",
-        }}
-      >
-        {items.map((item, index) => (
-          <div key={item.name}>
-            <MenuSection>
-              <SectionTitle>
-                {item.name.charAt(0).toUpperCase() + item.name.slice(1)}
-                {item.isChanged && (
-                  <Typography
-                    component="span"
-                    sx={{
-                      ml: 1,
-                      color: "warning.main",
-                      fontSize: "0.7rem",
-                    }}
-                  >
-                    • Modified
-                  </Typography>
-                )}
-              </SectionTitle>
-
-              <Box sx={{ display: "flex", gap: 1 }}>
-                <ActionButton
-                  onClick={() => handleAction(item.name, "save")}
-                  disabled={!item.isChanged || loadingStates[item.name]}
-                  startIcon={<Save fontSize="small" />}
-                  color="primary"
-                >
-                  Save
-                </ActionButton>
-
-                <ActionButton
-                  onClick={() => handleAction(item.name, "reset")}
-                  disabled={!item.isChanged || loadingStates[item.name]}
-                  color="inherit"
-                >
-                  Reset
-                </ActionButton>
-              </Box>
-            </MenuSection>
-
-            {index < items.length - 1 && <Divider />}
-          </div>
-        ))}
-      </StyledMenu>
-    </>
-  );
-};
 
 export default MultiAutoSaveContainer;

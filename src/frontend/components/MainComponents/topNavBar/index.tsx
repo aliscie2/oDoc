@@ -55,10 +55,16 @@ const NAV_CONFIG = {
   mobile: {
     loggedIn: ["calendar", "notifications", "chat", "profile"],
     loggedOut: ["login"],
+    registered: ["calendar", "notifications", "chat", "profile"],
+    unregistered: ["profile"],
+    nullRegistered: [],
   },
   desktop: {
     loggedIn: ["calendar", "notifications", "chat", "profile"],
     loggedOut: ["theme", "whitepaper", "login"],
+    registered: ["calendar", "notifications", "chat", "profile"],
+    unregistered: ["theme", "whitepaper", "profile"],
+    nullRegistered: ["theme", "whitepaper"],
   },
 } as const;
 
@@ -69,15 +75,36 @@ const CONDITIONAL_ITEMS = {
   notifications: (state) => state.notifications.length > 0,
 };
 
+
+
 // Profile menu configuration
-const PROFILE_MENU_CONFIG = [
-  { content: "Profile", to: "/profile", icon: Person2Icon },
-  { content: "Contracts", to: "/contracts", icon: GavelIcon },
-  { content: "Wallet", to: "/wallet", icon: AccountBalanceWalletIcon },
-  { content: "Affiliate", to: "/affiliate", icon: HandshakeIcon },
-  { content: "Achievements", to: "/achievementCard", icon: GradeIcon },
-  { content: "Logout", to: "/", icon: LogoutIcon, action: "logout" },
-];
+// const PROFILE_MENU_CONFIG = [
+//   { content: "Profile", to: "/profile", icon: Person2Icon },
+//   { content: "Contracts", to: "/contracts", icon: GavelIcon },
+//   { content: "Wallet", to: "/wallet", icon: AccountBalanceWalletIcon },
+//   { content: "Affiliate", to: "/affiliate", icon: HandshakeIcon },
+//   { content: "Achievements", to: "/achievementCard", icon: GradeIcon },
+//   { content: "Logout", to: "/", icon: LogoutIcon, action: "logout" },
+// ];
+
+// Update PROFILE_MENU_CONFIG to be a function that takes isRegistered
+const getProfileMenuConfig = (isRegistered) => {
+  if (isRegistered === false) {
+    return [{ content: "Logout", to: "/", icon: LogoutIcon, action: "logout" }];
+  }
+  if (isRegistered === null) {
+    return [];
+  }
+  return [
+    { content: "Profile", to: "/profile", icon: Person2Icon },
+    { content: "Contracts", to: "/contracts", icon: GavelIcon },
+    { content: "Wallet", to: "/wallet", icon: AccountBalanceWalletIcon },
+    { content: "Affiliate", to: "/affiliate", icon: HandshakeIcon },
+    { content: "Achievements", to: "/achievementCard", icon: GradeIcon },
+    { content: "Logout", to: "/", icon: LogoutIcon, action: "logout" },
+  ];
+};
+
 
 // Custom hook for navigation state management
 const useNavigationState = () => {
@@ -191,6 +218,10 @@ const createNavItem = (key, config, state, handlers) => {
 
 // Main navigation component
 export default function TopNavBar() {
+
+  const { isLoggedIn, isRegistered } = useSelector(
+    (state: any) => state.uiState,
+  );
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { logout } = useBackendContext();
@@ -219,58 +250,70 @@ export default function TopNavBar() {
     }
   };
   // Action handlers
-  const handlers = useMemo(
-    () => ({
-      dispatch,
-      navigate,
-      onProfileClick: (e) => setMobileMenuAnchor(e.currentTarget),
-      profileMenuOptions: PROFILE_MENU_CONFIG.map((option) => ({
-        ...option,
-        icon: <option.icon />,
-        onClick: option.action === "logout" ? handleLogout : undefined,
-      })),
-    }),
-    [dispatch, navigate],
-  );
+  // Update handlers to use the new profile menu function
+const handlers = useMemo(
+  () => ({
+    dispatch,
+    navigate,
+    onProfileClick: (e) => setMobileMenuAnchor(e.currentTarget),
+    profileMenuOptions: getProfileMenuConfig(isRegistered).map((option) => ({
+      ...option,
+      icon: <option.icon />,
+      onClick: option.action === "logout" ? handleLogout : undefined,
+    })),
+  }),
+  [dispatch, navigate, isRegistered],
+);
 
   // Get navigation items based on configuration
-  const getNavItems = () => {
-    const context = state.isMobile ? "mobile" : "desktop";
-    const authState = state.isLoggedIn ? "loggedIn" : "loggedOut";
-    const configuredItems = NAV_CONFIG[context][authState] || [];
+  // Update the getNavItems function
+const getNavItems = () => {
+  const context = state.isMobile ? "mobile" : "desktop";
+  let authState;
+  
+  if (!state.isLoggedIn) {
+    authState = "loggedOut";
+  } else if (state.isRegistered === null) {
+    authState = "nullRegistered";
+  } else if (state.isRegistered === false) {
+    authState = "unregistered";
+  } else {
+    authState = "registered";
+  }
+  
+  const configuredItems = NAV_CONFIG[context][authState] || [];
+  const items = [];
 
-    const items = [];
+  if (CONDITIONAL_ITEMS.home(state)) {
+    items.push(createNavItem("home", {}, state, handlers));
+  }
 
-    // Add conditionally visible home item
-    if (CONDITIONAL_ITEMS.home(state)) {
-      items.push(createNavItem("home", {}, state, handlers));
+  for (const itemKey of configuredItems) {
+    const condition = CONDITIONAL_ITEMS[itemKey];
+    if (!condition || condition(state)) {
+      items.push(
+        createNavItem(itemKey, {}, { ...state, imageLink }, handlers),
+      );
     }
+  }
 
-    // Add configured items with conditional filtering
-    for (const itemKey of configuredItems) {
-      const condition = CONDITIONAL_ITEMS[itemKey];
-      if (!condition || condition(state)) {
-        items.push(
-          createNavItem(itemKey, {}, { ...state, imageLink }, handlers),
-        );
-      }
-    }
+  return items;
+};
 
-    return items;
-  };
-
-  const navItems = useMemo(
-    () => getNavItems(),
-    [
-      state.isMobile,
-      state.isLoggedIn,
-      state.isHomePage,
-      state.currentPath,
-      state.notifications.length,
-      state.isDarkMode,
-      imageLink,
-    ],
-  );
+  // Update the navItems dependency array to include isRegistered
+const navItems = useMemo(
+  () => getNavItems(),
+  [
+    state.isMobile,
+    state.isLoggedIn,
+    isRegistered,
+    state.isHomePage,
+    state.currentPath,
+    state.notifications.length,
+    state.isDarkMode,
+    imageLink,
+  ],
+);
 
   // Render navigation item based on context
   const renderNavItem = (item, context = "desktop") => {

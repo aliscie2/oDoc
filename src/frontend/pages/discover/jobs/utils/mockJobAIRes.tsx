@@ -15,7 +15,7 @@ export function mockJobAIResponse(
     required_match_score: currentJob?.required_match_score || 7.0,
     feedback: "",
     updates: [],
-    category: category,
+    category: category.toLowerCase() == "job" ? "Job" : "Talent",
     done: false,
     isBreakingChanges: false,
   };
