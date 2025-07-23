@@ -75,8 +75,6 @@ const CONDITIONAL_ITEMS = {
   notifications: (state) => state.notifications.length > 0,
 };
 
-
-
 // Profile menu configuration
 // const PROFILE_MENU_CONFIG = [
 //   { content: "Profile", to: "/profile", icon: Person2Icon },
@@ -104,7 +102,6 @@ const getProfileMenuConfig = (isRegistered) => {
     { content: "Logout", to: "/", icon: LogoutIcon, action: "logout" },
   ];
 };
-
 
 // Custom hook for navigation state management
 const useNavigationState = () => {
@@ -218,7 +215,6 @@ const createNavItem = (key, config, state, handlers) => {
 
 // Main navigation component
 export default function TopNavBar() {
-
   const { isLoggedIn, isRegistered } = useSelector(
     (state: any) => state.uiState,
   );
@@ -251,69 +247,69 @@ export default function TopNavBar() {
   };
   // Action handlers
   // Update handlers to use the new profile menu function
-const handlers = useMemo(
-  () => ({
-    dispatch,
-    navigate,
-    onProfileClick: (e) => setMobileMenuAnchor(e.currentTarget),
-    profileMenuOptions: getProfileMenuConfig(isRegistered).map((option) => ({
-      ...option,
-      icon: <option.icon />,
-      onClick: option.action === "logout" ? handleLogout : undefined,
-    })),
-  }),
-  [dispatch, navigate, isRegistered],
-);
+  const handlers = useMemo(
+    () => ({
+      dispatch,
+      navigate,
+      onProfileClick: (e) => setMobileMenuAnchor(e.currentTarget),
+      profileMenuOptions: getProfileMenuConfig(isRegistered).map((option) => ({
+        ...option,
+        icon: <option.icon />,
+        onClick: option.action === "logout" ? handleLogout : undefined,
+      })),
+    }),
+    [dispatch, navigate, isRegistered],
+  );
 
   // Get navigation items based on configuration
   // Update the getNavItems function
-const getNavItems = () => {
-  const context = state.isMobile ? "mobile" : "desktop";
-  let authState;
-  
-  if (!state.isLoggedIn) {
-    authState = "loggedOut";
-  } else if (state.isRegistered === null) {
-    authState = "nullRegistered";
-  } else if (state.isRegistered === false) {
-    authState = "unregistered";
-  } else {
-    authState = "registered";
-  }
-  
-  const configuredItems = NAV_CONFIG[context][authState] || [];
-  const items = [];
+  const getNavItems = () => {
+    const context = state.isMobile ? "mobile" : "desktop";
+    let authState;
 
-  if (CONDITIONAL_ITEMS.home(state)) {
-    items.push(createNavItem("home", {}, state, handlers));
-  }
-
-  for (const itemKey of configuredItems) {
-    const condition = CONDITIONAL_ITEMS[itemKey];
-    if (!condition || condition(state)) {
-      items.push(
-        createNavItem(itemKey, {}, { ...state, imageLink }, handlers),
-      );
+    if (!state.isLoggedIn) {
+      authState = "loggedOut";
+    } else if (state.isRegistered === null) {
+      authState = "nullRegistered";
+    } else if (state.isRegistered === false) {
+      authState = "unregistered";
+    } else {
+      authState = "registered";
     }
-  }
 
-  return items;
-};
+    const configuredItems = NAV_CONFIG[context][authState] || [];
+    const items = [];
+
+    if (CONDITIONAL_ITEMS.home(state)) {
+      items.push(createNavItem("home", {}, state, handlers));
+    }
+
+    for (const itemKey of configuredItems) {
+      const condition = CONDITIONAL_ITEMS[itemKey];
+      if (!condition || condition(state)) {
+        items.push(
+          createNavItem(itemKey, {}, { ...state, imageLink }, handlers),
+        );
+      }
+    }
+
+    return items;
+  };
 
   // Update the navItems dependency array to include isRegistered
-const navItems = useMemo(
-  () => getNavItems(),
-  [
-    state.isMobile,
-    state.isLoggedIn,
-    isRegistered,
-    state.isHomePage,
-    state.currentPath,
-    state.notifications.length,
-    state.isDarkMode,
-    imageLink,
-  ],
-);
+  const navItems = useMemo(
+    () => getNavItems(),
+    [
+      state.isMobile,
+      state.isLoggedIn,
+      isRegistered,
+      state.isHomePage,
+      state.currentPath,
+      state.notifications.length,
+      state.isDarkMode,
+      imageLink,
+    ],
+  );
 
   // Render navigation item based on context
   const renderNavItem = (item, context = "desktop") => {

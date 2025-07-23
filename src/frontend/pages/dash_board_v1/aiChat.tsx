@@ -178,7 +178,7 @@ const AIChatComponent = ({
         sx={{ width: "100%", maxWidth: 600 }}
       >
         <TextField
-          id='aiAssistantInput'
+          id="aiAssistantInput"
           ref={inputRef}
           size="small"
           fullWidth
@@ -188,7 +188,11 @@ const AIChatComponent = ({
           placeholder="Type a message..."
           autoFocus
         />
-        <IconButton id='submitAIMessage' onClick={handleSend} sx={{ flexShrink: 0 }}>
+        <IconButton
+          id="submitAIMessage"
+          onClick={handleSend}
+          sx={{ flexShrink: 0 }}
+        >
           <Send />
         </IconButton>
       </Box>

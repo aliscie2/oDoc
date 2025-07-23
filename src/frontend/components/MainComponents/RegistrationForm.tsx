@@ -238,8 +238,6 @@ const RegistrationForm: React.FC = () => {
         />
 
         <TextField
-
-          
           id="bio"
           name="bio"
           required
@@ -247,7 +245,6 @@ const RegistrationForm: React.FC = () => {
           multiline
           rows={3}
           aria-label="Bio"
-
           label="Bio"
           fullWidth
           value={formValues.bio}
@@ -260,13 +257,13 @@ const RegistrationForm: React.FC = () => {
           }}
         />
         <Button
-        disabled={loading}
-        fullWidth
-        variant="contained"
-        onClick={handleRegister}
-        id="submitButton"
+          disabled={loading}
+          fullWidth
+          variant="contained"
+          onClick={handleRegister}
+          id="submitButton"
         >
-            {loading?"...":"Complete Registration"}
+          {loading ? "..." : "Complete Registration"}
         </Button>
       </Stack>
     </Box>

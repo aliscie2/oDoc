@@ -54,7 +54,6 @@ function LoaderButton(props: LoaderButtonProps) {
       startIcon={props.children ? props.startIcon : null}
       onClick={handleClick}
       variant={props.variant || "text"}
-      
     >
       <Tooltip title={props.toolTip}>
         {props.children || props.startIcon}
