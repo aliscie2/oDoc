@@ -3,11 +3,6 @@ interface ToggleNavAction {
   type: "TOGGLE_NAV";
 }
 
-interface PostVoteAction {
-  type: "POST_VOTE";
-  postVote: any; // Adjust the type of postVote as needed
-}
-
 interface ToggleDarkModeAction {
   type: "TOGGLE_DARK";
 }
@@ -31,7 +26,6 @@ interface ToggleSearchToolAction {
 
 export type Action =
   | ToggleNavAction
-  | PostVoteAction
   | ToggleDarkModeAction
   | SearchAction
   | LogoutAction

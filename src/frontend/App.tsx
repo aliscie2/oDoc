@@ -359,7 +359,7 @@ const App: React.FC = () => {
     //     observer.unobserve(loadingRef.current);
     //   }
     // };
-  }, [dispatch, backendActor, posts]);
+  }, [dispatch, backendActor]);
 
   // Main deposit flow
   useEffect(() => {

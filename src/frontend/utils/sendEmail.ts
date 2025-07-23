@@ -15,7 +15,7 @@ const sendEmail = async (
   subject: string,
   body: string,
   receiverEmail: string[],
-  extra: any = {},
+  extra = {},
   template: string = import.meta.env.VITE_REACT_APP_EMAILJS_TEMPLATE_ID,
 ) => {
   try {
