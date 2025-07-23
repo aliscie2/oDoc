@@ -5,6 +5,7 @@ import App from "./App";
 
 import * as Sentry from "@sentry/react";
 import { SnackbarProvider } from "notistack";
+import { HelmetProvider } from "react-helmet-async";
 import ThemeProvider from "./ThemeProvider";
 import { BackendProvider } from "./contexts/BackendContext";
 import store from "./redux/reducers";
@@ -27,19 +28,21 @@ const root = createRoot(rootElement);
 root.render(
   <StrictMode>
     <Provider store={store}>
-      <ThemeProvider>
-        <BackendProvider>
-          <SnackbarProvider
-            anchorOrigin={{
-              vertical: "bottom",
-              horizontal: "right",
-            }}
-            maxSnack={3}
-          >
-            <App />
-          </SnackbarProvider>
-        </BackendProvider>
-      </ThemeProvider>
+      <HelmetProvider>
+        <ThemeProvider>
+          <BackendProvider>
+            <SnackbarProvider
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "right",
+              }}
+              maxSnack={3}
+            >
+              <App />
+            </SnackbarProvider>
+          </BackendProvider>
+        </ThemeProvider>
+      </HelmetProvider>
     </Provider>
   </StrictMode>,
 );

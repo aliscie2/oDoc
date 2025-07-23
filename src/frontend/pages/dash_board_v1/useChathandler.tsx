@@ -167,7 +167,7 @@ export const useChatHandler = () => {
         } else {
           parsed = {
             feedback:
-              "Locally you can make a command like `calendar//aa>title>09:00>17:00>1,2,3,4,5>false` to  (add availability - Mon-Fri, not blocked) or  `Talent//as>icp,rut` to create talent with 2 skills. `as` stand for add skills",
+              "Locally you can make commands like:\n- Calendar commands: `calendar//aa>title>09:00>17:00>1,2,3,4,5>false` to (add availability - Mon-Fri, not blocked)\n- Job commands: `Job//as>skill1,skill2` (add skills)\n`Job//us>skill1,skill2` (update skills)\n`Job//ds>skill1` (remove skills)\n`Job//ud>description` (update description)\n`Job//ae>email@example.com` (add email)\n`Job//ue>email@example.com` (update emails)\n`Job//ac>contact` (add contact)\n`Job//ucon>contact` (update contacts)\n`Job//ax>experience` (add experience)\n`Job//ux>experience` (update experience)\n`Job//aj>job title` (add job titles)\n`Job//uj>job title` (update job titles)\n`Job//acer>certification` (add certifications)\n`Job//uc>certification` (update certifications)\n`Job//pl>level` (set proficiency level)\n`Job//ct>Job|Talent` (change category)",
           };
         }
       }

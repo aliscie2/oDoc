@@ -14,7 +14,7 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { DndProvider } from "react-dnd";
 import { canisterId } from "../declarations/backend";
 import getckUsdcBalance from "./utils/getBalance";
-
+import { Helmet } from "react-helmet-async";
 import { RootState } from "./redux/reducers";
 
 import RegistrationForm from "./components/MainComponents/RegistrationForm";
@@ -462,6 +462,26 @@ const App: React.FC = () => {
   return (
     <BrowserRouter>
       <MainContent>
+        <Helmet>
+          <title>
+            {window.location.pathname === "/calendar"
+              ? window.location.hostname.includes("icpjobs")
+                ? "Calendar - ICP Jobs"
+                : "Calendar"
+              : window.location.hostname.includes("icpjobs")
+                ? "ICP Jobs"
+                : "odoc"}
+          </title>
+          <link
+            rel="icon"
+            type="image/png"
+            href={
+              window.location.hostname.includes("icpjobs")
+                ? "/icpjobs_logo.png"
+                : "/logo.png"
+            }
+          />
+        </Helmet>
         {/* <PWAInstallPrompt /> */}
         {/* <SearchPopper /> */}
         <GoogleCalendarOnboarding />
