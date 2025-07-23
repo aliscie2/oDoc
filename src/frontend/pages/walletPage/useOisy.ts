@@ -1,9 +1,6 @@
 import { useState, useCallback } from "react";
-
-// import type { IcrcAccount } from '@dfinity/oisy-wallet-signer';
-// import { IcpWallet } from '@dfinity/oisy-wallet-signer/icp-wallet';
-import { IcrcWallet } from "@dfinity/oisy-wallet-signer/icrc-wallet";
 import { Principal } from "@dfinity/principal";
+// import {IcpWallet} from '@dfinity/oisy-wallet-signer/icp-wallet';
 
 export const useOisyWallet = () => {
   const [wallet, setWallet] = useState<any>(null);
@@ -22,37 +19,40 @@ export const useOisyWallet = () => {
       ? import.meta.env.VITE_IC_HOST
       : "https://ic0.app";
 
-  const connect = useCallback(async () => {
+  const connect = async () => {
     try {
       setIsLoading(true);
       setError("");
+      // const wallet = await IcpWallet.connect({
+      //   url: 'https://staging.oisy.com/sign'
+      // });
 
-      const walletInstance = await IcrcWallet.connect({
-        url,
-        host,
-        onDisconnect: () => {
-          setIsConnected(false);
-          setAccount(null);
-          setWallet(null);
-        },
-      });
+      // const walletInstance = await IcrcWallet.connect({
+      //   url,
+      //   host,
+      //   onDisconnect: () => {
+      //     setIsConnected(false);
+      //     setAccount(null);
+      //     setWallet(null);
+      //   },
+      // });
 
-      const { allPermissionsGranted } =
-        await walletInstance.requestPermissionsNotGranted();
+      // const { allPermissionsGranted } =
+      //   await walletInstance.requestPermissionsNotGranted();
 
-      if (!allPermissionsGranted) {
-        throw new Error("All permissions are required to continue");
-      }
+      // if (!allPermissionsGranted) {
+      //   throw new Error("All permissions are required to continue");
+      // }
 
-      const accounts = await walletInstance.accounts();
-      const userAccount = accounts?.[0] || null;
+      // const accounts = await walletInstance.accounts();
+      // const userAccount = accounts?.[0] || null;
 
-      if (!userAccount) {
-        throw new Error("The wallet did not provide any account");
-      }
+      // if (!userAccount) {
+      //   throw new Error("The wallet did not provide any account");
+      // }
 
-      setWallet(walletInstance);
-      setAccount(userAccount);
+      // setWallet(walletInstance);
+      // setAccount(userAccount);
       setIsConnected(true);
     } catch (err) {
       const errorMsg =
@@ -62,7 +62,7 @@ export const useOisyWallet = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [url, host]);
+  };
 
   const disconnect = useCallback(async () => {
     try {
@@ -117,7 +117,7 @@ export const useOisyWallet = () => {
   );
 
   const deposit = useCallback(
-    async (amount: number) => {
+    async (amount: number, reciever: Principal) => {
       if (!wallet || !account) {
         throw new Error("Wallet not connected");
       }
@@ -135,9 +135,10 @@ export const useOisyWallet = () => {
               subaccount: [],
             },
             to: {
-              owner: Principal.fromText(
-                import.meta.env.VITE_BACKEND_CANISTER_ID,
-              ),
+              // owner: Principal.fromText(
+              //   import.meta.env.VITE_BACKEND_CANISTER_ID,
+              // ),
+              owner: reciever,
               subaccount: [],
             },
             amount: BigInt(amount),

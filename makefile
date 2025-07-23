@@ -1,6 +1,8 @@
 run_fe:
 	yarn start
+
 run_be:
+	dfx start  --background --host 127.0.0.1:4943
 	dfx deploy backend
 
 start:

@@ -246,7 +246,6 @@ const RegistrationForm: React.FC = () => {
           rows={3}
           aria-label="Bio"
           label="Bio"
-          fullWidth
           value={formValues.bio}
           onChange={handleChange}
           variant="outlined"
