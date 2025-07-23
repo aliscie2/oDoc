@@ -9,6 +9,8 @@ start:
 
 kill:
 	kill -INT $(lsof -t -i :8080)
+	kill -INT $(lsof -t -i :4943)
+	
 
 kill_dfx:
 	killall dfx replica
@@ -18,7 +20,8 @@ get_all_localhost:
 	lsof -i 4 -P -n | grep '127.0.0.1'
 
 get_any_port:
-	lsof -i :8080
+	lsof -i :4943
+	
 
 run_gateway_on_special_port:
 	cargo run -- --gateway-address 0.0.0.0:8084 --ic-network-url http://127.0.0.1:8080
@@ -49,32 +52,13 @@ topup_cycles:
 get_logs:
 	dfx canister logs backend  --network ic
 
-
-# deploy-provider:
-# 	dfx deploy ic_siwe_provider --argument "( \
-# 	    record { \
-# 	        domain = \"127.0.0.1\"; \
-# 	        uri = \"http://127.0.0.1:5173\"; \
-# 	        salt = \"salt\"; \
-# 	        chain_id = opt 1; \
-# 	        scheme = opt \"http\"; \
-# 	        statement = opt \"Login to the SIWE/IC demo app\"; \
-# 	        sign_in_expires_in = opt 300000000000; /* 5 minutes */ \
-# 	        session_expires_in = opt 604800000000000; /* 1 week */ \
-# 	        targets = opt vec { \
-# 	            \"$$(dfx canister id ic_siwe_provider)\"; \
-# 	            \"$$(dfx canister id backend)\"; \
-# 	        }; \
-# 	    } \
-# 	)"
-# 	dfx generate ic_siwe_provider
-
 deploy-all:
 	sh scripts/first_time_run.sh
 	bash scripts/did.sh backend
 	dfx generate backend
 	sh scripts/deploy_ledger.sh
 	sh scripts/set_env.sh
+	yarn start
 
 	
 	
@@ -92,6 +76,9 @@ frontend-format:
 	# install npm-check globally npm install npm-check -g
 	npm-check
 
+pretty:
+	prettier --write ./src/frontend
+
 backend-format:
 	cargo fmt
 	cargo clippy
@@ -104,3 +91,4 @@ getting_pulls:
 debug-loading-time:
 	npm run start -- --debug hmr
 	# yarn run start -- --debug hmr
+	

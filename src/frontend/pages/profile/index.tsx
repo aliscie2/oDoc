@@ -262,36 +262,71 @@ const ProfilePage = ({ profile, history, friends, friendButton }) => {
       {/* Stats Overview */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {[
-          { title: "Trust score", value: actions_rate, rating: true },
-          { title: "Total rate score", value: users_rate, rating: true },
+          {
+            title: "Trust Score",
+            value: actions_rate,
+            rating: true,
+            icon: "🛡️",
+            color: "success",
+          },
+          {
+            title: "User Rating",
+            value: users_rate,
+            rating: true,
+            icon: "⭐",
+            color: "warning",
+          },
           {
             title: "Total Spent",
-            value: `$${Number(totalSpent)}`,
-            rating: false,
+            value: `$${Number(totalSpent || 0)}`,
+            icon: "💸",
+            color: "error",
           },
           {
             title: "Total Received",
-            value: `$${totalReceived?.toFixed(2)}`,
-            rating: false,
+            value: `$${totalReceived?.toFixed(2) || 0}`,
+            icon: "💰",
+            color: "primary",
           },
         ].map((stat, index) => (
           <Grid item xs={12} sm={6} md={3} key={index}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" color="text.secondary" gutterBottom>
-                  {stat.title}
+            <Card
+              sx={{
+                height: "100%",
+                borderLeft: 4,
+                borderColor: `${stat.color}.main`,
+              }}
+            >
+              <CardContent sx={{ textAlign: "center", py: 3 }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{
+                    mb: 1,
+                    textTransform: "uppercase",
+                    fontSize: "0.75rem",
+                    fontWeight: 600,
+                  }}
+                >
+                  {stat.icon} {stat.title}
                 </Typography>
-                <Stack spacing={1}>
-                  {stat.rating && (
-                    <Rating value={stat.value} precision={0.1} readOnly />
-                  )}
+                {stat.rating ? (
+                  <Rating
+                    value={stat.value}
+                    precision={0.1}
+                    readOnly
+                    size="large"
+                    sx={{ mb: 1 }}
+                  />
+                ) : (
                   <Typography
-                    variant="h4"
-                    sx={{ fontSize: { xs: "1.5rem", sm: "2rem" } }}
+                    variant="h3"
+                    color={`${stat.color}.main`}
+                    sx={{ fontWeight: 700, mb: 1 }}
                   >
                     {stat.value}
                   </Typography>
-                </Stack>
+                )}
               </CardContent>
             </Card>
           </Grid>

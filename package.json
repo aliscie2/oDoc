@@ -76,7 +76,7 @@
   },
   "scripts": {
     "lint": "eslint ./src --fix",
-    "dfx": "dfx start --clean",
+    "dfx": "dfx start  --background --clean  --host 127.0.0.1:4943",
     "start": "vite serve",
     "build": "vite build",
     "biuld:backend": "sh scripts/did.sh && dfx generate && dfx build backend",

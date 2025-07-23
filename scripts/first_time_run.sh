@@ -27,7 +27,8 @@ yarn install || error "yarn install failed"
 # Clean start
 dfx killall 2>/dev/null || true
 dfx stop 2>/dev/null || true
-dfx start --background --clean
+dfx start  --background --clean  --host 127.0.0.1:4943 
+
 sleep 3
 dfx ping || error "dfx failed to start"
 
