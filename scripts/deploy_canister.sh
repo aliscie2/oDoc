@@ -4,6 +4,6 @@ candid-extractor target/wasm32-unknown-unknown/release/icp_payment_backend.wasm 
 
 dfx identity use default
 
-dfx start --background --clean --port=4943
+dfx start  --background --clean  --host 127.0.0.1:4943 
 
 dfx deploy --network local icp_payment_backend --mode=reinstall -y

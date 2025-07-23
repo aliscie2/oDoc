@@ -52,32 +52,13 @@ topup_cycles:
 get_logs:
 	dfx canister logs backend  --network ic
 
-
-# deploy-provider:
-# 	dfx deploy ic_siwe_provider --argument "( \
-# 	    record { \
-# 	        domain = \"127.0.0.1\"; \
-# 	        uri = \"http://127.0.0.1:5173\"; \
-# 	        salt = \"salt\"; \
-# 	        chain_id = opt 1; \
-# 	        scheme = opt \"http\"; \
-# 	        statement = opt \"Login to the SIWE/IC demo app\"; \
-# 	        sign_in_expires_in = opt 300000000000; /* 5 minutes */ \
-# 	        session_expires_in = opt 604800000000000; /* 1 week */ \
-# 	        targets = opt vec { \
-# 	            \"$$(dfx canister id ic_siwe_provider)\"; \
-# 	            \"$$(dfx canister id backend)\"; \
-# 	        }; \
-# 	    } \
-# 	)"
-# 	dfx generate ic_siwe_provider
-
 deploy-all:
 	sh scripts/first_time_run.sh
 	sh scripts/did.sh backend
 	dfx generate backend
 	sh scripts/deploy_ledger.sh
 	sh scripts/set_env.sh
+	yarn start
 
 	
 	
@@ -95,6 +76,9 @@ frontend-format:
 	# install npm-check globally npm install npm-check -g
 	npm-check
 
+pretty:
+	prettier --write ./src/frontend
+
 backend-format:
 	cargo fmt
 	cargo clippy
@@ -107,3 +91,4 @@ getting_pulls:
 debug-loading-time:
 	npm run start -- --debug hmr
 	# yarn run start -- --debug hmr
+	

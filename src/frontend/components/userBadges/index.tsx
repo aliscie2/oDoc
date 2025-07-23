@@ -14,6 +14,7 @@ import {
   Divider,
   Collapse,
   Container,
+  Card,
 } from "@mui/material";
 import {
   Close as CloseIcon,
@@ -28,6 +29,7 @@ import {
 import useProgress, { type BadgeType } from "./useProgress";
 
 import { useGoogleCalendar } from "@/pages/dash_board_v1/calindarView/googleAccounts/useGoogleCalendar";
+import { Link } from "react-router-dom";
 
 // ODOC Reward Tier System
 const getRewardTier = (score: number) => {
@@ -214,15 +216,6 @@ const EmailSetup: React.FC<{
 const CalendarSetup: React.FC<{
   onClose: () => void;
 }> = ({ onClose }) => {
-  const handleCalendarClick = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      window.location.href = "/calendar";
-      onClose();
-    },
-    [onClose],
-  );
-
   return (
     <Box
       sx={{ mt: 2, p: 2, borderRadius: 2 }}
@@ -232,10 +225,11 @@ const CalendarSetup: React.FC<{
         Set up your availability schedule for optimal appointment booking.
       </Typography>
       <Button
+        component={Link}
+        to="/calendar"
         variant="contained"
         fullWidth
         startIcon={<CalendarIcon />}
-        onClick={handleCalendarClick}
       >
         Go to Calendar Setup
       </Button>
@@ -587,11 +581,11 @@ const AchievementPage: React.FC = () => {
           }}
           onClick={() => setVideoOpen(false)}
         >
-          <Box
+          <Card
             sx={{
               width: "100%",
               maxWidth: 800,
-              backgroundColor: "white",
+
               borderRadius: 2,
               p: 3,
               position: "relative",
@@ -632,7 +626,7 @@ const AchievementPage: React.FC = () => {
             <Typography variant="body2" color="text.secondary">
               {selectedBadge.description}
             </Typography>
-          </Box>
+          </Card>
         </Box>
       )}
     </Container>

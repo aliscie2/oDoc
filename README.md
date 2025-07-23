@@ -139,7 +139,7 @@ While providing centralized convenience, built on blockchain for:
 
 ```bash
 # Daily development workflow
-dfx start --background --port=4943
+dfx start  --background --host 127.0.0.1:4943 
 make deploy-all
 yarn start
 
@@ -199,7 +199,7 @@ rustup target add wasm32-unknown-unknown
 
 ```bash
 # 1. Clean start
-dfx start --background --clean  --port=4943
+dfx start  --background --clean  --host 127.0.0.1:4943 
 
 # 2. Deploy backend
 dfx deploy backend

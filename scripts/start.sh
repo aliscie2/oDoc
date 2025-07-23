@@ -2,8 +2,7 @@
 
 # Start dfx in the background
 echo "Starting dfx in the background..."
-dfx start --background  --port=4943
-#dfx start --background --clean  --port=4943
+dfx start  --background  --host 127.0.0.1:4943 
 
 output=$(dfx canister status backend 2>&1)
 
