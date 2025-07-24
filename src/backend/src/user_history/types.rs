@@ -128,7 +128,7 @@ impl UserHistory {
         for rating in &self.rates_by_actions {
             let ActionType::Payment(payment) = &rating.action_type;
             if let PaymentStatus::Objected(_) = payment.status {
-                if unique_receivers.insert(payment.receiver.clone()) {
+                if unique_receivers.insert(payment.receiver) {
                     result.push(rating.clone());
                 }
             }
@@ -255,13 +255,13 @@ impl UserHistory {
             rate *= 0.7;
         }
         self.users_rate = rate;
-        rate.clone()
+        rate
     }
 
     pub fn calc_actions_rate(&mut self) -> f64 {
-        let wallet = Wallet::get(self.id.clone());
+        let wallet = Wallet::get(self.id);
         let users_interacted = self.users_interacted.clone().len() as f64;
-        let spent = wallet.spent.clone() + wallet.received.clone();
+        let spent = wallet.spent + wallet.received;
         let objections = self.get_objections().len() as f64;
         let mut w = 5.0;
 
@@ -284,15 +284,15 @@ impl UserHistory {
         }
 
         // let debt: f64 = self.get_promises_value();
-        let debt: f64 = wallet.total_debt.clone();
+        let debt: f64 = wallet.total_debt;
         let rate = (debt - spent).abs() / (debt + spent).abs();
 
         self.actions_rate = rate * w;
-        self.actions_rate.clone()
+        self.actions_rate
     }
 
     pub fn payment_action(&mut self, payment: CPayment) {
-        let wallet = Wallet::get(self.id.clone());
+        let wallet = Wallet::get(self.id);
         self.rates_by_actions
             .retain(|action| action.id != payment.id);
 
@@ -304,9 +304,9 @@ impl UserHistory {
         let new_rating = ActionRating {
             id: payment.id.clone(),
             rating: self.calc_actions_rate(),
-            spent: wallet.spent.clone(),
-            received: wallet.received.clone(),
-            promises: total_promises + payment.amount.clone(), // employer profile.
+            spent: wallet.spent,
+            received: wallet.received,
+            promises: total_promises + payment.amount, // employer profile.
             received_promises, // This will be important for the employee profile.
             action_type: ActionType::Payment(payment.clone()),
             date: ic_cdk::api::time() as f64,

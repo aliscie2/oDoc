@@ -38,9 +38,9 @@ impl Storable for StoredContractVec {
         if let Ok(x) = Decode!(bytes.as_ref(), Self) {
             return x;
         }
-        return StoredContractVec {
+        StoredContractVec {
             stored_contracts: vec![],
-        };
+        }
     }
 
     const BOUND: Bound = Bound::Bounded {

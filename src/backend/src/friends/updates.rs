@@ -41,8 +41,8 @@ pub fn send_friend_request(user_principal: String) -> Result<User, String> {
         // Notify after successful save
         websocket::notify_friend_request(new_friend);
 
-        Ok(User::get_user_from_text_principal(&user_principal)
-            .ok_or("User not found after save".to_string())?)
+        User::get_user_from_text_principal(&user_principal)
+            .ok_or("User not found after save".to_string())
     })
 }
 
@@ -55,7 +55,7 @@ pub fn accept_friend_request(user_principal: String) -> Result<User, String> {
     }
     let sender = sender.unwrap();
     let id = user_principal.clone() + &caller().to_string();
-    let id2 = format!("{}{}", caller().to_string(), user_principal.clone());
+    let id2 = format!("{}{}", caller(), user_principal.clone());
     let friend = Friend {
         id: user_principal.clone() + &caller().to_string(),
         sender,
@@ -75,7 +75,7 @@ pub fn accept_friend_request(user_principal: String) -> Result<User, String> {
         notification.is_seen = true;
         notification.pure_save();
     }
-    return Ok(User::get_user_from_text_principal(&user_principal).unwrap());
+    Ok(User::get_user_from_text_principal(&user_principal).unwrap())
 }
 
 #[update]
@@ -90,7 +90,7 @@ pub fn unfriend(user_principal: String) -> Result<User, String> {
         id: friend.id,
         content: NoteContent::Unfriend,
         sender: caller(),
-        receiver: receiver.clone(),
+        receiver,
         is_seen: false,
         time: ic_cdk::api::time() as f64,
     };
@@ -102,7 +102,7 @@ pub fn unfriend(user_principal: String) -> Result<User, String> {
 // sender_left + receiver_right
 #[update]
 pub fn cancel_friend_request(user_principal: String) -> Result<User, String> {
-    let id = format!("{}{}", caller().to_string(), user_principal.clone());
+    let id = format!("{}{}", caller(), user_principal.clone());
     let id2 = user_principal.clone() + &caller().to_string();
     let friend = Friend::get(&id).unwrap();
     friend.delete();
@@ -137,7 +137,7 @@ pub fn reject_friend_request(user_principal: String) -> Result<User, String> {
         id,
         content: NoteContent::FriendRequest(FriendRequestNotification { friend }),
         sender: caller(),
-        receiver: receiver.clone(),
+        receiver,
         is_seen: false,
         time: ic_cdk::api::time() as f64,
     };

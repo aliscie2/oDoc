@@ -108,7 +108,7 @@ impl Calendar {
 
     pub fn get_day_of_week(timestamp: f64) -> u32 {
         let days_since_epoch = (timestamp / Self::NANOS_PER_DAY).floor();
-        ((days_since_epoch as u32 + 3) % 7) as u32
+        (days_since_epoch as u32 + 3) % 7
     }
 
     pub fn get_time_of_day(timestamp: f64) -> u64 {
@@ -175,11 +175,7 @@ impl Calendar {
         let start_of_today = Self::start_of_day(current_time);
 
         let mut filtered_calendar = self.clone();
-        filtered_calendar.events = filtered_calendar
-            .events
-            .into_iter()
-            .filter(|event| event.start_time >= start_of_today)
-            .collect();
+        filtered_calendar.events.retain(|event| event.start_time >= start_of_today);
 
         filtered_calendar
     }

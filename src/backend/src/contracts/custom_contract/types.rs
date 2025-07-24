@@ -117,7 +117,7 @@ impl CPayment {
         }
     }
     pub fn pay(mut self) -> Result<Self, String> {
-        let mut sender_wallet = Wallet::get(self.sender.clone());
+        let mut sender_wallet = Wallet::get(self.sender);
         if self.amount > sender_wallet.balance {
             return Err(String::from("Insufficient balance"));
         }
@@ -125,11 +125,11 @@ impl CPayment {
             return Err(String::from("You can't send to your self"));
         };
 
-        let mut receiver_wallet = Wallet::get(self.receiver.clone());
+        let mut receiver_wallet = Wallet::get(self.receiver);
         let withdraw = ExchangeType::LocalSend;
         let deposit = ExchangeType::LocalSend;
         sender_wallet.withdraw(
-            self.amount.clone(),
+            self.amount,
             self.receiver.clone().to_string(),
             withdraw,
         )?;
@@ -137,14 +137,14 @@ impl CPayment {
         receiver_wallet.deposit(self.amount, self.sender.clone().to_string(), deposit)?;
 
         // ----------------- UserHistory ----------------- \\
-        let mut user_history = UserHistory::get(self.sender.clone());
+        let mut user_history = UserHistory::get(self.sender);
         user_history.payment_action(self.clone());
         user_history.save();
 
         // TODO think about this later again, maybey other people should not be effect by others actions
         //  see how people respond to this
         //  Alos, we are already storing the same payment object in notifications for this users, so this can be stipulation issue in our DS
-        let mut user_history = UserHistory::get(self.receiver.clone());
+        let mut user_history = UserHistory::get(self.receiver);
         user_history.payment_action(self.clone());
         user_history.save();
         // ---------------------------------------------------
@@ -152,13 +152,13 @@ impl CPayment {
         self.status = PaymentStatus::Released;
 
         // ---------------- handle notifications ----------------\\
-        UserHistory::get(self.sender.clone()).payment_action(self.clone());
+        UserHistory::get(self.sender).payment_action(self.clone());
 
         let content = NoteContent::CPaymentContract(self.clone(), PaymentAction::Released);
         let new_notification = Notification {
             id: self.id.clone(),
             sender: caller(),
-            receiver: self.receiver.clone(),
+            receiver: self.receiver,
             content,
             is_seen: false,
             time: ic_cdk::api::time() as f64,
@@ -287,7 +287,7 @@ impl CustomContract {
         }
 
         // Convert Option<CPayment> back to CPayment vector
-        self.promises = reordered_promises.into_iter().filter_map(|p| p).collect();
+        self.promises = reordered_promises.into_iter().flatten().collect();
 
         // Save the updated contract
         // self.save()?;
@@ -460,7 +460,7 @@ impl CustomContract {
             }
 
             // Convert Option<CColumn> back to CColumn vector
-            table.columns = reordered_columns.into_iter().filter_map(|c| c).collect();
+            table.columns = reordered_columns.into_iter().flatten().collect();
         }
 
         // Handle row reordering
@@ -524,7 +524,7 @@ impl CustomContract {
             }
 
             // Convert Option<CRow> back to CRow vector
-            table.rows = reordered_rows.into_iter().filter_map(|r| r).collect();
+            table.rows = reordered_rows.into_iter().flatten().collect();
         }
 
         Ok(())
@@ -690,7 +690,7 @@ impl CustomContract {
                 }
 
                 // Remove debt from sender's wallet
-                let sender_wallet = Wallet::get(new_payment.sender.clone());
+                let sender_wallet = Wallet::get(new_payment.sender);
                 let _ = sender_wallet.remove_dept(new_payment.id.clone());
 
                 self.update_promise_in_vector(new_payment.clone());
@@ -790,9 +790,9 @@ impl CustomContract {
 
         // Determine notification recipient based on action and caller
         let recipient = if caller_principal == payment.sender {
-            payment.receiver.clone()
+            payment.receiver
         } else {
-            payment.sender.clone()
+            payment.sender
         };
 
         // Create notification with unique ID
@@ -847,7 +847,7 @@ impl CustomContract {
 
         let notification = Notification::new(
             notification_id,
-            promise.receiver.clone(),
+            promise.receiver,
             NoteContent::CPaymentContract(cancelled_promise, PaymentAction::Cancelled),
         );
 
@@ -918,14 +918,13 @@ impl CustomContract {
         }
         columns
             .iter()
-            .find(|column| &column.field == field)
-            .map(|column| column.clone())
+            .find(|column| &column.field == field).cloned()
     }
 
     pub fn get(id: &String, creator: &String) -> Option<Self> {
         CONTRACTS_STORE.with(|contracts_store| {
             let caller_contracts = contracts_store.borrow();
-            let stored_contract_vec = caller_contracts.get(&creator)?.stored_contracts.clone();
+            let stored_contract_vec = caller_contracts.get(creator)?.stored_contracts.clone();
             if let Some(contract) = stored_contract_vec.iter().find(|contract| match contract {
                 StoredContract::CustomContract(contract) => contract.id == *id,
                 _ => false,

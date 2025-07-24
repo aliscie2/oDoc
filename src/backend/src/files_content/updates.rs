@@ -76,7 +76,7 @@ fn multi_updates(
     contracts_updates: Vec<ContractUpdates>,
     files_indexing: Vec<FileIndexing>,
 ) -> Result<String, String> {
-    if contracts_updates.len() > 0 {
+    if !contracts_updates.is_empty() {
         let res: Result<(), crate::Error> = UserState::set_is_transfering();
         if res.is_err() {
             return Err(

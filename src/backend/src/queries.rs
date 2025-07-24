@@ -62,7 +62,7 @@ fn get_contract(author: String, contract_id: String) -> Result<StoredContract, S
 
 #[query]
 fn get_more_files(page: f32) -> (Vec<FileNode>, HashMap<FileId, ContentTree>) {
-    let files = FileNode::get_page_files(page.clone());
+    let files = FileNode::get_page_files(page);
     let files_contents: HashMap<FileId, ContentTree> = ContentNode::get_page_files_content(page);
     (files, files_contents)
 }
@@ -79,7 +79,7 @@ fn get_initial_data() -> Result<InitialData, String> {
     let files = FileNode::get_page_files(1_f32);
 
     let contracts: HashMap<ContractId, StoredContract> =
-        Contract::get_all_contracts().unwrap_or(HashMap::new());
+        Contract::get_all_contracts().unwrap_or_default();
     let mut profile = profile.unwrap();
     if profile.photo.len() > 500000 {
         profile.photo = Vec::new()

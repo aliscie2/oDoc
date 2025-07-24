@@ -227,7 +227,7 @@ impl Post {
                         date_created: post.date_created,
                         votes_up: post.votes_up.clone(),
                         votes_down: post.votes_down.clone(),
-                        is_comment: post.is_comment.clone(),
+                        is_comment: post.is_comment,
                         children: post.children.clone(),
                         parent: post.parent.clone(),
                     }
@@ -271,7 +271,7 @@ impl Post {
                         content_tree: post.content_tree.clone(),
                         tags: post.tags.clone(),
                         creator,
-                        date_created: post.date_created.clone(),
+                        date_created: post.date_created,
                         votes_up: post.votes_up.clone(),
                         votes_down: post.votes_down.clone(),
                         is_comment: false,

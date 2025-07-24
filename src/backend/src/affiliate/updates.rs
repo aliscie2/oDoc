@@ -20,7 +20,7 @@ fn get_or_create_affiliate(id: &String) -> Result<Affiliate, String> {
         let new_affiliate = Affiliate::register_affiliate(id.clone());
         return Ok(new_affiliate);
     }
-    return Ok(affiliate.unwrap());
+    Ok(affiliate.unwrap())
 }
 
 fn check_and_update_users(affiliate: &mut Affiliate) -> Result<(), String> {

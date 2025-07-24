@@ -117,7 +117,7 @@ fn approve_high_promise(c_payment: CPayment) -> Result<(), String> {
                     //     not.save();
                     // };
                     let wallet = Wallet::get(c_payment.sender);
-                    let _ = wallet.add_dept(payment.amount.clone(), payment.id.clone());
+                    let _ = wallet.add_dept(payment.amount, payment.id.clone());
                     // wallet.remove_dept(payment.id.clone());
                     let mut user_history = UserHistory::get(c_payment.sender);
                     user_history.payment_action(payment.clone());

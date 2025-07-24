@@ -26,12 +26,12 @@ async fn get_user_balance() -> Result<Nat, String> {
     )
     .await
     .map_err(|(_, message)| Error::IcCdkError { message });
-    return if let Ok(x) = res {
+    if let Ok(x) = res {
         Ok(x.0)
     } else {
         let b = format!("{:?}", res);
         Err(b)
-    };
+    }
 }
 
 async fn get_fee() -> Nat {
@@ -150,11 +150,11 @@ async fn deposit_ckusdt() -> Result<Wallet, Error> {
         });
     }
     let balance = balance.unwrap();
-    if balance > Nat::from(3000000 as u64) {
+    if balance > 3000000_u64 {
         let fee: Nat = get_fee().await;
         transfer_from(balance.clone() - fee.clone(), caller(), ic_cdk::id()).await?;
         let res = wallet.deposit(
-            nat_to_u64((balance.clone() - fee) / Nat::from(1000000 as u64)) as f64,
+            nat_to_u64((balance.clone() - fee) / Nat::from(1000000_u64)) as f64,
             "ExternalWallet".to_string(),
             ExchangeType::Deposit,
         );
@@ -192,9 +192,9 @@ async fn withdraw_ckusdt(amount: u64, address: String) -> Result<Wallet, Error> 
         });
     }
 
-    if Nat::from(amount.clone()) >= balance {
+    if amount >= balance {
         let res = transfer_from(
-            Nat::from(amount.clone() as u64 * 1000000),
+            Nat::from(amount * 1000000),
             ic_cdk::id(),
             Principal::from_text(address.clone()).unwrap(),
         )
@@ -218,7 +218,7 @@ pub fn internal_transaction(
     let payment = CPayment {
         contract_id: "none".to_string(),
         id: ic_cdk::api::time().to_string(),
-        amount: amount,
+        amount,
         sender: caller(),
         receiver: Principal::from_text(receiver.clone()).unwrap(),
         date_created: ic_cdk::api::time() as f64,

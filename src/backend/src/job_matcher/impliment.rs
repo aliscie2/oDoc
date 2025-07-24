@@ -124,13 +124,13 @@ impl Job {
         crate::JOBS_MATCH_STORE.with(|store| {
             let store = store.borrow();
             ids.into_iter()
-                .filter_map(|id| store.get(&id).map(|job| job.clone()))
+                .filter_map(|id| store.get(&id))
                 .collect()
         })
     }
 
     pub fn get(job_id: &String) -> Option<Job> {
-        crate::JOBS_MATCH_STORE.with(|store| store.borrow().get(job_id).map(|job| job.clone()))
+        crate::JOBS_MATCH_STORE.with(|store| store.borrow().get(job_id))
     }
 
     pub fn clear_fields(job_id: String) -> Result<(), String> {
@@ -223,7 +223,7 @@ impl Job {
                         user_id: job.user_id.clone(),
                         missmatching_skills: match_item.missmatching_skills.clone(),
                         date_updated: ic_cdk::api::time() as f64,
-                        is_connected: match_item.is_connected.clone(),
+                        is_connected: match_item.is_connected,
                         cover_letter: match_item.cover_letter.clone(),
                     };
 

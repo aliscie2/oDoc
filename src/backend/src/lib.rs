@@ -11,7 +11,6 @@ use discover::*;
 use files::*;
 use files_content::*;
 use friends::*;
-use ic_cdk_macros;
 use ic_websocket_cdk::*;
 use job_matcher::pallet::{Category, Job};
 use queries::*;

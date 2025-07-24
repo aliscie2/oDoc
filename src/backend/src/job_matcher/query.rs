@@ -41,7 +41,7 @@ fn search_matches(skills: Vec<String>, category: Category) -> Vec<Job> {
     } else {
         ids = inverted_index::search_for_talent(skills)
     }
-    return Job::get_jobs_by_ids(ids);
+    Job::get_jobs_by_ids(ids)
 }
 // Don't get confused category is what you are looking for.
 // Not what you are now.

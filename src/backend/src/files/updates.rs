@@ -6,8 +6,8 @@ use crate::storage_schema::FileId;
 
 #[update]
 fn create_new_file(name: String, parent: Option<FileId>) -> FileNode {
-    let file = FileNode::new(name.clone(), parent);
-    file
+    
+    FileNode::new(name.clone(), parent)
 }
 
 #[update]
