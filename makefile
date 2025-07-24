@@ -77,13 +77,14 @@ frontend-format:
 	npx ts-unused-exports tsconfig.json
 	# install npm-check globally npm install npm-check -g
 	npm-check
+	
 
 pretty:
 	prettier --write ./src/frontend
 
 backend-format:
 	cargo fmt
-	cargo clippy
+	cargo clippy --fix
 
 
 getting_pulls:
