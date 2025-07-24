@@ -61,6 +61,20 @@ const StatsSection = () => {
   useEffect(() => {
     if (!isVisible) return;
 
+    const animateCount = (target, setter) => {
+      let current = 0;
+      const increment = target / 50;
+      const timer = setInterval(() => {
+        current += increment;
+        if (current >= target) {
+          setter(Math.floor(target));
+          clearInterval(timer);
+        } else {
+          setter(Math.floor(current));
+        }
+      }, 30);
+    };
+
     const fetchStats = async () => {
       try {
         const [snsResponse, balance] = await Promise.all([
@@ -70,28 +84,13 @@ const StatsSection = () => {
 
         if (snsResponse.Ok) {
           const { number_users, active_users } = snsResponse.Ok;
-
-          const animateCount = (target, setter) => {
-            let current = 0;
-            const increment = target / 50;
-            const timer = setInterval(() => {
-              current += increment;
-              if (current >= target) {
-                setter(Math.floor(target));
-                clearInterval(timer);
-              } else {
-                setter(Math.floor(current));
-              }
-            }, 30);
-          };
-
           animateCount(number_users, (val) =>
             setStats((prev) => ({ ...prev, users: val })),
           );
           animateCount(active_users, (val) =>
             setStats((prev) => ({ ...prev, activeUsers: val })),
           );
-          animateCount(balance, (val) =>
+          animateCount(Number(balance) / 1000000, (val) =>
             setStats((prev) => ({ ...prev, totalDeposit: val })),
           );
         }
@@ -103,6 +102,12 @@ const StatsSection = () => {
     fetchStats();
   }, [isVisible, backendActor, ckUSDCActor]);
 
+  const statsData = [
+    { value: stats.users, label: "Total Users" },
+    { value: stats.activeUsers, label: "Active Users" },
+    { value: stats.totalDeposit, label: "Total Deposits", prefix: "$" },
+  ];
+
   return (
     <Box
       ref={statsRef}
@@ -110,17 +115,13 @@ const StatsSection = () => {
         width: "100%",
         p: 2,
         mb: 3,
+        borderRadius: 2,
         background:
           "linear-gradient(135deg, rgba(25,118,210,0.1) 0%, rgba(156,39,176,0.1) 100%)",
-        borderRadius: 2,
       }}
     >
       <Grid container spacing={2} textAlign="center">
-        {[
-          { value: stats.users, label: "Total Users" },
-          { value: stats.activeUsers, label: "Active Users" },
-          { value: stats.totalDeposit, label: "Total Deposits", prefix: "$" },
-        ].map((stat, i) => (
+        {statsData.map((stat, i) => (
           <Grid item xs={4} key={i}>
             <Typography variant="h5" fontWeight="bold" color="primary">
               {stat.prefix || ""}
@@ -163,12 +164,10 @@ const FeatureSection = ({ title, icon, children, reversed = false }) => {
           >
             {isMobile && (
               <Box
-                style={{
-                  filter:
-                    "drop-shadow(rgba(167, 116, 116, 0.15) 10px 10px 20px)",
-                }}
                 sx={{
                   mb: 3,
+                  filter:
+                    "drop-shadow(rgba(167, 116, 116, 0.15) 10px 10px 20px)",
                 }}
               >
                 {icon}
@@ -179,11 +178,11 @@ const FeatureSection = ({ title, icon, children, reversed = false }) => {
               gutterBottom
               sx={{
                 fontWeight: 700,
+                mb: 3,
                 background: "linear-gradient(45deg, #1976d2, #9c27b0)",
                 backgroundClip: "text",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
-                mb: 3,
                 fontSize: { xs: "1.5rem", sm: "2rem", md: "3rem" },
                 textAlign: isMobile ? "center" : "left",
                 wordWrap: "break-word",
@@ -217,10 +216,10 @@ const FeatureSection = ({ title, icon, children, reversed = false }) => {
                     transform: "translate(-50%, -50%)",
                     width: 200,
                     height: 200,
-                    background:
-                      "radial-gradient(circle, rgba(25,118,210,0.1) 0%, transparent 70%)",
                     borderRadius: "50%",
                     zIndex: -1,
+                    background:
+                      "radial-gradient(circle, rgba(25,118,210,0.1) 0%, transparent 70%)",
                   },
                 }}
               >
@@ -241,70 +240,52 @@ export default function OdocLandingPage() {
   React.useEffect(() => {
     const style = document.createElement("style");
     style.textContent = `
-     @keyframes pulse {
-       0% { transform: scale(1); opacity: 1; }
-       50% { transform: scale(1.05); opacity: 0.8; }
-       100% { transform: scale(1); opacity: 1; }
-     }
-     @keyframes bounce {
-       0%, 20%, 53%, 80%, 100% { transform: translate3d(0,0,0); }
-       40%, 43% { transform: translate3d(0,-10px,0); }
-       70% { transform: translate3d(0,-5px,0); }
-       90% { transform: translate3d(0,-2px,0); }
-     }
-     @keyframes rotate {
-       from { transform: rotate(0deg); }
-       to { transform: rotate(360deg); }
-     }
-   `;
+    @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
+    @keyframes bounce { 0%, 20%, 53%, 80%, 100% { transform: translate3d(0,0,0); } 40%, 43% { transform: translate3d(0,-10px,0); } 70% { transform: translate3d(0,-5px,0); } 90% { transform: translate3d(0,-2px,0); } }
+    @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  `;
     document.head.appendChild(style);
     return () => document.head.removeChild(style);
   }, []);
 
-  return (
-    <Box sx={{ minHeight: "100vh" }}>
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <FeatureSection
-          reversed
-          title="Streamline your work flow."
-          icon={
-            <Box sx={{ textAlign: "center", py: 4 }}>
-              <RunawayJellyfish
-                LogoSvg={LOGOSVG}
-                jellyfishOffsetX={-135}
-                jellyfishOffsetY={5}
-                scale={1.3}
-              />
-              <Typography
-                variant="h3"
-                component="h1"
-                sx={{ mb: 1.5, fontWeight: 600, mt: 2 }}
-              >
-                oDoc Crypto Agreement
-              </Typography>
-              <Typography
-                variant="h6"
-                sx={{ mb: 3, opacity: 0.7, fontWeight: 400 }}
-              >
-                The unified freelance platform
-              </Typography>
-              <Stack
-                direction="row"
-                spacing={1}
-                sx={{ justifyContent: "center", flexWrap: "wrap", gap: 1 }}
-              >
-                {["Open Source", "Decentralized", "All-in-One"].map((label) => (
-                  <Chip
-                    key={label}
-                    label={label}
-                    size="small"
-                    variant="outlined"
-                  />
-                ))}
-              </Stack>
-            </Box>
-          }
-        >
+  const features = [
+    {
+      title: "Streamline your work flow.",
+      reversed: true,
+      icon: (
+        <Box sx={{ textAlign: "center", py: 4 }}>
+          <RunawayJellyfish
+            LogoSvg={LOGOSVG}
+            jellyfishOffsetX={-135}
+            jellyfishOffsetY={5}
+            scale={1.3}
+          />
+          <Typography
+            variant="h3"
+            component="h1"
+            sx={{ mb: 1.5, fontWeight: 600, mt: 2 }}
+          >
+            oDoc Crypto Agreement
+          </Typography>
+          <Typography
+            variant="h6"
+            sx={{ mb: 3, opacity: 0.7, fontWeight: 400 }}
+          >
+            The unified freelance platform
+          </Typography>
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{ justifyContent: "center", flexWrap: "wrap", gap: 1 }}
+          >
+            {["Open Source", "Decentralized", "All-in-One"].map((label) => (
+              <Chip key={label} label={label} size="small" variant="outlined" />
+            ))}
+          </Stack>
+        </Box>
+      ),
+      children: (
+        <>
           <Typography
             variant="h6"
             paragraph
@@ -316,21 +297,23 @@ export default function OdocLandingPage() {
             or task managers. Powered by AI and ICP blockchain.
           </Typography>
           <StatsSection />
-        </FeatureSection>
-
-        <FeatureSection
-          title="Stop hunting for jobs, let AI do it for you"
-          icon={
-            <img
-              src={JobIcon}
-              style={{
-                transform: "scaleX(-1)",
-                width: isMobile ? "150px" : "500px",
-                objectFit: "contain",
-              }}
-            />
-          }
-        >
+        </>
+      ),
+    },
+    {
+      title: "Stop hunting for jobs, let AI do it for you",
+      icon: (
+        <img
+          src={JobIcon}
+          style={{
+            transform: "scaleX(-1)",
+            width: isMobile ? "150px" : "500px",
+            objectFit: "contain",
+          }}
+        />
+      ),
+      children: (
+        <>
           <Typography
             variant="h6"
             paragraph
@@ -352,21 +335,20 @@ export default function OdocLandingPage() {
               </ListItem>
             ))}
           </List>
-        </FeatureSection>
-
-        <FeatureSection
-          title="Crypto Agreement"
-          icon={
-            <img
-              src={AgreementIcon}
-              style={{
-                width: isMobile ? "150px" : "500px",
-                objectFit: "contain",
-              }}
-            />
-          }
-          reversed
-        >
+        </>
+      ),
+    },
+    {
+      title: "Crypto Agreement",
+      reversed: true,
+      icon: (
+        <img
+          src={AgreementIcon}
+          style={{ width: isMobile ? "150px" : "500px", objectFit: "contain" }}
+        />
+      ),
+      children: (
+        <>
           <List sx={{ mb: 3 }}>
             {[
               {
@@ -412,7 +394,181 @@ export default function OdocLandingPage() {
             contracts, payments, escrow, and collaboration into one seamless
             crypto-native platform. Powered by AI & Internet Computer
           </Typography>
-        </FeatureSection>
+        </>
+      ),
+    },
+    {
+      title: "Automated Tasks Manager",
+      icon: (
+        <img
+          src={AllInOne}
+          style={{
+            transform: "scaleX(-1)",
+            width: isMobile ? "150px" : "500px",
+            objectFit: "contain",
+          }}
+        />
+      ),
+      children: (
+        <>
+          <Typography
+            variant="h6"
+            paragraph
+            color="text.secondary"
+            sx={{ mb: 3 }}
+          >
+            The crypto agreement is a table that acts like contract and tasks
+            manager all at once.
+          </Typography>
+          <List sx={{ "& .MuiListItem-root": { pl: 0 } }}>
+            {[
+              "No payment or ebank platform needed",
+              "No contract/freelance platform needed",
+              "No task manager platform needed",
+              "No documents platform needed",
+              "Just one single unified automated platform",
+            ].map((text, index) => (
+              <ListItem key={index}>
+                <CheckCircle sx={{ color: "success.main", mr: 2 }} />
+                <ListItemText primary={text} />
+              </ListItem>
+            ))}
+          </List>
+          <Typography
+            variant="body2"
+            sx={{ mt: 3, fontStyle: "italic", color: "text.secondary" }}
+          >
+            oDoc - No headache, save your time and save your funds.
+          </Typography>
+        </>
+      ),
+    },
+    {
+      title: "Talk to your calendar",
+      icon: (
+        <img
+          src={CalendarIcon}
+          style={{
+            transform: "scaleX(-1)",
+            width: isMobile ? "150px" : "500px",
+            objectFit: "contain",
+          }}
+        />
+      ),
+      children: (
+        <>
+          <Typography
+            variant="h6"
+            paragraph
+            color="text.secondary"
+            sx={{ mb: 3 }}
+          >
+            No need to manually set your availabilities, you can just talk to it
+            like talking to a human.
+          </Typography>
+          <List sx={{ "& .MuiListItem-root": { pl: 0 } }}>
+            {[
+              "Connect your google calendar",
+              "Connect multiple calendars",
+              "Any event on Google Calendar shows here, and vice versa",
+              "Add your contacts",
+              'Just say "I will have 15 minutes call with David tomorrow"',
+            ].map((text, index) => (
+              <ListItem key={index}>
+                <CheckCircle sx={{ color: "success.main", mr: 2 }} />
+                <ListItemText primary={text} />
+              </ListItem>
+            ))}
+          </List>
+        </>
+      ),
+    },
+    {
+      title: "Cyber Security",
+      icon: (
+        <RunawayJellyfish
+          logoSvgScale={isMobile ? 1 : 1.5}
+          LogoSvg={SECRUTYSVG}
+          jellyfishOffsetX={-100}
+          jellyfishOffsetY={5}
+          scale={isMobile ? 0.7 : 1.3}
+        />
+      ),
+      children: (
+        <List sx={{ "& .MuiListItem-root": { pl: 0 } }}>
+          {[
+            "Decentralized",
+            "Tamper-proof Records",
+            "Fraud Prevention system with our Karma algorithm",
+            "No sudden changes on privacy, you can vote to accept or reject changes",
+          ].map((text, index) => (
+            <ListItem key={index}>
+              <Shield sx={{ color: "primary.main", mr: 2 }} />
+              <ListItemText
+                primary={
+                  <Typography
+                    variant="body1"
+                    fontWeight={
+                      text.includes("Tamper-proof") || text.includes("Fraud")
+                        ? "bold"
+                        : "normal"
+                    }
+                  >
+                    {text}
+                  </Typography>
+                }
+              />
+            </ListItem>
+          ))}
+        </List>
+      ),
+    },
+  ];
+
+  const karmaCards = [
+    {
+      type: "error",
+      icon: Warning,
+      title: "Bad Behavior",
+      behaviors: [
+        "Repeated cancellations",
+        "Excessive disputes",
+        "Breaking contract terms",
+      ],
+      consequences: {
+        title: "PUNISHMENTS",
+        items: ["Trust score drops", "Funds locked", "Transaction cap"],
+      },
+    },
+    {
+      type: "success",
+      icon: Star,
+      title: "Good Behavior",
+      behaviors: [
+        "Releasing payments",
+        "Creating contracts",
+        "Interacting with many users",
+        "High transaction volume",
+      ],
+      consequences: {
+        title: "REWARDS",
+        items: [
+          "Higher trust score",
+          "Transaction freedom",
+          "Refund old escrow",
+        ],
+      },
+    },
+  ];
+
+  return (
+    <Box sx={{ minHeight: "100vh" }}>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        {features.map((feature, index) => (
+          <FeatureSection key={index} {...feature}>
+            {feature.children}
+          </FeatureSection>
+        ))}
 
         <Box sx={{ py: 2, minHeight: "100vh", alignItems: "center" }}>
           {isMobile ? <MobileTutrials /> : <DeskTopTutorials />}
@@ -449,297 +605,85 @@ export default function OdocLandingPage() {
             Karma System
           </Typography>
           <Grid container spacing={4}>
-            <Grid item xs={12} md={6}>
-              <Card
-                sx={{
-                  borderRadius: 3,
-                  border: 2,
-                  borderColor: "error.main",
-                  backgroundColor:
-                    theme.palette.mode === "dark"
-                      ? "error.dark"
-                      : "error.light",
-                }}
-              >
-                <CardContent sx={{ p: 4 }}>
-                  <Typography
-                    variant="h6"
-                    gutterBottom
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      color:
-                        theme.palette.mode === "dark"
-                          ? "error.light"
-                          : "error.dark",
-                    }}
-                  >
-                    <Warning sx={{ mr: 1 }} />
-                    Bad Behavior
-                  </Typography>
-                  <List dense>
-                    {[
-                      "Repeated cancellations",
-                      "Excessive disputes",
-                      "Breaking contract terms",
-                    ].map((text, index) => (
-                      <ListItem key={index}>
-                        <ListItemText
-                          primary={text}
-                          sx={{
-                            color:
-                              theme.palette.mode === "dark"
-                                ? "text.primary"
-                                : "error.dark",
-                          }}
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
-                  <Typography
-                    variant="subtitle1"
-                    sx={{
-                      mt: 3,
-                      mb: 2,
-                      fontWeight: "bold",
-                      color:
-                        theme.palette.mode === "dark"
-                          ? "error.light"
-                          : "error.dark",
-                    }}
-                  >
-                    PUNISHMENTS
-                  </Typography>
-                  <List dense>
-                    {[
-                      "Trust score drops",
-                      "Funds locked",
-                      "Transaction cap",
-                    ].map((text, index) => (
-                      <ListItem key={index}>
-                        <ListItemText
-                          primary={text}
-                          sx={{
-                            color:
-                              theme.palette.mode === "dark"
-                                ? "text.primary"
-                                : "error.dark",
-                          }}
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Card
-                sx={{
-                  borderRadius: 3,
-                  border: 2,
-                  borderColor: "success.main",
-                  backgroundColor:
-                    theme.palette.mode === "dark"
-                      ? "success.dark"
-                      : "success.light",
-                }}
-              >
-                <CardContent sx={{ p: 4 }}>
-                  <Typography
-                    variant="h6"
-                    gutterBottom
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      color:
-                        theme.palette.mode === "dark"
-                          ? "success.light"
-                          : "success.dark",
-                    }}
-                  >
-                    <Star sx={{ mr: 1 }} />
-                    Good Behavior
-                  </Typography>
-                  <List dense>
-                    {[
-                      "Releasing payments",
-                      "Creating contracts",
-                      "Interacting with many users",
-                      "High transaction volume",
-                    ].map((text, index) => (
-                      <ListItem key={index}>
-                        <ListItemText
-                          primary={text}
-                          sx={{
-                            color:
-                              theme.palette.mode === "dark"
-                                ? "text.primary"
-                                : "success.dark",
-                          }}
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
-                  <Typography
-                    variant="subtitle1"
-                    sx={{
-                      mt: 3,
-                      mb: 2,
-                      fontWeight: "bold",
-                      color:
-                        theme.palette.mode === "dark"
-                          ? "success.light"
-                          : "success.dark",
-                    }}
-                  >
-                    REWARDS
-                  </Typography>
-                  <List dense>
-                    {[
-                      "Higher trust score",
-                      "Transaction freedom",
-                      "Refund old escrow",
-                    ].map((text, index) => (
-                      <ListItem key={index}>
-                        <ListItemText
-                          primary={text}
-                          sx={{
-                            color:
-                              theme.palette.mode === "dark"
-                                ? "text.primary"
-                                : "success.dark",
-                          }}
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
-                </CardContent>
-              </Card>
-            </Grid>
+            {karmaCards.map((card, index) => (
+              <Grid item xs={12} md={6} key={index}>
+                <Card
+                  sx={{
+                    borderRadius: 3,
+                    border: 2,
+                    borderColor: `${card.type}.main`,
+                    backgroundColor:
+                      theme.palette.mode === "dark"
+                        ? `${card.type}.dark`
+                        : `${card.type}.light`,
+                  }}
+                >
+                  <CardContent sx={{ p: 4 }}>
+                    <Typography
+                      variant="h6"
+                      gutterBottom
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        color:
+                          theme.palette.mode === "dark"
+                            ? `${card.type}.light`
+                            : `${card.type}.dark`,
+                      }}
+                    >
+                      <card.icon sx={{ mr: 1 }} />
+                      {card.title}
+                    </Typography>
+                    <List dense>
+                      {card.behaviors.map((text, i) => (
+                        <ListItem key={i}>
+                          <ListItemText
+                            primary={text}
+                            sx={{
+                              color:
+                                theme.palette.mode === "dark"
+                                  ? "text.primary"
+                                  : `${card.type}.dark`,
+                            }}
+                          />
+                        </ListItem>
+                      ))}
+                    </List>
+                    <Typography
+                      variant="subtitle1"
+                      sx={{
+                        mt: 3,
+                        mb: 2,
+                        fontWeight: "bold",
+                        color:
+                          theme.palette.mode === "dark"
+                            ? `${card.type}.light`
+                            : `${card.type}.dark`,
+                      }}
+                    >
+                      {card.consequences.title}
+                    </Typography>
+                    <List dense>
+                      {card.consequences.items.map((text, i) => (
+                        <ListItem key={i}>
+                          <ListItemText
+                            primary={text}
+                            sx={{
+                              color:
+                                theme.palette.mode === "dark"
+                                  ? "text.primary"
+                                  : `${card.type}.dark`,
+                            }}
+                          />
+                        </ListItem>
+                      ))}
+                    </List>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
           </Grid>
         </Box>
-
-        <FeatureSection
-          title="Automated Tasks Manager"
-          icon={
-            <img
-              src={AllInOne}
-              style={{
-                transform: "scaleX(-1)",
-                width: isMobile ? "150px" : "500px",
-                objectFit: "contain",
-              }}
-            />
-          }
-        >
-          <Typography
-            variant="h6"
-            paragraph
-            color="text.secondary"
-            sx={{ mb: 3 }}
-          >
-            The crypto agreement is a table that acts like contract and tasks
-            manager all at once.
-          </Typography>
-          <List sx={{ "& .MuiListItem-root": { pl: 0 } }}>
-            {[
-              "No payment or ebank platform needed",
-              "No contract/freelance platform needed",
-              "No task manager platform needed",
-              "No documents platform needed",
-              "Just one single unified automated platform",
-            ].map((text, index) => (
-              <ListItem key={index}>
-                <CheckCircle sx={{ color: "success.main", mr: 2 }} />
-                <ListItemText primary={text} />
-              </ListItem>
-            ))}
-          </List>
-          <Typography
-            variant="body2"
-            sx={{ mt: 3, fontStyle: "italic", color: "text.secondary" }}
-          >
-            oDoc - No headache, save your time and save your funds.
-          </Typography>
-        </FeatureSection>
-
-        <FeatureSection
-          title="Talk to your calendar"
-          icon={
-            <img
-              src={CalendarIcon}
-              style={{
-                transform: "scaleX(-1)",
-                width: isMobile ? "150px" : "500px",
-                objectFit: "contain",
-              }}
-            />
-          }
-        >
-          <Typography
-            variant="h6"
-            paragraph
-            color="text.secondary"
-            sx={{ mb: 3 }}
-          >
-            No need to manually set your availabilities, you can just talk to it
-            like talking to a human.
-          </Typography>
-          <List sx={{ "& .MuiListItem-root": { pl: 0 } }}>
-            {[
-              "Connect your google calendar",
-              "Connect multiple calendars",
-              "Any event on Google Calendar shows here, and vice versa",
-              "Add your contacts",
-              'Just say "I will have 15 minutes call with David tomorrow"',
-            ].map((text, index) => (
-              <ListItem key={index}>
-                <CheckCircle sx={{ color: "success.main", mr: 2 }} />
-                <ListItemText primary={text} />
-              </ListItem>
-            ))}
-          </List>
-        </FeatureSection>
-
-        <FeatureSection
-          title="Cyber Security"
-          icon={
-            <RunawayJellyfish
-              logoSvgScale={isMobile ? 1 : 1.5}
-              LogoSvg={SECRUTYSVG}
-              jellyfishOffsetX={-100}
-              jellyfishOffsetY={5}
-              scale={isMobile ? 0.7 : 1.3}
-            />
-          }
-        >
-          <List sx={{ "& .MuiListItem-root": { pl: 0 } }}>
-            {[
-              "Decentralized",
-              "Tamper-proof Records",
-              "Fraud Prevention system with our Karma algorithm",
-              "No sudden changes on privacy, you can vote to accept or reject changes",
-            ].map((text, index) => (
-              <ListItem key={index}>
-                <Shield sx={{ color: "primary.main", mr: 2 }} />
-                <ListItemText
-                  primary={
-                    <Typography
-                      variant="body1"
-                      fontWeight={
-                        text.includes("Tamper-proof") || text.includes("Fraud")
-                          ? "bold"
-                          : "normal"
-                      }
-                    >
-                      {text}
-                    </Typography>
-                  }
-                />
-              </ListItem>
-            ))}
-          </List>
-        </FeatureSection>
 
         <Box
           sx={{
@@ -761,21 +705,27 @@ export default function OdocLandingPage() {
             />
           </Box>
           <List sx={{ maxWidth: 800, mx: "auto" }}>
-            <ListItem>
-              <Analytics sx={{ color: "primary.main", mr: 2 }} />
-              <ListItemText primary="All your chats and docs watched by decentralized AI" />
-            </ListItem>
-            <ListItem>
-              <TrendingUp sx={{ color: "primary.main", mr: 2 }} />
-              <ListItemText primary="It gives you action suggestions" />
-            </ListItem>
-            <ListItem>
-              <Speed sx={{ color: "primary.main", mr: 2 }} />
-              <ListItemText
-                primary="Smart Suggestions"
-                secondary="For example: when you talk with your friend about booking meeting within the chat it will suggest a time to meet that it knows suits both of you. Or when you make many cancellations it will suggest specific people who have better payment success rate, to help you out."
-              />
-            </ListItem>
+            {[
+              {
+                icon: Analytics,
+                primary: "All your chats and docs watched by decentralized AI",
+              },
+              { icon: TrendingUp, primary: "It gives you action suggestions" },
+              {
+                icon: Speed,
+                primary: "Smart Suggestions",
+                secondary:
+                  "For example: when you talk with your friend about booking meeting within the chat it will suggest a time to meet that it knows suits both of you. Or when you make many cancellations it will suggest specific people who have better payment success rate, to help you out.",
+              },
+            ].map((item, index) => (
+              <ListItem key={index}>
+                <item.icon sx={{ color: "primary.main", mr: 2 }} />
+                <ListItemText
+                  primary={item.primary}
+                  secondary={item.secondary}
+                />
+              </ListItem>
+            ))}
           </List>
         </Box>
 
@@ -783,7 +733,6 @@ export default function OdocLandingPage() {
           <PlatformProgress />
         </Box>
       </Container>
-
       <PageFooter />
     </Box>
   );

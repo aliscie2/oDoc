@@ -104,3 +104,8 @@ test-e2e:
 	sleep 5
 	yarn playwright test
 	lsof -ti:5173 | xargs kill -9 || true
+
+
+dummy_deposit:
+	# replace lqv7v-5z3de-ldfue-z4rrf-u6opp-npwa5-e2us3-fkbx7-yjtwu-gh7x3-yae with the wanted user
+	dfx canister --identity minter call ckusdc_ledger icrc1_transfer '(record {to = record { owner = principal "lqv7v-5z3de-ldfue-z4rrf-u6opp-npwa5-e2us3-fkbx7-yjtwu-gh7x3-yae"; }; amount = 100_000_000; })'
