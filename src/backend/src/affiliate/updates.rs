@@ -1,5 +1,4 @@
 use candid::Principal;
-use ic_cdk::caller;
 use ic_cdk_macros::*;
 
 use crate::affiliate::{Affiliate, ReferredUser};

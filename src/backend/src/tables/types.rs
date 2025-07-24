@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use std::sync::atomic::AtomicU64;
 
 use candid::{CandidType, Deserialize, Principal};
 

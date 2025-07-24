@@ -1,6 +1,5 @@
 use std::borrow::Cow;
 use std::collections::HashMap;
-use std::sync::atomic::AtomicU64;
 
 use candid::{CandidType, Decode, Deserialize, Encode};
 use ic_cdk::{caller, print};

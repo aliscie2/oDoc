@@ -263,9 +263,9 @@ pub static COUNTER: AtomicU64 = AtomicU64::new(0);
 
 #[cfg(test)]
 mod tests {
-    use crate::friends::Friend;
-    use crate::user::User;
-    use ic_cdk::caller;
+    
+    
+    
 
     #[test]
     fn test_one() {

@@ -1,8 +1,7 @@
 use candid::{Decode, Encode};
-use ic_stable_structures::memory_manager::{MemoryId, MemoryManager, VirtualMemory};
+use ic_stable_structures::memory_manager::VirtualMemory;
 use ic_stable_structures::{storable::Bound, Storable};
-use ic_stable_structures::{DefaultMemoryImpl, StableBTreeMap};
-use std::cell::RefCell;
+use ic_stable_structures::DefaultMemoryImpl;
 use std::collections::HashMap;
 
 type Memory = VirtualMemory<DefaultMemoryImpl>;
