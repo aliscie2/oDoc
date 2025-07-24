@@ -4,14 +4,19 @@ import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 
-const AICreditsComponent = ({ credits }) => {
-  const { wallet } = useSelector((state: any) => state.filesState);
+const AICreditsComponent = () => {
+  const { wallet } = useSelector((state) => state.filesState);
+  const { aiAgent, credits: aiCredits } = useSelector((state) => state.AIState);
   const [showBuyPanel, setShowBuyPanel] = useState(false);
   const [buyAmount, setBuyAmount] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [credits, setCredits] = useState(aiAgent.remainingCredits());
   const dispatch = useDispatch();
   const { backendActor } = useBackendContext();
-  const { aiAgent } = useSelector((state) => state.AIState);
+
+  useEffect(() => {
+    setCredits(aiAgent.remainingCredits());
+  }, [aiAgent, aiCredits]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -19,20 +24,22 @@ const AICreditsComponent = ({ credits }) => {
         setShowBuyPanel(false);
       }
     };
-
     if (showBuyPanel) {
       document.addEventListener("click", handleClickOutside);
       return () => document.removeEventListener("click", handleClickOutside);
     }
   }, [showBuyPanel]);
 
-  const getColor = (value) => {
-    if (value < 1) return "#ff1744";
-    if (value < 2.5) return "#ff5722";
-    if (value < 3) return "#ff9800";
-    if (value < 4) return "#ffb74d";
-    return "#4caf50";
-  };
+  const getColor = (value) =>
+    value < 1
+      ? "#ff1744"
+      : value < 2.5
+        ? "#ff5722"
+        : value < 3
+          ? "#ff9800"
+          : value < 4
+            ? "#ffb74d"
+            : "#4caf50";
 
   const handleBuyCredits = async () => {
     setIsLoading(true);
@@ -40,7 +47,10 @@ const AICreditsComponent = ({ credits }) => {
       const res = await backendActor.buy_ai_credits(buyAmount);
       if (res.Ok) {
         await aiAgent.addCredits(buyAmount, true);
+        setCredits(aiAgent.remainingCredits());
         dispatch({ type: "ADD_AI_CREDITS", credits: buyAmount, isFree: false });
+      } else {
+        alert(res.Err);
       }
       setShowBuyPanel(false);
     } catch (error) {
@@ -177,12 +187,12 @@ const AICreditsComponent = ({ credits }) => {
             min="1"
             max="5"
             value={buyAmount}
+            disabled={isLoading}
             onChange={(e) =>
               setBuyAmount(
                 Math.min(Math.max(parseInt(e.target.value) || 1, 1), 5),
               )
             }
-            disabled={isLoading}
             style={{
               width: "100%",
               padding: "8px",

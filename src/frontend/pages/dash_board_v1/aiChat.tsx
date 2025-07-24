@@ -208,7 +208,7 @@ const AIChatComponent = ({
         mb={1}
       >
         <Box display="flex" alignItems="center" gap={1}>
-          <AICreditsComponent credits={aiAgent.remainingCredits()} />
+          <AICreditsComponent />
           <Typography variant="h6" sx={{ fontSize: "1rem" }}>
             AI Assistant
           </Typography>

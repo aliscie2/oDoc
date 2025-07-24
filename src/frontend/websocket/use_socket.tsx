@@ -10,7 +10,9 @@ import { RootState } from "@/redux/reducers";
 function useSocket() {
   const { profile } = useSelector((state: RootState) => state.filesState);
   const dispatch = useDispatch();
-  const [ws, setWs] = useState<IcWebSocket<_SERVICE, AppMessage> | undefined>(undefined);
+  const [ws, setWs] = useState<IcWebSocket<_SERVICE, AppMessage> | undefined>(
+    undefined,
+  );
 
   // Make sure the URL format is correct with proper protocol and no trailing slashes
   const gatewayUrl =
