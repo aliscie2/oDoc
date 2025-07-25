@@ -9,17 +9,18 @@ import UserAvatarMenu from "@/components/MainComponents/UserAvatarMenu";
 
 interface ConnectButtonProps {
   jobId: string;
+  matchingJob: Job;
 }
 
-const ConnectButton: React.FC<ConnectButtonProps> = ({ jobId }) => {
+const ConnectButton: React.FC<ConnectButtonProps> = ({
+  jobId,
+  matchingJob,
+}) => {
   const { calendar } = useSelector((state: any) => state.calendarState);
   const { backendActor } = useBackendContext();
 
-  const { currentJobId, jobs, matchingJobs, matches } = useSelector(
-    (state: any) => state.jobState,
-  );
+  const { currentJobId, jobs } = useSelector((state: any) => state.jobState);
   const currentJob: Job = jobs?.find((job: any) => job.id === currentJobId);
-  const matchJob: Job = matchingJobs?.find((job: any) => job.id === jobId);
   const match: Match = currentJob.matches?.find(
     (match: any) => match.job_id === jobId,
   );
@@ -50,11 +51,11 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({ jobId }) => {
     }
 
     const res: [Calendar] = await backendActor.get_calendar_by_author(
-      matchJob?.user_id,
+      matchingJob.user_id,
     );
     const calendar = res[0];
     const emails = calendar?.googleIds || [];
-    emails.push(...matchJob.emails);
+    emails.push(...matchingJob.emails);
     if (emails.length == 0) {
       alert("User did not set thier email yet, try to contact them via oDoc.");
     }
@@ -91,12 +92,12 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({ jobId }) => {
   };
 
   const [currUser, setUser] = useState<null | User>(null);
-  const user_id = matchJob?.user_id;
-  console.log("connect");
+  const user_id = matchingJob?.user_id;
+
   useEffect(() => {
     (async () => {
       const response = await backendActor.get_user(user_id);
-      console.log({ response, matchJob });
+      console.log({ response, matchingJob });
       if (response.Ok) {
         setUser(response.Ok);
       }

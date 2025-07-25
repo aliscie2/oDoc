@@ -3,7 +3,7 @@ import { AIReducer } from "./AIReducer";
 import { calendarReducer } from "./calendarReducer";
 import { chatsReducer } from "./chatsReducer";
 import { filesReducer } from "./filesReducer";
-import { jobReducer } from "./jobReducer";
+import { jobReducer, JobState } from "./jobReducer";
 import { notificationReducer } from "./notificationReducer";
 import { uiReducer } from "./uiReducer";
 
@@ -30,5 +30,14 @@ function setupStore(preloadedState?: Partial<RootState>) {
 }
 const store = setupStore();
 export default store;
+
+
+// export interface RootState {
+
+//   jobState:JobState;
+
+// }
+
+
 export type RootState = ReturnType<typeof rootReducer>;
 // export default rootReducer;
