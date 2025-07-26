@@ -36,8 +36,6 @@ import {
 import { useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
 import { useBackendContext } from "@/contexts/BackendContext";
-import { Principal } from "@dfinity/principal";
-import { depositWithOisy } from "./useOisy";
 
 // Types
 interface Exchange {

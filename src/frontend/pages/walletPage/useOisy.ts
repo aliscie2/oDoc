@@ -1,4 +1,3 @@
-import { useState, useCallback } from "react";
 import { Principal } from "@dfinity/principal";
 // import {IcpWallet} from '@dfinity/oisy-wallet-signer/icp-wallet';
 import { IcrcWallet } from "@dfinity/oisy-wallet-signer/icrc-wallet";

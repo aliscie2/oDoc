@@ -20,9 +20,7 @@ const JobPage = () => {
   const { jobs } = useSelector<RootState>((state) => state.jobState);
   const { aiAgent } = useSelector<RootState>((state) => state.AIState);
   const { profile } = useSelector<RootState>((state) => state.filesState);
-  const { isRegistered } = useSelector<RootState>(
-    (state) => state.uiState,
-  );
+  const { isRegistered } = useSelector<RootState>((state) => state.uiState);
 
   const [jobData, setJobData] = useState({
     job: null,

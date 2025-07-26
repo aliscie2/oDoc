@@ -1,19 +1,19 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import Pages from "./pages";
 import { BrowserRouter } from "react-router-dom";
+import Pages from "./pages";
 
+import { Principal } from "@dfinity/principal";
+import { Box, CircularProgress, styled, useTheme } from "@mui/material";
 import { useSnackbar } from "notistack";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import { canisterId } from "../declarations/backend";
 import NavBar from "./components/MainComponents/NavBar";
 import TopNavBar from "./components/MainComponents/topNavBar";
-import useSocket from "./websocket/use_socket";
 import { useBackendContext } from "./contexts/BackendContext";
-import { Box, CircularProgress, styled, useTheme } from "@mui/material";
-import { Principal } from "@dfinity/principal";
-import { HTML5Backend } from "react-dnd-html5-backend";
-import { DndProvider } from "react-dnd";
-import { canisterId } from "../declarations/backend";
 import getckUsdcBalance from "./utils/getBalance";
+import useSocket from "./websocket/use_socket";
 
 import { RootState } from "./redux/reducers";
 
@@ -23,103 +23,10 @@ import {
   EventTimezone,
 } from "./pages/dash_board_v1/calindarView/serializers";
 
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  FormControlLabel,
-  Checkbox,
-  Typography,
-} from "@mui/material";
 import { Job } from "$/declarations/backend/backend.did";
 import GoogleCalendarOnboarding from "@/components/userBadges/coonectGoogleCalendar";
 import ChatContainer from "./pages/dash_board_v1/aiChat";
-
-interface BeforeInstallPromptEvent extends Event {
-  prompt(): Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
-}
-
-const PWAInstallPrompt = () => {
-  const [showPrompt, setShowPrompt] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] =
-    useState<BeforeInstallPromptEvent | null>(null);
-  const [dontShowAgain, setDontShowAgain] = useState(false);
-
-  const isMobile = () =>
-    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent,
-    );
-
-  useEffect(() => {
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
-
-      const hasDeclined = localStorage.getItem("pwa-install-declined");
-      // if (isMobile() && !hasDeclined) {
-      setShowPrompt(true);
-      // }
-    };
-
-    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-    return () =>
-      window.removeEventListener(
-        "beforeinstallprompt",
-        handleBeforeInstallPrompt,
-      );
-  }, []);
-
-  const handleInstall = async () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      setDeferredPrompt(null);
-      setShowPrompt(false);
-    }
-  };
-
-  const handleCancel = () => {
-    if (dontShowAgain) {
-      localStorage.setItem("pwa-install-declined", "true");
-    }
-    setShowPrompt(false);
-  };
-
-  if (!showPrompt) return null;
-
-  return (
-    <Dialog open={showPrompt} onClose={() => {}}>
-      <DialogTitle>Install App</DialogTitle>
-      <DialogContent>
-        <Typography variant="body1" gutterBottom>
-          Install this app on your phone for a better experience!
-        </Typography>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={dontShowAgain}
-              onChange={(e) => setDontShowAgain(e.target.checked)}
-            />
-          }
-          label="Do not show again"
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={handleCancel}>Cancel</Button>
-        <Button onClick={handleInstall} variant="contained">
-          OK
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-};
-
-// import LoaderComponent from "./components/creature";
-
-// Create a styled component for the main content
+import RunawayJellyfish from "./components/creature/runAeayJellyFish";
 const MainContent = styled(Box)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
@@ -150,6 +57,16 @@ const LoadingContainer = styled(Box)(({ theme }) => ({
 }));
 
 const App: React.FC = () => {
+  // In App.tsx
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("/service-worker.js") // Change from /sw.js to /service-worker.js
+        .then((registration) => console.log("SW registered"))
+        .catch((error) => console.log("SW registration failed"));
+    }
+  }, []);
+
   useEffect(() => {
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
@@ -449,20 +366,12 @@ const App: React.FC = () => {
   ]);
 
   if (!backendActor) {
-    return (
-      <LoadingContainer>
-        <CircularProgress
-          size={100}
-          sx={{ color: theme.palette.primary.main }}
-        />
-      </LoadingContainer>
-    );
+    return <RunawayJellyfish thinking={true} scale={2} />;
   }
 
   return (
     <BrowserRouter>
       <MainContent>
-        {/* <PWAInstallPrompt /> */}
         {/* <SearchPopper /> */}
         <GoogleCalendarOnboarding />
         <TopNavBar />

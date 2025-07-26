@@ -1,3 +1,18 @@
+@media all and (display-mode: standalone) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    -webkit-app-region: drag;
+  }
+
+  button,
+  input,
+  select,
+  textarea,
+  a {
+    -webkit-app-region: no-drag;
+  }
+}
+
 :root {
   --cream-color: #ffefce;
   --color: black;
