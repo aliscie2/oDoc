@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-
 use candid::{CandidType, Deserialize, Principal};
 
 use crate::contracts::Contract;

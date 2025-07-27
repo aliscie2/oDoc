@@ -1,7 +1,7 @@
 use candid::{Decode, Encode};
 use ic_stable_structures::memory_manager::VirtualMemory;
-use ic_stable_structures::{storable::Bound, Storable};
 use ic_stable_structures::DefaultMemoryImpl;
+use ic_stable_structures::{storable::Bound, Storable};
 use std::collections::HashMap;
 
 type Memory = VirtualMemory<DefaultMemoryImpl>;

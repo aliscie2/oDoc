@@ -6,7 +6,6 @@ use crate::storage_schema::FileId;
 
 #[update]
 fn create_new_file(name: String, parent: Option<FileId>) -> FileNode {
-    
     FileNode::new(name.clone(), parent)
 }
 

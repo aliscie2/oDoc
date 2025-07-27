@@ -201,7 +201,6 @@ export const BackendProvider: React.FC<BackendProviderProps> = ({
       setAuthClient(client);
       const { actor, agent, principal, identity } = await handleAgent(client);
       const ckUSDCActor = await getLedgerActor(agent);
-      console.log("ckUSDCActor:");
       setState((prevState) => ({
         ...prevState,
         ckUSDCActor,

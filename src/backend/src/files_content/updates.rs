@@ -77,8 +77,7 @@ fn multi_updates(
     files_indexing: Vec<FileIndexing>,
 ) -> Result<String, String> {
     if !contracts_updates.is_empty() {
-        let res: Result<(), crate::Error> = UserState::set_is_transfering();
-        if res.is_err() {
+        if UserState::is_transfering() {
             return Err(
                 "Please wait few second, there is already a transaction going.".to_string(),
             );
@@ -204,7 +203,6 @@ fn multi_updates(
     }
 
     messages.push_str("Updates applied successfully.");
-    UserState::unset_is_transfering();
 
     Ok(messages)
 }

@@ -262,9 +262,6 @@ pub static COUNTER: AtomicU64 = AtomicU64::new(0);
 
 #[cfg(test)]
 mod tests {
-    
-    
-    
 
     #[test]
     fn test_one() {

@@ -1,15 +1,15 @@
 import { Principal } from "@dfinity/principal";
 // import {IcpWallet} from '@dfinity/oisy-wallet-signer/icp-wallet';
 import { IcrcWallet } from "@dfinity/oisy-wallet-signer/icrc-wallet";
+import { canisterId as ckusdcId } from "$/declarations/ckusdc_ledger";
 
 export async function depositWithOisy(amount: number, user: Principal) {
-  const url =
-    import.meta.env.VITE_DFX_NETWORK === "ic"
-      ? "https://oisy.com/sign"
-      : "https://staging.oisy.com/sign";
+  const IS_LOCAL = import.meta.env.VITE_DFX_NETWORK === "local"
+  const url = IS_LOCAL
+      ? "http://localhost:5174/sign"
+      : "https://oisy.com/sign";
 
-  const host =
-    import.meta.env.VITE_DFX_NETWORK === "local"
+  const host = IS_LOCAL
       ? import.meta.env.VITE_IC_HOST // http://localhost:4943
       : "https://ic0.app";
 
@@ -24,7 +24,7 @@ export async function depositWithOisy(amount: number, user: Principal) {
     url,
     host,
     onDisconnect: () => {
-      console.log("disocneted");
+      alert("oisy disocneted")
     },
   });
 
@@ -56,7 +56,7 @@ export async function depositWithOisy(amount: number, user: Principal) {
   // console.log({res})
 
   const result = await walletInstance.transferFrom({
-    ledgerCanisterId: import.meta.env.VITE_CANISTER_ID_CKUSDC_LEDGER,
+    ledgerCanisterId: ckusdcId,
     owner: userAccount.owner,
     params: {
       from: {

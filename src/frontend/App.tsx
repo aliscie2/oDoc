@@ -48,14 +48,6 @@ const PageContainer = styled(Box)(({ theme }) => ({
   },
 }));
 
-const LoadingContainer = styled(Box)(({ theme }) => ({
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  height: "100vh",
-  backgroundColor: theme.palette.background.default,
-}));
-
 const App: React.FC = () => {
   // In App.tsx
   useEffect(() => {
@@ -82,29 +74,38 @@ const App: React.FC = () => {
   const { isFetching } = useSelector((state: RootState) => state.uiState);
   const dispatch = useDispatch();
   const { profile, files } = useSelector((state: any) => state.filesState);
-  const { backendActor, ckUSDCActor } = useBackendContext();
+  const { logout, backendActor, ckUSDCActor } = useBackendContext();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const theme = useTheme();
 
-  useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        const res: { jobs: Job[]; matching_jobs: Job[] } =
-          await backendActor.get_my_jobs();
-        dispatch({
-          type: "INIT_JOBS",
-          jobs: res.jobs,
-          matchingJobs: res.matching_jobs,
-        });
-      } catch (error) {
-        console.error("Error fetching jobs:", error);
+  const checkAuthAndLogout = useCallback(
+    (error) => {
+      const errorString = error?.toString() || "";
+      if (
+        errorString.includes("Invalid signature") &&
+        errorString.includes("EcdsaP256 signature could not be verified")
+      ) {
+        // Clear all auth-related storage
+        localStorage.clear();
+        sessionStorage.clear();
+        indexedDB.deleteDatabase("authClientDB"); // Clear IC auth client storage
+        logout();
+        return true; // Auth failed
       }
-    };
+      return false;
+    },
+    [backendActor, logout],
+  );
 
-    if (isLoggedIn && backendActor && !isFetching) {
-      fetchJobs();
-    }
-  }, [backendActor]);
+  const fetchJobs = async () => {
+    const res: { jobs: Job[]; matching_jobs: Job[] } =
+      await backendActor.get_my_jobs();
+    dispatch({
+      type: "INIT_JOBS",
+      jobs: res.jobs,
+      matchingJobs: res.matching_jobs,
+    });
+  };
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -128,7 +129,9 @@ const App: React.FC = () => {
           });
         }
       } catch (error) {
-        console.log("Issue fetching initial data from backend: ", error);
+        const isLogedOut = checkAuthAndLogout(error);
+        !isLogedOut &&
+          console.log("Issue fetching initial data from backend: ", error);
       }
       dispatch({
         type: "IS_FETCHING",
@@ -137,6 +140,7 @@ const App: React.FC = () => {
     };
 
     if (isLoggedIn && backendActor && !isFetching) {
+      fetchJobs();
       fetchInitialData();
     }
   }, [backendActor]); // Do not use isLoggedIn here, because it is alreay change backendActor when isLoggedIn chancged.

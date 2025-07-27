@@ -19,8 +19,7 @@ pub struct UserToken {
     pub enabled: Option<bool>,
 }
 
-#[derive(Eq, PartialOrd, PartialEq, Clone, Debug, CandidType, Deserialize)]
-#[derive(Default)]
+#[derive(Eq, PartialOrd, PartialEq, Clone, Debug, CandidType, Deserialize, Default)]
 pub enum ExchangeType {
     #[default]
     Deposit,
@@ -28,7 +27,6 @@ pub enum ExchangeType {
     LocalReceive,
     LocalSend,
 }
-
 
 #[derive(PartialOrd, PartialEq, Clone, Debug, Default, CandidType, Deserialize)]
 pub struct Exchange {

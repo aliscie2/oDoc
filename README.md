@@ -142,20 +142,17 @@ While providing centralized convenience, built on blockchain for:
 dfx start  --background --host 127.0.0.1:4943 
 make deploy-all
 yarn start
-
-# Deploy specific components
-dfx deploy backend
-dfx deploy frontend
-dfx deploy internet_identity
-
-# Upgrade backend only
-make upgrade-backend
-
-# Check TypeScript issues
-npx tsc --noUnusedLocals --noUnusedParameters --noEmit
-
-# Stop development environment
-dfx stop
+```
+# Run oisy wallet
+- only if you want to test it, u should not need this step otherways
+```bash
+## for testing oisy wallet
+# - make sure u run dfx start  --background --host 127.0.0.1:4943  if not laready run than
+git clone https://github.com/dfinity/oisy-wallet-signer
+cd oisy-wallet-signer/demo
+npm ci
+npm run dev:wallet
+# - make sure it run on ` http://localhost:5174/`
 ```
 
 ## 🧪 Testing
@@ -174,7 +171,11 @@ yarn playwright test --project=chromium
 yarn playwright codegen http://localhost:5173/
 ```
 
+## Pocket ic testig
+... the new version not working.
+
 ## 🐛 Troubleshooting
+Look at the make file it may help,
 
 ### WASM Target Issues
 ```bash
@@ -206,7 +207,7 @@ dfx deploy backend
 
 # 3. Deploy and configure Internet Identity
 dfx deploy internet_identity
-PATH_FOUND=$(find . -name "internet_identity.wasm.gz" -type f)
+WASM_II_FOUND=$(find . -name "internet_identity.wasm.gz" -type f)
 
 # 4. Deploy ledger (if available)
 sh scripts/deploy_ledger.sh

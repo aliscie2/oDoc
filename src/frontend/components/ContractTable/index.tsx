@@ -178,17 +178,12 @@ const useLocalStorage = (key, defaultValue) => {
 };
 
 const useContractData = (contractId) => {
-  const { contracts, profile, all_friends } = useSelector(
-    (state) => state.filesState,
-  );
-  return useMemo(
-    () => ({
-      currentContract: contracts[contractId],
-      profile,
-      users: all_friends,
-    }),
-    [contracts, contractId, profile, all_friends],
-  );
+  const { contracts, profile, all_friends } = useSelector(state => state.filesState);
+  return useMemo(() => ({
+    currentContract: contracts[contractId] || { contracts: [], promises: [], payments: [] },
+    profile,
+    users: all_friends,
+  }), [contracts, contractId, profile, all_friends]);
 };
 
 // Column Definitions Hook
@@ -514,8 +509,8 @@ const CustomContractViewer = ({ contractId }) => {
   const dispatch = useDispatch();
   const { backendActor } = useBackendContext();
   const { enqueueSnackbar } = useSnackbar();
-  const { currentContract, contracts, profile, all_friends, users } =
-    useContractData(contractId);
+  const { currentContract, profile, users } = useContractData(contractId);
+  console.log({currentContract})
 
   const [selectedDataType, setSelectedDataType] = useLocalStorage(
     STORAGE_KEYS.DATA_TYPE(contractId),
@@ -524,7 +519,7 @@ const CustomContractViewer = ({ contractId }) => {
 
   const [selectedContract, setSelectedContract] = useState(() => {
     const id = localStorage.getItem(STORAGE_KEYS.CONTRACT(contractId));
-    const contract = currentContract?.contracts.find((c) => c.id === id);
+    const contract = currentContract?.contracts?.find((c) => c.id === id);
     return contract || null;
   });
 
@@ -698,37 +693,37 @@ const CustomContractViewer = ({ contractId }) => {
               }}
             >
               <MenuItem value={DATA_TYPES.PROMISE}>Promises</MenuItem>
-              {currentContract.payments.length > 0 && (
+              {currentContract?.payments?.length > 0 && (
                 <MenuItem value={DATA_TYPES.PAYMENT}>Payments</MenuItem>
               )}
 
-              {currentContract.contracts.map((contract) => (
-                <MenuItem
-                  key={contract.id}
-                  value={contract.id}
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <Box sx={{ flexGrow: 1 }}>{contract.name}</Box>
-                  <Box sx={{ display: "flex" }}>
-                    <IconButton
-                      size="small"
-                      onClick={(e) => handleEditTable(contract, e)}
-                    >
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      onClick={(e) => handleDeleteTable(contract, e)}
-                    >
-                      <DeleteIcon fontSize="small" />
-                    </IconButton>
-                  </Box>
-                </MenuItem>
-              ))}
+              {(currentContract.contracts || []).map((contract) => (
+  <MenuItem
+    key={contract.id}
+    value={contract.id}
+    sx={{
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+    }}
+  >
+    <Box sx={{ flexGrow: 1 }}>{contract.name}</Box>
+    <Box sx={{ display: "flex" }}>
+      <IconButton
+        size="small"
+        onClick={(e) => handleEditTable(contract, e)}
+      >
+        <EditIcon fontSize="small" />
+      </IconButton>
+      <IconButton
+        size="small"
+        onClick={(e) => handleDeleteTable(contract, e)}
+      >
+        <DeleteIcon fontSize="small" />
+      </IconButton>
+    </Box>
+  </MenuItem>
+))}
 
               <MenuItem>
                 <Button

@@ -175,7 +175,9 @@ impl Calendar {
         let start_of_today = Self::start_of_day(current_time);
 
         let mut filtered_calendar = self.clone();
-        filtered_calendar.events.retain(|event| event.start_time >= start_of_today);
+        filtered_calendar
+            .events
+            .retain(|event| event.start_time >= start_of_today);
 
         filtered_calendar
     }

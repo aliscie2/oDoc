@@ -46,10 +46,7 @@ fn save_post(mut post: Post) -> Result<(), String> {
 
         if posts.len() >= 2 {
             let one_day = 86400;
-            let diff = time_diff(
-                ic_cdk::api::time(),
-                posts.last().unwrap().date_created,
-            );
+            let diff = time_diff(ic_cdk::api::time(), posts.last().unwrap().date_created);
 
             if diff < Duration::from_secs(one_day) {
                 let hours = &one_day - diff.as_secs();

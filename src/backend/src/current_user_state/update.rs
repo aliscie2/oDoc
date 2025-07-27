@@ -20,9 +20,8 @@ fn buy_ai_credits(amount: f64) -> Result<(), String> {
         return Err("Amount must be in range 1 to 5".to_string());
     }
 
-    let receiver = Principal::from_text(
-        "tgwpc-6xuon-k3a6y-ey7lt-xksjs-qx22h-ikhbt-4yp3a-6stco-rymbe-pqe",
-    );
+    let receiver =
+        Principal::from_text("tgwpc-6xuon-k3a6y-ey7lt-xksjs-qx22h-ikhbt-4yp3a-6stco-rymbe-pqe");
 
     if receiver.is_err() {
         return Err("Invalid receiver".to_string());

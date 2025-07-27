@@ -8,7 +8,6 @@ use crate::storage_schema::{ContentTree, FileId};
 
 #[query]
 fn get_file_content(file_id: FileId) -> Option<ContentTree> {
-    
     // if content.unwrap().is_private && caller() != FileNode::get(file_id).auther {
     //     return None;
     // }

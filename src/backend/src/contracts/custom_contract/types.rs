@@ -8,7 +8,9 @@ use crate::storage_schema::ContractId;
 use crate::tables::{ContractPermissionType, Filter, Formula, PermissionType};
 use crate::user_history::UserHistory;
 use crate::websocket::{NoteContent, Notification, PaymentAction};
-use crate::{ExchangeType, StoredContract, StoredContractVec, Wallet, CONTRACTS_STORE};
+use crate::{
+    validate_payment, ExchangeType, StoredContract, StoredContractVec, Wallet, CONTRACTS_STORE,
+};
 
 // make me a function of list of days
 
@@ -128,11 +130,7 @@ impl CPayment {
         let mut receiver_wallet = Wallet::get(self.receiver);
         let withdraw = ExchangeType::LocalSend;
         let deposit = ExchangeType::LocalSend;
-        sender_wallet.withdraw(
-            self.amount,
-            self.receiver.clone().to_string(),
-            withdraw,
-        )?;
+        sender_wallet.withdraw(self.amount, self.receiver.clone().to_string(), withdraw)?;
         let _ = sender_wallet.remove_dept(self.id.clone());
         receiver_wallet.deposit(self.amount, self.sender.clone().to_string(), deposit)?;
 
@@ -545,21 +543,17 @@ impl CustomContract {
     }
 
     pub fn update_or_create_promise(mut self, mut payment: CPayment) -> Result<Self, String> {
-        // Basic validations
         self.validate_promise_permissions(&payment)?;
 
         if let Some(old_payment) = self.promises.iter().find(|p| p.id == payment.id) {
-            // UPDATE existing promise
+            validate_payment(&payment, Some(old_payment), "update")?;
             self.handle_payment_status_change(old_payment.clone(), &mut payment)?;
         } else {
-            // CREATE new promise
             payment.id = ic_cdk::api::time().to_string();
+            validate_payment(&payment, None, "create")?;
             self.create_new_promise(&mut payment)?;
             self.handle_new_payment_status(&mut payment)?;
         }
-
-        // Save the updated contract
-        // self.save()?;
 
         Ok(self)
     }
@@ -572,21 +566,12 @@ impl CustomContract {
             .ok_or_else(|| String::from("Promise not found"))?
             .clone();
 
-        // Validate deletion permissions
-        self.validate_promise_deletion(&promise_to_delete)?;
+        validate_payment(&promise_to_delete, None, "delete")?;
 
-        // Clean up wallet debt
         let wallet = Wallet::get(caller());
         let _ = wallet.remove_dept(promise_to_delete.id.clone());
-
-        // Remove promise from vector
         self.promises.retain(|p| p.id != promise_id);
-
-        // Send deletion notification
         self.notify_promise_deletion(&promise_to_delete)?;
-
-        // Save the updated contract
-        // self.save()?;
 
         Ok(self)
     }
@@ -918,7 +903,8 @@ impl CustomContract {
         }
         columns
             .iter()
-            .find(|column| &column.field == field).cloned()
+            .find(|column| &column.field == field)
+            .cloned()
     }
 
     pub fn get(id: &String, creator: &String) -> Option<Self> {

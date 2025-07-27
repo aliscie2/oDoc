@@ -36,6 +36,8 @@ import {
 import { useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
 import { useBackendContext } from "@/contexts/BackendContext";
+import { depositWithOisy } from "./useOisy";
+import { Principal } from "@dfinity/principal";
 
 // Types
 interface Exchange {
@@ -514,14 +516,14 @@ const WalletPage: React.FC<{ wallet?: Wallet }> = ({
 
   return (
     <Box sx={{ maxWidth: 1200, margin: "0 auto", p: 3 }}>
-      {/* <Button
-        disabled={!profile}
+      <Button
+        disabled={!profile?.id}
         onClick={async () => {
           await depositWithOisy(100, Principal.fromText(profile?.id));
         }}
       >
         Deposit with oisy
-      </Button> */}
+      </Button>
       <WalletBalance wallet={wallet} />
       <ActionButtons onAction={setOpenDialog} />
       <TransactionHistory

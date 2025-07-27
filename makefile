@@ -31,7 +31,6 @@ run_gateway_on_special_port:
 generate_candid_file:
 	bash scripts/did.sh
 	sh scripts/deploy_ic_siwe_provider.sh
-	sh scripts/deploy_canister.sh
 	sh scripts/deploy_ledger.sh
 	dfx generate
 
