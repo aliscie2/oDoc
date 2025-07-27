@@ -287,7 +287,7 @@ impl CustomContract {
         Ok(self)
     }
 
-    pub fn delete(mut self) -> Result<(), String> {
+    pub fn delete_table(mut self, table_id: String) -> Result<Self, String> {
         validate_ccontract(&self, None, None, "delete_contract")?;
         // Check if table exists
         if !self.contracts.iter().any(|c| c.id == table_id) {
