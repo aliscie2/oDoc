@@ -9,7 +9,8 @@ use crate::tables::{ContractPermissionType, Filter, Formula, PermissionType};
 use crate::user_history::UserHistory;
 use crate::websocket::{NoteContent, Notification, PaymentAction};
 use crate::{
-    validate_payment, ExchangeType, StoredContract, StoredContractVec, Wallet, CONTRACTS_STORE,
+    validate_ccontract, validate_payment, ExchangeType, StoredContract, StoredContractVec, Wallet,
+    CONTRACTS_STORE,
 };
 
 // make me a function of list of days
@@ -190,18 +191,8 @@ impl CColumn {
 
 impl CustomContract {
     pub fn update_name(mut self, new_name: String) -> Result<Self, String> {
-        // Only creator can update contract name
-        if self.creator != caller().to_string() {
-            return Err(String::from(
-                "Only contract creator can update contract name",
-            ));
-        }
-
-        // Update the contract name
+        validate_ccontract(&self, None, None, "update_name")?;
         self.name = new_name;
-
-        // Save the updated contract
-        // self.save()?;
         Ok(self)
     }
 
@@ -209,18 +200,8 @@ impl CustomContract {
         mut self,
         new_permissions: Vec<ContractPermissionType>,
     ) -> Result<Self, String> {
-        // Only creator can update contract permissions
-        if self.creator != caller().to_string() {
-            return Err(String::from(
-                "Only contract creator can update contract permissions",
-            ));
-        }
-
-        // Update the contract permissions
+        validate_ccontract(&self, None, None, "update_permissions")?;
         self.permissions = new_permissions;
-
-        // Save the updated contract
-        // self.save()?;
         Ok(self)
     }
 
@@ -228,10 +209,7 @@ impl CustomContract {
         mut self,
         promises_indexes: Vec<(usize, String)>,
     ) -> Result<Self, String> {
-        // Only creator can reorder promises
-        if self.creator != caller().to_string() {
-            return Err(String::from("Only contract creator can reorder promises"));
-        }
+        validate_ccontract(&self, None, None, "reorder_promises")?;
 
         // Create a new vector to hold reordered promises
         let mut reordered_promises = vec![None; self.promises.len()];
@@ -293,22 +271,7 @@ impl CustomContract {
     }
 
     pub fn update_or_create_table(mut self, table_update: TableUpdates) -> Result<Self, String> {
-        let caller_principal = caller();
-
-        // Check permissions - creator always has access, otherwise check contract permissions
-        if self.creator != caller_principal.to_string() {
-            let has_permission = self.permissions.iter().any(|permission| match permission {
-                ContractPermissionType::Edit(principal) => principal == &caller_principal,
-                ContractPermissionType::AnyOneEdite => true,
-                _ => false,
-            });
-
-            if !has_permission {
-                return Err(String::from(
-                    "You don't have permission to update or create tables in this contract",
-                ));
-            }
-        }
+        validate_ccontract(&self, None, None, "create_table")?;
 
         // Find existing contract (table) or create new one
         if let Some(index) = self.contracts.iter().position(|c| c.id == table_update.id) {
@@ -324,12 +287,8 @@ impl CustomContract {
         Ok(self)
     }
 
-    pub fn delete_table(mut self, table_id: String) -> Result<Self, String> {
-        // Only creator can delete tables
-        if self.creator != caller().to_string() {
-            return Err(String::from("Only contract creator can delete tables"));
-        }
-
+    pub fn delete(mut self) -> Result<(), String> {
+        validate_ccontract(&self, None, None, "delete_contract")?;
         // Check if table exists
         if !self.contracts.iter().any(|c| c.id == table_id) {
             return Err(String::from("Table not found"));
