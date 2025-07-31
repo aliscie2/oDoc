@@ -22,6 +22,30 @@ import {
   TrendingUp,
   Speed,
   Shield,
+  AccountBalance,
+  Handshake,
+  Rocket,
+  Description,
+  Email,
+  AccountTree,
+  Category,
+  Code,
+  Psychology,
+  Task,
+  CalendarToday,
+  Event,
+  Group,
+  PersonAdd,
+  Chat,
+  TableChart,
+  Payment,
+  Assignment,
+  FileCopy,
+  Business,
+  NoEncryption,
+  Security,
+  Gavel,
+  HowToVote,
 } from "@mui/icons-material";
 
 import OdocStrecture from "./oDocStrecture";
@@ -38,6 +62,7 @@ import JobIcon from "@/public/jobs.png";
 import AgreementIcon from "@/public/agreement.png";
 import AllInOne from "@/public/all-in-on.png";
 import CalendarIcon from "@/public/calendar.png";
+import TeamSpaces from "@/public/teamspaces.png";
 
 const StatsSection = () => {
   const [stats, setStats] = useState({
@@ -240,10 +265,10 @@ export default function OdocLandingPage() {
   React.useEffect(() => {
     const style = document.createElement("style");
     style.textContent = `
-    @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
-    @keyframes bounce { 0%, 20%, 53%, 80%, 100% { transform: translate3d(0,0,0); } 40%, 43% { transform: translate3d(0,-10px,0); } 70% { transform: translate3d(0,-5px,0); } 90% { transform: translate3d(0,-2px,0); } }
-    @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-  `;
+   @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
+   @keyframes bounce { 0%, 20%, 53%, 80%, 100% { transform: translate3d(0,0,0); } 40%, 43% { transform: translate3d(0,-10px,0); } 70% { transform: translate3d(0,-5px,0); } 90% { transform: translate3d(0,-2px,0); } }
+   @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+ `;
     document.head.appendChild(style);
     return () => document.head.removeChild(style);
   }, []);
@@ -301,7 +326,7 @@ export default function OdocLandingPage() {
       ),
     },
     {
-      title: "Stop hunting for jobs, let AI do it for you",
+      title: "AI Job Matching System",
       icon: (
         <img
           src={JobIcon}
@@ -320,18 +345,43 @@ export default function OdocLandingPage() {
             color="text.secondary"
             sx={{ mb: 3 }}
           >
-            You can talk to the oDoc AI job match - It will provide consultation
-            to improve your resume/requirements post
+            Stop hunting for jobs, let AI do it for you. Talk to the oDoc AI job
+            match for consultation to improve your resume and requirements.
           </Typography>
           <List sx={{ "& .MuiListItem-root": { pl: 0 } }}>
             {[
-              "It will alert you by email when there is a good match for you",
-              "Provide with cover letter so you do not need to read the full job post/resume",
-              "Prevent spams by hiding low matching scores",
-            ].map((text, index) => (
-              <ListItem key={index}>
-                <CheckCircle sx={{ color: "success.main", mr: 2 }} />
-                <ListItemText primary={text} />
+              {
+                title: "Smart Email Alerts",
+                description:
+                  "Get notified when there's a perfect match for your skills",
+                icon: <Email sx={{ color: "primary.main", mr: 2 }} />,
+              },
+              {
+                title: "Auto Cover Letters",
+                description:
+                  "Generate personalized cover letters without reading full job posts",
+                icon: <Description sx={{ color: "info.main", mr: 2 }} />,
+              },
+              {
+                title: "Spam Protection",
+                description: "Filter out low-quality matches automatically",
+                icon: <Shield sx={{ color: "success.main", mr: 2 }} />,
+              },
+            ].map((item, index) => (
+              <ListItem key={index} sx={{ alignItems: "center" }}>
+                {item.icon}
+                <ListItemText
+                  primary={
+                    <Typography
+                      variant="subtitle1"
+                      fontWeight="bold"
+                      color="primary"
+                    >
+                      {item.title}
+                    </Typography>
+                  }
+                  secondary={item.description}
+                />
               </ListItem>
             ))}
           </List>
@@ -339,7 +389,7 @@ export default function OdocLandingPage() {
       ),
     },
     {
-      title: "Crypto Agreement",
+      title: "Crypto Agreement Platform",
       reversed: true,
       icon: (
         <img
@@ -349,28 +399,45 @@ export default function OdocLandingPage() {
       ),
       children: (
         <>
-          <List sx={{ mb: 3 }}>
+          <Typography
+            variant="h6"
+            paragraph
+            color="text.secondary"
+            sx={{ mb: 3 }}
+          >
+            Secure, transparent agreements with built-in escrow and reputation
+            tracking. Eliminate middlemen and streamline your crypto
+            transactions.
+          </Typography>
+          <List sx={{ "& .MuiListItem-root": { pl: 0 } }}>
             {[
               {
-                primary: "Escrow",
-                secondary:
-                  "You can make Escrow by deposit before making any promise, to prove you will pay",
+                title: "Smart Escrow",
+                description:
+                  "Deposit funds before agreements to guarantee payment and build trust",
+                icon: <AccountBalance sx={{ color: "warning.main", mr: 2 }} />,
               },
               {
-                primary: "Promise",
-                secondary: "You can make non escrow promise for simple cases",
+                title: "Quick Promises",
+                description:
+                  "Create lightweight agreements for simple tasks without escrow",
+                icon: <Handshake sx={{ color: "info.main", mr: 2 }} />,
               },
               {
-                primary: "Release",
-                secondary: "You can release when task is done",
+                title: "Instant Release",
+                description:
+                  "Release payments automatically when milestones are completed",
+                icon: <Rocket sx={{ color: "success.main", mr: 2 }} />,
               },
               {
-                primary: "Karma",
-                secondary:
-                  "When you make cancellations your score will go down, shows you have lower success rate",
+                title: "Reputation Karma",
+                description:
+                  "Track success rates and reliability scores across all participants",
+                icon: <TrendingUp sx={{ color: "primary.main", mr: 2 }} />,
               },
             ].map((item, index) => (
-              <ListItem key={index} sx={{ pl: 0 }}>
+              <ListItem key={index} sx={{ alignItems: "center" }}>
+                {item.icon}
                 <ListItemText
                   primary={
                     <Typography
@@ -378,22 +445,14 @@ export default function OdocLandingPage() {
                       fontWeight="bold"
                       color="primary"
                     >
-                      {item.primary}
+                      {item.title}
                     </Typography>
                   }
-                  secondary={item.secondary}
+                  secondary={item.description}
                 />
               </ListItem>
             ))}
           </List>
-          <Typography
-            variant="body2"
-            sx={{ fontStyle: "italic", color: "text.secondary" }}
-          >
-            Eliminate middlemen, spreadsheets, and task managers. Streamline
-            contracts, payments, escrow, and collaboration into one seamless
-            crypto-native platform. Powered by AI & Internet Computer
-          </Typography>
         </>
       ),
     },
@@ -417,34 +476,56 @@ export default function OdocLandingPage() {
             color="text.secondary"
             sx={{ mb: 3 }}
           >
-            The crypto agreement is a table that acts like contract and tasks
-            manager all at once.
+            The crypto agreement acts as contract and task manager all at once.
+            One unified platform to replace multiple services.
           </Typography>
           <List sx={{ "& .MuiListItem-root": { pl: 0 } }}>
             {[
-              "No payment or ebank platform needed",
-              "No contract/freelance platform needed",
-              "No task manager platform needed",
-              "No documents platform needed",
-              "Just one single unified automated platform",
-            ].map((text, index) => (
-              <ListItem key={index}>
-                <CheckCircle sx={{ color: "success.main", mr: 2 }} />
-                <ListItemText primary={text} />
+              {
+                title: "No Payment Platform Needed",
+                icon: <Payment sx={{ color: "success.main", mr: 2 }} />,
+              },
+              {
+                title: "No Contract Platform Needed",
+                icon: <Business sx={{ color: "info.main", mr: 2 }} />,
+              },
+              {
+                title: "No Task Manager Needed",
+                icon: <Assignment sx={{ color: "warning.main", mr: 2 }} />,
+              },
+              {
+                title: "No Documents Platform Needed",
+                icon: <FileCopy sx={{ color: "secondary.main", mr: 2 }} />,
+              },
+              {
+                title: "Single Unified Platform",
+                description: "Everything you need in one automated solution",
+                icon: <TableChart sx={{ color: "primary.main", mr: 2 }} />,
+              },
+            ].map((item, index) => (
+              <ListItem key={index} sx={{ alignItems: "center" }}>
+                {item.icon}
+                <ListItemText
+                  primary={
+                    <Typography
+                      variant="subtitle1"
+                      fontWeight="bold"
+                      color="primary"
+                    >
+                      {item.title}
+                    </Typography>
+                  }
+                  secondary={item.description}
+                />
               </ListItem>
             ))}
           </List>
-          <Typography
-            variant="body2"
-            sx={{ mt: 3, fontStyle: "italic", color: "text.secondary" }}
-          >
-            oDoc - No headache, save your time and save your funds.
-          </Typography>
         </>
       ),
     },
     {
-      title: "Talk to your calendar",
+      title: "Smart Calendar Integration",
+      reversed: true,
       icon: (
         <img
           src={CalendarIcon}
@@ -463,20 +544,77 @@ export default function OdocLandingPage() {
             color="text.secondary"
             sx={{ mb: 3 }}
           >
-            No need to manually set your availabilities, you can just talk to it
-            like talking to a human.
+            No need to manually set your availabilities. Talk to your calendar
+            like talking to a human assistant.
           </Typography>
           <List sx={{ "& .MuiListItem-root": { pl: 0 } }}>
             {[
-              "Connect your google calendar",
-              "Connect multiple calendars",
-              "Any event on Google Calendar shows here, and vice versa",
-              "Add your contacts",
-              'Just say "I will have 15 minutes call with David tomorrow"',
-            ].map((text, index) => (
-              <ListItem key={index}>
-                <CheckCircle sx={{ color: "success.main", mr: 2 }} />
-                <ListItemText primary={text} />
+              {
+                title: "Google Calendar Sync",
+                icon: <CalendarToday sx={{ color: "primary.main", mr: 2 }} />,
+              },
+              {
+                title: "Multiple Calendar Support",
+                icon: (
+                  <Box
+                    sx={{
+                      position: "relative",
+                      width: "60px",
+                      height: "24px",
+                      mr: 2,
+                    }}
+                  >
+                    <Event
+                      sx={{ position: "absolute", left: 0, color: "info.main" }}
+                    />
+                    <Event
+                      sx={{
+                        position: "absolute",
+                        left: "12px",
+                        color: "success.main",
+                      }}
+                    />
+                    <Event
+                      sx={{
+                        position: "absolute",
+                        left: "24px",
+                        color: "warning.main",
+                      }}
+                    />
+                  </Box>
+                ),
+              },
+              {
+                title: "Two-Way Synchronization",
+                description:
+                  "Events sync between Google Calendar and oDoc automatically",
+                icon: <TrendingUp sx={{ color: "success.main", mr: 2 }} />,
+              },
+              {
+                title: "Contact Management",
+                icon: <PersonAdd sx={{ color: "warning.main", mr: 2 }} />,
+              },
+              {
+                title: "Natural Language Booking",
+                description:
+                  'Just say "I will have 15 minutes call with David tomorrow"',
+                icon: <Chat sx={{ color: "secondary.main", mr: 2 }} />,
+              },
+            ].map((item, index) => (
+              <ListItem key={index} sx={{ alignItems: "center" }}>
+                {item.icon}
+                <ListItemText
+                  primary={
+                    <Typography
+                      variant="subtitle1"
+                      fontWeight="bold"
+                      color="primary"
+                    >
+                      {item.title}
+                    </Typography>
+                  }
+                  secondary={item.description}
+                />
               </ListItem>
             ))}
           </List>
@@ -484,7 +622,83 @@ export default function OdocLandingPage() {
       ),
     },
     {
-      title: "Cyber Security",
+      title: "Team Spaces with AI",
+      icon: (
+        <img
+          src={TeamSpaces}
+          style={{
+            transform: "scaleX(-1)",
+            width: isMobile ? "150px" : "500px",
+            objectFit: "contain",
+          }}
+        />
+      ),
+      children: (
+        <>
+          <Typography
+            variant="h6"
+            paragraph
+            color="text.secondary"
+            sx={{ mb: 3 }}
+          >
+            Slack-like communication with AI tracking, automated onboarding, and
+            seamless GitHub integration.
+          </Typography>
+          <List sx={{ "& .MuiListItem-root": { pl: 0 } }}>
+            {[
+              {
+                title: "AI Conversation Tracking",
+                description:
+                  "AI tracks conversations and generates automated onboarding",
+                icon: <Psychology sx={{ color: "primary.main", mr: 2 }} />,
+              },
+              {
+                title: "Smart Topic Management",
+                description:
+                  "Topic/thread management with intelligent categorization",
+                icon: <Category sx={{ color: "info.main", mr: 2 }} />,
+              },
+              {
+                title: "Integrated Task Tracking",
+                description: "Todo lists and issue tracking built right in",
+                icon: <Task sx={{ color: "warning.main", mr: 2 }} />,
+              },
+              {
+                title: "GitHub Integration",
+                description:
+                  "Connect GitHub issues and branches to conversations",
+                icon: <Code sx={{ color: "success.main", mr: 2 }} />,
+              },
+              {
+                title: "Code-Chat Linking",
+                description:
+                  "AI knows which discussions link to specific code branches",
+                icon: <AccountTree sx={{ color: "secondary.main", mr: 2 }} />,
+              },
+            ].map((item, index) => (
+              <ListItem key={index} sx={{ alignItems: "center" }}>
+                {item.icon}
+                <ListItemText
+                  primary={
+                    <Typography
+                      variant="subtitle1"
+                      fontWeight="bold"
+                      color="primary"
+                    >
+                      {item.title}
+                    </Typography>
+                  }
+                  secondary={item.description}
+                />
+              </ListItem>
+            ))}
+          </List>
+        </>
+      ),
+    },
+    {
+      title: "Advanced Cyber Security",
+      reversed: true,
       icon: (
         <RunawayJellyfish
           logoSvgScale={isMobile ? 1 : 1.5}
@@ -495,32 +709,57 @@ export default function OdocLandingPage() {
         />
       ),
       children: (
-        <List sx={{ "& .MuiListItem-root": { pl: 0 } }}>
-          {[
-            "Decentralized",
-            "Tamper-proof Records",
-            "Fraud Prevention system with our Karma algorithm",
-            "No sudden changes on privacy, you can vote to accept or reject changes",
-          ].map((text, index) => (
-            <ListItem key={index}>
-              <Shield sx={{ color: "primary.main", mr: 2 }} />
-              <ListItemText
-                primary={
-                  <Typography
-                    variant="body1"
-                    fontWeight={
-                      text.includes("Tamper-proof") || text.includes("Fraud")
-                        ? "bold"
-                        : "normal"
-                    }
-                  >
-                    {text}
-                  </Typography>
-                }
-              />
-            </ListItem>
-          ))}
-        </List>
+        <>
+          <Typography
+            variant="h6"
+            paragraph
+            color="text.secondary"
+            sx={{ mb: 3 }}
+          >
+            Built on decentralized blockchain technology with advanced security
+            features and community governance.
+          </Typography>
+          <List sx={{ "& .MuiListItem-root": { pl: 0 } }}>
+            {[
+              {
+                title: "Decentralized Architecture",
+                icon: <NoEncryption sx={{ color: "primary.main", mr: 2 }} />,
+              },
+              {
+                title: "Tamper-Proof Records",
+                description: "Immutable blockchain-based transaction history",
+                icon: <Security sx={{ color: "info.main", mr: 2 }} />,
+              },
+              {
+                title: "Fraud Prevention System",
+                description:
+                  "Advanced Karma algorithm prevents malicious behavior",
+                icon: <Shield sx={{ color: "warning.main", mr: 2 }} />,
+              },
+              {
+                title: "Democratic Governance",
+                description: "Vote to accept or reject privacy policy changes",
+                icon: <HowToVote sx={{ color: "success.main", mr: 2 }} />,
+              },
+            ].map((item, index) => (
+              <ListItem key={index} sx={{ alignItems: "center" }}>
+                {item.icon}
+                <ListItemText
+                  primary={
+                    <Typography
+                      variant="subtitle1"
+                      fontWeight="bold"
+                      color="primary"
+                    >
+                      {item.title}
+                    </Typography>
+                  }
+                  secondary={item.description}
+                />
+              </ListItem>
+            ))}
+          </List>
+        </>
       ),
     },
   ];
@@ -704,25 +943,51 @@ export default function OdocLandingPage() {
               sx={{ fontSize: "1rem", py: 2, px: 1 }}
             />
           </Box>
-          <List sx={{ maxWidth: 800, mx: "auto" }}>
+          <Typography
+            variant="h6"
+            paragraph
+            color="text.secondary"
+            sx={{ mb: 3, textAlign: "center" }}
+          >
+            Advanced AI analytics to optimize your workflow and provide
+            intelligent suggestions.
+          </Typography>
+          <List
+            sx={{ maxWidth: 800, mx: "auto", "& .MuiListItem-root": { pl: 0 } }}
+          >
             {[
               {
-                icon: Analytics,
-                primary: "All your chats and docs watched by decentralized AI",
+                title: "Decentralized AI Monitoring",
+                description:
+                  "All your chats and docs watched by decentralized AI",
+                icon: <Analytics sx={{ color: "primary.main", mr: 2 }} />,
               },
-              { icon: TrendingUp, primary: "It gives you action suggestions" },
               {
-                icon: Speed,
-                primary: "Smart Suggestions",
-                secondary:
-                  "For example: when you talk with your friend about booking meeting within the chat it will suggest a time to meet that it knows suits both of you. Or when you make many cancellations it will suggest specific people who have better payment success rate, to help you out.",
+                title: "Action Suggestions",
+                description:
+                  "AI provides intelligent recommendations based on your activity",
+                icon: <TrendingUp sx={{ color: "info.main", mr: 2 }} />,
+              },
+              {
+                title: "Smart Suggestions",
+                description:
+                  "Contextual suggestions like meeting scheduling and partner recommendations based on success rates",
+                icon: <Speed sx={{ color: "success.main", mr: 2 }} />,
               },
             ].map((item, index) => (
-              <ListItem key={index}>
-                <item.icon sx={{ color: "primary.main", mr: 2 }} />
+              <ListItem key={index} sx={{ alignItems: "center" }}>
+                {item.icon}
                 <ListItemText
-                  primary={item.primary}
-                  secondary={item.secondary}
+                  primary={
+                    <Typography
+                      variant="subtitle1"
+                      fontWeight="bold"
+                      color="primary"
+                    >
+                      {item.title}
+                    </Typography>
+                  }
+                  secondary={item.description}
                 />
               </ListItem>
             ))}

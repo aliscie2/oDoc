@@ -54,6 +54,11 @@ get_logs:
 	dfx canister logs backend  --network ic
 
 deploy-all:
+	dfx killall 2>/dev/null || true
+	dfx stop 2>/dev/null || true
+	dfx start  --background --clean  --host 127.0.0.1:4943 
+	dfx deploy internet_identity || error "Internet Identity deployment failed"
+
 	sh scripts/first_time_run.sh
 	bash scripts/did.sh backend
 	dfx generate backend

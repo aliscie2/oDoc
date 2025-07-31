@@ -15,7 +15,8 @@
           "staging": "rdmx6-jaaaa-aaaaa-aaadq-cai",
           "integration": "rdmx6-jaaaa-aaaaa-aaadq-cai"
         }
-      }
+      },
+      "specified_id": "rdmx6-jaaaa-aaaaa-aaadq-cai"
     },
     "ckusdc_ledger": {
       "type": "custom",

@@ -39,7 +39,7 @@ export const useDocsSave = (): UseDocsSaveReturn => {
 
     try {
       const serializedContent = serializeFileContents(changes.contents);
-
+      console.log({ xxx: changes.contracts });
       const res: any = await backendActor.multi_updates(
         changes.files,
         serializedContent,

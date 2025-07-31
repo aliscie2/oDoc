@@ -154,9 +154,6 @@ const BouncingLoader = () => (
   </Box>
 );
 
-
-
-
 const MultiAutoSave = ({ items }) => {
   const [countdown, setCountdown] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
@@ -246,16 +243,12 @@ const MultiAutoSave = ({ items }) => {
     };
   }, [hasChanges, isSaving, isAnyLoading, hasAttemptedSave]);
 
-
-
-
-const getTooltipText = () => {
-  if (isAnyLoading || isSaving) return "Saving changes...";
-  if (countdown > 0) return `Auto-saving changes in ${countdown} seconds`;
-  if (hasChanges) return "😢 Changes not saved";
-  return "Auto-save status";
-};
-
+  const getTooltipText = () => {
+    if (isAnyLoading || isSaving) return "Saving changes...";
+    if (countdown > 0) return `Auto-saving changes in ${countdown} seconds`;
+    if (hasChanges) return "😢 Changes not saved";
+    return "Auto-save status";
+  };
 
   const handleMouseEnter = () => {
     setShowButton(true);
@@ -277,7 +270,7 @@ const getTooltipText = () => {
 
   if (!hasChanges && !isSaving && !isAnyLoading) return null;
 
-    return (
+  return (
     <Tooltip
       title={getTooltipText()}
       arrow
@@ -335,7 +328,6 @@ const getTooltipText = () => {
       </Box>
     </Tooltip>
   );
-
 };
 
 const MultiAutoSaveContainer = () => {
