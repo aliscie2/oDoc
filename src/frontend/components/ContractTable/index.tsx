@@ -1,3 +1,4 @@
+import { randomString } from "@/DataProcessing/dataSamples";
 import { Principal } from "@dfinity/principal";
 import {
   ClientSideRowModelModule,
@@ -50,9 +51,8 @@ const PAYMENT_STATUSES = {
   HighPromise: null,
 };
 
-
 const getStatusOptions = (payment, profileId) => {
-  return ["None", "Released","RequestCancellation","Objected","Confirmed"]
+  return ["None", "Released", "RequestCancellation", "Objected", "Confirmed"];
   // const isSender = profileId === payment.sender.toString();
   // const currentStatus = Object.keys(payment.status)[0];
 
@@ -123,32 +123,50 @@ const DataTypeSelector = memo(({ currentType, onTypeChange, contractData }) => (
 const CustomContractViewer = memo(({ contractId }) => {
   const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
-  const { contracts, profile, all_friends, wallet } = useSelector(state => state.filesState);
-  const { isDarkMode } = useSelector(state => state.uiState);
+  const { contracts, profile, all_friends, wallet } = useSelector(
+    (state) => state.filesState,
+  );
+  const { isDarkMode } = useSelector((state) => state.uiState);
 
-  const currentContract = contracts[contractId] || { promises: [], payments: [], contracts: [] };
-  const [dataType, setDataType] = useState(() => 
-    localStorage.getItem(`contract-${contractId}-dataType`) || DATA_TYPES.PROMISE
+  const currentContract = contracts[contractId] || {
+    promises: [],
+    payments: [],
+    contracts: [],
+  };
+  const [dataType, setDataType] = useState(
+    () =>
+      localStorage.getItem(`contract-${contractId}-dataType`) ||
+      DATA_TYPES.PROMISE,
   );
 
-  useEffect(() => localStorage.setItem(`contract-${contractId}-dataType`, dataType), [contractId, dataType]);
+  useEffect(
+    () => localStorage.setItem(`contract-${contractId}-dataType`, dataType),
+    [contractId, dataType],
+  );
 
   // Data-driven column configurations
   const COLUMN_CONFIGS = {
     amount: {
-      headerName: "Amount", type: "numericColumn", cellEditor: "agNumberCellEditor",
-      cellEditorParams: { min: 0 }, valueFormatter: p => `${p.value?.toLocaleString() || 0}`,
-      validation: (params, wallet) => params.newValue > wallet.balance ? "Error: Not enough balance" : null
+      headerName: "Amount",
+      type: "numericColumn",
+      cellEditor: "agNumberCellEditor",
+      cellEditorParams: { min: 0 },
+      valueFormatter: (p) => `${p.value?.toLocaleString() || 0}`,
+      validation: (params, wallet) =>
+        params.newValue > wallet.balance ? "Error: Not enough balance" : null,
     },
     status: {
-      headerName: "Status", cellEditor: "agSelectCellEditor",
-      cellEditorParams: p => ({ values: getStatusOptions(p.data, profile.id) }),
-      valueGetter: p => {
+      headerName: "Status",
+      cellEditor: "agSelectCellEditor",
+      cellEditorParams: (p) => ({
+        values: getStatusOptions(p.data, profile.id),
+      }),
+      valueGetter: (p) => {
         const key = Object.keys(p.data.status || {})[0] || "None";
         const val = p.data.status?.[key];
         return key === "Objected" && val ? `${key} (${val})` : key;
       },
-      valueSetter: p => {
+      valueSetter: (p) => {
         if (p.newValue === "Objected") {
           const reason = prompt("Enter objection reason:");
           if (reason === null) return false;
@@ -157,31 +175,43 @@ const CustomContractViewer = memo(({ contractId }) => {
           p.data.status = { [p.newValue]: PAYMENT_STATUSES[p.newValue] };
         }
         return true;
-      }
+      },
     },
     sender: {
-      headerName: "Sender", editable: false,
-      valueFormatter: p => all_friends?.find(u => u.id === p.value?.toString())?.name || "Unknown"
+      headerName: "Sender",
+      editable: false,
+      valueFormatter: (p) =>
+        all_friends?.find((u) => u.id === p.value?.toString())?.name ||
+        "Unknown",
     },
     receiver: {
-      headerName: "Receiver", cellEditor: "agSelectCellEditor",
-      cellEditorParams: { values: all_friends?.map(u => u.name) || [] },
-      valueGetter: p => all_friends?.find(u => u.id === p.data.receiver?.toString())?.name || "Anonymous",
-      valueSetter: p => {
-        const user = all_friends?.find(u => u.name === p.newValue);
-        if (user) { p.data.receiver = Principal.fromText(user.id); return true; }
+      headerName: "Receiver",
+      cellEditor: "agSelectCellEditor",
+      cellEditorParams: { values: all_friends?.map((u) => u.name) || [] },
+      valueGetter: (p) =>
+        all_friends?.find((u) => u.id === p.data.receiver?.toString())?.name ||
+        "Anonymous",
+      valueSetter: (p) => {
+        const user = all_friends?.find((u) => u.name === p.newValue);
+        if (user) {
+          p.data.receiver = Principal.fromText(user.id);
+          return true;
+        }
         return false;
       },
-      validation: (params, _, profile) => 
-      {
-        console.log({params})
-        return params.data.sender.toString() === params.receiver.toString() ? "Error: You can't send to yourself" : null
-      }
+      validation: (params, _, profile) => {
+        console.log({ params });
+        return params.data.sender.toString() === params.receiver.toString()
+          ? "Error: You can't send to yourself"
+          : null;
+      },
     },
     date_created: {
-      headerName: "Created", editable: false, type: "dateColumn",
-      valueFormatter: p => new Date(p.value / 1000000).toLocaleDateString()
-    }
+      headerName: "Created",
+      editable: false,
+      type: "dateColumn",
+      valueFormatter: (p) => new Date(p.value / 1000000).toLocaleDateString(),
+    },
   };
 
   const { rowData, columnDefs } = useMemo(() => {
@@ -190,230 +220,466 @@ const CustomContractViewer = memo(({ contractId }) => {
     const isTable = !isPromise && !isPayment;
 
     if (isTable) {
-      const table = currentContract.contracts?.find(t => t.id === dataType);
+      const table = currentContract.contracts?.find((t) => t.id === dataType);
       if (!table) return { rowData: [], columnDefs: [] };
 
-      const rows = table.rows?.map(row => {
-        const data = { id: row.id };
-        row.cells?.forEach(cell => data[cell.field] = cell.value);
-        return data;
-      }) || [];
+      const rows =
+        table.rows?.map((row) => {
+          const data = { id: row.id };
+          row.cells?.forEach((cell) => (data[cell.field] = cell.value));
+          return data;
+        }) || [];
 
-      const columns = table.columns?.map(col => ({
-        field: col.field, headerName: col.name || col.field, editable: col.editable,
-        type: col.column_type === "number" ? "numericColumn" : undefined
-      })) || [];
+      const columns =
+        table.columns?.map((col) => ({
+          field: col.field,
+          headerName: col.name || col.field,
+          editable: col.editable,
+          type: col.column_type === "number" ? "numericColumn" : undefined,
+        })) || [];
 
       return { rowData: rows, columnDefs: columns };
     }
 
-    const sourceData = isPromise ? currentContract.promises : currentContract.payments;
-    const rows = sourceData?.map(item => {
-      const row = { ...item };
-      item.cells?.forEach(cell => row[cell.field] = cell.value);
-      return row;
-    }) || [];
+    const sourceData = isPromise
+      ? currentContract.promises
+      : currentContract.payments;
+    const rows =
+      sourceData?.map((item) => {
+        const row = { ...item, id: item.id || randomString() }; // Ensure id is always present
+        item.cells?.forEach((cell) => (row[cell.field] = cell.value));
+        return row;
+      }) || [];
 
-    const cellFields = [...new Set(sourceData?.flatMap(item => item.cells?.map(c => c.field) || []))];
-    
-    const baseColumns = Object.entries(COLUMN_CONFIGS).map(([field, config]) => ({
-      field, ...config, editable: isPromise && config.editable !== false,
-      cellStyle: params => {
-        const validation = config.validation?.(params, wallet, profile);
-        return validation ? { backgroundColor: "#ffebee" } : {};
-      }
-    }));
+    const cellFields = [
+      ...new Set(
+        sourceData?.flatMap((item) => item.cells?.map((c) => c.field) || []),
+      ),
+    ];
 
-    const dynamicColumns = cellFields.map(field => ({
-      field, headerName: field.charAt(0).toUpperCase() + field.slice(1).replace(/_/g, " "),
-      editable: isPromise, cellEditor: "agTextCellEditor"
+    const baseColumns = Object.entries(COLUMN_CONFIGS).map(
+      ([field, config]) => ({
+        field,
+        ...config,
+        editable: isPromise && config.editable !== false,
+        cellStyle: (params) => {
+          const validation = config.validation?.(params, wallet, profile);
+          return validation ? { backgroundColor: "#ffebee" } : {};
+        },
+      }),
+    );
+
+    const dynamicColumns = cellFields.map((field) => ({
+      field,
+      headerName:
+        field.charAt(0).toUpperCase() + field.slice(1).replace(/_/g, " "),
+      editable: isPromise,
+      cellEditor: "agTextCellEditor",
     }));
 
     return { rowData: rows, columnDefs: [...baseColumns, ...dynamicColumns] };
   }, [currentContract, dataType, all_friends, profile, wallet]);
 
-  const onCellValueChanged = useCallback(async (params) => {
-    const config = COLUMN_CONFIGS[params.colDef.field];
-    const validation = config?.validation?.(params, wallet, profile);
-    
-    if (validation) {
-      enqueueSnackbar(validation, { variant: "error" });
-      params.api.refreshCells({ rowNodes: [params.node], force: true });
-      return;
-    }
+  const onCellValueChanged = useCallback(
+    async (params) => {
+      const config = COLUMN_CONFIGS[params.colDef.field];
+      const validation = config?.validation?.(params, wallet, profile);
 
-    const isTable = dataType !== DATA_TYPES.PROMISE && dataType !== DATA_TYPES.PAYMENT;
-    const { data, colDef } = params;
-
-    if (isTable) {
-      const table = currentContract.contracts?.find(t => t.id === dataType);
-      const updatedRow = {
-        id: data.id,
-        cells: table?.columns?.map(col => ({ 
-          id: `${data.id}_${col.field}`, field: col.field, value: data[col.field] || "" 
-        })) || []
-      };
-      dispatch({ type: "UPDATE_ROW", contract_id: contractId, table_id: dataType, row: updatedRow });
-      return;
-    }
-
-    const isBaseField = Object.keys(COLUMN_CONFIGS).includes(colDef.field);
-    const updateType = isBaseField ? "base" : "cell";
-    
-    const updatedPromises = currentContract.promises.map(p => {
-      if (p.id !== data.id) return p;
-      
-      if (updateType === "base") {
-        return { ...p, [colDef.field]: data[colDef.field] };
-      } else {
-        const cells = p.cells?.filter(c => c.field !== colDef.field) || [];
-        cells.push({ id: `${p.id}_${colDef.field}`, field: colDef.field, value: data[colDef.field] });
-        return { ...p, cells };
+      if (validation) {
+        enqueueSnackbar(validation, { variant: "error" });
+        params.api.refreshCells({ rowNodes: [params.node], force: true });
+        return;
       }
-    });
 
-    dispatch({ type: "UPDATE_PROMISES", contract_id: contractId, promises: updatedPromises });
-  }, [currentContract, contractId, dispatch, enqueueSnackbar, wallet, profile, dataType]);
+      const isTable =
+        dataType !== DATA_TYPES.PROMISE && dataType !== DATA_TYPES.PAYMENT;
+      const { data, colDef } = params;
+
+      if (isTable) {
+        const table = currentContract.contracts?.find((t) => t.id === dataType);
+        const updatedRow = {
+          id: data.id,
+          cells:
+            table?.columns?.map((col) => ({
+              id: `${data.id}_${col.field}`,
+              field: col.field,
+              value: data[col.field] || "",
+            })) || [],
+        };
+        dispatch({
+          type: "UPDATE_ROW",
+          contract_id: contractId,
+          table_id: dataType,
+          row: updatedRow,
+        });
+        return;
+      }
+
+      const isBaseField = Object.keys(COLUMN_CONFIGS).includes(colDef.field);
+      const updateType = isBaseField ? "base" : "cell";
+
+      const updatedPromises = currentContract.promises.map((p) => {
+        if (p.id !== data.id) return p;
+
+        if (updateType === "base") {
+          return { ...p, [colDef.field]: data[colDef.field] };
+        } else {
+          const cells = p.cells?.filter((c) => c.field !== colDef.field) || [];
+          cells.push({
+            id: `${p.id}_${colDef.field}`,
+            field: colDef.field,
+            value: data[colDef.field],
+          });
+          return { ...p, cells };
+        }
+      });
+
+      dispatch({
+        type: "UPDATE_PROMISES",
+        contract_id: contractId,
+        promises: updatedPromises,
+      });
+    },
+    [
+      currentContract,
+      contractId,
+      dispatch,
+      enqueueSnackbar,
+      wallet,
+      profile,
+      dataType,
+    ],
+  );
 
   // Data-driven context menu
   const CONTEXT_MENU_ACTIONS = {
     promise: {
-      "Add Promise": () => dispatch({
-        type: "ADD_PROMISE", contract_id: contractId,
-        promise: {
-          id: `fresh_promise_${Date.now()}`, contract_id: contractId, amount: 0,
-          sender: Principal.fromText(profile.id), receiver: Principal.fromText("2vxsx-fae"),
-          status: { None: null }, date_created: Date.now() * 1e6, date_released: 0, cells: []
+      "Add Promise": (params) => {
+        let insertIndex;
+
+        if (params?.node?.rowIndex !== undefined) {
+          // Insert after the clicked row
+          insertIndex = params.node.rowIndex + 1;
+          console.log(
+            "Right-clicked on row:",
+            params.node.rowIndex,
+            "inserting at:",
+            insertIndex,
+          );
+        } else {
+          // Right-clicked on empty space, add to end
+          insertIndex = currentContract.promises.length;
+          console.log(
+            "Right-clicked on empty space, inserting at end:",
+            insertIndex,
+          );
         }
-      }),
+
+        const newPromise = {
+          id: `fresh_promise_${Date.now()}`,
+          contract_id: contractId,
+          amount: 0,
+          sender: Principal.fromText(profile.id),
+          receiver: Principal.fromText("2vxsx-fae"),
+          status: { None: null },
+          date_created: Date.now() * 1e6,
+          date_released: 0,
+          cells: [],
+        };
+
+        dispatch({
+          type: "ADD_PROMISE",
+          contract_id: contractId,
+          promise: newPromise,
+          insertIndex: insertIndex,
+        });
+      },
+
       "Add Column": () => {
         const field = prompt("Column name:");
         if (!field) return;
-        const updated = currentContract.promises.map(p => ({
-          ...p, cells: [...(p.cells || []), { id: `${p.id}_${field}`, field, value: "" }]
+        const updated = currentContract.promises.map((p) => ({
+          ...p,
+          cells: [
+            ...(p.cells || []),
+            { id: `${p.id}_${field}`, field, value: "" },
+          ],
         }));
-        dispatch({ type: "UPDATE_PROMISES", contract_id: contractId, promises: updated });
+        dispatch({
+          type: "UPDATE_PROMISES",
+          contract_id: contractId,
+          promises: updated,
+        });
       },
       "Add Table": () => {
         const name = prompt("Table name:");
         if (!name) return;
         dispatch({
-          type: "ADD_TABLE", contract_id: contractId,
+          type: "ADD_TABLE",
+          contract_id: contractId,
           table: {
-            id: `table_${Date.now()}`, name, date_created: Date.now() * 1e6,
-            creator: Principal.fromText(profile.id), rows: [],
-            columns: [{
-              id: `col_${Date.now()}`, field: "untitled", name: "Untitled",
-              column_type: "string", filters: [], permissions: [{ AnyOneView: null }],
-              formula_string: "", editable: true, deletable: false
-            }]
-          }
+            id: `table_${Date.now()}`,
+            name,
+            date_created: Date.now() * 1e6,
+            creator: Principal.fromText(profile.id),
+            rows: [],
+            columns: [
+              {
+                id: `col_${Date.now()}`,
+                field: "untitled",
+                name: "Untitled",
+                column_type: "string",
+                filters: [],
+                permissions: [{ AnyOneView: null }],
+                formula_string: "",
+                editable: true,
+                deletable: false,
+              },
+            ],
+          },
         });
       },
       "Release All": () => {
-        const updated = currentContract.promises.map(p => ({ ...p, status: { Released: null } }));
-        dispatch({ type: "UPDATE_PROMISES", contract_id: contractId, promises: updated });
-      }
-    },
-    table: {
-      "Add Row": () => {
-        const table = currentContract.contracts?.find(t => t.id === dataType);
+        const updated = currentContract.promises.map((p) => ({
+          ...p,
+          status: { Released: null },
+        }));
         dispatch({
-          type: "ADD_ROW", contract_id: contractId, table_id: dataType,
-          row: {
-            id: `row_${Date.now()}`,
-            cells: table.columns?.map(col => ({ 
-              id: `cell_${Date.now()}_${col.field}`, field: col.field, value: "" 
-            })) || []
-          }
+          type: "UPDATE_PROMISES",
+          contract_id: contractId,
+          promises: updated,
         });
       },
-      "Add Column": () => {
+    },
+    table: {
+      "Add Row": (params) => {
+        let insertIndex;
+        if (params?.node?.rowIndex !== undefined) {
+          insertIndex = params.node.rowIndex + 1;
+          console.log("Adding row after index:", params.node.rowIndex);
+        } else {
+          const table = currentContract.contracts?.find(
+            (t) => t.id === dataType,
+          );
+          insertIndex = table?.rows?.length || 0;
+          console.log("Adding row to end, total rows:", insertIndex);
+        }
+
+        const table = currentContract.contracts?.find((t) => t.id === dataType);
+        const newRow = {
+          id: `row_${Date.now()}`,
+          cells:
+            table?.columns?.map((col) => ({
+              id: `cell_${Date.now()}_${col.field}`,
+              field: col.field,
+              value: "",
+            })) || [],
+        };
+
+        dispatch({
+          type: "ADD_ROW",
+          contract_id: contractId,
+          table_id: dataType,
+          row: newRow,
+          insertIndex: insertIndex,
+        });
+      },
+      "Add Column": (params) => {
         const field = prompt("Column name:");
         if (!field) return;
+
+        let insertIndex;
+        if (params?.column) {
+          // Get the column index from the column definition
+          const table = currentContract.contracts?.find(
+            (t) => t.id === dataType,
+          );
+          const currentColIndex = table?.columns?.findIndex(
+            (col) => col.field === params.column.getColId(),
+          );
+          insertIndex =
+            currentColIndex !== undefined && currentColIndex >= 0
+              ? currentColIndex + 1
+              : undefined;
+          console.log(
+            "Adding column after:",
+            params.column.getColId(),
+            "at index:",
+            insertIndex,
+          );
+        }
+
+        const newColumn = {
+          id: `col_${Date.now()}`,
+          field,
+          name: field,
+          column_type: "string",
+          filters: [],
+          permissions: [{ AnyOneView: null }],
+          formula_string: "",
+          editable: true,
+          deletable: true,
+        };
+
         dispatch({
-          type: "ADD_COLUMN", contract_id: contractId, table_id: dataType,
-          column: {
-            id: `col_${Date.now()}`, field, name: field, column_type: "string",
-            filters: [], permissions: [{ AnyOneView: null }], formula_string: "",
-            editable: true, deletable: true
-          }
+          type: "ADD_COLUMN",
+          contract_id: contractId,
+          table_id: dataType,
+          column: newColumn,
+          insertIndex: insertIndex,
         });
-      }
-    }
+      },
+    },
   };
 
-  const getContextMenuItems = useCallback((params) => {
-    const isTable = dataType !== DATA_TYPES.PROMISE && dataType !== DATA_TYPES.PAYMENT;
-    const menuType = dataType === DATA_TYPES.PROMISE ? "promise" : isTable ? "table" : null;
-    
-    if (!menuType) return [];
+  const getContextMenuItems = useCallback(
+    (params) => {
+      const isTable =
+        dataType !== DATA_TYPES.PROMISE && dataType !== DATA_TYPES.PAYMENT;
+      const menuType =
+        dataType === DATA_TYPES.PROMISE ? "promise" : isTable ? "table" : null;
 
-    const items = Object.entries(CONTEXT_MENU_ACTIONS[menuType]).map(([name, action]) => ({ name, action }));
-    
-    // Add row/promise specific actions
-    if (params.node) {
-      const deleteAction = menuType === "promise" 
-        ? () => dispatch({ type: "DELETE_PROMISE", contract_id: contractId, id: params.node.data.id })
-        : () => dispatch({ type: "DELETE_ROW", contract_id: contractId, table_id: dataType, row_id: params.node.data.id });
-      
-      items.push({ name: `Delete ${menuType === "promise" ? "Promise" : "Row"}`, action: deleteAction });
-    }
+      if (!menuType) return [];
 
-    // Add column actions for tables
-    if (isTable && params.column) {
-      const table = currentContract.contracts?.find(t => t.id === dataType);
-      const column = table?.columns?.find(col => col.field === params.column.getColId());
-      
-      items.push({
-        name: "Rename Column",
-        action: () => {
-          const newName = prompt("Enter new column name:", params.column.getColId());
-          if (newName && newName !== params.column.getColId() && column) {
-            dispatch({
-              type: "UPDATE_COLUMN", contract_id: contractId, table_id: dataType,
-              column: { ...column, field: newName, name: newName }
-            });
-          }
-        }
-      });
+      const items = Object.entries(CONTEXT_MENU_ACTIONS[menuType]).map(
+        ([name, action]) => ({
+          name,
+          action: () => action(params), // Pass params to action
+        }),
+      );
 
-      if (column?.deletable) {
+      // Add row/promise specific actions
+      if (params.node) {
+        const deleteAction =
+          menuType === "promise"
+            ? () =>
+                dispatch({
+                  type: "DELETE_PROMISE",
+                  contract_id: contractId,
+                  id: params.node.data.id,
+                })
+            : () =>
+                dispatch({
+                  type: "DELETE_ROW",
+                  contract_id: contractId,
+                  table_id: dataType,
+                  row_id: params.node.data.id,
+                });
+
         items.push({
-          name: "Delete Column",
-          action: () => dispatch({
-            type: "DELETE_COLUMN", contract_id: contractId, table_id: dataType, column_id: column.id
-          })
+          name: `Delete ${menuType === "promise" ? "Promise" : "Row"}`,
+          action: deleteAction,
         });
       }
-    }
 
-    return items.length ? [...items, "separator", "copy", "copyWithHeaders", "paste", "separator", "chartRange"] : [];
-  }, [dataType, currentContract, contractId, dispatch, profile]);
+      // Add column actions for tables
+      if (isTable && params.column) {
+        const table = currentContract.contracts?.find((t) => t.id === dataType);
+        const column = table?.columns?.find(
+          (col) => col.field === params.column.getColId(),
+        );
+
+        items.push({
+          name: "Rename Column",
+          action: () => {
+            const newName = prompt(
+              "Enter new column name:",
+              params.column.getColId(),
+            );
+            if (newName && newName !== params.column.getColId() && column) {
+              dispatch({
+                type: "UPDATE_COLUMN",
+                contract_id: contractId,
+                table_id: dataType,
+                column: { ...column, field: newName, name: newName },
+              });
+            }
+          },
+        });
+
+        if (column?.deletable) {
+          items.push({
+            name: "Delete Column",
+            action: () =>
+              dispatch({
+                type: "DELETE_COLUMN",
+                contract_id: contractId,
+                table_id: dataType,
+                column_id: column.id,
+              }),
+          });
+        }
+      }
+
+      return items.length
+        ? [
+            ...items,
+            "separator",
+            "copy",
+            "copyWithHeaders",
+            "paste",
+            "separator",
+            "chartRange",
+          ]
+        : [];
+    },
+    [dataType, currentContract, contractId, dispatch, profile],
+  );
 
   const gridHeight = Math.min(rowData.length || 1, 15) * 28 + 111;
   const gridTheme = isDarkMode ? "ag-theme-quartz-dark" : "ag-theme-quartz";
 
   return (
-    <div className={gridTheme} style={{ height: `${gridHeight}px`, width: "100%" }}>
+    <div
+      className={gridTheme}
+      style={{ height: `${gridHeight}px`, width: "100%" }}
+    >
       <AgGridReact
-        rowData={rowData} columnDefs={columnDefs}
-        defaultColDef={{ flex: 1, minWidth: 100, resizable: true, sortable: true, filter: true, menuTabs: ["generalMenuTab", "filterMenuTab"] }}
-        onCellValueChanged={onCellValueChanged} getContextMenuItems={getContextMenuItems}
+        getRowId={(params) => params.data.id}
+        key={`${contractId}-${dataType}`} // Add this line
+        rowData={rowData}
+        columnDefs={columnDefs}
+        defaultColDef={{
+          flex: 1,
+          minWidth: 100,
+          resizable: true,
+          sortable: true,
+          filter: true,
+          menuTabs: ["generalMenuTab", "filterMenuTab"],
+        }}
+        onCellValueChanged={onCellValueChanged}
+        getContextMenuItems={getContextMenuItems}
         statusBar={{
           statusPanels: [
             { statusPanel: "agTotalRowCountComponent", align: "left" },
-            { statusPanel: DataTypeSelector, statusPanelParams: { currentType: dataType, onTypeChange: setDataType, contractData: currentContract }, align: "center" },
-            { statusPanel: "agSelectedRowCountComponent", align: "right" }
-          ]
+            {
+              statusPanel: DataTypeSelector,
+              statusPanelParams: {
+                currentType: dataType,
+                onTypeChange: setDataType,
+                contractData: currentContract,
+              },
+              align: "center",
+            },
+            { statusPanel: "agSelectedRowCountComponent", align: "right" },
+          ],
         }}
-        cellSelection={true} enableRangeSelection={true} enableCharts={true}
-        rowHeight={28} headerHeight={56} animateRows={true} enableCellTextSelection={true}
+        cellSelection={true}
+        enableRangeSelection={true}
+        enableCharts={true}
+        rowHeight={28}
+        headerHeight={56}
+        animateRows={true}
+        enableCellTextSelection={true}
         noRowsOverlayComponent={() => (
-          <div style={{ fontSize: "1.2rem", textAlign: "center", padding: "20px" }}>
-            {dataType === DATA_TYPES.PROMISE ? "Right click to add promises and columns"
-             : dataType === DATA_TYPES.PAYMENT ? "Payments will appear here when promises are released"
-             : "Right click to add rows or columns in table"}
+          <div
+            style={{ fontSize: "1.2rem", textAlign: "center", padding: "20px" }}
+          >
+            {dataType === DATA_TYPES.PROMISE
+              ? "Right click to add promises and columns"
+              : dataType === DATA_TYPES.PAYMENT
+                ? "Payments will appear here when promises are released"
+                : "Right click to add rows or columns in table"}
           </div>
         )}
       />
