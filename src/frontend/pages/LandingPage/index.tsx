@@ -18,7 +18,6 @@ import {
   Analytics,
   Star,
   Warning,
-  CheckCircle,
   TrendingUp,
   Speed,
   Shield,
@@ -34,7 +33,6 @@ import {
   Task,
   CalendarToday,
   Event,
-  Group,
   PersonAdd,
   Chat,
   TableChart,
@@ -44,7 +42,6 @@ import {
   Business,
   NoEncryption,
   Security,
-  Gavel,
   HowToVote,
 } from "@mui/icons-material";
 

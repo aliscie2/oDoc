@@ -3,9 +3,10 @@ import { Principal } from "@dfinity/principal";
 import { useSnackbar } from "notistack";
 import { memo, useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getStatusOptions } from "./utils";
+
 import { useBackendContext } from "@/contexts/BackendContext";
 import { CircularProgress } from "@mui/material";
+import { getStatusOptions } from "./utils";
 // Add these imports at the top
 // Add these imports
 const PromiseCard = memo(({ promise, isExpanded, onToggle, isDarkMode }) => {
@@ -408,7 +409,7 @@ const [isDeleting,setDeleting] = useState(false)
    if (window.confirm('Are you sure you want to delete this contract? This will delete all promises.')) {
      try {
         setDeleting(true)
-       let res = await backendActor.delete_custom_contract(contractId);
+       const res = await backendActor.delete_custom_contract(contractId);
        dispatch({type:"DELETE_CUSTOM_CONTRACT",id:contractId})
        setDeleting(false)
      } catch (error) {

@@ -9,6 +9,7 @@ import { useDispatch, useSelector } from "react-redux";
 import AgreementView from "./agreementView";
 import { getStatusOptions } from "./utils";
 
+
 ModuleRegistry.registerModules([ClientSideRowModelModule, ValidationModule, SelectEditorModule, NumberEditorModule, TextEditorModule, CellSelectionModule, ClipboardModule, ColumnMenuModule, ContextMenuModule, StatusBarModule]);
 
 const DATA_TYPES = { PROMISE: "promise", PAYMENT: "payment", CONTRACT: "contract", AGREEMENT: "agreement" };
@@ -313,7 +314,7 @@ const CustomContractViewer = memo(({ contractId }) => {
     };
 
     const actions = dataType === DATA_TYPES.PROMISE ? promiseActions : isTable ? tableActions : {};
-    let items = Object.entries(actions).map(([name, action]) => ({ name, action: () => action(params) }));
+    const items = Object.entries(actions).map(([name, action]) => ({ name, action: () => action(params) }));
 
     if (params.node) {
       const deleteAction = dataType === DATA_TYPES.PROMISE
