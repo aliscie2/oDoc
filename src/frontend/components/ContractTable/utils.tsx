@@ -495,3 +495,30 @@ export const getContractColumnDefs = (columns) => {
     };
   });
 };
+
+
+
+export  const getStatusOptions = (payment: CPayment, profileId: string) => {
+  const isSender = profileId === payment.sender.toString();
+  const currentStatus = Object.keys(payment.status)[0];
+
+
+  if (isSender) {
+    switch (currentStatus) {
+      case "ApproveHighPromise":
+      case "Confirmed":
+        return ["RequestCancellation", "Released"];
+      default:
+        return ["None", "Released", "HighPromise"];
+    }
+  } else {
+    switch (currentStatus) {
+      case "HighPromise":
+        return ["Objected", "ApproveHighPromise"];
+      case "RequestCancellation":
+        return ["Objected", "ConfirmedCancellation"];
+      default:
+        return ["Objected", "Confirmed"];
+    }
+  }
+};

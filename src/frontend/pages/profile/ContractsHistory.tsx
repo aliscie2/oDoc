@@ -18,6 +18,7 @@ function ContractsHistory(props: any) {
   const { contracts, profile, all_friends } = useSelector(
     (state: any) => state.filesState,
   );
+  console.log({contracts})
 
   const handleClick = () => {
     try {

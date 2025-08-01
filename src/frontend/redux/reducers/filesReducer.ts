@@ -292,99 +292,6 @@ export function filesReducer(
         },
       };
     }
-
-    // case "RENAME_TABLE": {
-    //   const { contract_id, table_id, new_name } = action;
-
-    //   // Update table name in the contract
-    //   const updatedContracts = {
-    //     ...state.contracts,
-    //     [contract_id]: {
-    //       ...state.contracts[contract_id],
-    //       contracts: state.contracts[contract_id].contracts.map((table) =>
-    //         table.id === table_id ? { ...table, name: new_name } : table,
-    //       ),
-    //     },
-    //   };
-
-    //   // Update changes
-    //   const contractsArray = Array.isArray(state.changes.contracts)
-    //     ? state.changes.contracts
-    //     : [];
-    //   const existingContractIndex = contractsArray.findIndex(
-    //     (c) => c.id === contract_id,
-    //   );
-    //   let updatedChangesContracts;
-
-    //   if (existingContractIndex !== -1) {
-    //     updatedChangesContracts = contractsArray.map((c, index) => {
-    //       if (index === existingContractIndex) {
-    //         const existingTableIndex = c.tables.findIndex(
-    //           (t) => t.id === table_id,
-    //         );
-    //         if (existingTableIndex !== -1) {
-    //           return {
-    //             ...c,
-    //             tables: c.tables.map((t, tIndex) =>
-    //               tIndex === existingTableIndex ? { ...t, name: new_name } : t,
-    //             ),
-    //           };
-    //         } else {
-    //           return {
-    //             ...c,
-    //             tables: [
-    //               ...c.tables,
-    //               {
-    //                 id: table_id,
-    //                 name: new_name,
-    //                 rows: [],
-    //                 rows_indexes: [],
-    //                 delete_columns: [],
-    //                 columns_indexes: [],
-    //                 columns: [],
-    //                 delete_rows: [],
-    //               },
-    //             ],
-    //           };
-    //         }
-    //       }
-    //       return c;
-    //     });
-    //   } else {
-    //     const newContractUpdate = {
-    //       permissions: [],
-    //       promises_indexes: [],
-    //       id: contract_id,
-    //       name: [],
-    //       delete_tables: [],
-    //       tables: [
-    //         {
-    //           id: table_id,
-    //           name: new_name,
-    //           rows: [],
-    //           rows_indexes: [],
-    //           delete_columns: [],
-    //           columns_indexes: [],
-    //           columns: [],
-    //           delete_rows: [],
-    //         },
-    //       ],
-    //       delete_promises: [],
-    //       promises: [],
-    //     };
-    //     updatedChangesContracts = [...contractsArray, newContractUpdate];
-    //   }
-
-    //   return {
-    //     ...state,
-    //     contracts: updatedContracts,
-    //     changes: {
-    //       ...state.changes,
-    //       contracts: updatedChangesContracts,
-    //     },
-    //   };
-    // }
-
     case "RENAME_SMART_CONTRACT": {
       const { contract_id, new_name } = action;
 
@@ -907,6 +814,14 @@ export function filesReducer(
         changes: { ...state.changes, contracts: updatedChangesContracts },
       };
     }
+
+    case "DELETE_CUSTOM_CONTRACT": {
+  const { [action.id]: deleted, ...remaining } = state.contracts;
+  return {
+    ...state,
+    contracts: remaining
+  }
+}
 
     case "UPDATE_COLUMN": {
       const { contract_id, table_id, column } = action;
