@@ -26,6 +26,7 @@ import { Job } from "$/declarations/backend/backend.did";
 import GoogleCalendarOnboarding from "@/components/userBadges/coonectGoogleCalendar";
 import ChatContainer from "./pages/dash_board_v1/aiChat";
 import RunawayJellyfish from "./components/creature/runAeayJellyFish";
+import useSocket from "./websocket/use_socket";
 const MainContent = styled(Box)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
