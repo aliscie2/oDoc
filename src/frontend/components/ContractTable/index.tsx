@@ -7,7 +7,8 @@ import { useSnackbar } from "notistack";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import AgreementView from "./agreementView";
-import { getStatusOptions } from "./utils";
+import { createNewPromis, getStatusOptions } from "./utils";
+import DeleteContractButton from "./deleteContractButton";
 
 
 ModuleRegistry.registerModules([ClientSideRowModelModule, ValidationModule, SelectEditorModule, NumberEditorModule, TextEditorModule, CellSelectionModule, ClipboardModule, ColumnMenuModule, ContextMenuModule, StatusBarModule]);
@@ -119,7 +120,7 @@ const useGridData = (currentContract, dataType, columnConfig) => useMemo(() => {
 }, [currentContract, dataType, columnConfig]);
 
 // Components
-const DataTypeSelector = memo(({ currentType, onTypeChange, contractData, onAddTable, onRename }) => {
+const DataTypeSelector = memo(({ currentType, onTypeChange, contractData, onAddTable, onRename, onSwitchToAgreement, onDeleteTable }) => {
   const getCurrentName = () => {
     if ([DATA_TYPES.PROMISE, DATA_TYPES.PAYMENT, DATA_TYPES.AGREEMENT].includes(currentType)) {
       return contractData.name || 'Unnamed Contract';
@@ -134,14 +135,23 @@ const DataTypeSelector = memo(({ currentType, onTypeChange, contractData, onAddT
     if (newName && newName !== currentName) onRename(currentType, newName);
   };
 
-  const buttonStyle = { background: "inherit", color: "inherit", border: "1px solid currentColor", borderRadius: "4px", padding: "4px 8px", cursor: "pointer" };
+  const handleDeleteTable = () => {
+    if (window.confirm('Are you sure you want to delete this table?')) {
+      onDeleteTable(currentType);
+    }
+  };
 
+  const buttonStyle = { background: "inherit", color: "inherit", border: "1px solid currentColor", borderRadius: "4px", padding: "4px 8px", cursor: "pointer" };
+  
+  
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "16px", padding: "8px" }}>
+      <span style={{ fontWeight: 'bold', marginLeft: '8px' }}>{getCurrentName()}</span>
+      <button onClick={handleRename} style={buttonStyle}>Rename</button>
+      
       <span>View:</span>
       <select value={currentType} onChange={(e) => onTypeChange(e.target.value)} style={{ ...buttonStyle }}>
         <option value={DATA_TYPES.PROMISE}>Promises ({contractData.promises?.length || 0})</option>
-        <option value={DATA_TYPES.AGREEMENT}>Agreements ({contractData.promises?.length || 0})</option>
         {(contractData.payments?.length || 0) > 0 && (
           <option value={DATA_TYPES.PAYMENT}>Payments ({contractData.payments.length})</option>
         )}
@@ -149,13 +159,16 @@ const DataTypeSelector = memo(({ currentType, onTypeChange, contractData, onAddT
           <option key={table.id} value={table.id}>{table.name} ({table.rows?.length || 0} rows)</option>
         ))}
       </select>
-      <span style={{ fontWeight: 'bold', marginLeft: '8px' }}>{getCurrentName()}</span>
-      <button onClick={handleRename} style={buttonStyle}>Rename</button>
+      
       <button onClick={onAddTable} style={buttonStyle}>Add Table</button>
+      <button onClick={onSwitchToAgreement} style={buttonStyle}>Switch to Agreement View</button>
+      {![DATA_TYPES.PROMISE, DATA_TYPES.PAYMENT].includes(currentType) && (
+        <button onClick={handleDeleteTable} style={buttonStyle}>Delete Table</button>
+      )}
+      <DeleteContractButton contractId={contractData.id} />
     </div>
   );
 });
-
 const AgGridContainer = memo(({ contractId, dataType, currentContract, gridData, onCellValueChanged, getContextMenuItems, isDarkMode, statusBarProps }) => {
   const gridHeight = Math.min(gridData.rowData.length || 1, 15) * 28 + 111;
   const myTheme = themeBalham.withPart(isDarkMode ? colorSchemeDarkBlue : colorSchemeLightWarm);
@@ -199,13 +212,23 @@ const AgGridContainer = memo(({ contractId, dataType, currentContract, gridData,
 const CustomContractViewer = memo(({ contractId }) => {
   const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
-  const { contracts, profile, all_friends, wallet } = useSelector((state) => state.filesState);
+  const { contracts, profile, all_friends, wallet, backendActor } = useSelector((state) => state.filesState);
   const { isDarkMode } = useSelector((state) => state.uiState);
+
   
   const currentContract = useContractData(contractId, contracts);
   const [dataType, setDataType] = useDataType(contractId);
   const columnConfig = useColumnConfig(profile, all_friends, wallet);
   const gridData = useGridData(currentContract, dataType, columnConfig);
+
+  const handleDeleteTable = useCallback((tableId) => {
+    dispatch({ type: "DELETE_TABLE", contract_id: contractId, table_id: tableId });
+    setDataType(DATA_TYPES.PROMISE);
+  }, [dispatch, contractId, setDataType]);
+
+  const handleSwitchToAgreement = useCallback(() => {
+    setDataType(DATA_TYPES.AGREEMENT);
+  }, [setDataType]);
 
   const handleAddTable = useCallback(() => {
     const name = prompt("Table name:");
@@ -264,17 +287,12 @@ const CustomContractViewer = memo(({ contractId }) => {
 
   const getContextMenuItems = useCallback((params) => {
     const isTable = ![DATA_TYPES.PROMISE, DATA_TYPES.PAYMENT].includes(dataType);
-    
-    const createPromise = (insertIndex) => ({
-      id: `fresh_promise_${Date.now()}`, contract_id: contractId, amount: 0,
-      sender: Principal.fromText(profile.id), receiver: Principal.fromText("2vxsx-fae"),
-      status: { None: null }, date_created: Date.now() * 1e6, date_released: 0, cells: [],
-    });
+
 
     const promiseActions = {
       "Add Promise": (params) => {
         const insertIndex = params?.node?.rowIndex !== undefined ? params.node.rowIndex + 1 : currentContract.promises.length;
-        dispatch({ type: "ADD_PROMISE", contract_id: contractId, promise: createPromise(), insertIndex });
+        dispatch({ type: "ADD_PROMISE", contract_id: contractId, promise: createNewPromis(Principal.fromText(profile.id), contractId), insertIndex });
       },
       "Add Column": () => {
         const field = prompt("Column name:");
@@ -349,6 +367,7 @@ const CustomContractViewer = memo(({ contractId }) => {
     return (
       <div style={{ height: "auto", width: "100%" }}>
         <AgreementView
+          contractId={currentContract.id}
           promises={currentContract.promises}
           profile={profile}
           all_friends={all_friends}
@@ -358,6 +377,8 @@ const CustomContractViewer = memo(({ contractId }) => {
       </div>
     );
   }
+
+
 
   return (
     <AgGridContainer
@@ -369,11 +390,15 @@ const CustomContractViewer = memo(({ contractId }) => {
       getContextMenuItems={getContextMenuItems}
       isDarkMode={isDarkMode}
       statusBarProps={{
+        onRename: handleRename,
         currentType: dataType,
         onTypeChange: setDataType,
         contractData: currentContract,
         onAddTable: handleAddTable,
-        onRename: handleRename,
+        
+                onSwitchToAgreement: handleSwitchToAgreement,
+        onDeleteTable: handleDeleteTable,
+
       }}
     />
   );

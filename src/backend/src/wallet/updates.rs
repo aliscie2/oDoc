@@ -152,8 +152,7 @@ async fn deposit_ckusdt() -> Result<Wallet, Error> {
     let balance = balance.unwrap();
     if balance > 3000000_u64 {
         let fee: Nat = get_fee().await;
-        let keep_some_fund = Nat::from(2_000_000u64); // $2 USD
-        transfer_from(balance.clone() - fee.clone() - keep_some_fund, caller(), ic_cdk::id()).await?;
+        transfer_from(balance.clone() - fee.clone(), caller(), ic_cdk::id()).await?;
         let res = wallet.deposit(
             nat_to_u64((balance.clone() - fee) / Nat::from(1000000_u64)) as f64,
             "ExternalWallet".to_string(),

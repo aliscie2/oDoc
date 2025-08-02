@@ -485,7 +485,7 @@ const WalletPage: React.FC<{ wallet?: Wallet }> = ({
   const [recipient, setRecipient] = useState("");
   const [withdrawAddress, setWithdrawAddress] = useState("");
   const [openDialog, setOpenDialog] = useState<DialogType>("");
-  const { backendActor } = useBackendContext();
+  const { backendActor, ckUSDCActor } = useBackendContext();
 
   const { all_friends, profile } = useSelector(
     (state: any) => state.filesState,
@@ -514,12 +514,14 @@ const WalletPage: React.FC<{ wallet?: Wallet }> = ({
     }
   };
 
+
   return (
     <Box sx={{ maxWidth: 1200, margin: "0 auto", p: 3 }}>
       <Button
         disabled={!profile?.id}
         onClick={async () => {
           await depositWithOisy(100, Principal.fromText(profile?.id));
+          
         }}
       >
         Deposit with oisy

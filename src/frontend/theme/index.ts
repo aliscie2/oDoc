@@ -406,7 +406,6 @@ const createComponents = ({ palette }: { palette: any }) => {
         contained: {
           background: `linear-gradient(135deg, ${palette.primary.main}, ${palette.primary.dark})`,
           border: `1px solid ${alpha(palette.primary.light, 0.2)}`,
-          color: palette.primary.contrastText,
           boxShadow: `0 4px 15px ${alpha(palette.primary.main, 0.3)}`,
           "&:hover": {
             background: `linear-gradient(135deg, ${palette.primary.light}, ${palette.primary.main})`,
@@ -420,7 +419,6 @@ const createComponents = ({ palette }: { palette: any }) => {
         outlined: {
           background: palette.morphism.glass.background,
           border: `1px solid ${palette.morphism.border}`,
-          color: palette.text.primary,
           "&:hover": {
             background: alpha(palette.primary.main, 0.08),
             border: `1px solid ${palette.morphism.borderHover}`,

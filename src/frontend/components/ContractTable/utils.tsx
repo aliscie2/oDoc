@@ -4,11 +4,11 @@ import {
 } from "$/declarations/backend/backend.did";
 import { randomString } from "../../DataProcessing/dataSamples";
 
-export function createNewPromis(sender): CPayment {
+export function createNewPromis(sender: Principal, contract_id?:string): CPayment {
   const status = { None: null };
-  const new_promise: CPayment = {
-    contract_id: "", // the backend will handle this
-    id: "fresh_promise" + randomString(),
+  return {
+    contract_id,
+    id: "fresh_promise_" + randomString(),
     date_created: Date.now() * 1e6,
     date_released: 0,
     sender,
@@ -17,7 +17,6 @@ export function createNewPromis(sender): CPayment {
     receiver: Principal.fromText("2vxsx-fae"),
     cells: [],
   };
-  return new_promise;
 }
 
 export const transformPromisesDataAndColumns = (

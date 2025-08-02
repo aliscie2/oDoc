@@ -9,6 +9,7 @@ import { HelmetProvider } from "react-helmet-async";
 import ThemeProvider from "./ThemeProvider";
 import { BackendProvider } from "./contexts/BackendContext";
 import store from "./redux/reducers";
+import { BrowserRouter } from "react-router-dom";
 
 if (import.meta.env.VITE_DFX_NETWORK === "ic") {
   Sentry.init({
@@ -28,6 +29,7 @@ const root = createRoot(rootElement);
 root.render(
   <StrictMode>
     <Provider store={store}>
+      <BrowserRouter>
       <HelmetProvider>
         <ThemeProvider>
           <BackendProvider>
@@ -43,6 +45,7 @@ root.render(
           </BackendProvider>
         </ThemeProvider>
       </HelmetProvider>
+      </BrowserRouter>
     </Provider>
   </StrictMode>,
 );

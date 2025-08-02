@@ -32,7 +32,7 @@ export async function depositWithOisy(amount: number, user: Principal) {
       params: {
         to: {
           owner: user,
-          subaccount: [] as [], // Explicitly type as empty array
+          subaccount: [], // Explicitly type as empty array
         },
         amount: transferAmount,
       },
@@ -42,7 +42,8 @@ export async function depositWithOisy(amount: number, user: Principal) {
     console.log("Transfer result:", result);
     return result;
   } catch (error) {
-    console.error("Deposit error:", error);
+    error?.errorType?.InsufficientFunds && alert("Yuur oisy wallet balance is insufficient.")
+     console.log("Deposit error:", error?.errorType?.InsufficientFunds);
     throw error;
   }
 }

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { BrowserRouter } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import Pages from "./pages";
 
 import { Principal } from "@dfinity/principal";
@@ -49,6 +49,11 @@ const PageContainer = styled(Box)(({ theme }) => ({
 }));
 
 const App: React.FC = () => {
+
+  const { pathname } = useLocation();
+
+
+
   // In App.tsx
   useEffect(() => {
     if ("serviceWorker" in navigator) {
@@ -67,7 +72,6 @@ const App: React.FC = () => {
         .catch((error) => console.log("SW registration failed"));
     }
   }, []);
-
   const { isLoggedIn, isRegistered } = useSelector(
     (state: any) => state.uiState,
   );
@@ -107,6 +111,8 @@ const App: React.FC = () => {
     });
   };
 
+  const { posts } = useSelector((state: RootState) => state.filesState);
+
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
@@ -114,10 +120,11 @@ const App: React.FC = () => {
 
         const res = await backendActor.get_initial_data();
 
-        const workspaces = await backendActor.get_work_spaces();
+
         if ("Err" in res && res.Err == "Anonymous user.") {
           dispatch({ isRegistered: false, type: "IS_REGISTERED" });
         } else {
+          const workspaces = await backendActor.get_work_spaces();
           dispatch({ isRegistered: true, type: "IS_REGISTERED" });
 
           const getProfileRes = await backendActor.get_user_profile(
@@ -248,7 +255,7 @@ const App: React.FC = () => {
     }
   }, [backendActor]);
 
-  const { posts } = useSelector((state: RootState) => state.filesState);
+  
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -373,18 +380,25 @@ const App: React.FC = () => {
     return <RunawayJellyfish thinking={true} scale={2} />;
   }
 
+
+  const getTitle = () => {
+ 
+    const isIcpJobs = window.location.hostname.includes("icpjobs");
+    
+    if (pathname === "/calendar") {
+      return isIcpJobs ? "Calendar - ICP Jobs" : "Calendar";
+    }
+    return isIcpJobs ? "ICP Jobs" : "odoc";
+    };
+
+
+
   return (
-    <BrowserRouter>
+    
       <MainContent>
         <Helmet>
           <title>
-            {window.location.pathname === "/calendar"
-              ? window.location.hostname.includes("icpjobs")
-                ? "Calendar - ICP Jobs"
-                : "Calendar"
-              : window.location.hostname.includes("icpjobs")
-                ? "ICP Jobs"
-                : "odoc"}
+            {getTitle()}
           </title>
           <link
             rel="icon"
@@ -409,7 +423,6 @@ const App: React.FC = () => {
           </NavBar>
         </DndProvider>
       </MainContent>
-    </BrowserRouter>
   );
 };
 

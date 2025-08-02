@@ -506,7 +506,6 @@ impl CustomContract {
             validate_payment(&payment, Some(old_payment), "update")?;
             self.handle_payment_status_change(old_payment.clone(), &mut payment)?;
         } else {
-            payment.id = ic_cdk::api::time().to_string();
             validate_payment(&payment, None, "create")?;
             self.create_new_promise(&mut payment)?;
             self.handle_new_payment_status(&mut payment)?;
@@ -799,7 +798,10 @@ impl CustomContract {
     }
 
     fn generate_payment_id(&self) -> String {
-        format!("payment_{}_{}", caller().to_text(), ic_cdk::api::time())
+        self.id
+            .strip_prefix("fresh_promise_")
+            .unwrap_or(&self.id)
+            .to_string()
     }
 
     // ----------------------------
