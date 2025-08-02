@@ -236,8 +236,6 @@ impl CustomContract {
                 let promise = self.promises[promise_index].clone();
                 reordered_promises[*new_index] = Some(promise);
                 used_positions.insert(*new_index);
-            } else {
-                return Err(format!("Promise with ID {} not found", promise_id));
             }
         }
 

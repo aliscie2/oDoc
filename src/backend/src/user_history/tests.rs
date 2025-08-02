@@ -1,5 +1,3 @@
-
-
 #[test]
 fn test_calic() {
     let rating: Rating = Rating {
