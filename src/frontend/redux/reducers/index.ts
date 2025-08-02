@@ -30,5 +30,12 @@ function setupStore(preloadedState?: Partial<RootState>) {
 }
 const store = setupStore();
 export default store;
+
+// export interface RootState {
+
+//   jobState:JobState;
+
+// }
+
 export type RootState = ReturnType<typeof rootReducer>;
 // export default rootReducer;

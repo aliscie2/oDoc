@@ -12,13 +12,16 @@ fn buy_ai_credits(amount: f64) -> Result<(), String> {
         return Err("Permission denied (anonymous)".to_string());
     }
 
-    if amount > 5.0 || amount < 1.0 {
+    if UserState::get_credits() > 4.9 {
+        return Err("You already have enough credits".to_string());
+    }
+
+    if !(1.0..=5.0).contains(&amount) {
         return Err("Amount must be in range 1 to 5".to_string());
     }
 
-    let receiver = Principal::from_text(
-        "tgwpc-6xuon-k3a6y-ey7lt-xksjs-qx22h-ikhbt-4yp3a-6stco-rymbe-pqe".to_string(),
-    );
+    let receiver =
+        Principal::from_text("tgwpc-6xuon-k3a6y-ey7lt-xksjs-qx22h-ikhbt-4yp3a-6stco-rymbe-pqe");
 
     if receiver.is_err() {
         return Err("Invalid receiver".to_string());
@@ -27,7 +30,7 @@ fn buy_ai_credits(amount: f64) -> Result<(), String> {
     let payment = CPayment {
         contract_id: "none".to_string(),
         id: ic_cdk::api::time().to_string(),
-        amount: amount.clone(),
+        amount,
         sender: caller(),
         receiver: receiver.unwrap(),
         date_created: ic_cdk::api::time() as f64,

@@ -40,7 +40,7 @@ impl Storable for WorkSpaceVec {
         if let Ok(x) = Decode!(bytes.as_ref(), Self) {
             return x;
         }
-        return WorkSpaceVec { workspaces: vec![] };
+        WorkSpaceVec { workspaces: vec![] }
     }
 
     const BOUND: Bound = Bound::Unbounded;

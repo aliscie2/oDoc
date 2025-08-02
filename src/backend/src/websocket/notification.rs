@@ -90,9 +90,9 @@ impl Storable for NotificationVec {
         if let Ok(x) = Decode!(bytes.as_ref(), Self) {
             return x;
         }
-        return NotificationVec {
+        NotificationVec {
             notifications: vec![],
-        };
+        }
     }
 
     // fn from_bytes(bytes: Cow<[u8]>) -> Self {

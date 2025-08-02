@@ -1,171 +1,48 @@
-import { useState, useCallback } from "react";
-
-// import type { IcrcAccount } from '@dfinity/oisy-wallet-signer';
-// import { IcpWallet } from '@dfinity/oisy-wallet-signer/icp-wallet';
-import { IcrcWallet } from "@dfinity/oisy-wallet-signer/icrc-wallet";
 import { Principal } from "@dfinity/principal";
+import { IcrcWallet } from "@dfinity/oisy-wallet-signer/icrc-wallet";
+import { canisterId as ckusdcId } from "$/declarations/ckusdc_ledger";
 
-export const useOisyWallet = () => {
-  const [wallet, setWallet] = useState<any>(null);
-  const [isConnected, setIsConnected] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [account, setAccount] = useState(null);
-  const [error, setError] = useState("");
+export async function depositWithOisy(amount: number, user: Principal) {
+  try {
+    const IS_LOCAL = import.meta.env.VITE_DFX_NETWORK === "local";
+    const url = IS_LOCAL
+      ? "http://localhost:5174/sign"
+      : "https://oisy.com/sign";
+    const host = IS_LOCAL ? import.meta.env.VITE_IC_HOST : "https://ic0.app";
 
-  const url =
-    import.meta.env.VITE_DFX_NETWORK === "ic"
-      ? "https://oisy.com/sign"
-      : "https://staging.oisy.com/sign";
+    const walletInstance = await IcrcWallet.connect({
+      url,
+      host,
+      onDisconnect: () => console.log("Wallet disconnected"),
+    });
 
-  const host =
-    import.meta.env.VITE_DFX_NETWORK === "local"
-      ? import.meta.env.VITE_IC_HOST
-      : "https://ic0.app";
+    const { allPermissionsGranted } =
+      await walletInstance.requestPermissionsNotGranted();
+    if (!allPermissionsGranted) throw new Error("All permissions required");
 
-  const connect = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError("");
+    const accounts = await walletInstance.accounts();
+    const userAccount = accounts?.[0];
+    if (!userAccount) throw new Error("No account provided by wallet");
 
-      const walletInstance = await IcrcWallet.connect({
-        url,
-        host,
-        onDisconnect: () => {
-          setIsConnected(false);
-          setAccount(null);
-          setWallet(null);
+    const transferAmount = BigInt(amount * 1000000); // 6 decimals for CKUSDC
+
+    // Use direct transfer (like the Svelte example)
+    const result = await walletInstance.transfer({
+      owner: userAccount.owner,
+      params: {
+        to: {
+          owner: user,
+          subaccount: [] as [], // Explicitly type as empty array
         },
-      });
+        amount: transferAmount,
+      },
+      ledgerCanisterId: ckusdcId,
+    });
 
-      const { allPermissionsGranted } =
-        await walletInstance.requestPermissionsNotGranted();
-
-      if (!allPermissionsGranted) {
-        throw new Error("All permissions are required to continue");
-      }
-
-      const accounts = await walletInstance.accounts();
-      const userAccount = accounts?.[0] || null;
-
-      if (!userAccount) {
-        throw new Error("The wallet did not provide any account");
-      }
-
-      setWallet(walletInstance);
-      setAccount(userAccount);
-      setIsConnected(true);
-    } catch (err) {
-      const errorMsg =
-        err instanceof Error ? err.message : "Failed to connect wallet";
-      setError(errorMsg);
-      await disconnect();
-    } finally {
-      setIsLoading(false);
-    }
-  }, [url, host]);
-
-  const disconnect = useCallback(async () => {
-    try {
-      if (wallet) {
-        await wallet.disconnect();
-      }
-    } catch (err) {
-      console.error("Error disconnecting wallet:", err);
-    } finally {
-      setWallet(null);
-      setIsConnected(false);
-      setAccount(null);
-    }
-  }, [wallet]);
-
-  const approveTransaction = useCallback(
-    async (amount: number, spender: string) => {
-      if (!wallet || !account) {
-        throw new Error("Wallet not connected");
-      }
-
-      try {
-        setIsLoading(true);
-        setError("");
-
-        const owner = Principal.fromText(account.owner);
-        const spenderPrincipal = Principal.fromText(spender);
-
-        const result = await wallet.icrc2Approve({
-          owner,
-          request: {
-            spender: {
-              owner: spenderPrincipal,
-              subaccount: [],
-            },
-            amount: BigInt(amount),
-          },
-          ledgerCanisterId: import.meta.env.VITE_CANISTER_ID_CKUSDC_LEDGER,
-        });
-
-        console.log({ result });
-        return result;
-      } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : "Approval failed";
-        setError(errorMsg);
-        throw new Error(errorMsg);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [wallet, account],
-  );
-
-  const deposit = useCallback(
-    async (amount: number) => {
-      if (!wallet || !account) {
-        throw new Error("Wallet not connected");
-      }
-
-      try {
-        setIsLoading(true);
-        setError("");
-
-        const result = await wallet.transferFrom({
-          ledgerCanisterId: import.meta.env.VITE_CANISTER_ID_CKUSDC_LEDGER,
-          owner: account.owner,
-          params: {
-            from: {
-              owner: Principal.fromText(account.owner),
-              subaccount: [],
-            },
-            to: {
-              owner: Principal.fromText(
-                import.meta.env.VITE_BACKEND_CANISTER_ID,
-              ),
-              subaccount: [],
-            },
-            amount: BigInt(amount),
-          },
-        });
-
-        console.log({ result });
-        return result;
-      } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : "Deposit failed";
-        setError(errorMsg);
-        throw new Error(errorMsg);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [wallet, account],
-  );
-
-  return {
-    wallet,
-    isConnected,
-    isLoading,
-    account,
-    error,
-    connect,
-    disconnect,
-    approveTransaction,
-    deposit,
-  };
-};
+    console.log("Transfer result:", result);
+    return result;
+  } catch (error) {
+    console.error("Deposit error:", error);
+    throw error;
+  }
+}

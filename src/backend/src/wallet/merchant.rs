@@ -12,10 +12,10 @@ impl Merchants {
         token_canister_id: Principal,
         amount: Nat,
     ) {
-        let merchant = self.0.entry(merchant_id).or_insert(HashMap::new());
+        let merchant = self.0.entry(merchant_id).or_default();
         let current_amount = merchant
             .entry(token_canister_id)
-            .or_insert(Nat::from(0 as u64));
+            .or_insert(Nat::from(0_u64));
         *current_amount += amount;
     }
 
@@ -24,7 +24,7 @@ impl Merchants {
             .get(&merchant_id)
             .and_then(|merchant| merchant.get(&token_canister_id))
             .cloned()
-            .unwrap_or(Nat::from(0 as u64))
+            .unwrap_or(Nat::from(0_u64))
     }
 
     pub fn get_merchant_amounts(&self, merchant_id: Principal) -> HashMap<Principal, Nat> {
@@ -37,10 +37,10 @@ impl Merchants {
         token_canister_id: Principal,
         amount: Nat,
     ) {
-        let merchant = self.0.entry(merchant_id).or_insert(HashMap::new());
+        let merchant = self.0.entry(merchant_id).or_default();
         let current_amount = merchant
             .entry(token_canister_id)
-            .or_insert(Nat::from(0 as u64));
+            .or_insert(Nat::from(0_u64));
         *current_amount -= amount;
     }
 }

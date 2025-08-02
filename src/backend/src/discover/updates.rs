@@ -39,19 +39,16 @@ fn save_post(mut post: Post) -> Result<(), String> {
     if let Ok(p) = original_post.clone() {
         post.votes_up = p.votes_up;
         post.votes_down = p.votes_down;
-        post.date_created = p.date_created.clone();
+        post.date_created = p.date_created;
     } else {
         let posts = Post::get_latest_posts();
         post.date_created = ic_cdk::api::time();
 
         if posts.len() >= 2 {
             let one_day = 86400;
-            let diff = time_diff(
-                ic_cdk::api::time(),
-                posts.last().unwrap().date_created.clone(),
-            );
+            let diff = time_diff(ic_cdk::api::time(), posts.last().unwrap().date_created);
 
-            if diff < Duration::from_secs(one_day.clone()) {
+            if diff < Duration::from_secs(one_day) {
                 let hours = &one_day - diff.as_secs();
                 let remainder = (one_day - diff.as_secs()) % 3600;
                 let msg = format!(

@@ -43,13 +43,10 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
     match?.cover_letter || "",
   );
   const [saving, setSaving] = React.useState(false);
-  const { currentJobId, matchingJobs, jobs } = useSelector(
-    (state: any) => state.jobState,
-  );
+
   const { profile } = useSelector((state: any) => state.filesState);
   const { backendActor } = useBackendContext();
-  const currentJob = jobs.find((job: Job) => job.id === currentJobId);
-  const canEdit = Object.keys(currentJob.category)[0] == "Talent";
+  const canEdit = Object.keys(job.category)[0] == "Talent";
 
   const handleSaveCoverLetter = async () => {
     if (!match) return;
@@ -58,7 +55,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
       const updatedMatch: Match = { ...match, cover_letter: coverLetterText };
       const jobUpdate: Array<JobUpdate> = [
         {
-          id: currentJobId,
+          id: job.id,
           updates: [],
           active: [],
           required_match_score: [],
@@ -209,7 +206,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
             variant="filled"
             sx={{ fontWeight: "bold", px: 2, py: 1, height: "auto" }}
           />
-          {profile.id === job.user_id ? (
+          {profile?.id === job.user_id ? (
             <Chip
               label="Created by You"
               color="primary"

@@ -4,13 +4,12 @@ import {
   Menu,
   Tooltip,
   Box,
-  Divider,
   Typography,
   styled,
   keyframes,
 } from "@mui/material";
-import { LoadingButton } from "@mui/lab";
-import { Save, Warning, Block } from "@mui/icons-material";
+
+import { Save, Warning } from "@mui/icons-material";
 
 // import SaveButtons, { SaveButtonItem } from './SaveButtons';
 import { useDocsSave } from "./useDocsSave";
@@ -154,11 +153,13 @@ const BouncingLoader = () => (
     </Box>
   </Box>
 );
+
 const MultiAutoSave = ({ items }) => {
   const [countdown, setCountdown] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const [tooltipOpen, setTooltipOpen] = useState(false);
   const [showButton, setShowButton] = useState(false);
+  const [hasAttemptedSave, setHasAttemptedSave] = useState(false);
   const countdownRef = useRef(null);
 
   const hasChanges = items.some((item) => item.isChanged);
@@ -167,10 +168,15 @@ const MultiAutoSave = ({ items }) => {
 
   const saveAll = async () => {
     setIsSaving(true);
+    setHasAttemptedSave(true);
     try {
       await Promise.all(
         items.filter((item) => item.isChanged).map((item) => item.onSave()),
       );
+      if (countdownRef.current) {
+        clearInterval(countdownRef.current);
+        setCountdown(0);
+      }
     } catch (error) {
       console.error("Error saving:", error);
     } finally {
@@ -195,23 +201,24 @@ const MultiAutoSave = ({ items }) => {
   };
 
   const resetCountdown = () => {
-    if (hasChanges && !isSaving && !isAnyLoading) {
+    if (hasChanges && !isSaving && !isAnyLoading && !hasAttemptedSave) {
       startCountdown();
     }
   };
 
   useEffect(() => {
-    if (hasChanges && !isSaving && !isAnyLoading) {
+    if (hasChanges && !isSaving && !isAnyLoading && !hasAttemptedSave) {
       startCountdown();
     } else if (!hasChanges) {
       if (countdownRef.current) clearInterval(countdownRef.current);
       setCountdown(0);
+      setHasAttemptedSave(false);
     }
 
     return () => {
       if (countdownRef.current) clearInterval(countdownRef.current);
     };
-  }, [hasChanges, isSaving, isAnyLoading]);
+  }, [hasChanges, isSaving, isAnyLoading, hasAttemptedSave]);
 
   useEffect(() => {
     const resetOnActivity = () => resetCountdown();
@@ -234,11 +241,12 @@ const MultiAutoSave = ({ items }) => {
       );
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [hasChanges, isSaving, isAnyLoading]);
+  }, [hasChanges, isSaving, isAnyLoading, hasAttemptedSave]);
 
   const getTooltipText = () => {
     if (isAnyLoading || isSaving) return "Saving changes...";
     if (countdown > 0) return `Auto-saving changes in ${countdown} seconds`;
+    if (hasChanges) return "😢 Changes not saved";
     return "Auto-save status";
   };
 
@@ -313,6 +321,8 @@ const MultiAutoSave = ({ items }) => {
             </Button>
           ) : countdown > 0 ? (
             <CountdownDonut timeLeft={countdown} totalTime={COUNTDOWN_TIME} />
+          ) : hasAttemptedSave && hasChanges ? (
+            <Warning sx={{ color: "#ff9800", fontSize: 32 }} />
           ) : null}
         </Box>
       </Box>

@@ -36,8 +36,8 @@ import {
 import { useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
 import { useBackendContext } from "@/contexts/BackendContext";
-
-// import { useOisyWallet } from "./useOisy";
+import { depositWithOisy } from "./useOisy";
+import { Principal } from "@dfinity/principal";
 
 // Types
 interface Exchange {
@@ -481,14 +481,6 @@ const PayDialog: React.FC<{
 const WalletPage: React.FC<{ wallet?: Wallet }> = ({
   wallet = {} as Wallet,
 }) => {
-  // const {
-  //   wallet: oisyWallet,
-  //  isConnected,
-  //  connect,
-
-  //  deposit,
-  // } = useOisyWallet();
-
   const [amount, setAmount] = useState("");
   const [recipient, setRecipient] = useState("");
   const [withdrawAddress, setWithdrawAddress] = useState("");
@@ -525,12 +517,10 @@ const WalletPage: React.FC<{ wallet?: Wallet }> = ({
   return (
     <Box sx={{ maxWidth: 1200, margin: "0 auto", p: 3 }}>
       <Button
-      // onClick={async()=>{
-      //   if (!isConnected){
-      //     await connect()
-      //   }
-      //     await deposit(100)
-      // }}
+        disabled={!profile?.id}
+        onClick={async () => {
+          await depositWithOisy(100, Principal.fromText(profile?.id));
+        }}
       >
         Deposit with oisy
       </Button>

@@ -47,6 +47,7 @@ function initCanisterIds() {
 const isDevelopment = process.env.NODE_ENV !== "production" || localEnv;
 initCanisterIds();
 export default defineConfig({
+    publicDir: 'public', // Make sure this points to root public folder
   assetsInclude: ["**/*.md"],
   build: {
     outDir: "build",
@@ -115,59 +116,58 @@ export default defineConfig({
     EnvironmentPlugin("all", { prefix: "DFX_" }),
     EnvironmentPlugin({ BACKEND_CANISTER_ID: "" }),
     VitePWA({
-      registerType: "autoUpdate",
-      workbox: {
-        maximumFileSizeToCacheInBytes: 20971520,
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/api\./,
-            handler: "NetworkFirst",
-            options: {
-              cacheName: "api-cache",
-              expiration: { maxEntries: 50, maxAgeSeconds: 300 },
-            },
-          },
-        ],
+  registerType: "autoUpdate",
+  workbox: {
+    maximumFileSizeToCacheInBytes: 20971520,
+    globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+    runtimeCaching: [
+      {
+        urlPattern: /^https:\/\/api\./,
+        handler: "NetworkFirst",
+        options: {
+          cacheName: "api-cache",
+          expiration: { maxEntries: 50, maxAgeSeconds: 300 },
+        },
       },
-      manifest: {
-        name: "odoc",
-        short_name: "odoc",
-        description:
-          "ai job matcher & crypto agreement for freelancers, online work.",
-        theme_color: "#ffffff",
-        background_color: "#ffffff",
-        display: "standalone",
-        scope: "/",
-        start_url: "/",
-        icons: [
-          {
-            src: "icons/manifest-icon-192.maskable.png",
-            sizes: "192x192",
-            type: "image/png",
-            purpose: "any",
-          },
-          {
-            src: "icons/manifest-icon-192.maskable.png",
-            sizes: "192x192",
-            type: "image/png",
-            purpose: "maskable",
-          },
-          {
-            src: "icons/manifest-icon-512.maskable.png",
-            sizes: "512x512",
-            type: "image/png",
-            purpose: "any",
-          },
-          {
-            src: "icons/manifest-icon-512.maskable.png",
-            sizes: "512x512",
-            type: "image/png",
-            purpose: "maskable",
-          },
-        ],
+    ],
+  },
+  manifest: {
+    name: "odoc",
+    short_name: "odoc",
+    description: "ai job matcher & crypto agreement for freelancers, online work.",
+    theme_color: "#ffffff",
+    background_color: "#ffffff",
+    display: "fullscreen", // Changed from "standalone"
+    scope: "/",
+    start_url: "/",
+    icons: [
+      {
+        src: "icons/manifest-icon-192.maskable.png",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "any",
       },
-    }),
+      {
+        src: "icons/manifest-icon-192.maskable.png",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "maskable",
+      },
+      {
+        src: "icons/manifest-icon-512.maskable.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: "icons/manifest-icon-512.maskable.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "maskable",
+      },
+    ],
+  },
+}),
   ],
   // In your vite.config - add this to optimizeDeps
   optimizeDeps: {

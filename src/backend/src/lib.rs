@@ -11,7 +11,6 @@ use discover::*;
 use files::*;
 use files_content::*;
 use friends::*;
-use ic_cdk_macros;
 use ic_websocket_cdk::*;
 use job_matcher::pallet::{Category, Job};
 use queries::*;
@@ -263,9 +262,6 @@ pub static COUNTER: AtomicU64 = AtomicU64::new(0);
 
 #[cfg(test)]
 mod tests {
-    use crate::friends::Friend;
-    use crate::user::User;
-    use ic_cdk::caller;
 
     #[test]
     fn test_one() {

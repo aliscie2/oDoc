@@ -5,7 +5,7 @@ import {
   JobUpdate,
 } from "$/declarations/backend/backend.did";
 
-interface JobState {
+export interface JobState {
   currentJobId: string | null;
   jobChanges: JobUpdate[];
   jobs: Job[];

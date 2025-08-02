@@ -1,7 +1,3 @@
-use candid::Principal;
-
-use crate::user_history::Rating;
-
 #[test]
 fn test_calic() {
     let rating: Rating = Rating {

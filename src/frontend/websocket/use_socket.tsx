@@ -4,12 +4,15 @@ import { SignIdentity } from "@dfinity/agent";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { AuthClient } from "@dfinity/auth-client";
-import { AppMessage } from "../../declarations/backend/backend.did";
+import { _SERVICE, AppMessage } from "../../declarations/backend/backend.did";
+import { RootState } from "@/redux/reducers";
 
 function useSocket() {
-  const { profile } = useSelector((state: any) => state.filesState);
+  const { profile } = useSelector((state: RootState) => state.filesState);
   const dispatch = useDispatch();
-  const [ws, setWs] = useState<IcWebSocket | undefined>(undefined);
+  const [ws, setWs] = useState<IcWebSocket<_SERVICE, AppMessage> | undefined>(
+    undefined,
+  );
 
   // Make sure the URL format is correct with proper protocol and no trailing slashes
   const gatewayUrl =

@@ -16,7 +16,7 @@ pub struct AppMessage {
 
 impl AppMessage {
     fn candid_serialize(&self) -> Vec<u8> {
-        encode_one(&self).unwrap()
+        encode_one(self).unwrap()
     }
 }
 

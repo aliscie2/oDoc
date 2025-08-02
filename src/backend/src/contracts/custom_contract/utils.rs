@@ -3,9 +3,9 @@ use crate::CPayment;
 use ic_cdk::caller;
 
 pub fn notify_about_promise(payment: CPayment, action_type: PaymentAction) {
-    let mut receiver = payment.receiver.clone();
+    let mut receiver = payment.receiver;
     if receiver == caller() {
-        receiver = payment.sender.clone();
+        receiver = payment.sender;
     }
 
     if let Some(mut old_note) = Notification::get(caller().to_text(), payment.id.clone()) {

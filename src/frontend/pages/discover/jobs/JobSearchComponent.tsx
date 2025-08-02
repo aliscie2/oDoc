@@ -263,7 +263,12 @@ const JobSearchComponent: React.FC = () => {
                 <Visibility />
               </IconButton>
 
-              <ConnectButton jobId={job.id} />
+              <ConnectButton
+                jobId={job.id}
+                matchingJob={matchingJobs?.find(
+                  (job: Job) => job.id === job.id,
+                )}
+              />
             </Box>
 
             {match.missmatching_skills?.length > 0 && (

@@ -55,7 +55,7 @@ impl UserProfile {
 
 #[query]
 fn get_user_profile(user_id: Principal) -> Result<UserProfile, String> {
-    return UserProfile::get(user_id);
+    UserProfile::get(user_id)
 }
 
 // #[query]

@@ -218,7 +218,7 @@ impl Chat {
                 // Return the slice of messages starting from current length
                 reversed_messages[start_index..end_index].to_vec()
             })
-            .unwrap_or_else(|| vec![])
+            .unwrap_or_default()
     }
 
     pub fn add_to_my_chats(&self, user: Principal) {

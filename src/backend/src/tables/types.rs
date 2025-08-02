@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 
-use std::sync::atomic::AtomicU64;
-
 use candid::{CandidType, Deserialize, Principal};
 
 use crate::contracts::Contract;
@@ -113,6 +111,12 @@ type TableCellValue = String;
 pub struct Table {
     pub(crate) columns: Vec<Column>,
     pub(crate) rows: Vec<Row>,
+}
+
+impl Default for Table {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl Table {

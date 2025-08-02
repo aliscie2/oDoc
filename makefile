@@ -1,6 +1,8 @@
 run_fe:
 	yarn start
+
 run_be:
+	dfx start  --background --host 127.0.0.1:4943
 	dfx deploy backend
 
 start:
@@ -29,7 +31,6 @@ run_gateway_on_special_port:
 generate_candid_file:
 	bash scripts/did.sh
 	sh scripts/deploy_ic_siwe_provider.sh
-	sh scripts/deploy_canister.sh
 	sh scripts/deploy_ledger.sh
 	dfx generate
 
@@ -53,6 +54,11 @@ get_logs:
 	dfx canister logs backend  --network ic
 
 deploy-all:
+	dfx killall 2>/dev/null || true
+	dfx stop 2>/dev/null || true
+	dfx start  --background --clean  --host 127.0.0.1:4943 
+	dfx deploy internet_identity || error "Internet Identity deployment failed"
+
 	sh scripts/first_time_run.sh
 	bash scripts/did.sh backend
 	dfx generate backend
@@ -75,13 +81,14 @@ frontend-format:
 	npx ts-unused-exports tsconfig.json
 	# install npm-check globally npm install npm-check -g
 	npm-check
+	
 
 pretty:
 	prettier --write ./src/frontend
 
 backend-format:
 	cargo fmt
-	cargo clippy
+	cargo clippy --fix
 
 
 getting_pulls:
@@ -102,3 +109,8 @@ test-e2e:
 	sleep 5
 	yarn playwright test
 	lsof -ti:5173 | xargs kill -9 || true
+
+
+dummy_deposit:
+	# replace lqv7v-5z3de-ldfue-z4rrf-u6opp-npwa5-e2us3-fkbx7-yjtwu-gh7x3-yae with the wanted user
+	dfx canister --identity minter call ckusdc_ledger icrc1_transfer '(record {to = record { owner = principal "lqv7v-5z3de-ldfue-z4rrf-u6opp-npwa5-e2us3-fkbx7-yjtwu-gh7x3-yae"; }; amount = 100_000_000; })'

@@ -319,7 +319,7 @@ async fn pay(data: PayArgs) -> USDCResult<()> {
             subaccount: None,
         },
         spender: Account {
-            owner: pool_canister_id.clone(),
+            owner: pool_canister_id,
             subaccount: None,
         },
     };
@@ -352,7 +352,7 @@ async fn pay(data: PayArgs) -> USDCResult<()> {
                 owner: pool_canister_id,
                 subaccount: None,
             },
-            amount: data.amount.clone() * Nat::from(1_000 as u64),
+            amount: data.amount.clone() * Nat::from(1_000_u64),
             from_subaccount: None,
             memo: None,
             created_at_time: None,
@@ -451,7 +451,7 @@ async fn pay(data: PayArgs) -> USDCResult<()> {
     // Swap token
     let swap_args = SwapArgs {
         amount_in: deposit_amount.to_string(),
-        amount_out_minimum: Nat::from(0 as u64).to_string(),
+        amount_out_minimum: Nat::from(0_u64).to_string(),
         zero_for_one: true,
     };
 
@@ -545,7 +545,7 @@ async fn pay(data: PayArgs) -> USDCResult<()> {
         amount: withdraw_amount.clone() + fee.clone(),
         fee: Some(fee),
         to: Account {
-            owner: data.to_merchant.clone(),
+            owner: data.to_merchant,
             subaccount: None,
         },
         memo: Some(Memo::from(data.memo)),

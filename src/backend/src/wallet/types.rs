@@ -19,18 +19,13 @@ pub struct UserToken {
     pub enabled: Option<bool>,
 }
 
-#[derive(Eq, PartialOrd, PartialEq, Clone, Debug, CandidType, Deserialize)]
+#[derive(Eq, PartialOrd, PartialEq, Clone, Debug, CandidType, Deserialize, Default)]
 pub enum ExchangeType {
+    #[default]
     Deposit,
     Withdraw,
     LocalReceive,
     LocalSend,
-}
-
-impl Default for ExchangeType {
-    fn default() -> Self {
-        ExchangeType::Deposit
-    }
 }
 
 #[derive(PartialOrd, PartialEq, Clone, Debug, Default, CandidType, Deserialize)]
@@ -73,13 +68,13 @@ impl Storable for Wallet {
 
 impl Wallet {
     pub fn check_dept(&self, amount: f64) -> Result<(), String> {
-        if self.balance.clone() < self.total_debt + amount.clone() {
+        if self.balance < self.total_debt + amount {
             return Err(String::from("Insufficient balance"));
         }
         Ok(())
     }
     pub fn add_dept(mut self, amount: f64, id: String) -> Result<(), String> {
-        if self.balance.clone() < self.total_debt + amount.clone() {
+        if self.balance < self.total_debt + amount {
             return Err(String::from("Insufficient balance"));
         }
         self.debts.insert(id, amount);
@@ -152,14 +147,14 @@ impl Wallet {
             date_created: ic_cdk::api::time() as f64,
         };
         self.exchanges.push(new_exchange);
-        self.balance += amount.clone();
+        self.balance += amount;
 
         // handle profile
         if from != "ExternalWallet" {
             let mut user_profile = UserHistory::get(self.owner.parse().unwrap());
             user_profile.users_interacted.insert(from.clone());
             user_profile.clone().save();
-            self.received += amount.clone();
+            self.received += amount;
         }
         self.save();
         Ok(self.clone())
@@ -176,12 +171,12 @@ impl Wallet {
             };
 
             self.exchanges.push(new_exchange);
-            self.balance -= amount.clone();
+            self.balance -= amount;
             if to != "ExternalWallet" {
                 let mut user_profile = UserHistory::get(self.owner.parse().unwrap());
                 user_profile.users_interacted.insert(to.clone());
                 user_profile.clone().save();
-                self.spent += amount.clone();
+                self.spent += amount;
             }
 
             self.save();

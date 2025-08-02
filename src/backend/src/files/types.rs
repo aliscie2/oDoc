@@ -94,7 +94,7 @@ impl FileNode {
         let caller = caller();
 
         // Owner always has full permissions
-        if caller.to_string() == self.author.to_string() {
+        if caller.to_string() == self.author {
             return true;
         }
 
@@ -346,7 +346,6 @@ impl FileNode {
             // Retrieve the user's file vector
             let user_files = files_store_borrow
                 .get(&principal_id.to_text())
-                .map(|v| v.clone())
                 .unwrap_or_else(|| FileNodeVector { files: Vec::new() });
 
             // Modify the file vector
@@ -398,7 +397,6 @@ impl FileNode {
             // Retrieve the user's file vector
             let user_files = files_store_borrow
                 .get(&principal_id.to_text())
-                .map(|v| v.clone())
                 .unwrap_or_else(|| FileNodeVector { files: Vec::new() });
 
             // Modify the file vector

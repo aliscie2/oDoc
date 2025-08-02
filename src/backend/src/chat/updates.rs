@@ -18,7 +18,7 @@ pub fn send_welcome_message() {
     let message: Message = Message {
         id: ic_cdk::api::time().to_string(),
         chat_id: chat_id.clone(),
-        sender: sender.clone(),
+        sender,
         date: ic_cdk::api::time(),
         seen_by: vec![],
         message: "Welcome to Odoc. This is AliSci the founder of odoc. Would you like to share your feedback and wishes? What are the limitation/troubles in your previous workflow as employer/employee? What are bad things in Odoc now you like to improve?".to_string(),
@@ -27,8 +27,8 @@ pub fn send_welcome_message() {
         id: chat_id.clone(),
         workspaces: vec![],
         name: "private_chat".to_string(),
-        admins: vec![sender.clone(), receiver.clone()],
-        members: vec![sender.clone(), receiver.clone()],
+        admins: vec![sender, receiver],
+        members: vec![sender, receiver],
         messages: vec![message.clone()],
         creator: caller(),
     };
@@ -43,8 +43,8 @@ pub fn send_welcome_message() {
     };
     new_notification.send();
     chat.save();
-    chat.add_to_my_chats(sender.clone());
-    chat.add_to_my_chats(receiver.clone());
+    chat.add_to_my_chats(sender);
+    chat.add_to_my_chats(receiver);
 }
 
 #[update]

@@ -200,7 +200,7 @@ impl ShareFile {
 
         let content_tree =
             ContentNode::get_file_content(shared_file.owner.to_string(), shared_file.id)
-                .unwrap_or_else(|| ContentTree::new());
+                .unwrap_or_default();
 
         Ok((file, content_tree))
     }

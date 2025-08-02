@@ -10,7 +10,7 @@ impl Swaps {
     pub fn add_swap(&mut self, token0: Principal, token1: Principal, pool_canister_id: Principal) {
         self.0
             .entry(token0)
-            .or_insert_with(HashMap::new)
+            .or_default()
             .insert(token1, pool_canister_id);
     }
 
@@ -47,6 +47,6 @@ impl Swaps {
     pub fn exists(&self, token0: &Principal, token1: &Principal) -> bool {
         self.0
             .get(token0)
-            .map_or(false, |token0_swaps| token0_swaps.contains_key(token1))
+            .is_some_and(|token0_swaps| token0_swaps.contains_key(token1))
     }
 }

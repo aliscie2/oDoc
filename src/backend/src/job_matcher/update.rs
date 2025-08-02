@@ -77,7 +77,7 @@ fn update_job(updates: Vec<JobUpdate>, ai_credits: Option<f32>) -> Result<(), St
             return Err("Permission denied (not aowner)".to_string());
         }
 
-        let mut job_updated = update.updates.len() > 0;
+        let mut job_updated = !update.updates.is_empty();
 
         for d in update.updates {
             if &d.field == "skills" {

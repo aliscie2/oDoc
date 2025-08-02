@@ -1,19 +1,19 @@
-import React, { useEffect, useRef, useState } from "react";
+import { Chat, Redo, Refresh, Send, Undo } from "@mui/icons-material";
 import {
   Box,
+  Button,
   Card,
   CardContent,
-  Typography,
   IconButton,
   TextField,
-  Button,
+  Typography,
 } from "@mui/material";
-import { Chat, Send, Refresh, Undo, Redo } from "@mui/icons-material";
+import { useEffect, useRef, useState } from "react";
 
-import { useSelector } from "react-redux";
-import MarkdownMessage from "./markDownMessageRdnder"; // Import the new component
-import AICreditsComponent from "./AICreditsCompnent";
 import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
+import { useSelector } from "react-redux";
+import AICreditsComponent from "./AICreditsCompnent";
+import MarkdownMessage from "./markDownMessageRdnder"; // Import the new component
 
 const AIChatComponent = ({
   isExpanded,
@@ -34,21 +34,34 @@ const AIChatComponent = ({
   const [message, setMessage] = useState("");
   const [welcomeText, setWelcomeText] = useState("");
   const [userHasClosed, setUserHasClosed] = useState(false);
+  const [dataLoaded, setDataLoaded] = useState(false);
 
   const inputRef = useRef(null);
   const chatContainerRef = useRef(null);
 
   const hasActiveJobs = jobs.some((job) => job.active);
   const hasAvailabilities = calendar?.availabilities?.length > 0;
+
+  // Wait for data to be loaded before determining welcome state
   const shouldShowWelcome =
+    dataLoaded &&
     (jobs.length === 0 || (hasActiveJobs && !hasAvailabilities)) &&
     !userHasClosed;
 
-  const [isFirstTime, setIsFirstTime] = useState(shouldShowWelcome);
+  const [isFirstTime, setIsFirstTime] = useState(false);
+
+  // Track when data is actually loaded
+  useEffect(() => {
+    if (inited && (jobs.length > 0 || calendar)) {
+      setDataLoaded(true);
+    }
+  }, [inited, jobs.length, calendar]);
 
   useEffect(() => {
-    setIsFirstTime(shouldShowWelcome);
-  }, [shouldShowWelcome]);
+    if (dataLoaded) {
+      setIsFirstTime(shouldShowWelcome);
+    }
+  }, [shouldShowWelcome, dataLoaded]);
 
   const getWelcomeText = () => {
     if (jobs.length === 0) {
@@ -97,10 +110,10 @@ const AIChatComponent = ({
   }, [isFirstTime, isExpanded, fullWelcomeText]);
 
   useEffect(() => {
-    if (shouldShowWelcome && !isExpanded && !userHasClosed) {
+    if (dataLoaded && shouldShowWelcome && !isExpanded && !userHasClosed) {
       onToggle();
     }
-  }, [shouldShowWelcome, isExpanded, onToggle, userHasClosed]);
+  }, [dataLoaded, shouldShowWelcome, isExpanded, onToggle, userHasClosed]);
 
   useEffect(() => {
     if (isExpanded && !isFirstTime) {
@@ -208,7 +221,7 @@ const AIChatComponent = ({
         mb={1}
       >
         <Box display="flex" alignItems="center" gap={1}>
-          <AICreditsComponent credits={aiAgent.remainingCredits()} />
+          <AICreditsComponent />
           <Typography variant="h6" sx={{ fontSize: "1rem" }}>
             AI Assistant
           </Typography>
@@ -370,8 +383,8 @@ const AIChatComponent = ({
 };
 
 import { useDispatch } from "react-redux";
-import { useChatHandler } from "./useChathandler";
 import { undoCalendarAction, undoJobAction } from "./reverseAction";
+import { useChatHandler } from "./useChathandler";
 
 const ChatContainer = () => {
   const dispatch = useDispatch();

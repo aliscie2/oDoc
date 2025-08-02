@@ -292,99 +292,6 @@ export function filesReducer(
         },
       };
     }
-
-    // case "RENAME_TABLE": {
-    //   const { contract_id, table_id, new_name } = action;
-
-    //   // Update table name in the contract
-    //   const updatedContracts = {
-    //     ...state.contracts,
-    //     [contract_id]: {
-    //       ...state.contracts[contract_id],
-    //       contracts: state.contracts[contract_id].contracts.map((table) =>
-    //         table.id === table_id ? { ...table, name: new_name } : table,
-    //       ),
-    //     },
-    //   };
-
-    //   // Update changes
-    //   const contractsArray = Array.isArray(state.changes.contracts)
-    //     ? state.changes.contracts
-    //     : [];
-    //   const existingContractIndex = contractsArray.findIndex(
-    //     (c) => c.id === contract_id,
-    //   );
-    //   let updatedChangesContracts;
-
-    //   if (existingContractIndex !== -1) {
-    //     updatedChangesContracts = contractsArray.map((c, index) => {
-    //       if (index === existingContractIndex) {
-    //         const existingTableIndex = c.tables.findIndex(
-    //           (t) => t.id === table_id,
-    //         );
-    //         if (existingTableIndex !== -1) {
-    //           return {
-    //             ...c,
-    //             tables: c.tables.map((t, tIndex) =>
-    //               tIndex === existingTableIndex ? { ...t, name: new_name } : t,
-    //             ),
-    //           };
-    //         } else {
-    //           return {
-    //             ...c,
-    //             tables: [
-    //               ...c.tables,
-    //               {
-    //                 id: table_id,
-    //                 name: new_name,
-    //                 rows: [],
-    //                 rows_indexes: [],
-    //                 delete_columns: [],
-    //                 columns_indexes: [],
-    //                 columns: [],
-    //                 delete_rows: [],
-    //               },
-    //             ],
-    //           };
-    //         }
-    //       }
-    //       return c;
-    //     });
-    //   } else {
-    //     const newContractUpdate = {
-    //       permissions: [],
-    //       promises_indexes: [],
-    //       id: contract_id,
-    //       name: [],
-    //       delete_tables: [],
-    //       tables: [
-    //         {
-    //           id: table_id,
-    //           name: new_name,
-    //           rows: [],
-    //           rows_indexes: [],
-    //           delete_columns: [],
-    //           columns_indexes: [],
-    //           columns: [],
-    //           delete_rows: [],
-    //         },
-    //       ],
-    //       delete_promises: [],
-    //       promises: [],
-    //     };
-    //     updatedChangesContracts = [...contractsArray, newContractUpdate];
-    //   }
-
-    //   return {
-    //     ...state,
-    //     contracts: updatedContracts,
-    //     changes: {
-    //       ...state.changes,
-    //       contracts: updatedChangesContracts,
-    //     },
-    //   };
-    // }
-
     case "RENAME_SMART_CONTRACT": {
       const { contract_id, new_name } = action;
 
@@ -610,16 +517,59 @@ export function filesReducer(
     }
 
     case "ADD_ROW": {
-      const { contract_id, table_id, row } = action;
+      const { contract_id, table_id, row, insertIndex } = action;
 
-      // Add row to the specific table in contract
+      // Safety checks
+      if (!state.contracts[contract_id]) {
+        console.error("Contract not found:", contract_id);
+        return state;
+      }
+
+      const currentContract = state.contracts[contract_id];
+      if (!currentContract.contracts) {
+        console.error("No contracts array found");
+        return state;
+      }
+
+      const currentTable = currentContract.contracts.find(
+        (t) => t.id === table_id,
+      );
+      if (!currentTable) {
+        console.error("Table not found:", table_id);
+        return state;
+      }
+
+      // Handle rows array
+      const currentRows = [...(currentTable.rows || [])];
+      if (insertIndex !== undefined && insertIndex <= currentRows.length) {
+        currentRows.splice(insertIndex, 0, row);
+      } else {
+        currentRows.push(row);
+      }
+
+      // Handle rows_indexes array
+      const currentRowIndexes = [...(currentTable.rows_indexes || [])];
+      if (
+        insertIndex !== undefined &&
+        insertIndex <= currentRowIndexes.length
+      ) {
+        currentRowIndexes.splice(insertIndex, 0, [insertIndex, row.id]);
+        // Re-index all subsequent items
+        for (let i = insertIndex + 1; i < currentRowIndexes.length; i++) {
+          currentRowIndexes[i] = [i, currentRowIndexes[i][1]];
+        }
+      } else {
+        currentRowIndexes.push([currentRowIndexes.length, row.id]);
+      }
+
+      // Update contracts
       const updatedContracts = {
         ...state.contracts,
         [contract_id]: {
-          ...state.contracts[contract_id],
-          contracts: state.contracts[contract_id].contracts.map((table) =>
+          ...currentContract,
+          contracts: currentContract.contracts.map((table) =>
             table.id === table_id
-              ? { ...table, rows: [...table.rows, row] }
+              ? { ...table, rows: currentRows, rows_indexes: currentRowIndexes }
               : table,
           ),
         },
@@ -645,12 +595,15 @@ export function filesReducer(
                 ...c,
                 tables: c.tables.map((t, tIndex) =>
                   tIndex === existingTableIndex
-                    ? { ...t, rows: [...t.rows, row] }
+                    ? {
+                        ...t,
+                        rows: currentRows,
+                        rows_indexes: currentRowIndexes,
+                      }
                     : t,
                 ),
               };
             } else {
-              // Create new table update
               return {
                 ...c,
                 tables: [
@@ -658,11 +611,11 @@ export function filesReducer(
                   {
                     id: table_id,
                     name: "",
-                    rows: [row],
-                    rows_indexes: [],
+                    rows: currentRows,
+                    rows_indexes: currentRowIndexes,
                     delete_columns: [],
-                    columns_indexes: [],
-                    columns: [],
+                    columns_indexes: currentTable.columns_indexes || [],
+                    columns: currentTable.columns || [],
                     delete_rows: [],
                   },
                 ],
@@ -674,19 +627,19 @@ export function filesReducer(
       } else {
         const newContractUpdate = {
           permissions: [],
-          promises_indexes: [],
+          promises_indexes: currentContract.promises_indexes || [],
           id: contract_id,
           name: [],
           delete_tables: [],
           tables: [
             {
               id: table_id,
-              name: "",
-              rows: [row],
-              rows_indexes: [],
+              name: currentTable.name || "",
+              rows: currentRows,
+              rows_indexes: currentRowIndexes,
               delete_columns: [],
-              columns_indexes: [],
-              columns: [],
+              columns_indexes: currentTable.columns_indexes || [],
+              columns: currentTable.columns || [],
               delete_rows: [],
             },
           ],
@@ -699,24 +652,82 @@ export function filesReducer(
       return {
         ...state,
         contracts: updatedContracts,
-        changes: {
-          ...state.changes,
-          contracts: updatedChangesContracts,
-        },
+        changes: { ...state.changes, contracts: updatedChangesContracts },
       };
     }
 
     case "ADD_COLUMN": {
-      const { contract_id, table_id, column } = action;
+      const { contract_id, table_id, column, insertIndex } = action;
 
-      // Add column to the specific table in contract
+      // Safety checks
+      if (!state.contracts[contract_id]) {
+        console.error("Contract not found:", contract_id);
+        return state;
+      }
+
+      const currentContract = state.contracts[contract_id];
+      if (!currentContract.contracts) {
+        console.error("No contracts array found");
+        return state;
+      }
+
+      const currentTable = currentContract.contracts.find(
+        (t) => t.id === table_id,
+      );
+      if (!currentTable) {
+        console.error("Table not found:", table_id);
+        return state;
+      }
+
+      // Handle columns array
+      const currentColumns = [...(currentTable.columns || [])];
+      if (insertIndex !== undefined && insertIndex <= currentColumns.length) {
+        currentColumns.splice(insertIndex, 0, column);
+      } else {
+        currentColumns.push(column);
+      }
+
+      // Handle columns_indexes array
+      const currentColumnIndexes = [...(currentTable.columns_indexes || [])];
+      if (
+        insertIndex !== undefined &&
+        insertIndex <= currentColumnIndexes.length
+      ) {
+        currentColumnIndexes.splice(insertIndex, 0, [insertIndex, column.id]);
+        // Re-index all subsequent items
+        for (let i = insertIndex + 1; i < currentColumnIndexes.length; i++) {
+          currentColumnIndexes[i] = [i, currentColumnIndexes[i][1]];
+        }
+      } else {
+        currentColumnIndexes.push([currentColumnIndexes.length, column.id]);
+      }
+
+      // Add empty cells to existing rows for the new column (preserve existing cells)
+      const updatedRows = (currentTable.rows || []).map((row) => ({
+        ...row,
+        cells: [
+          ...(row.cells || []), // Preserve all existing cells
+          {
+            id: `${row.id}_${column.field}`,
+            field: column.field,
+            value: "",
+          },
+        ],
+      }));
+
+      // Update contracts
       const updatedContracts = {
         ...state.contracts,
         [contract_id]: {
-          ...state.contracts[contract_id],
-          contracts: state.contracts[contract_id].contracts.map((table) =>
+          ...currentContract,
+          contracts: currentContract.contracts.map((table) =>
             table.id === table_id
-              ? { ...table, columns: [...table.columns, column] }
+              ? {
+                  ...table,
+                  columns: currentColumns,
+                  columns_indexes: currentColumnIndexes,
+                  rows: updatedRows,
+                }
               : table,
           ),
         },
@@ -742,7 +753,12 @@ export function filesReducer(
                 ...c,
                 tables: c.tables.map((t, tIndex) =>
                   tIndex === existingTableIndex
-                    ? { ...t, columns: [...t.columns, column] }
+                    ? {
+                        ...t,
+                        columns: currentColumns,
+                        columns_indexes: currentColumnIndexes,
+                        rows: updatedRows,
+                      }
                     : t,
                 ),
               };
@@ -753,12 +769,12 @@ export function filesReducer(
                   ...c.tables,
                   {
                     id: table_id,
-                    name: "",
-                    rows: [],
-                    rows_indexes: [],
+                    name: currentTable.name || "",
+                    rows: updatedRows,
+                    rows_indexes: currentTable.rows_indexes || [],
                     delete_columns: [],
-                    columns_indexes: [],
-                    columns: [column],
+                    columns_indexes: currentColumnIndexes,
+                    columns: currentColumns,
                     delete_rows: [],
                   },
                 ],
@@ -770,19 +786,19 @@ export function filesReducer(
       } else {
         const newContractUpdate = {
           permissions: [],
-          promises_indexes: [],
+          promises_indexes: currentContract.promises_indexes || [],
           id: contract_id,
           name: [],
           delete_tables: [],
           tables: [
             {
               id: table_id,
-              name: "",
-              rows: [],
-              rows_indexes: [],
+              name: currentTable.name || "",
+              rows: updatedRows,
+              rows_indexes: currentTable.rows_indexes || [],
               delete_columns: [],
-              columns_indexes: [],
-              columns: [column],
+              columns_indexes: currentColumnIndexes,
+              columns: currentColumns,
               delete_rows: [],
             },
           ],
@@ -795,12 +811,17 @@ export function filesReducer(
       return {
         ...state,
         contracts: updatedContracts,
-        changes: {
-          ...state.changes,
-          contracts: updatedChangesContracts,
-        },
+        changes: { ...state.changes, contracts: updatedChangesContracts },
       };
     }
+
+    case "DELETE_CUSTOM_CONTRACT": {
+  const { [action.id]: deleted, ...remaining } = state.contracts;
+  return {
+    ...state,
+    contracts: remaining
+  }
+}
 
     case "UPDATE_COLUMN": {
       const { contract_id, table_id, column } = action;
@@ -1370,48 +1391,69 @@ export function filesReducer(
         },
       };
     }
-
     case "ADD_PROMISE": {
-      const { contract_id, promise } = action;
+      const { contract_id, promise, insertIndex } = action;
+      const currentContract = state.contracts[contract_id];
 
-      // Update the contract's promises
+      // Handle promises array
+      const currentPromises = [...currentContract.promises];
+      if (insertIndex !== undefined && insertIndex < currentPromises.length) {
+        currentPromises.splice(insertIndex, 0, promise);
+      } else {
+        currentPromises.push(promise);
+      }
+
+      // Handle promises_indexes array - this controls the display order
+      const currentIndexes = [...(currentContract.promises_indexes || [])];
+      if (insertIndex !== undefined && insertIndex < currentIndexes.length) {
+        currentIndexes.splice(insertIndex, 0, [insertIndex, promise.id]);
+        // Re-index all subsequent items
+        for (let i = insertIndex + 1; i < currentIndexes.length; i++) {
+          currentIndexes[i] = [i, currentIndexes[i][1]];
+        }
+      } else {
+        currentIndexes.push([currentIndexes.length, promise.id]);
+      }
+
+      // Update the contract
       const updatedContracts = {
         ...state.contracts,
         [contract_id]: {
-          ...state.contracts[contract_id],
-          promises: [...state.contracts[contract_id].promises, promise],
+          ...currentContract,
+          promises: currentPromises,
+          promises_indexes: currentIndexes,
         },
       };
 
-      // Ensure changes.contracts is an array
+      // Handle changes array
       const contractsArray = Array.isArray(state.changes.contracts)
         ? state.changes.contracts
         : [];
-
-      // Find existing contract update in changes
       const existingContractIndex = contractsArray.findIndex(
         (c) => c.id === contract_id,
       );
-      let updatedChangesContracts;
 
+      let updatedChangesContracts;
       if (existingContractIndex !== -1) {
-        // Contract update exists, add promise to it
         updatedChangesContracts = contractsArray.map((c, index) =>
           index === existingContractIndex
-            ? { ...c, promises: [...c.promises, promise] }
+            ? {
+                ...c,
+                promises: currentPromises,
+                promises_indexes: currentIndexes, // Update indexes in changes too
+              }
             : c,
         );
       } else {
-        // Contract update doesn't exist, create new one
         const newContractUpdate = {
           id: contract_id,
           permissions: [],
-          promises_indexes: [],
+          promises_indexes: currentIndexes, // Include indexes
           name: [],
           delete_tables: [],
           tables: [],
           delete_promises: [],
-          promises: [promise],
+          promises: currentPromises,
         };
         updatedChangesContracts = [...contractsArray, newContractUpdate];
       }
@@ -1425,7 +1467,6 @@ export function filesReducer(
         },
       };
     }
-
     case "UPDATE_PROMISE": {
       const { contract_id, promise } = action;
 

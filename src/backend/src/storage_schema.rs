@@ -52,7 +52,7 @@ impl Storable for User {
                     let mut new_user = User::default();
                     new_user.name = "NoneName".to_string();
                     new_user.id = "NoneID".to_string();
-                    return new_user;
+                    new_user
                 } // Use default if both formats fail
             }
         })

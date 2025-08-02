@@ -8,7 +8,10 @@ use crate::storage_schema::ContractId;
 use crate::tables::{ContractPermissionType, Filter, Formula, PermissionType};
 use crate::user_history::UserHistory;
 use crate::websocket::{NoteContent, Notification, PaymentAction};
-use crate::{ExchangeType, StoredContract, StoredContractVec, Wallet, CONTRACTS_STORE};
+use crate::{
+    validate_ccontract, validate_payment, ExchangeType, StoredContract, StoredContractVec, Wallet,
+    CONTRACTS_STORE,
+};
 
 // make me a function of list of days
 
@@ -117,7 +120,7 @@ impl CPayment {
         }
     }
     pub fn pay(mut self) -> Result<Self, String> {
-        let mut sender_wallet = Wallet::get(self.sender.clone());
+        let mut sender_wallet = Wallet::get(self.sender);
         if self.amount > sender_wallet.balance {
             return Err(String::from("Insufficient balance"));
         }
@@ -125,26 +128,22 @@ impl CPayment {
             return Err(String::from("You can't send to your self"));
         };
 
-        let mut receiver_wallet = Wallet::get(self.receiver.clone());
+        let mut receiver_wallet = Wallet::get(self.receiver);
         let withdraw = ExchangeType::LocalSend;
         let deposit = ExchangeType::LocalSend;
-        sender_wallet.withdraw(
-            self.amount.clone(),
-            self.receiver.clone().to_string(),
-            withdraw,
-        )?;
+        sender_wallet.withdraw(self.amount, self.receiver.clone().to_string(), withdraw)?;
         let _ = sender_wallet.remove_dept(self.id.clone());
         receiver_wallet.deposit(self.amount, self.sender.clone().to_string(), deposit)?;
 
         // ----------------- UserHistory ----------------- \\
-        let mut user_history = UserHistory::get(self.sender.clone());
+        let mut user_history = UserHistory::get(self.sender);
         user_history.payment_action(self.clone());
         user_history.save();
 
         // TODO think about this later again, maybey other people should not be effect by others actions
         //  see how people respond to this
         //  Alos, we are already storing the same payment object in notifications for this users, so this can be stipulation issue in our DS
-        let mut user_history = UserHistory::get(self.receiver.clone());
+        let mut user_history = UserHistory::get(self.receiver);
         user_history.payment_action(self.clone());
         user_history.save();
         // ---------------------------------------------------
@@ -152,13 +151,13 @@ impl CPayment {
         self.status = PaymentStatus::Released;
 
         // ---------------- handle notifications ----------------\\
-        UserHistory::get(self.sender.clone()).payment_action(self.clone());
+        UserHistory::get(self.sender).payment_action(self.clone());
 
         let content = NoteContent::CPaymentContract(self.clone(), PaymentAction::Released);
         let new_notification = Notification {
             id: self.id.clone(),
             sender: caller(),
-            receiver: self.receiver.clone(),
+            receiver: self.receiver,
             content,
             is_seen: false,
             time: ic_cdk::api::time() as f64,
@@ -192,18 +191,8 @@ impl CColumn {
 
 impl CustomContract {
     pub fn update_name(mut self, new_name: String) -> Result<Self, String> {
-        // Only creator can update contract name
-        if self.creator != caller().to_string() {
-            return Err(String::from(
-                "Only contract creator can update contract name",
-            ));
-        }
-
-        // Update the contract name
+        validate_ccontract(&self, None, None, "update_name")?;
         self.name = new_name;
-
-        // Save the updated contract
-        // self.save()?;
         Ok(self)
     }
 
@@ -211,18 +200,8 @@ impl CustomContract {
         mut self,
         new_permissions: Vec<ContractPermissionType>,
     ) -> Result<Self, String> {
-        // Only creator can update contract permissions
-        if self.creator != caller().to_string() {
-            return Err(String::from(
-                "Only contract creator can update contract permissions",
-            ));
-        }
-
-        // Update the contract permissions
+        validate_ccontract(&self, None, None, "update_permissions")?;
         self.permissions = new_permissions;
-
-        // Save the updated contract
-        // self.save()?;
         Ok(self)
     }
 
@@ -230,10 +209,7 @@ impl CustomContract {
         mut self,
         promises_indexes: Vec<(usize, String)>,
     ) -> Result<Self, String> {
-        // Only creator can reorder promises
-        if self.creator != caller().to_string() {
-            return Err(String::from("Only contract creator can reorder promises"));
-        }
+        validate_ccontract(&self, None, None, "reorder_promises")?;
 
         // Create a new vector to hold reordered promises
         let mut reordered_promises = vec![None; self.promises.len()];
@@ -260,8 +236,6 @@ impl CustomContract {
                 let promise = self.promises[promise_index].clone();
                 reordered_promises[*new_index] = Some(promise);
                 used_positions.insert(*new_index);
-            } else {
-                return Err(format!("Promise with ID {} not found", promise_id));
             }
         }
 
@@ -287,7 +261,7 @@ impl CustomContract {
         }
 
         // Convert Option<CPayment> back to CPayment vector
-        self.promises = reordered_promises.into_iter().filter_map(|p| p).collect();
+        self.promises = reordered_promises.into_iter().flatten().collect();
 
         // Save the updated contract
         // self.save()?;
@@ -295,22 +269,7 @@ impl CustomContract {
     }
 
     pub fn update_or_create_table(mut self, table_update: TableUpdates) -> Result<Self, String> {
-        let caller_principal = caller();
-
-        // Check permissions - creator always has access, otherwise check contract permissions
-        if self.creator != caller_principal.to_string() {
-            let has_permission = self.permissions.iter().any(|permission| match permission {
-                ContractPermissionType::Edit(principal) => principal == &caller_principal,
-                ContractPermissionType::AnyOneEdite => true,
-                _ => false,
-            });
-
-            if !has_permission {
-                return Err(String::from(
-                    "You don't have permission to update or create tables in this contract",
-                ));
-            }
-        }
+        validate_ccontract(&self, None, None, "create_table")?;
 
         // Find existing contract (table) or create new one
         if let Some(index) = self.contracts.iter().position(|c| c.id == table_update.id) {
@@ -327,11 +286,7 @@ impl CustomContract {
     }
 
     pub fn delete_table(mut self, table_id: String) -> Result<Self, String> {
-        // Only creator can delete tables
-        if self.creator != caller().to_string() {
-            return Err(String::from("Only contract creator can delete tables"));
-        }
-
+        validate_ccontract(&self, None, None, "delete_contract")?;
         // Check if table exists
         if !self.contracts.iter().any(|c| c.id == table_id) {
             return Err(String::from("Table not found"));
@@ -460,7 +415,7 @@ impl CustomContract {
             }
 
             // Convert Option<CColumn> back to CColumn vector
-            table.columns = reordered_columns.into_iter().filter_map(|c| c).collect();
+            table.columns = reordered_columns.into_iter().flatten().collect();
         }
 
         // Handle row reordering
@@ -524,7 +479,7 @@ impl CustomContract {
             }
 
             // Convert Option<CRow> back to CRow vector
-            table.rows = reordered_rows.into_iter().filter_map(|r| r).collect();
+            table.rows = reordered_rows.into_iter().flatten().collect();
         }
 
         Ok(())
@@ -545,21 +500,17 @@ impl CustomContract {
     }
 
     pub fn update_or_create_promise(mut self, mut payment: CPayment) -> Result<Self, String> {
-        // Basic validations
         self.validate_promise_permissions(&payment)?;
 
         if let Some(old_payment) = self.promises.iter().find(|p| p.id == payment.id) {
-            // UPDATE existing promise
+            validate_payment(&payment, Some(old_payment), "update")?;
             self.handle_payment_status_change(old_payment.clone(), &mut payment)?;
         } else {
-            // CREATE new promise
             payment.id = ic_cdk::api::time().to_string();
+            validate_payment(&payment, None, "create")?;
             self.create_new_promise(&mut payment)?;
             self.handle_new_payment_status(&mut payment)?;
         }
-
-        // Save the updated contract
-        // self.save()?;
 
         Ok(self)
     }
@@ -572,21 +523,12 @@ impl CustomContract {
             .ok_or_else(|| String::from("Promise not found"))?
             .clone();
 
-        // Validate deletion permissions
-        self.validate_promise_deletion(&promise_to_delete)?;
+        validate_payment(&promise_to_delete, None, "delete")?;
 
-        // Clean up wallet debt
         let wallet = Wallet::get(caller());
         let _ = wallet.remove_dept(promise_to_delete.id.clone());
-
-        // Remove promise from vector
         self.promises.retain(|p| p.id != promise_id);
-
-        // Send deletion notification
         self.notify_promise_deletion(&promise_to_delete)?;
-
-        // Save the updated contract
-        // self.save()?;
 
         Ok(self)
     }
@@ -690,7 +632,7 @@ impl CustomContract {
                 }
 
                 // Remove debt from sender's wallet
-                let sender_wallet = Wallet::get(new_payment.sender.clone());
+                let sender_wallet = Wallet::get(new_payment.sender);
                 let _ = sender_wallet.remove_dept(new_payment.id.clone());
 
                 self.update_promise_in_vector(new_payment.clone());
@@ -790,9 +732,9 @@ impl CustomContract {
 
         // Determine notification recipient based on action and caller
         let recipient = if caller_principal == payment.sender {
-            payment.receiver.clone()
+            payment.receiver
         } else {
-            payment.sender.clone()
+            payment.sender
         };
 
         // Create notification with unique ID
@@ -847,7 +789,7 @@ impl CustomContract {
 
         let notification = Notification::new(
             notification_id,
-            promise.receiver.clone(),
+            promise.receiver,
             NoteContent::CPaymentContract(cancelled_promise, PaymentAction::Cancelled),
         );
 
@@ -919,13 +861,13 @@ impl CustomContract {
         columns
             .iter()
             .find(|column| &column.field == field)
-            .map(|column| column.clone())
+            .cloned()
     }
 
     pub fn get(id: &String, creator: &String) -> Option<Self> {
         CONTRACTS_STORE.with(|contracts_store| {
             let caller_contracts = contracts_store.borrow();
-            let stored_contract_vec = caller_contracts.get(&creator)?.stored_contracts.clone();
+            let stored_contract_vec = caller_contracts.get(creator)?.stored_contracts.clone();
             if let Some(contract) = stored_contract_vec.iter().find(|contract| match contract {
                 StoredContract::CustomContract(contract) => contract.id == *id,
                 _ => false,

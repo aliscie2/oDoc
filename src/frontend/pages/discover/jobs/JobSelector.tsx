@@ -1,179 +1,263 @@
-import React, { useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
 import { Job } from "$/declarations/backend/backend.did";
+import { useBackendContext } from "@/contexts/BackendContext";
+import { Add, Delete, Share, Visibility } from "@mui/icons-material";
 import {
   Box,
-  Typography,
-  Select,
+  Button,
+  Chip,
+  Collapse,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
   MenuItem,
   Paper,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  IconButton,
-  Chip,
-  useTheme,
+  Select,
+  Tooltip,
+  Typography,
   useMediaQuery,
-  Collapse,
+  useTheme,
 } from "@mui/material";
-import { Visibility, Delete, Add } from "@mui/icons-material";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import JobDetails from "./JobDetails";
-import { useBackendContext } from "@/contexts/BackendContext";
 import JobBriefData from "./quickBar";
 
 const JobSelector: React.FC = () => {
   const dispatch = useDispatch();
   const { currentJobId, jobs } = useSelector((state: any) => state.jobState);
-  console.log({ currentJobId, jobs });
   const [expanded, setExpanded] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [showBriefData, setShowBriefData] = useState(false);
-  const [highlightedFields, setHighlightedFields] = useState<Set<string>>(
-    new Set(),
-  );
   const [previousJob, setPreviousJob] = useState<Job | null>(null);
+  const [copySuccess, setCopySuccess] = useState(false);
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-
   const currentJob = jobs.find((job: Job) => job.id === currentJobId);
   const { backendActor } = useBackendContext();
 
-  // Track job changes and highlight updated fields
+  const JOB_FIELDS = [
+    "description",
+    "location",
+    "salary",
+    "jobType",
+    "category",
+    "active",
+    "skills",
+    "requirements",
+    "benefits",
+    "company",
+    "contactEmail",
+    "applicationDeadline",
+    "experienceLevel",
+  ];
+  const MAX_JOBS = 4;
+  const HIGHLIGHT_DURATION = 4000;
+  const COPY_SUCCESS_DURATION = 2000;
+
+  const compareJobFields = (current: Job, previous: Job): Set<string> => {
+    const changedFields = new Set<string>();
+    JOB_FIELDS.forEach((field) => {
+      const currentValue = current[field as keyof Job];
+      const previousValue = previous[field as keyof Job];
+      const isChanged = ["category", "skills"].includes(field)
+        ? JSON.stringify(currentValue) !== JSON.stringify(previousValue)
+        : currentValue !== previousValue;
+      if (isChanged) changedFields.add(field);
+    });
+    return changedFields;
+  };
+
+  const scrollToBriefData = () => {
+    setTimeout(() => {
+      document.querySelector('[data-testid="job-brief-data"]')?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }, 300);
+  };
+
   useEffect(() => {
     if (currentJob && previousJob && currentJob.id === previousJob.id) {
-      const changedFields = new Set<string>();
-
-      // Compare all job fields to detect changes
-      if (currentJob.description !== previousJob.description)
-        changedFields.add("description");
-      if (currentJob.location !== previousJob.location)
-        changedFields.add("location");
-      if (currentJob.salary !== previousJob.salary) changedFields.add("salary");
-      if (currentJob.jobType !== previousJob.jobType)
-        changedFields.add("jobType");
-      if (
-        JSON.stringify(currentJob.category) !==
-        JSON.stringify(previousJob.category)
-      )
-        changedFields.add("category");
-      if (currentJob.active !== previousJob.active) changedFields.add("active");
-      if (
-        JSON.stringify(currentJob.skills) !== JSON.stringify(previousJob.skills)
-      )
-        changedFields.add("skills");
-      if (currentJob.requirements !== previousJob.requirements)
-        changedFields.add("requirements");
-      if (currentJob.benefits !== previousJob.benefits)
-        changedFields.add("benefits");
-      if (currentJob.company !== previousJob.company)
-        changedFields.add("company");
-      if (currentJob.contactEmail !== previousJob.contactEmail)
-        changedFields.add("contactEmail");
-      if (currentJob.applicationDeadline !== previousJob.applicationDeadline)
-        changedFields.add("applicationDeadline");
-      if (currentJob.experienceLevel !== previousJob.experienceLevel)
-        changedFields.add("experienceLevel");
-
+      const changedFields = compareJobFields(currentJob, previousJob);
       if (changedFields.size > 0) {
-        setHighlightedFields(changedFields);
-
-        // Auto-scroll to brief data with smooth animation
-        setTimeout(() => {
-          const briefElement = document.querySelector(
-            '[data-testid="job-brief-data"]',
-          );
-          if (briefElement) {
-            briefElement.scrollIntoView({
-              behavior: "smooth",
-              block: "center",
-            });
-          }
-        }, 300);
-
-        // Clear highlights after animation
-        setTimeout(() => {
-          setHighlightedFields(new Set());
-        }, 4000); // Extended to 4 seconds for better visibility
+        scrollToBriefData();
       }
     }
-
     setPreviousJob(currentJob ? { ...currentJob } : null);
   }, [currentJob]);
 
-  // Show/hide brief data based on current job
   useEffect(() => {
     setShowBriefData(!!currentJob);
   }, [currentJob]);
 
   const handleJobSelect = (jobId: string | null) => {
-    if (jobId === null) {
-      dispatch({
-        type: "SET_CURRENT_JOB",
-        job: null,
-      });
-    } else {
-      const job = jobs.find((j: Job) => j.id === jobId);
-      dispatch({
-        type: "SET_CURRENT_JOB",
-        job: job,
-      });
-    }
+    const job = jobId ? jobs.find((j: Job) => j.id === jobId) : null;
+    dispatch({ type: "SET_CURRENT_JOB", job });
     setExpanded(false);
   };
 
-  const handleToggleActive = (job: Job, event: React.MouseEvent) => {
+  const handleJobAction = (
+    job: Job,
+    action: string,
+    event: React.MouseEvent,
+  ) => {
     event.stopPropagation();
-    console.log("is active", job.active);
-    dispatch({
-      type: "TOGGLE_ACTIVE",
-      id: job.id,
-    });
-  };
-
-  const handleShowDetails = (job: Job, event: React.MouseEvent) => {
-    event.stopPropagation();
-    setSelectedJob(job);
-    setDialogOpen(true);
-  };
-
-  const handleDeleteJob = (job: Job, event: React.MouseEvent) => {
-    event.stopPropagation();
-    if (window.confirm("Are you sure you want to delete this job?")) {
-      backendActor?.delete_job(job.id);
-      dispatch({
-        type: "DELETE_JOB",
-        id: job.id,
-      });
+    switch (action) {
+      case "toggle":
+        dispatch({ type: "TOGGLE_ACTIVE", id: job.id });
+        break;
+      case "details":
+        setSelectedJob(job);
+        setDialogOpen(true);
+        break;
+      case "delete":
+        if (window.confirm("Are you sure you want to delete this job?")) {
+          backendActor?.delete_job(job.id);
+          dispatch({ type: "DELETE_JOB", id: job.id });
+        }
+        break;
+      case "copy":
+        navigator.clipboard.writeText(
+          `${window.location.origin}/jobs?id=${job.id}`,
+        );
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), COPY_SUCCESS_DURATION);
+        break;
     }
   };
 
-  const truncateText = (text: string, maxLength: number = 40) => {
-    return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
-  };
+  const truncateText = (text: string, maxLength: number = 40) =>
+    text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
 
-  const getJobCategory = (job: Job) => {
-    return job.category
+  const getJobCategory = (job: Job) =>
+    job.category
       ? Object.keys(job.category)[0] || "Uncategorized"
       : "Uncategorized";
-  };
 
-  const getJobTitle = (job: Job) => {
-    return job.description ? truncateText(job.description) : "Untitled Job";
-  };
+  const getJobTitle = (job: Job) =>
+    job.description ? truncateText(job.description) : "Untitled Job";
+
+  const jobActions = [
+    {
+      action: "toggle",
+      icon: (job: Job) => (job.active ? "active" : "inactive"),
+      color: (job: Job) => (job.active ? "success" : "error"),
+      disabled: (job: Job) => false,
+    },
+    {
+      action: "details",
+      icon: (job: Job) => <Visibility fontSize="small" />,
+      color: (job: Job) => theme.palette.info.main,
+      disabled: (job: Job) => false,
+    },
+    {
+      action: "copy",
+      icon: (job: Job) => <Share fontSize="small" />,
+      color: (job: Job) =>
+        copySuccess ? theme.palette.success.main : theme.palette.info.main,
+      tooltip: (job: Job) =>
+        copySuccess
+          ? "Link copied successfully!"
+          : `Copy your ${getJobCategory(job)} link`,
+      disabled: (job: Job) => false,
+    },
+    {
+      action: "delete",
+      icon: (job: Job) => <Delete fontSize="small" />,
+      color: (job: Job) => theme.palette.error.main,
+      disabled: (job: Job) =>
+        currentJob?.skills?.length === 0 && jobs.length === 1,
+    },
+  ];
+
+  const renderJobMenuItem = (job: Job) => (
+    <MenuItem
+      key={job.id}
+      value={job.id}
+      onClick={() => handleJobSelect(job.id)}
+      sx={{ py: 1, "&:hover": { bgcolor: theme.palette.action.hover } }}
+    >
+      <Box
+        sx={{ display: "flex", alignItems: "center", gap: 1, width: "100%" }}
+      >
+        <Chip
+          label={getJobCategory(job)}
+          size="small"
+          color="secondary"
+          variant="outlined"
+        />
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography
+            variant="body1"
+            sx={{
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {getJobTitle(job)}
+          </Typography>
+        </Box>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          {jobActions.map(({ action, icon, color, tooltip, disabled }) => {
+            const isDisabled = disabled(job);
+            const buttonColor = color(job);
+            const ActionButton = (
+              <IconButton
+                size="small"
+                disabled={isDisabled}
+                color={
+                  typeof buttonColor === "string" &&
+                  [
+                    "primary",
+                    "secondary",
+                    "success",
+                    "error",
+                    "info",
+                    "warning",
+                  ].includes(buttonColor)
+                    ? (buttonColor as any)
+                    : undefined
+                }
+                onClick={(event) => handleJobAction(job, action, event)}
+                sx={{
+                  color:
+                    typeof buttonColor === "string" &&
+                    ![
+                      "primary",
+                      "secondary",
+                      "success",
+                      "error",
+                      "info",
+                      "warning",
+                    ].includes(buttonColor)
+                      ? buttonColor
+                      : undefined,
+                  "&:hover": { bgcolor: theme.palette.info.light + "20" },
+                }}
+              >
+                {icon(job)}
+              </IconButton>
+            );
+            return tooltip ? (
+              <Tooltip key={action} title={tooltip(job)} arrow>
+                {ActionButton}
+              </Tooltip>
+            ) : (
+              <div key={action}>{ActionButton}</div>
+            );
+          })}
+        </Box>
+      </Box>
+    </MenuItem>
+  );
 
   return (
-    <Box
-      sx={{
-        width: "100%",
-        margin: 0,
-        padding: 0,
-      }}
-    >
-      {/* Job Selector */}
+    <Box sx={{ width: "100%", margin: 0, padding: 0 }}>
       <Paper
         elevation={0}
         sx={{
@@ -191,16 +275,11 @@ const JobSelector: React.FC = () => {
           onOpen={() => setExpanded(true)}
           onClose={() => setExpanded(false)}
           sx={{
-            "& .MuiSelect-select": {
-              p: 1,
-              border: "none",
-            },
-            "& fieldset": {
-              border: "none",
-            },
+            "& .MuiSelect-select": { p: 1, border: "none" },
+            "& fieldset": { border: "none" },
             bgcolor: theme.palette.background.paper,
           }}
-          renderValue={(selected) => (
+          renderValue={() => (
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               {currentJob ? (
                 <>
@@ -225,11 +304,10 @@ const JobSelector: React.FC = () => {
             </Box>
           )}
         >
-          {/* Create New Job Option */}
           <MenuItem
             value=""
             onClick={() => handleJobSelect(null)}
-            disabled={jobs.length >= 4}
+            disabled={jobs.length >= MAX_JOBS}
             sx={{
               py: 1,
               borderBottom:
@@ -244,111 +322,33 @@ const JobSelector: React.FC = () => {
                 width: "100%",
               }}
             >
-              <Add color={jobs.length >= 4 ? "disabled" : "primary"} />
+              <Add color={jobs.length >= MAX_JOBS ? "disabled" : "primary"} />
               <Box sx={{ flex: 1 }}>
                 <Typography
                   variant="body1"
-                  color={jobs.length >= 4 ? "textSecondary" : "primary"}
+                  color={jobs.length >= MAX_JOBS ? "textSecondary" : "primary"}
                 >
                   Create New Job Post
                 </Typography>
-                {jobs.length >= 4 && (
+                {jobs.length >= MAX_JOBS && (
                   <Typography variant="caption" color="error">
-                    Maximum limit reached (4/4)
+                    Maximum limit reached ({MAX_JOBS}/{MAX_JOBS})
                   </Typography>
                 )}
               </Box>
             </Box>
           </MenuItem>
 
-          {/* Existing Jobs */}
-          {jobs.map((job: Job, index: number) => (
-            <MenuItem
-              key={job.id}
-              value={job.id}
-              onClick={() => handleJobSelect(job.id)}
-              sx={{
-                py: 1,
-                "&:hover": {
-                  bgcolor: theme.palette.action.hover,
-                },
-              }}
-            >
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
-                  width: "100%",
-                }}
-              >
-                <Chip
-                  label={getJobCategory(job)}
-                  size="small"
-                  color="secondary"
-                  variant="outlined"
-                />
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {getJobTitle(job)}
-                  </Typography>
-                </Box>
-                <Box sx={{ display: "flex", gap: 1 }}>
-                  <IconButton
-                    color={job.active ? "success" : "error"}
-                    size="small"
-                    onClick={(event) => handleToggleActive(job, event)}
-                    sx={{
-                      "&:hover": { bgcolor: theme.palette.info.light + "20" },
-                    }}
-                  >
-                    {job.active ? "active" : "inactive"}
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    onClick={(event) => handleShowDetails(job, event)}
-                    sx={{
-                      color: theme.palette.info.main,
-                      "&:hover": { bgcolor: theme.palette.info.light + "20" },
-                    }}
-                  >
-                    <Visibility fontSize="small" />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    disabled={
-                      currentJob?.skills?.length === 0 && jobs.length === 1
-                    }
-                    onClick={(event) => handleDeleteJob(job, event)}
-                    sx={{
-                      color: theme.palette.error.main,
-                      "&:hover": { bgcolor: theme.palette.error.light + "20" },
-                    }}
-                  >
-                    <Delete fontSize="small" />
-                  </IconButton>
-                </Box>
-              </Box>
-            </MenuItem>
-          ))}
+          {jobs.map(renderJobMenuItem)}
         </Select>
       </Paper>
 
-      {/* Brief Data Bar */}
       <Collapse in={showBriefData} timeout={400}>
         <Box data-testid="job-brief-data">
           <JobBriefData currentJob={currentJob} />
         </Box>
       </Collapse>
 
-      {/* Job Details Dialog */}
       <Dialog
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
@@ -375,24 +375,19 @@ const JobSelector: React.FC = () => {
         }}
       >
         <DialogTitle
-          sx={{
-            pb: 1,
-            borderBottom: `1px solid ${theme.palette.divider}`,
-          }}
+          sx={{ pb: 1, borderBottom: `1px solid ${theme.palette.divider}` }}
         >
           <Typography variant="h6" sx={{ fontWeight: 500 }}>
             Job Details
           </Typography>
         </DialogTitle>
+
         <DialogContent sx={{ p: { xs: 0, sm: 0 } }}>
           {selectedJob && <JobDetails job={selectedJob} showEmails={true} />}
         </DialogContent>
+
         <DialogActions
-          sx={{
-            p: 3,
-            pt: 2,
-            borderTop: `1px solid ${theme.palette.divider}`,
-          }}
+          sx={{ p: 3, pt: 2, borderTop: `1px solid ${theme.palette.divider}` }}
         >
           <Button
             onClick={() => setDialogOpen(false)}

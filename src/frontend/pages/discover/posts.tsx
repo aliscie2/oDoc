@@ -6,13 +6,7 @@ import LoadMorePosts from "./LoadMorePosts";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/reducers";
 
-interface PostsProps {
-  posts: any[];
-  isLoggedIn: boolean;
-  searchValue: string;
-}
-
-const Posts: React.FC<PostsProps> = () => {
+const Posts: React.FC = () => {
   const { posts } = useSelector((state: RootState) => state.filesState);
 
   const { isLoggedIn } = useSelector((state: any) => state.uiState);

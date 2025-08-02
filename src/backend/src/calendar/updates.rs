@@ -30,7 +30,7 @@ impl Calendar {
     fn check_event_update_permission(&self, caller_id: &str, event_id: &str) -> Result<(), String> {
         if let Some(existing_event) = self.events.iter().find(|e| e.id == event_id) {
             if caller_id != self.owner && caller_id != existing_event.created_by {
-                return Err(format!("You don't have permission to update this event"));
+                return Err("You don't have permission to update this event".to_string());
             }
         }
         Ok(())
@@ -101,13 +101,11 @@ impl Calendar {
         caller_id: &str,
     ) -> Result<(), String> {
         // Permission check
-        if caller_id != self.owner {
-            if !new_event.id.is_empty() {
-                // For existing events, check if caller is creator
-                if let Some(existing) = self.events.iter().find(|e| e.id == new_event.id) {
-                    if caller_id != existing.created_by {
-                        return Err("No permission to update this event".to_string());
-                    }
+        if caller_id != self.owner && !new_event.id.is_empty() {
+            // For existing events, check if caller is creator
+            if let Some(existing) = self.events.iter().find(|e| e.id == new_event.id) {
+                if caller_id != existing.created_by {
+                    return Err("No permission to update this event".to_string());
                 }
             }
         }
@@ -133,7 +131,7 @@ impl Calendar {
                 ScheduleType::WeeklyRecurring { days, valid_until } => {
                     let event_day = Self::get_day_of_week(new_event.start_time);
                     days.contains(&event_day)
-                        && valid_until.map_or(true, |until| new_event.start_time <= until)
+                        && valid_until.is_none_or(|until| new_event.start_time <= until)
                 }
                 ScheduleType::SpecificDates(dates) => dates.iter().any(|date| {
                     let day_start = Self::start_of_day(*date);

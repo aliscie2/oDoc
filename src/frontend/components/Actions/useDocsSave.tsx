@@ -4,6 +4,7 @@ import { useSnackbar } from "notistack";
 import { useBackendContext } from "@/contexts/BackendContext";
 
 import serializeFileContents from "@/DataProcessing/serialize/serializeFileContents";
+import { ContractUpdates } from "$/declarations/backend/backend.did";
 
 interface UseDocsSaveReturn {
   isChanged: boolean;
@@ -11,6 +12,31 @@ interface UseDocsSaveReturn {
   save: () => Promise<void>;
   reset: () => Promise<void>;
 }
+
+
+/**
+ * Checks for released payments and confirms with the user if they want to proceed
+ * @param contracts_updates Array of ContractUpdates to check
+ * @returns Processed contracts_updates (with released payments removed if user declined)
+ */
+function confirmReleasedPayments(contracts_updates: ContractUpdates[],enqueueSnackbar:any): ContractUpdates[] {
+ const total = contracts_updates.reduce((sum, update) => 
+   sum + update.promises.filter(p => 'Released' in p.status).reduce((pSum, p) => pSum + p.amount, 0), 0
+ );
+
+ if (total === 0) return contracts_updates;
+
+ if (!confirm(`Are you sure you want to release payments totaling ${total}?`)) {
+  enqueueSnackbar(`Reset payments`);
+   return contracts_updates.map(update => ({
+     ...update,
+     promises: update.promises.filter(p => !('Released' in p.status))
+   }));
+ }
+
+ return contracts_updates;
+}
+
 
 export const useDocsSave = (): UseDocsSaveReturn => {
   const [loading, setLoading] = useState(false);
@@ -39,11 +65,11 @@ export const useDocsSave = (): UseDocsSaveReturn => {
 
     try {
       const serializedContent = serializeFileContents(changes.contents);
-
+      const processedContracts = await confirmReleasedPayments(changes.contracts,enqueueSnackbar);
       const res: any = await backendActor.multi_updates(
         changes.files,
         serializedContent,
-        changes.contracts,
+        processedContracts,
         changes.files_indexing || [],
       );
 
