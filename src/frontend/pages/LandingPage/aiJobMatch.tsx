@@ -33,7 +33,7 @@ import InstagramIcon from "@mui/icons-material/Instagram";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import { useBackendContext } from "@/contexts/BackendContext";
 import { useSelector } from "react-redux";
-import IcpJopsLogo from "@/public/jobs.png";
+import { Helmet } from "react-helmet-async";
 
 const DiscordIcon = (props) => (
   <SvgIcon {...props}>
@@ -78,7 +78,7 @@ const EcosystemSection = () => {
               }}
             >
               <img
-                src={IcpJopsLogo}
+                src={"/public/jobs.png"}
                 alt="ICP Ecosystem Growth"
                 style={{
                   width: "100%",
@@ -438,7 +438,7 @@ const PageFooter = () => {
                 color: isDarkMode ? "#fff" : "#212529",
               }}
             >
-              xx.com
+              IPCJOBS.com
             </Typography>
             <Typography
               variant="body1"
@@ -695,6 +695,9 @@ export default function ICPJobsLandingPage() {
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
+      <Helmet>
+        <title>ICPJOBS.com</title>
+      </Helmet>
       <Container maxWidth="lg" sx={{ py: 4 }}>
         {/* Hero Section */}
         <Box sx={{ textAlign: "center", py: { xs: 6, md: 10 }, mb: 8 }}>

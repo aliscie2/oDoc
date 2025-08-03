@@ -514,14 +514,12 @@ const WalletPage: React.FC<{ wallet?: Wallet }> = ({
     }
   };
 
-
   return (
     <Box sx={{ maxWidth: 1200, margin: "0 auto", p: 3 }}>
       <Button
         disabled={!profile?.id}
         onClick={async () => {
           await depositWithOisy(100, Principal.fromText(profile?.id));
-          
         }}
       >
         Deposit with oisy

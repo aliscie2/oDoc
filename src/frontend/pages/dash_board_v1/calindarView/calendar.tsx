@@ -15,6 +15,7 @@ import { useCalendarLogic } from "./calendarLogic";
 import { useBackendContext } from "@/contexts/BackendContext";
 import { useDispatch } from "react-redux";
 import { useGoogleCalendar } from "./googleAccounts/useGoogleCalendar";
+import { Helmet } from "react-helmet-async";
 
 const CalendarView = () => {
   const { backendActor } = useBackendContext();
@@ -187,6 +188,9 @@ const CalendarView = () => {
         ...useCalendarStyles(isDark, isMobile),
       }}
     >
+      <Helmet>
+        <title>Calendar</title>
+      </Helmet>
       <Calendar
         style={{
           flex: 1,

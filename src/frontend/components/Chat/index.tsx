@@ -36,7 +36,6 @@ import { Chat } from "../../../declarations/backend/backend.did";
 import { Principal } from "@dfinity/principal";
 import { randomString } from "../../DataProcessing/dataSamples";
 import { convertToBlobLink } from "@/DataProcessing/imageToVec";
-import oDocLogo from "@/public/logo.png";
 
 // Memoized form components (unchanged)
 const GroupNameField = memo(({ value, onChange }) => (
@@ -253,7 +252,9 @@ const ChatList = memo(
                   {chat.name === "private_chat" ? (
                     <Avatar
                       src={
-                        isOdoc ? oDocLogo : convertToBlobLink(otherUser?.photo)
+                        isOdoc
+                          ? "/public/logo.png"
+                          : convertToBlobLink(otherUser?.photo)
                       }
                     >
                       {otherUser?.name?.charAt(0)}

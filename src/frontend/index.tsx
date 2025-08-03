@@ -30,21 +30,21 @@ root.render(
   <StrictMode>
     <Provider store={store}>
       <BrowserRouter>
-      <HelmetProvider>
-        <ThemeProvider>
-          <BackendProvider>
-            <SnackbarProvider
-              anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "right",
-              }}
-              maxSnack={3}
-            >
-              <App />
-            </SnackbarProvider>
-          </BackendProvider>
-        </ThemeProvider>
-      </HelmetProvider>
+        <HelmetProvider>
+          <ThemeProvider>
+            <BackendProvider>
+              <SnackbarProvider
+                anchorOrigin={{
+                  vertical: "bottom",
+                  horizontal: "right",
+                }}
+                maxSnack={3}
+              >
+                <App />
+              </SnackbarProvider>
+            </BackendProvider>
+          </ThemeProvider>
+        </HelmetProvider>
       </BrowserRouter>
     </Provider>
   </StrictMode>,

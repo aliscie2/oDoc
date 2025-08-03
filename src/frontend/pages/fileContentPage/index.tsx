@@ -22,6 +22,7 @@ import { Link } from "react-router-dom";
 
 import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
 import { NOTFOUND404 } from "@/components/creature/logoSVG";
+import { Helmet } from "react-helmet-async";
 
 const ExpandingInput = styled(Input)(({ theme }) => ({
   "& input": {
@@ -185,6 +186,10 @@ function FileContentPage() {
 
   return (
     <div style={{ marginTop: "3px", marginLeft: "10%", marginRight: "10%" }}>
+      <Helmet>
+        <title>{currentFile.name}</title>
+      </Helmet>
+
       <TopBar>
         <Collapse in={!showContentTabs} timeout={300}>
           <ToggleWrapper className={showContentTabs ? "hidden" : ""}>

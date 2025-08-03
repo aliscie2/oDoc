@@ -42,8 +42,9 @@ export async function depositWithOisy(amount: number, user: Principal) {
     console.log("Transfer result:", result);
     return result;
   } catch (error) {
-    error?.errorType?.InsufficientFunds && alert("Yuur oisy wallet balance is insufficient.")
-     console.log("Deposit error:", error?.errorType?.InsufficientFunds);
+    error?.errorType?.InsufficientFunds &&
+      alert("Yuur oisy wallet balance is insufficient.");
+    console.log("Deposit error:", error?.errorType?.InsufficientFunds);
     throw error;
   }
 }

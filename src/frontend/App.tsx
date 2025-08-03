@@ -49,10 +49,7 @@ const PageContainer = styled(Box)(({ theme }) => ({
 }));
 
 const App: React.FC = () => {
-
   const { pathname } = useLocation();
-
-
 
   // In App.tsx
   useEffect(() => {
@@ -119,7 +116,6 @@ const App: React.FC = () => {
         dispatch({ type: "IS_FETCHING", isFetching: true });
 
         const res = await backendActor.get_initial_data();
-
 
         if ("Err" in res && res.Err == "Anonymous user.") {
           dispatch({ isRegistered: false, type: "IS_REGISTERED" });
@@ -255,8 +251,6 @@ const App: React.FC = () => {
     }
   }, [backendActor]);
 
-  
-
   useEffect(() => {
     const fetchPosts = async () => {
       try {
@@ -379,50 +373,46 @@ const App: React.FC = () => {
   if (!backendActor) {
     return <RunawayJellyfish thinking={true} scale={2} />;
   }
-
-
-  const getTitle = () => {
- 
-    const isIcpJobs = window.location.hostname.includes("icpjobs");
-    
-    if (pathname === "/calendar") {
-      return isIcpJobs ? "Calendar - ICP Jobs" : "Calendar";
-    }
-    return isIcpJobs ? "ICP Jobs" : "odoc";
-    };
-
-
-
   return (
-    
-      <MainContent>
-        <Helmet>
-          <title>
-            {getTitle()}
-          </title>
-          <link
-            rel="icon"
-            type="image/png"
-            href={
-              window.location.hostname.includes("icpjobs")
-                ? "/icpjobs_logo.png"
-                : "/logo.png"
-            }
-          />
-        </Helmet>
-        {/* <PWAInstallPrompt /> */}
-        {/* <SearchPopper /> */}
-        <GoogleCalendarOnboarding />
-        <TopNavBar />
-        {isRegistered && <ChatContainer />}
-        <DndProvider backend={HTML5Backend}>
-          <NavBar>
-            <PageContainer>
-              {isRegistered == false ? <RegistrationForm /> : <Pages />}
-            </PageContainer>
-          </NavBar>
-        </DndProvider>
-      </MainContent>
+    <MainContent>
+      <Helmet>
+        <link
+          rel="icon"
+          type="image/png"
+          href={
+            window.location.hostname.includes("icpjobs")
+              ? "/icpjobs_logo.png"
+              : "/logo.png"
+          }
+        />
+
+        <meta name="twitter:image" content="/public/icpjobs_thumnail.png" />
+        {["twitter:image", "og:image"].map((property: string) => {
+          return (
+            <meta
+              property={property}
+              content={
+                window.location.hostname.includes("icpjobs")
+                  ? "/public/icpjobs_thumnail.png"
+                  : "/odoc_thumnail.png"
+              }
+            />
+          );
+        })}
+      </Helmet>
+      {/* <PWAInstallPrompt /> */}
+      {/* <SearchPopper /> */}
+      <GoogleCalendarOnboarding />
+      <TopNavBar />
+      {isRegistered && <ChatContainer />}
+      <DndProvider backend={HTML5Backend}>
+        <NavBar>
+          <PageContainer>
+            {isRegistered == false ? <RegistrationForm /> : <Pages />}
+          </PageContainer>
+        </NavBar>
+      </DndProvider>
+    </MainContent>
   );
 };
 

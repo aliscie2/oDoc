@@ -55,11 +55,7 @@ import LOGOSVG, { SECRUTYSVG } from "@/components/creature/logoSVG";
 import getckUsdcBalance from "@/utils/getBalance";
 import { canisterId } from "$/declarations/backend";
 import { useBackendContext } from "@/contexts/BackendContext";
-import JobIcon from "@/public/jobs.png";
-import AgreementIcon from "@/public/agreement.png";
-import AllInOne from "@/public/all-in-on.png";
-import CalendarIcon from "@/public/calendar.png";
-import TeamSpaces from "@/public/teamspaces.png";
+import { Helmet } from "react-helmet-async";
 
 const StatsSection = () => {
   const [stats, setStats] = useState({
@@ -326,7 +322,7 @@ export default function OdocLandingPage() {
       title: "AI Job Matching System",
       icon: (
         <img
-          src={JobIcon}
+          src={"/public/jobs.png"}
           style={{
             transform: "scaleX(-1)",
             width: isMobile ? "150px" : "500px",
@@ -390,7 +386,7 @@ export default function OdocLandingPage() {
       reversed: true,
       icon: (
         <img
-          src={AgreementIcon}
+          src={"/public/agreement.png"}
           style={{ width: isMobile ? "150px" : "500px", objectFit: "contain" }}
         />
       ),
@@ -457,7 +453,7 @@ export default function OdocLandingPage() {
       title: "Automated Tasks Manager",
       icon: (
         <img
-          src={AllInOne}
+          src={"/public/all-in-on.png"}
           style={{
             transform: "scaleX(-1)",
             width: isMobile ? "150px" : "500px",
@@ -525,7 +521,7 @@ export default function OdocLandingPage() {
       reversed: true,
       icon: (
         <img
-          src={CalendarIcon}
+          src={"/public/calendar.png"}
           style={{
             transform: "scaleX(-1)",
             width: isMobile ? "150px" : "500px",
@@ -622,7 +618,7 @@ export default function OdocLandingPage() {
       title: "Team Spaces with AI",
       icon: (
         <img
-          src={TeamSpaces}
+          src={"/public/teamspaces.png"}
           style={{
             transform: "scaleX(-1)",
             width: isMobile ? "150px" : "500px",
@@ -799,6 +795,9 @@ export default function OdocLandingPage() {
 
   return (
     <Box sx={{ minHeight: "100vh" }}>
+      <Helmet>
+        <title>ODOC.app</title>
+      </Helmet>
       <Container maxWidth="lg" sx={{ py: 4 }}>
         {features.map((feature, index) => (
           <FeatureSection key={index} {...feature}>

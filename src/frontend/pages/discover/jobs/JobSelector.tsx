@@ -23,6 +23,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import JobDetails from "./JobDetails";
 import JobBriefData from "./quickBar";
+import { Helmet } from "react-helmet-async";
 
 const JobSelector: React.FC = () => {
   const dispatch = useDispatch();
@@ -139,7 +140,7 @@ const JobSelector: React.FC = () => {
       : "Uncategorized";
 
   const getJobTitle = (job: Job) =>
-    job.description ? truncateText(job.description) : "Untitled Job";
+    job.job_titles ? truncateText(job.job_titles) : "Untitled Job";
 
   const jobActions = [
     {
@@ -258,6 +259,13 @@ const JobSelector: React.FC = () => {
 
   return (
     <Box sx={{ width: "100%", margin: 0, padding: 0 }}>
+      <Helmet>
+        <title>
+          {`${Object.keys(currentJob?.category || {})[0]}:  ${currentJob?.job_titles[0]}` ||
+            "Jobs"}
+        </title>
+      </Helmet>
+
       <Paper
         elevation={0}
         sx={{

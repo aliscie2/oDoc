@@ -1,10 +1,11 @@
 import { Principal } from "@dfinity/principal";
-import {
-  CPayment
-} from "$/declarations/backend/backend.did";
+import { CPayment } from "$/declarations/backend/backend.did";
 import { randomString } from "../../DataProcessing/dataSamples";
 
-export function createNewPromis(sender: Principal, contract_id?:string): CPayment {
+export function createNewPromis(
+  sender: Principal,
+  contract_id?: string,
+): CPayment {
   const status = { None: null };
   return {
     contract_id,
@@ -67,7 +68,6 @@ export const transformPromisesDataAndColumns = (
   };
 };
 
-
 export const NotificationPromiesContextMenu = (params) => {
   return [
     { name: "claim all promises" },
@@ -77,14 +77,9 @@ export const NotificationPromiesContextMenu = (params) => {
   ];
 };
 
-
-
-
-
-export  const getStatusOptions = (payment: CPayment, profileId: string) => {
+export const getStatusOptions = (payment: CPayment, profileId: string) => {
   const isSender = profileId === payment.sender.toString();
   const currentStatus = Object.keys(payment.status)[0];
-
 
   if (isSender) {
     switch (currentStatus) {

@@ -47,7 +47,7 @@ function initCanisterIds() {
 const isDevelopment = process.env.NODE_ENV !== "production" || localEnv;
 initCanisterIds();
 export default defineConfig({
-    publicDir: 'public', // Make sure this points to root public folder
+  publicDir: 'public', // Changed from 'public'
   assetsInclude: ["**/*.md"],
   build: {
     outDir: "build",

@@ -816,12 +816,12 @@ export function filesReducer(
     }
 
     case "DELETE_CUSTOM_CONTRACT": {
-  const { [action.id]: deleted, ...remaining } = state.contracts;
-  return {
-    ...state,
-    contracts: remaining
-  }
-}
+      const { [action.id]: deleted, ...remaining } = state.contracts;
+      return {
+        ...state,
+        contracts: remaining,
+      };
+    }
 
     case "UPDATE_COLUMN": {
       const { contract_id, table_id, column } = action;

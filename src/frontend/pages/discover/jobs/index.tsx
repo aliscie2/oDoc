@@ -1,14 +1,15 @@
-import React, { useState, useEffect, useRef } from "react";
 import { Box } from "@mui/material";
+import React, { useEffect, useRef, useState } from "react";
 
-import { useDispatch, useSelector } from "react-redux";
 import { Job } from "$/declarations/backend/backend.did";
+import { useDispatch, useSelector } from "react-redux";
 
 import JobSelector from "@/pages/discover/jobs/JobSelector";
 import JobSearchComponent from "./JobSearchComponent";
 
 import LoginButton from "@/components/MainComponents/topNavBar/loginButton";
 import { Login } from "@mui/icons-material";
+import { Helmet } from "react-helmet-async";
 
 const JobsPage: React.FC = () => {
   const { isChanged, currentJobId, jobs, matchingJobs } = useSelector(
@@ -45,6 +46,10 @@ const JobsPage: React.FC = () => {
         marginX: { xs: 0, sm: "auto" },
       }}
     >
+      <Helmet>
+        <title>Jobs</title>
+      </Helmet>
+
       <Box
         sx={{
           // Mobile: add left margin to avoid sandwich button overlap
