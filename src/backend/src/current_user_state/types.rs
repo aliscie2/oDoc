@@ -139,3 +139,18 @@ impl UserState {
         })
     }
 }
+
+pub struct TransferGuard;
+
+impl Drop for TransferGuard {
+    fn drop(&mut self) {
+        UserState::unset_is_transfering();
+    }
+}
+
+impl TransferGuard {
+    pub fn new() -> Result<Self, Error> {
+        UserState::set_is_transfering()?;
+        Ok(TransferGuard)
+    }
+}

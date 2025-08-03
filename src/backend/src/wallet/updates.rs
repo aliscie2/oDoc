@@ -1,4 +1,5 @@
 use crate::ckusdc_index_types::GetTransactions;
+use crate::current_user_state::types::TransferGuard;
 use crate::current_user_state::UserState;
 use crate::wallet::error::Error;
 use crate::workspaces::nat_to_u64;
@@ -141,70 +142,55 @@ async fn transfer_from(amount: Nat, from: Principal, to: Principal) -> Result<Bl
 
 #[update]
 async fn deposit_ckusdt() -> Result<Wallet, Error> {
-    UserState::set_is_transfering()?;
+    let _guard = TransferGuard::new()?;
     let mut wallet = Wallet::get(caller());
-    let balance = get_user_balance().await;
-    if balance.is_err() {
+    let balance = get_user_balance().await.map_err(|e| Error::IcCdkError {
+        message: format!("{:?}", e),
+    })?;
+
+    if balance <= 3000000_u64 {
         return Err(Error::IcCdkError {
-            message: format!("{:?}", balance),
+            message: "Minimum deposit should be 0.1 USD".to_string(),
         });
     }
-    let balance = balance.unwrap();
-    if balance > 3000000_u64 {
-        let fee: Nat = get_fee().await;
-        transfer_from(balance.clone() - fee.clone(), caller(), ic_cdk::id()).await?;
-        let res = wallet.deposit(
-            nat_to_u64((balance.clone() - fee) / Nat::from(1000000_u64)) as f64,
+
+    let fee = get_fee().await;
+    transfer_from(balance - fee.clone(), caller(), ic_cdk::id()).await?;
+    wallet
+        .deposit(
+            nat_to_u64((balance - fee) / Nat::from(1000000_u64)) as f64,
             "ExternalWallet".to_string(),
             ExchangeType::Deposit,
-        );
-        if let Err(wallet_error) = res {
-            return Err(Error::IcCdkError {
-                message: format!("{:?}", wallet_error),
-            });
-        }
-        UserState::unset_is_transfering();
-        return Ok(wallet.clone());
-    }
+        )
+        .map_err(|e| Error::IcCdkError {
+            message: format!("{:?}", e),
+        })?;
 
-    UserState::unset_is_transfering();
-    Err(Error::IcCdkError {
-        message: format!("{:?}", "Minimum deposit should be 0.1 USD".to_string()),
-    })
+    Ok(wallet)
 }
 
 #[update]
 async fn withdraw_ckusdt(amount: u64, address: String) -> Result<Wallet, Error> {
-    UserState::set_is_transfering()?;
-    let balance = get_user_balance().await;
-    if balance.is_err() {
-        return Err(Error::IcCdkError {
-            message: format!("{:?}", balance),
-        });
-    }
-    let balance = balance.unwrap();
+    let _guard = TransferGuard::new()?;
+    let balance = get_user_balance().await.map_err(|e| Error::IcCdkError {
+        message: format!("{:?}", e),
+    })?;
 
     let mut wallet = Wallet::get(caller());
-    let res = wallet.withdraw(amount as f64, address.clone(), ExchangeType::Withdraw);
-    if res.is_err() {
-        return Err(Error::IcCdkError {
-            message: format!("wallet error: {:?}", res),
-        });
-    }
+    wallet
+        .withdraw(amount as f64, address.clone(), ExchangeType::Withdraw)
+        .map_err(|e| Error::IcCdkError {
+            message: format!("wallet error: {:?}", e),
+        })?;
 
     if amount >= balance {
-        let res = transfer_from(
+        transfer_from(
             Nat::from(amount * 1000000),
             ic_cdk::id(),
-            Principal::from_text(address.clone()).unwrap(),
+            Principal::from_text(address).unwrap(),
         )
-        .await;
-        if let Err(err) = res {
-            UserState::unset_is_transfering();
-            return Err(err);
-        }
+        .await?;
     }
-    UserState::unset_is_transfering();
     Ok(wallet)
 }
 

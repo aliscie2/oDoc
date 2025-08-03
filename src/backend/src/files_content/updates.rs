@@ -4,7 +4,7 @@ use candid::{CandidType, Deserialize};
 use ic_cdk::caller;
 use ic_cdk_macros::update;
 
-use crate::current_user_state::UserState;
+use crate::current_user_state::types::TransferGuard;
 use crate::files::FileNode;
 use crate::files_content::ContentNode;
 use crate::storage_schema::{ContentTree, FileId};
@@ -76,22 +76,17 @@ fn multi_updates(
     contracts_updates: Vec<ContractUpdates>,
     files_indexing: Vec<FileIndexing>,
 ) -> Result<String, String> {
-    if !contracts_updates.is_empty() {
-        if UserState::is_transfering() {
-            return Err(
-                "Please wait few second, there is already a transaction going.".to_string(),
-            );
-        }
-    }
+    let _guard = if !contracts_updates.is_empty() {
+        Some(TransferGuard::new().map_err(|e| format!("{:?}", e))?)
+    } else {
+        None
+    };
 
-    let mut messages = "".to_string();
+    let mut messages = String::new();
 
-    // Update or create contract
     for contract_update in contracts_updates {
-        // Try multiple ways to get the existing contract
         let existing_contract = CustomContract::get(&contract_update.id, &caller().to_string())
             .or_else(|| {
-                // Fallback: try the other get method
                 match Contract::get_contract(caller().to_string(), contract_update.id.clone()) {
                     Some(StoredContract::CustomContract(contract)) => Some(contract),
                     _ => None,
@@ -100,88 +95,71 @@ fn multi_updates(
 
         let mut curr_contract = if let Some(existing) = existing_contract {
             existing
-        } else {
-            // Only create new if we're sure it doesn't exist
-            // AND we have promises to add (indicating this is a real new contract)
-            if !contract_update.promises.is_empty() || !contract_update.tables.is_empty() {
-                CustomContract {
-                    id: contract_update.id.clone(),
-                    name: contract_update
-                        .name
-                        .clone()
-                        .unwrap_or_else(|| "New Contract".to_string()),
-                    creator: caller().to_string(),
-                    date_created: ic_cdk::api::time() as f64,
-                    date_updated: ic_cdk::api::time() as f64,
-                    contracts: vec![],
-                    payments: vec![],
-                    promises: vec![],
-                    formulas: vec![],
-                    permissions: vec![],
-                }
-            } else {
-                // If we're just deleting things and can't find the contract, skip this update
-                messages.push_str(&format!(
-                    "Warning: Contract {} not found for update, skipping.\n",
-                    contract_update.id
-                ));
-                continue;
+        } else if !contract_update.promises.is_empty() || !contract_update.tables.is_empty() {
+            CustomContract {
+                id: contract_update.id.clone(),
+                name: contract_update
+                    .name
+                    .clone()
+                    .unwrap_or_else(|| "New Contract".to_string()),
+                creator: caller().to_string(),
+                date_created: ic_cdk::api::time() as f64,
+                date_updated: ic_cdk::api::time() as f64,
+                contracts: vec![],
+                payments: vec![],
+                promises: vec![],
+                formulas: vec![],
+                permissions: vec![],
             }
+        } else {
+            messages.push_str(&format!(
+                "Warning: Contract {} not found for update, skipping.\n",
+                contract_update.id
+            ));
+            continue;
         };
 
-        // Update the date_updated field
         curr_contract.date_updated = ic_cdk::api::time() as f64;
 
-        // Process promises - update curr_contract with each result
         for promise in contract_update.promises {
             curr_contract = curr_contract.update_or_create_promise(promise)?;
         }
 
-        // Process promise deletions
         for delete_promise in contract_update.delete_promises {
             curr_contract = curr_contract.delete_promise(delete_promise)?;
         }
 
-        // Process table updates
         for table_update in contract_update.tables {
             curr_contract = curr_contract.update_or_create_table(table_update)?;
         }
 
-        // Process table deletions
         for table_id in contract_update.delete_tables {
             curr_contract = curr_contract.delete_table(table_id)?;
         }
 
-        // Reorder promises
         if !contract_update.promises_indexes.is_empty() {
             curr_contract = curr_contract.reorder_promises(contract_update.promises_indexes)?;
         }
 
-        // Update name if provided
         if let Some(name) = contract_update.name {
             curr_contract = curr_contract.update_name(name)?;
         }
 
-        // Update permissions
         if !contract_update.permissions.is_empty() {
             curr_contract = curr_contract.update_permissions(contract_update.permissions)?;
         }
 
-        // Final save to ensure everything is persisted
-        let res = curr_contract.save();
-        if let Err(er) = res {
+        if let Err(er) = curr_contract.save() {
             messages.push_str(&format!("contract save err: {}", er));
         }
     }
 
-    for file in files.clone() {
-        let res = file.save();
-        if let Err(er) = res {
+    for file in files {
+        if let Err(er) = file.save() {
             messages.push_str(&format!("Files save err: {}", er));
         }
     }
 
-    // Update FILE_CONTENTS
     for update in content_trees {
         for (file_id, content_tree) in update {
             ContentNode::update_file_contents(file_id, content_tree);
@@ -189,20 +167,17 @@ fn multi_updates(
     }
 
     for indexing in files_indexing {
-        if let Some(parent) = indexing.parent {
-            let cild_m = FileNode::rearrange_child(parent, indexing.id, indexing.new_index);
-            if let Err(err) = cild_m {
-                messages.push_str(&format!("Error: {}", err));
-            }
+        let result = if let Some(parent) = indexing.parent {
+            FileNode::rearrange_child(parent, indexing.id, indexing.new_index)
         } else {
-            let file_m = FileNode::rearrange_file(indexing.id, indexing.new_index);
-            if let Err(err) = file_m {
-                messages.push_str(&format!("Error: {}", err));
-            }
+            FileNode::rearrange_file(indexing.id, indexing.new_index)
+        };
+
+        if let Err(err) = result {
+            messages.push_str(&format!("Error: {}", err));
         }
     }
 
     messages.push_str("Updates applied successfully.");
-
     Ok(messages)
 }
