@@ -21,17 +21,15 @@
       "$/*": ["src/*"],
     },
     "types": [
-      "jest",
       "node",
       "react",
       "react-dom",
-      "@testing-library/jest-dom",
       "@testing-library/react",
       "vitest/globals",
       "redux-thunk",
       "vite/client"
     ]
   },
-  "include": ["src", "./types/**/*", "vite-env.d.ts", "vite-env.d.ts"],
-  "exclude": ["node_modules"]
+  "include": ["**/*.ts","src", "./types/**/*", "vite-env.d.ts", "vite-env.d.ts", "tests"],
+	"exclude": ["node_modules", "dist"]
 }

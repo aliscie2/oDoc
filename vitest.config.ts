@@ -1,50 +1,25 @@
-// vitest.config.ts
-import { defineConfig } from "vitest/config";
-import path from "path";
-
-// Determine setup files based on test environment
-const setupFiles = ["./src/frontend/tests/backend/backend_unit_test_setup.ts"];
+import { defineConfig } from 'vitest/config';
+import { resolve } from 'path';
 
 export default defineConfig({
-  test: {
+  resolve: {
     alias: {
-      "@": path.resolve(__dirname, "src"),
-      "@frontend": path.resolve(__dirname, "src/frontend"),
-      "@backend": path.resolve(__dirname, "src/backend"),
-    },
-    environment: "jsdom",
-    globals: true,
-    threads: false,
-    watch: true,
-    setupFiles,
-    setupFilesAfterEnv: [
-      "@testing-library/jest-dom/extend-expect",
-      "./src/frontend/tests/React/testSetup.ts",
-    ],
-    include: ["**/*.{md,test,spec}.{js,jsx,ts,tsx}"],
-    exclude: [
-      "node_modules",
-      "dist",
-      ".idea",
-      ".git",
-      ".cache",
-      ".dfx",
-      "build",
-    ],
-    coverage: {
-      provider: "v8",
-      reporter: ["text", "json", "html"],
-      exclude: [
-        "node_modules/",
-        "src/frontend/tests/setup.ts",
-        ".dfx/",
-        "dist/",
-        "build/",
-      ],
-    },
-    deps: {
-      fallbackCJS: true, // Add this line
-      inline: ["@dfinity/agent", "@dfinity/candid", "@dfinity/principal"],
-    },
+      '@': resolve(__dirname, './src/frontend'),
+      $: resolve(__dirname, './src')
+    }
   },
+  test: {
+    include: ['tests/backend/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**', 
+      '**/cypress/**',
+      '**/.{idea,git,cache,output,temp}/**',
+      '**/tests/frontend/**'
+    ],
+    globals: true,
+    environment: 'node',
+    setupFiles: ['./tests/backend/test-setup.ts'],
+    testTimeout: 10000,
+  }
 });

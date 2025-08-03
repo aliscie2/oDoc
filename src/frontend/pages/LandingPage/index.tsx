@@ -797,6 +797,7 @@ export default function OdocLandingPage() {
     <Box sx={{ minHeight: "100vh" }}>
       <Helmet>
         <title>ODOC.app</title>
+        <link rel="icon" type="image/png" href={"/logo.png"} />
       </Helmet>
       <Container maxWidth="lg" sx={{ py: 4 }}>
         {features.map((feature, index) => (

@@ -375,31 +375,7 @@ const App: React.FC = () => {
   }
   return (
     <MainContent>
-      <Helmet>
-        <link
-          rel="icon"
-          type="image/png"
-          href={
-            window.location.hostname.includes("icpjobs")
-              ? "/icpjobs_logo.png"
-              : "/logo.png"
-          }
-        />
-
-        <meta name="twitter:image" content="/public/icpjobs_thumnail.png" />
-        {["twitter:image", "og:image"].map((property: string) => {
-          return (
-            <meta
-              property={property}
-              content={
-                window.location.hostname.includes("icpjobs")
-                  ? "/public/icpjobs_thumnail.png"
-                  : "/odoc_thumnail.png"
-              }
-            />
-          );
-        })}
-      </Helmet>
+      
       {/* <PWAInstallPrompt /> */}
       {/* <SearchPopper /> */}
       <GoogleCalendarOnboarding />

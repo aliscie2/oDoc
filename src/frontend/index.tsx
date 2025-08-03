@@ -5,7 +5,7 @@ import App from "./App";
 
 import * as Sentry from "@sentry/react";
 import { SnackbarProvider } from "notistack";
-import { HelmetProvider } from "react-helmet-async";
+import { Helmet, HelmetProvider } from "react-helmet-async";
 import ThemeProvider from "./ThemeProvider";
 import { BackendProvider } from "./contexts/BackendContext";
 import store from "./redux/reducers";
@@ -31,6 +31,22 @@ root.render(
     <Provider store={store}>
       <BrowserRouter>
         <HelmetProvider>
+          <Helmet>
+            <meta name="twitter:image" content="/public/icpjobs_thumnail.png" />
+            {["twitter:image", "og:image"].map((property: string) => {
+              return (
+                <meta
+                  property={property}
+                  content={
+                    window.location.hostname.includes("icpjobs")
+                      ? "/public/icpjobs_thumnail.png"
+                      : "/odoc_thumnail.png"
+                  }
+                />
+              );
+            })}
+          </Helmet>
+
           <ThemeProvider>
             <BackendProvider>
               <SnackbarProvider

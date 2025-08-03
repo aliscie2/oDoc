@@ -34,4 +34,8 @@ dfx canister create --all || error "Canister creation failed"
 # Deploy core canisters
 dfx deploy backend || error "Backend deployment failed"
 
+gzip -fk target/wasm32-unknown-unknown/release/backend.wasm
+mv target/wasm32-unknown-unknown/release/backend.wasm.gz ./build/
+wget -nc -P ./build https://github.com/dfinity/ic/releases/download/ledger-suite-icrc-2025-06-10/ic-icrc1-ledger.wasm.gz
+
 success "Core deployment completed"

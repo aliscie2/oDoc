@@ -5,7 +5,6 @@ import { VitePWA } from "vite-plugin-pwa";
 import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import react from "@vitejs/plugin-react";
-// import react from '@vitejs/plugin-react-swc';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

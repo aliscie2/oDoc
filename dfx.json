@@ -25,9 +25,11 @@
       "specified_id": "xevnm-gaaaa-aaaar-qafnq-cai"
     },
     "backend": {
-      "candid": "src/backend/backend.did",
+      "type": "rust",
       "package": "backend",
-      "type": "rust"
+      "candid": "src/backend/backend.did",
+      "optimize": "size",
+      "wasm": "./wasm/backend.wasm.gz"
     },
     "frontend": {
       "dependencies": ["backend"],

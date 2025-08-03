@@ -697,6 +697,7 @@ export default function ICPJobsLandingPage() {
     <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
       <Helmet>
         <title>ICPJOBS.com</title>
+        <link rel="icon" type="image/png" href={"/icpjobs_logo.png"} />
       </Helmet>
       <Container maxWidth="lg" sx={{ py: 4 }}>
         {/* Hero Section */}
