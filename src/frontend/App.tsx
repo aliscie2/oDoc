@@ -13,7 +13,6 @@ import NavBar from "./components/MainComponents/NavBar";
 import TopNavBar from "./components/MainComponents/topNavBar";
 import { useBackendContext } from "./contexts/BackendContext";
 import getckUsdcBalance from "./utils/getBalance";
-import { Helmet } from "react-helmet-async";
 import { RootState } from "./redux/reducers";
 
 import RegistrationForm from "./components/MainComponents/RegistrationForm";

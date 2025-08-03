@@ -14,7 +14,6 @@ import JobDetails from "./discover/jobs/JobDetails";
 import { JOB_MATCHING_PROMPT } from "./discover/jobs/utils/jobMatchingPrompt";
 import { textToJson } from "./discover/jobs/utils/processResponseJobs";
 import ConnectButton from "./discover/jobs/ConnectButton";
-import { Helmet } from "react-helmet-async";
 
 const JobPage = () => {
   const { backendActor } = useBackendContext();
