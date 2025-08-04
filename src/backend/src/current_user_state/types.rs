@@ -32,7 +32,7 @@ impl UserState {
             return Err(Error::IcCdkError {
                 message: format!(
                     "{:?}",
-                    "Already trenasfering, please wait few seconds".to_string()
+                    "Already transferring, please wait few seconds".to_string()
                 ),
             });
         }

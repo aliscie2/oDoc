@@ -64,14 +64,21 @@ deploy-all:
 	dfx generate backend
 	sh scripts/deploy_ledger.sh
 	sh scripts/set_env.sh
+	
+	gzip -fk target/wasm32-unknown-unknown/release/backend.wasm
+	mv target/wasm32-unknown-unknown/release/backend.wasm.gz ./test/backend/
+	wget -nc -P ./test/backend/ https://github.com/dfinity/ic/releases/download/ledger-suite-icrc-2025-06-10/ic-icrc1-ledger.wasm.gz
+
 	yarn start
 
 	
 	
-upgrade-backend: 
+upgrade-backend:
 	bash scripts/did.sh backend
 	dfx generate backend
 	dfx deploy backend
+	gzip -fk target/wasm32-unknown-unknown/release/backend.wasm
+	mv target/wasm32-unknown-unknown/release/backend.wasm.gz ./tests/backend/
 
 # call it before each commit please.
 frontend-format:
@@ -85,6 +92,7 @@ frontend-format:
 
 pretty:
 	prettier --write ./src/frontend
+	prettier --write ./tests
 
 backend-format:
 	cargo fmt

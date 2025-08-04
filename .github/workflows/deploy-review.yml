@@ -54,10 +54,6 @@ jobs:
           # Run your first-time setup
           sh scripts/first_time_run.sh
           
-          # Generate candid and deploy backend
-          bash scripts/did.sh backend
-          dfx generate backend
-          
           # Deploy ledger
           sh scripts/deploy_ledger.sh
           
@@ -79,6 +75,11 @@ jobs:
           echo "ledger_id=$LEDGER_ID" >> $GITHUB_OUTPUT
           echo "frontend_url=http://${FRONTEND_ID}.localhost:4943" >> $GITHUB_OUTPUT
           echo "backend_url=http://localhost:4943/?canisterId=${BACKEND_ID}" >> $GITHUB_OUTPUT
+      
+      - name: Run tests
+        run: yarn test
+        env:
+          NODE_ENV: test
           
       - name: Keep environment alive for 4 hours
         run: |

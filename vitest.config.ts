@@ -5,7 +5,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, './src/frontend'),
-      $: resolve(__dirname, './src')
+      '#/': resolve(__dirname, './tests'),
+      $: resolve(__dirname, './src'),
     }
   },
   test: {
