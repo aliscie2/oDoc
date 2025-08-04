@@ -2,9 +2,9 @@ name: Deploy Review Environment
 
 on:
   push:
-    branches: [main]
+    branches: [dev2,main]
   pull_request:
-    branches: [main]
+    branches: [dev2, main]
 
 env:
   DFX_VERSION: "0.27.0"
