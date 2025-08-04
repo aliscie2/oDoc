@@ -2,13 +2,13 @@ name: Deploy Review Environment
 
 on:
   push:
-    branches: [dev2,main]
+    branches: [main]
   pull_request:
-    branches: [dev2, main]
+    branches: [main]
 
 env:
   DFX_VERSION: "0.27.0"
-  NODE_VERSION: "18"
+  NODE_VERSION: "24.4.1"
 
 jobs:
   deploy-review:
