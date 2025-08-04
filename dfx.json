@@ -27,9 +27,7 @@
     "backend": {
       "type": "rust",
       "package": "backend",
-      "candid": "src/backend/backend.did",
-      "optimize": "size",
-      "wasm": "./wasm/backend.wasm.gz"
+      "candid": "src/backend/backend.did"
     },
     "frontend": {
       "dependencies": ["backend"],

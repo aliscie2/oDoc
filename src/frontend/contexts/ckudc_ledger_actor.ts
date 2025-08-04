@@ -17,7 +17,7 @@ async function getLedgerActor(agent) {
   // const principal = identity.getPrincipal().toString();
 
   // ---------------------- root key fetch ---------------------- \\
-  if (import.meta.env.VITE_DFX_NETWORK === "local") {
+  if (import.meta.env.VITE_DFX_NETWORK !== "ic") {
     agent
       .fetchRootKey()
       .then((rootKey) => {

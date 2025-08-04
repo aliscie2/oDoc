@@ -35,7 +35,7 @@ function initCanisterIds() {
   }
 
   network = process.env.NODE_ENV === "production" && !localEnv ? "ic" : "local";
-  canisters = network === "local" || localEnv ? localCanisters : prodCanisters;
+  canisters = network !== "ic" || localEnv ? localCanisters : prodCanisters;
 
   for (const canister in canisters) {
     process.env[canister.toUpperCase() + "_CANISTER_ID"] =

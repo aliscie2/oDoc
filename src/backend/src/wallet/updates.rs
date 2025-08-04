@@ -155,7 +155,7 @@ async fn deposit_ckusdt() -> Result<Wallet, Error> {
     }
 
     let fee = get_fee().await;
-    transfer_from(balance - fee.clone(), caller(), ic_cdk::id()).await?;
+    transfer_from(balance.clone() - fee.clone(), caller(), ic_cdk::id()).await?;
     wallet
         .deposit(
             nat_to_u64((balance - fee) / Nat::from(1000000_u64)) as f64,

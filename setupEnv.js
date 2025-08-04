@@ -20,7 +20,6 @@ function initCanisterEnv() {
     process.env.DFX_NETWORK ||
     (process.env.NODE_ENV === "production" ? "ic" : "local");
 
-  const canisterConfig = network === "local" ? localCanisters : prodCanisters;
 
   const localMap = localCanisters
     ? Object.entries(localCanisters).reduce((prev, current) => {

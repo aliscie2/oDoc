@@ -374,7 +374,6 @@ const App: React.FC = () => {
   }
   return (
     <MainContent>
-      
       {/* <PWAInstallPrompt /> */}
       {/* <SearchPopper /> */}
       <GoogleCalendarOnboarding />

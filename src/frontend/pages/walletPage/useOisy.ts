@@ -4,7 +4,7 @@ import { canisterId as ckusdcId } from "$/declarations/ckusdc_ledger";
 
 export async function depositWithOisy(amount: number, user: Principal) {
   try {
-    const IS_LOCAL = import.meta.env.VITE_DFX_NETWORK === "local";
+    const IS_LOCAL = import.meta.env.VITE_DFX_NETWORK !== "ic";
     const url = IS_LOCAL
       ? "http://localhost:5174/sign"
       : "https://oisy.com/sign";

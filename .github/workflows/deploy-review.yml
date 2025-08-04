@@ -1,0 +1,98 @@
+name: Deploy Review Environment
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  DFX_VERSION: "0.27.0"
+  NODE_VERSION: "18"
+
+jobs:
+  deploy-review:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'yarn'
+          
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+        
+      - name: Install DFX
+        run: |
+          wget -O dfx.tar.gz "https://github.com/dfinity/sdk/releases/download/${DFX_VERSION}/dfx-${DFX_VERSION}-x86_64-linux.tar.gz"
+          tar -xzf dfx.tar.gz
+          sudo mv dfx /usr/local/bin/dfx
+          dfx --version
+          
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+          override: true
+          
+      - name: Deploy full environment
+        id: deploy
+        run: |
+          # Run your complete deployment (matches deploy-all target)
+          dfx killall 2>/dev/null || true
+          dfx stop 2>/dev/null || true
+          dfx start --background --clean --host 127.0.0.1:4943 
+          
+          # Deploy Internet Identity
+          dfx deploy internet_identity || echo "Internet Identity deployment failed"
+          
+          # Run your first-time setup
+          sh scripts/first_time_run.sh
+          
+          # Generate candid and deploy backend
+          bash scripts/did.sh backend
+          dfx generate backend
+          
+          # Deploy ledger
+          sh scripts/deploy_ledger.sh
+          
+          # Set environment
+          sh scripts/set_env.sh
+          
+          # Deploy frontend
+          dfx deploy frontend
+          
+          # Get all canister IDs
+          II_ID=$(dfx canister id internet_identity)
+          FRONTEND_ID=$(dfx canister id frontend)
+          BACKEND_ID=$(dfx canister id backend)
+          LEDGER_ID=$(dfx canister id ckusdc_ledger)
+          
+          echo "ii_id=$II_ID" >> $GITHUB_OUTPUT
+          echo "frontend_id=$FRONTEND_ID" >> $GITHUB_OUTPUT
+          echo "backend_id=$BACKEND_ID" >> $GITHUB_OUTPUT
+          echo "ledger_id=$LEDGER_ID" >> $GITHUB_OUTPUT
+          echo "frontend_url=http://${FRONTEND_ID}.localhost:4943" >> $GITHUB_OUTPUT
+          echo "backend_url=http://localhost:4943/?canisterId=${BACKEND_ID}" >> $GITHUB_OUTPUT
+          
+      - name: Keep environment alive for 4 hours
+        run: |
+          echo "🚀 Full review environment running..."
+          echo "Frontend: ${{ steps.deploy.outputs.frontend_url }}"
+          echo "Backend: ${{ steps.deploy.outputs.backend_url }}"
+          echo "Internet Identity: ${{ steps.deploy.outputs.ii_id }}"
+          echo "ckUSDC Ledger: ${{ steps.deploy.outputs.ledger_id }}"
+          
+          sleep 14400  # 4 hours
+          
+      - name: Cleanup
+        if: always()
+        run: |
+          dfx stop || true
+          killall dfx replica || true
