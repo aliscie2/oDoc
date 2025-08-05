@@ -69,7 +69,7 @@ const createHttpAgent = async (
     host,
   });
 
-  if (import.meta.env.VITE_DFX_NETWORK === "local") {
+  if (import.meta.env.VITE_DFX_NETWORK !== "ic") {
     await agent
       .fetchRootKey()
       .then(() => console.log("Successfully fetched root key"))
@@ -81,7 +81,7 @@ const createHttpAgent = async (
 
 const createBackendActor = (
   agent: HttpAgent,
-): ActorSubclass<Record<string, ActorMethod<unknown[], unknown>>> => {
+): ActorSubclass<_SERVICE> => {
   return Actor.createActor<_SERVICE>(idlFactory, {
     agent,
     canisterId,
@@ -89,14 +89,14 @@ const createBackendActor = (
 };
 
 const getIdentityProvider = (port: string): string => {
-  if (import.meta.env.VITE_DFX_NETWORK === "local") {
+  if (import.meta.env.VITE_DFX_NETWORK !== "ic") {
     return `http://${import.meta.env.VITE_INTERNET_IDENTITY}.localhost:${port}`;
   }
   return "https://identity.ic0.app/#authorize";
 };
 
 const getHost = (): string => {
-  return import.meta.env.VITE_DFX_NETWORK === "local"
+  return import.meta.env.VITE_DFX_NETWORK !== "ic"
     ? import.meta.env.VITE_IC_HOST
     : "https://ic0.app";
 };
