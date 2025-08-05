@@ -3162,7 +3162,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:^1.54.1":
+"@playwright/test@npm:^1.54.2":
   version: 1.54.2
   resolution: "@playwright/test@npm:1.54.2"
   dependencies:
@@ -13238,7 +13238,7 @@ __metadata:
     "@mui/material": "npm:^6.4.3"
     "@mui/system": "npm:^5.16.7"
     "@mui/x-date-pickers": "npm:7.27.3"
-    "@playwright/test": "npm:^1.54.1"
+    "@playwright/test": "npm:^1.54.2"
     "@react-spring/web": "npm:^10.0.1"
     "@reduxjs/toolkit": "npm:2.6.0"
     "@sentry/react": "npm:^9.38.0"

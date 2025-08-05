@@ -1,9 +1,7 @@
-import { test, expect } from "@playwright/test";
-import { loginAs, registerUser } from "./utils/login";
-import { ai } from "@zerostep/playwright";
+import { test } from "@playwright/test";
+import { registerUser } from "./utils/login";
 
 // Use the authentication state from setup
-test.use({ storageState: "playwright/.auth/user.json" });
 
 // Alternative test without using storageState (if you want to test the login flow)
 // test("Posting jop", async ({ page }) => {
