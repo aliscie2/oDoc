@@ -1,121 +1,151 @@
 name: Deploy to GitHub Pages
 
 on:
-  push:
-    branches: [dev2, main]
-  pull_request:
-    branches: [dev2, main]
+ push:
+   branches: [dev2, main]
+ pull_request:
+   branches: [dev2, main]
 
 env:
-  DFX_VERSION: "0.27.0"
-  NODE_VERSION: "24.4.1"
+ DFX_VERSION: "0.27.0"
+ NODE_VERSION: "24.4.1"
+ # Test Environment
+ VITE_TEST_ENV: backend
+ SECRET: ${{ secrets.SECRET }}
+ ODOC_CEO_ID: ${{ secrets.ODOC_CEO_ID }}
+ # AI API Keys
+ VITE_ANTHROPIC_API_KEY: ${{ secrets.VITE_ANTHROPIC_API_KEY }}
+ VITE_ANTHROPIC_SECRET_KEY: ${{ secrets.VITE_ANTHROPIC_SECRET_KEY }}
+ VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY }}
+ VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
+ VITE_GOOGLE_API_KEY: ${{ secrets.VITE_GOOGLE_API_KEY }}
+ VITE_GOOGLE_CLIENT_SECRET: ${{ secrets.VITE_GOOGLE_CLIENT_SECRET }}
+ VITE_DEEPSEEK_API_KEY: ${{ secrets.VITE_DEEPSEEK_API_KEY }}
+ VITE_HUGING_FACE_TOKEN: ${{ secrets.VITE_HUGING_FACE_TOKEN }}
+ # Email Services
+ VITE_REACT_APP_EMAILJS_SERVICE_ID: ${{ secrets.VITE_REACT_APP_EMAILJS_SERVICE_ID }}
+ VITE_REACT_APP_EMAILJS_USER_ID: ${{ secrets.VITE_REACT_APP_EMAILJS_USER_ID }}
+ VITE_REACT_APP_EMAILJS_TEMPLATE_ID: ${{ secrets.VITE_REACT_APP_EMAILJS_TEMPLATE_ID }}
+ VITE_GMAIL_AUTH_CLIENT_ID: ${{ secrets.VITE_GMAIL_AUTH_CLIENT_ID }}
+ VITE_MAILGUN_KEY: ${{ secrets.VITE_MAILGUN_KEY }}
+ VITE_MAINGUN_SECRET_KEY: ${{ secrets.VITE_MAINGUN_SECRET_KEY }}
+ VITE_MAILJET_KEY: ${{ secrets.VITE_MAILJET_KEY }}
+ VITE_MAILJET_SECRET_KEY: ${{ secrets.VITE_MAILJET_SECRET_KEY }}
+ VITE_BREVO_SECRET_KEY: ${{ secrets.VITE_BREVO_SECRET_KEY }}
+ VITE_MAIL_TRAP: ${{ secrets.VITE_MAIL_TRAP }}
+ # Communication & Monitoring
+ VITE_PUBLIC_TELEGRAM_BOT_TOKEN: ${{ secrets.VITE_PUBLIC_TELEGRAM_BOT_TOKEN }}
+ VITE_SENTRY_DNS: ${{ secrets.VITE_SENTRY_DNS }}
+ # Development Tools
+ AIDER_COMMAND: ${{ secrets.AIDER_COMMAND }}
+ ZEROSTEP_TOKEN: ${{ secrets.ZEROSTEP_TOKEN }}
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-      actions: read
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-            
-      - name: Cache DFX
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/dfinity
-          key: ${{ runner.os }}-dfx-${{ env.DFX_VERSION }}
-          
-      - name: Cache Rust
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-
-            
-      - name: Cache WASM builds
-        uses: actions/cache@v4
-        with:
-          path: .dfx
-          key: ${{ runner.os }}-dfx-build-${{ hashFiles('src/**', 'dfx.json', 'Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-dfx-build-
+ deploy:
+   runs-on: ubuntu-latest
+   permissions:
+     contents: read
+     pages: write
+     id-token: write
+     actions: read
+   environment:
+     name: github-pages
+     url: ${{ steps.deployment.outputs.page_url }}
+   
+   steps:
+     - name: Checkout
+       uses: actions/checkout@v4
+           
+     - name: Cache DFX
+       uses: actions/cache@v4
+       with:
+         path: ~/.cache/dfinity
+         key: ${{ runner.os }}-dfx-${{ env.DFX_VERSION }}
+         
+     - name: Cache Rust
+       uses: actions/cache@v4
+       with:
+         path: |
+           ~/.cargo/registry
+           ~/.cargo/git
+           target
+         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+         restore-keys: |
+           ${{ runner.os }}-cargo-
+           
+     - name: Cache WASM builds
+       uses: actions/cache@v4
+       with:
+         path: .dfx
+         key: ${{ runner.os }}-dfx-build-${{ hashFiles('src/**', 'dfx.json', 'Cargo.lock') }}
+         restore-keys: |
+           ${{ runner.os }}-dfx-build-
+      
+     - name: Setup Node.js
+       uses: actions/setup-node@v4
+       with:
+         node-version: ${{ env.NODE_VERSION }}
+         cache: 'yarn'
+         
+     - name: Install dependencies
+       run: yarn install --immutable --immutable-cache
        
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'yarn'
-          
-      - name: Install dependencies
-        run: yarn install --immutable --immutable-cache
-        
-      - name: Install DFX
-        run: |
-          if ! command -v dfx &> /dev/null || [[ "$(dfx --version 2>/dev/null)" != *"$DFX_VERSION"* ]]; then
-            wget -O dfx.tar.gz "https://github.com/dfinity/sdk/releases/download/${DFX_VERSION}/dfx-${DFX_VERSION}-x86_64-linux.tar.gz"
-            tar -xzf dfx.tar.gz
-            sudo mv dfx /usr/local/bin/dfx
-            rm dfx.tar.gz
-          fi
-          dfx --version
-          
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: wasm32-unknown-unknown
-          
-      - name: Run tests
-        run: yarn test
-        env:
-          NODE_ENV: test
-          
-      - name: Deploy canisters
-        run: |
-          dfx start --background --clean --host 127.0.0.1:4943
-          dfx deploy internet_identity || echo "II deployment failed"
-          sh scripts/first_time_run.sh
-          sh scripts/deploy_ledger.sh
-          sh scripts/set_env.sh
-          dfx deploy backend
-          dfx stop
+     - name: Install DFX
+       run: |
+         if ! command -v dfx &> /dev/null || [[ "$(dfx --version 2>/dev/null)" != *"$DFX_VERSION"* ]]; then
+           wget -O dfx.tar.gz "https://github.com/dfinity/sdk/releases/download/${DFX_VERSION}/dfx-${DFX_VERSION}-x86_64-linux.tar.gz"
+           tar -xzf dfx.tar.gz
+           sudo mv dfx /usr/local/bin/dfx
+           rm dfx.tar.gz
+         fi
+         dfx --version
+         
+     - name: Install Rust
+       uses: dtolnay/rust-toolchain@stable
+       with:
+         targets: wasm32-unknown-unknown
+         
+     - name: Run tests
+       run: yarn test
+       env:
+         NODE_ENV: test
+         
+     - name: Deploy canisters
+       run: |
+         dfx start --background --host 127.0.0.1:4943
+         dfx deploy internet_identity || echo "II deployment failed"
+         sh scripts/first_time_run.sh
+         sh scripts/deploy_ledger.sh
+         sh scripts/set_env.sh
+         dfx deploy backend
+         dfx stop
 
-      - name: Build frontend
-        run: yarn build
-        
-      - name: Setup Pages
-        if: github.event_name == 'push'
-        uses: actions/configure-pages@v4
-        
-      - name: Upload to Pages
-        if: github.event_name == 'push'
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: './build'
-          
-      - name: Deploy to GitHub Pages
-        if: github.event_name == 'push' && (github.ref == 'refs/heads/dev2' || github.ref == 'refs/heads/main')
-        id: deployment
-        uses: actions/deploy-pages@v4
+     - name: Build frontend
+       run: yarn build
+       
+     - name: Setup Pages
+       if: github.event_name == 'push'
+       uses: actions/configure-pages@v4
+       
+     - name: Upload to Pages
+       if: github.event_name == 'push'
+       uses: actions/upload-pages-artifact@v3
+       with:
+         path: './build'
+         
+     - name: Deploy to GitHub Pages
+       if: github.event_name == 'push' && (github.ref == 'refs/heads/dev2' || github.ref == 'refs/heads/main')
+       id: deployment
+       uses: actions/deploy-pages@v4
 
-      - name: Comment PR with preview link
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v6
-        with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `🚀 **Build completed** - Will deploy when merged to dev2 or main`
-            })
+     - name: Comment PR with preview link
+       if: github.event_name == 'pull_request'
+       uses: actions/github-script@v6
+       with:
+         script: |
+           github.rest.issues.createComment({
+             issue_number: context.issue.number,
+             owner: context.repo.owner,
+             repo: context.repo.repo,
+             body: `🚀 **Build completed** - Will deploy when merged to dev2 or main`
+           })

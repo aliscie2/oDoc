@@ -136,7 +136,8 @@ While providing centralized convenience, built on blockchain for:
 - **Transparent Payments** - Immutable payment and contract history
 
 ## 🛠️ Development Commands
-
+You can already find the staging website on by visiting [aliscie2.github.io/oDoc/](https://aliscie2.github.io/oDoc/)
+but becareful everytime reloading the page make sure to go to `/odoc/` to get odoc.
 ```bash
 # Daily development workflow
 dfx start  --background --host 127.0.0.1:4943 
