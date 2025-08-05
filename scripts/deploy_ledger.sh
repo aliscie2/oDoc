@@ -1,14 +1,19 @@
-dfx identity new minter
+# Create minter identity with seed for reproducibility in CI
+dfx identity new minter --storage-mode=plaintext
 dfx identity use minter
-MINTER_PRINCIPAL=$(dfx identity --identity minter get-principal)
-export MINTER_ACCOUNT_ID=$(dfx ledger account-id)
+MINTER_PRINCIPAL=$(dfx identity get-principal)
 
+# Verify it's not empty before proceeding
+if [ -z "$MINTER_PRINCIPAL" ]; then
+  echo "Error: MINTER_PRINCIPAL is empty"
+  exit 1
+fi
+
+export MINTER_ACCOUNT_ID=$(dfx ledger account-id)
 
 dfx identity use default
 export USER_PRINCIPAL=$(dfx identity get-principal)
 export USER_ACCOUNT_ID=$(dfx ledger account-id)
-
-
 
 dfx deploy ckusdc_ledger --argument "(variant {
   Init = record {
@@ -31,6 +36,3 @@ dfx deploy ckusdc_ledger --argument "(variant {
     feature_flags = opt record { icrc2 = true };
   }
 })" --mode=reinstall -y
-
-
-

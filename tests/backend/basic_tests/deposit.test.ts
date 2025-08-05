@@ -40,16 +40,15 @@ test('should withdraw successfully and update balance', async () => {
     let initData = await globalThis.testActor.get_initial_data();
     expect('Ok' in initData).toBe(true);
     const initialBalance = initData.Ok.Wallet.balance;
-    
+    expect(initialBalance).toBe(299);
     const withdraw = await globalThis.testActor.withdraw_ckusdt(BigInt(299), targetAddress);
-    logger({withdraw})
     expect('Ok' in withdraw).toBe(true);
     
     initData = await globalThis.testActor.get_initial_data();
     expect('Ok' in initData).toBe(true);
     const finalBalance = initData.Ok.Wallet.balance;
     
-    expect(finalBalance).toBe(initialBalance - 200);
+    expect(finalBalance).toBe(0);
 });
 
 
@@ -71,11 +70,11 @@ test("reentrancy protection test - should prevent concurrent withdrawals", async
     globalThis.testActor
       .withdraw_ckusdt(BigInt(299), attackerAddres)
       .then((result: Result_6) => {
-        console.log(`Withdrawal ${i}:`, result);
+        // console.log(`Withdrawal ${i}:`, result);
         return result;
       })
       .catch((err) => {
-        console.log(`Withdrawal ${i} error:`, err);
+        // console.log(`Withdrawal ${i} error:`, err);
         return { error: err, index: i };
       }),
   );
@@ -111,16 +110,16 @@ test("reentrancy protection test - should prevent concurrent withdrawals", async
 
   globalThis.testActor.setIdentity(mainUser);
   let initData = await globalThis.testActor.get_initial_data();
-  logger({
-    canisterBalance,
-    initData,
-    iBalance,
-    fBalance,
-    totalAttempts: 200,
-    successfulWithdrawals,
-    reentrancyErrors,
-    otherErrors: 200 - successfulWithdrawals - reentrancyErrors,
-  });
+  // logger({
+  //   canisterBalance,
+  //   initData,
+  //   iBalance,
+  //   fBalance,
+  //   totalAttempts: 200,
+  //   successfulWithdrawals,
+  //   reentrancyErrors,
+  //   otherErrors: 200 - successfulWithdrawals - reentrancyErrors,
+  // });
 
   // expect(reentrancyErrors).toBeGreaterThan(0);
   // expect(successfulWithdrawals).toBeLessThanOrEqual(1);

@@ -58,15 +58,6 @@ for var in "VITE_INTERNET_IDENTITY:$II_ID" "VITE_BACKEND_CANISTER_ID:$BACKEND_ID
     [ -n "$value" ] && update_or_add_env "$key" "$value" || warn "${key%_*} canister not found"
 done
 
-# Add dfx-generated variables
-dfx generate --output-env .env.tmp 2>/dev/null || warn "Failed to generate dfx variables"
-if [ -f ".env.tmp" ]; then
-    while IFS='=' read -r key value; do
-        [ -n "$key" ] && [ -n "$value" ] && update_or_add_env "$key" "$value"
-    done < .env.tmp
-    rm -f .env.tmp
-fi
-
 # Remove any duplicate lines (final safety check)
 awk '!seen[$0]++' .env > .env.tmp && mv .env.tmp .env
 

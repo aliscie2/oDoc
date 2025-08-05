@@ -32,7 +32,6 @@ yarn-error.log*
 /.idea
 /.code
 
-yarn.lock
 
 .vscode
 
@@ -47,4 +46,3 @@ node_modules/
 /playwright/.cache/
 
 playwright/.auth
-.vercel

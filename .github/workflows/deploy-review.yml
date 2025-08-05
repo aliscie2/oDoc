@@ -1,98 +1,120 @@
-name: Deploy Review Environment
+name: Deploy to GitHub Pages
 
 on:
-  push:
-    branches: [dev2, main]
-  pull_request:
-    branches: [dev2,main]
+ push:
+   branches: [dev2, main]
+ pull_request:
+   branches: [dev2, main]
 
 env:
-  DFX_VERSION: "0.27.0"
-  NODE_VERSION: "24.4.1"
+ DFX_VERSION: "0.27.0"
+ NODE_VERSION: "24.4.1"
 
 jobs:
-  deploy-review:
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
-        
-      - name: Install DFX
-        run: |
-          wget -O dfx.tar.gz "https://github.com/dfinity/sdk/releases/download/${DFX_VERSION}/dfx-${DFX_VERSION}-x86_64-linux.tar.gz"
-          tar -xzf dfx.tar.gz
-          sudo mv dfx /usr/local/bin/dfx
-          dfx --version
-          
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          target: wasm32-unknown-unknown
-          override: true
-          
-      - name: Deploy full environment
-        id: deploy
-        run: |
-          # Run your complete deployment (matches deploy-all target)
-          dfx killall 2>/dev/null || true
-          dfx stop 2>/dev/null || true
-          dfx start --background --clean --host 127.0.0.1:4943 
-          
-          # Deploy Internet Identity
-          dfx deploy internet_identity || echo "Internet Identity deployment failed"
-          
-          # Run your first-time setup
-          sh scripts/first_time_run.sh
-          
-          # Deploy ledger
-          sh scripts/deploy_ledger.sh
-          
-          # Set environment
-          sh scripts/set_env.sh
-          
-          # Deploy frontend
-          dfx deploy frontend
-          
-          # Get all canister IDs
-          II_ID=$(dfx canister id internet_identity)
-          FRONTEND_ID=$(dfx canister id frontend)
-          BACKEND_ID=$(dfx canister id backend)
-          LEDGER_ID=$(dfx canister id ckusdc_ledger)
-          
-          echo "ii_id=$II_ID" >> $GITHUB_OUTPUT
-          echo "frontend_id=$FRONTEND_ID" >> $GITHUB_OUTPUT
-          echo "backend_id=$BACKEND_ID" >> $GITHUB_OUTPUT
-          echo "ledger_id=$LEDGER_ID" >> $GITHUB_OUTPUT
-          echo "frontend_url=http://${FRONTEND_ID}.localhost:4943" >> $GITHUB_OUTPUT
-          echo "backend_url=http://localhost:4943/?canisterId=${BACKEND_ID}" >> $GITHUB_OUTPUT
+ deploy:
+   runs-on: ubuntu-latest
+   permissions:
+     contents: read
+     pages: write
+     id-token: write
+     actions: read
+   environment:
+     name: github-pages
+     url: ${{ steps.deployment.outputs.page_url }}
+   
+   steps:
+     - name: Checkout
+       uses: actions/checkout@v4
+           
+     - name: Cache DFX
+       uses: actions/cache@v4
+       with:
+         path: ~/.cache/dfinity
+         key: ${{ runner.os }}-dfx-${{ env.DFX_VERSION }}
+         
+     - name: Cache Rust
+       uses: actions/cache@v4
+       with:
+         path: |
+           ~/.cargo/registry
+           ~/.cargo/git
+           target
+         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+         restore-keys: |
+           ${{ runner.os }}-cargo-
+           
+     - name: Cache WASM builds
+       uses: actions/cache@v4
+       with:
+         path: .dfx
+         key: ${{ runner.os }}-dfx-build-${{ hashFiles('src/**', 'dfx.json', 'Cargo.lock') }}
+         restore-keys: |
+           ${{ runner.os }}-dfx-build-
       
-      - name: Run tests
-        run: yarn test
-        env:
-          NODE_ENV: test
-          
-      - name: Keep environment alive for 4 hours
-        run: |
-          echo "🚀 Full review environment running..."
-          echo "Frontend: ${{ steps.deploy.outputs.frontend_url }}"
-          echo "Backend: ${{ steps.deploy.outputs.backend_url }}"
-          echo "Internet Identity: ${{ steps.deploy.outputs.ii_id }}"
-          echo "ckUSDC Ledger: ${{ steps.deploy.outputs.ledger_id }}"
-          
-          sleep 14400  # 4 hours
-          
-      - name: Cleanup
-        if: always()
-        run: |
-          dfx stop || true
-          killall dfx replica || true
+     - name: Setup Node.js
+       uses: actions/setup-node@v4
+       with:
+         node-version: ${{ env.NODE_VERSION }}
+         cache: 'yarn'
+         
+     - name: Install dependencies
+       run: yarn install --immutable --immutable-cache
+       
+     - name: Install DFX
+       run: |
+         if ! command -v dfx &> /dev/null || [[ "$(dfx --version 2>/dev/null)" != *"$DFX_VERSION"* ]]; then
+           wget -O dfx.tar.gz "https://github.com/dfinity/sdk/releases/download/${DFX_VERSION}/dfx-${DFX_VERSION}-x86_64-linux.tar.gz"
+           tar -xzf dfx.tar.gz
+           sudo mv dfx /usr/local/bin/dfx
+           rm dfx.tar.gz
+         fi
+         dfx --version
+         
+     - name: Install Rust
+       uses: dtolnay/rust-toolchain@stable
+       with:
+         targets: wasm32-unknown-unknown
+         
+     - name: Run tests
+       run: yarn test
+       env:
+         NODE_ENV: test
+         
+     - name: Deploy canisters
+       run: |
+         dfx start --background --clean --host 127.0.0.1:4943
+         dfx deploy internet_identity || echo "II deployment failed"
+         sh scripts/first_time_run.sh
+         sh scripts/deploy_ledger.sh
+         sh scripts/set_env.sh
+         dfx deploy backend
+         dfx stop
+
+     - name: Build frontend
+       run: yarn build
+       
+     - name: Setup Pages
+       uses: actions/configure-pages@v4
+       
+     - name: Upload to Pages
+       uses: actions/upload-pages-artifact@v3
+       with:
+         path: './build'
+         
+     - name: Deploy to GitHub Pages
+       if: github.ref == 'refs/heads/main'
+       id: deployment
+       uses: actions/deploy-pages@v4
+
+     - name: Comment PR with preview link
+       if: github.event_name == 'pull_request'
+       uses: actions/github-script@v6
+       with:
+         script: |
+           const deploymentUrl = `https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}`;
+           github.rest.issues.createComment({
+             issue_number: context.issue.number,
+             owner: context.repo.owner,
+             repo: context.repo.repo,
+             body: `🚀 **Preview deployed**: ${deploymentUrl}`
+           })
