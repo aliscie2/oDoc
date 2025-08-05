@@ -7,6 +7,7 @@ on:
    branches: [dev2, main]
 
 env:
+ VITE_DFX_NETWORK: staging
  DFX_VERSION: "0.27.0"
  NODE_VERSION: "24.4.1"
  # Test Environment

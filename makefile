@@ -66,7 +66,7 @@ deploy-all:
 	sh scripts/set_env.sh
 	
 	gzip -fk target/wasm32-unknown-unknown/release/backend.wasm
-	mv target/wasm32-unknown-unknown/release/backend.wasm.gz ./test/backend/
+	mv target/wasm32-unknown-unknown/release/backend.wasm.gz ./tests/backend/
 	wget -nc -P ./test/backend/ https://github.com/dfinity/ic/releases/download/ledger-suite-icrc-2025-06-10/ic-icrc1-ledger.wasm.gz
 
 	yarn start

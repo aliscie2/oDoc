@@ -30,22 +30,23 @@ root.render(
   <StrictMode>
     <Provider store={store}>
       <BrowserRouter>
-        <HelmetProvider>
-          <Helmet>
-            <meta name="twitter:image" content="/public/icpjobs_thumnail.png" />
-            {["twitter:image", "og:image"].map((property: string) => {
-              return (
-                <meta
-                  property={property}
-                  content={
-                    window.location.hostname.includes("icpjobs")
-                      ? "/public/icpjobs_thumnail.png"
-                      : "/odoc_thumnail.png"
-                  }
-                />
-              );
-            })}
-          </Helmet>
+       <HelmetProvider>
+            <Helmet>
+              {["twitter:image", "og:image"].map((property: string) => {
+                const basePath = import.meta.env.VITE_DFX_NETWORK === 'staging' ? '/oDoc/'  : '/';
+                const imageName = window.location.hostname.includes("icpjobs") 
+                  ? "icpjobs_thumnail.png" 
+                  : "odoc_thumnail.png";
+                
+                return (
+                  <meta
+                    key={property}
+                    property={property}
+                    content={`${basePath}${imageName}`}
+                  />
+                );
+              })}
+            </Helmet>
 
           <ThemeProvider>
             <BackendProvider>

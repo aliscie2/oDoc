@@ -46,7 +46,7 @@ function initCanisterIds() {
 const isDevelopment = process.env.NODE_ENV !== "production" || localEnv;
 initCanisterIds();
 export default defineConfig({
-  base: '/oDoc/',
+  base: process.env.VITE_DFX_NETWORK === 'staging' ? '/oDoc/' : '/',
   publicDir: 'public', // Changed from 'public'
   assetsInclude: ["**/*.md"],
   build: {

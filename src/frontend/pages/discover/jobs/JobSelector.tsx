@@ -36,7 +36,6 @@ const JobSelector: React.FC = () => {
   const [copySuccess, setCopySuccess] = useState(false);
 
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const currentJob = jobs.find((job: Job) => job.id === currentJobId);
   const { backendActor } = useBackendContext();
 
@@ -261,8 +260,8 @@ const JobSelector: React.FC = () => {
     <Box sx={{ width: "100%", margin: 0, padding: 0 }}>
       <Helmet>
         <title>
-          {`${Object.keys(currentJob?.category || {})[0]}:  ${currentJob?.job_titles[0]}` ||
-            "Jobs"}
+          {currentJob?`${Object.keys(currentJob?.category || {})[0]}:  ${currentJob?.job_titles[0]}` ||
+            "Jobs":"ICPJobs"}
         </title>
       </Helmet>
 
