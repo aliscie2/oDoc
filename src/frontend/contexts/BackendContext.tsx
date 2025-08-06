@@ -15,8 +15,7 @@ import {
   Identity,
 } from "@dfinity/agent";
 import { canisterId, idlFactory } from "../../declarations/backend";
-import { canisterId as IIID, idlFactory as IIFactory } from "../../declarations/internet_identity";
-import { canisterId as ckID, idlFactory as ckFactory } from "../../declarations/ckusdc_ledger";
+import { canisterId as IIID } from "../../declarations/internet_identity";
 import { _SERVICE } from "../../declarations/backend/backend.did";
 import { useDispatch, useSelector } from "react-redux";
 import getLedgerActor from "./ckudc_ledger_actor";

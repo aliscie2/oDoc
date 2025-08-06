@@ -12,6 +12,7 @@ import { v4 as uuidv4 } from "uuid";
 import NotificationPromises from "../../components/ContractTable/notificationPromises";
 import { Typography } from "@mui/material";
 import React from "react";
+import { Helmet } from "react-helmet-async";
 
 function ContractsHistory(props: any) {
   const dispatch = useDispatch();
@@ -43,6 +44,14 @@ function ContractsHistory(props: any) {
 
   return (
     <Box>
+
+       <Helmet>
+        <title>
+          Agreements
+        </title>
+        <link rel="icon" type="image/png" href={"/agreement.png"} />
+      </Helmet>
+
       <Button onClick={handleClick} variant="contained" color="primary">
         Create New Contract
       </Button>

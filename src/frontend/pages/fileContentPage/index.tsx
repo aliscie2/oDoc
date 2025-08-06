@@ -6,7 +6,6 @@ import {
   IconButton,
   Input,
   styled,
-  Switch,
   Tooltip,
   Typography,
   useMediaQuery,

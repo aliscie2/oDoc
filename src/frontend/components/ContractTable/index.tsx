@@ -735,10 +735,8 @@ const CustomContractViewer = memo(({ contractId }) => {
     return (
       <div style={{ height: "auto", width: "100%" }}>
         <AgreementView
-          contractId={currentContract.id}
-          promises={currentContract.promises}
+          contract={currentContract}
           profile={profile}
-          all_friends={all_friends}
           isDarkMode={isDarkMode}
           onSwitchToTable={() => setDataType(DATA_TYPES.PROMISE)}
         />

@@ -16,7 +16,6 @@ import {
   Select,
   Tooltip,
   Typography,
-  useMediaQuery,
   useTheme,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
@@ -265,6 +264,7 @@ const JobSelector: React.FC = () => {
               "Jobs"
             : "ICPJobs"}
         </title>
+        <link rel="icon" type="image/png" href={"/jobs.png"} />
       </Helmet>
 
       <Paper

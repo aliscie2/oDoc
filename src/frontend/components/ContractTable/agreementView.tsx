@@ -1,4 +1,4 @@
-import { CPayment } from "$/declarations/backend/backend.did";
+import { CPayment, CustomContract } from "$/declarations/backend/backend.did";
 import { Principal } from "@dfinity/principal";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import AddIcon from "@mui/icons-material/Add";
@@ -11,17 +11,21 @@ import {
   Box, Button,
   Card, CardContent,
   Chip, Collapse, Fade, Grid, IconButton, InputAdornment,
+  ListItem,
   MenuItem, Paper, Stack, TextField,
   Tooltip,
   Typography
 } from "@mui/material";
 import { useSnackbar } from "notistack";
-import { memo, useCallback, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import UserAvatarMenu from "../MainComponents/UserAvatarMenu";
 import DeleteContractButton from "./deleteContractButton";
 import { createNewPromis, getStatusOptions } from "./utils";
-
+import { debounce } from "lodash";
+import ShareIcon from "@mui/icons-material/Share";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CopyButton from "../MuiComponents/copyButton";
 interface User {
   id: string;
   name: string;
@@ -218,334 +222,418 @@ const EditableField = memo<{
 
 // Condition cell component
 const ConditionCell = memo<{
-  cell: { id: string; field: string; value: string };
-  onUpdateField: (oldField: string, newField: string) => void;
-  onUpdateValue: (field: string, value: string) => void;
-  onRemove: (field: string) => void;
-}>(({ cell, onUpdateField, onUpdateValue, onRemove }) => (
-  <Paper elevation={0} sx={{ p: 2, border: "1px solid", borderColor: "grey.300", borderRadius: 2 }}>
-    <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-      <Box sx={{ width: 6, height: 6, borderRadius: "50%", bgcolor: "primary.main", mr: 1 }} />
-      <Box sx={{ flex: 1 }}>
-        <EditableField
-          value={cell.field.replace(/_/g, " ")}
-          onSave={(newField) => onUpdateField(cell.field, newField.replace(/\s+/g, "_"))}
-        />
-      </Box>
-      <Tooltip title="Remove condition">
-        <IconButton onClick={() => onRemove(cell.field)} size="small" color="error">
-          <DeleteIcon fontSize="small" />
-        </IconButton>
-      </Tooltip>
-    </Box>
-    <EditableField
-      value={cell.value}
-      onSave={(newValue) => onUpdateValue(cell.field, newValue)}
-      multiline
-      placeholder="Describe this condition..."
-    />
-  </Paper>
-));
+ cell: { id: string; field: string; value: string };
+ onUpdateField: (oldField: string, newField: string) => void;
+ onUpdateValue: (field: string, value: string) => void;
+ onRemove: (field: string) => void;
+}>(({ cell, onUpdateField, onUpdateValue, onRemove }) => {
+ const [fieldValue, setFieldValue] = useState(cell.field.replace(/_/g, " "));
+ const [contentValue, setContentValue] = useState(cell.value);
 
+ const handleFieldBlur = useCallback(() => {
+   const newField = fieldValue.replace(/\s+/g, "_");
+   if (newField !== cell.field) {
+     onUpdateField(cell.field, newField);
+   }
+ }, [fieldValue, cell.field, onUpdateField]);
+
+ const handleContentBlur = useCallback(() => {
+   if (contentValue !== cell.value) {
+     onUpdateValue(cell.field, contentValue);
+   }
+ }, [contentValue, cell.value, cell.field, onUpdateValue]);
+
+ return (
+   <Paper elevation={0} sx={{ border: "1px solid", borderColor: "grey.300" }}>
+     <ListItem sx={{ flexDirection: "column", alignItems: "stretch", py: 2 }}>
+       <Box sx={{ display: "flex", alignItems: "center", mb: 1, width: "100%" }}>
+         <TextField
+           value={fieldValue}
+           onChange={(e) => setFieldValue(e.target.value)}
+           onBlur={handleFieldBlur}
+           variant="standard"
+           sx={{ 
+             flex: 1,
+             "& .MuiInput-underline:before": { display: "none" },
+             "& .MuiInput-underline:after": { display: "none" },
+             "& .MuiInput-underline:hover:not(.Mui-disabled):before": { display: "none" }
+           }}
+           InputProps={{
+             sx: { fontWeight: 600, fontSize: "0.95rem" }
+           }}
+         />
+         <Tooltip title="Remove condition">
+           <IconButton onClick={() => onRemove(cell.field)} size="small" color="error">
+             <DeleteIcon fontSize="small" />
+           </IconButton>
+         </Tooltip>
+       </Box>
+       <TextField
+         value={contentValue}
+         onChange={(e) => setContentValue(e.target.value)}
+         onBlur={handleContentBlur}
+         multiline
+         rows={2}
+         placeholder="Describe this condition..."
+         variant="standard"
+         fullWidth
+         sx={{
+           "& .MuiInput-underline:before": { display: "none" },
+           "& .MuiInput-underline:after": { display: "none" },
+           "& .MuiInput-underline:hover:not(.Mui-disabled):before": { display: "none" }
+         }}
+         InputProps={{
+           sx: { color: "text.secondary", fontSize: "0.875rem" }
+         }}
+       />
+     </ListItem>
+   </Paper>
+ );
+});
 // Promise card header
 const PromiseCardHeader = memo<{
-  promise: CPayment;
-  isExpanded: boolean;
-  onToggle: () => void;
-  isDarkMode: boolean;
+ promise: CPayment;
+ isExpanded: boolean;
+ onToggle: () => void;
+ isDarkMode: boolean;
 }>(({ promise, isExpanded, onToggle, isDarkMode }) => {
-  const getUserData = useUserData();
-  const statusConfig = getStatusConfig(promise.status);
-  const senderData = getUserData(promise.sender);
-  const receiverData = getUserData(promise.receiver);
+ const getUserData = useUserData();
+ const statusConfig = getStatusConfig(promise.status);
+ const senderData = getUserData(promise.sender);
+ const receiverData = getUserData(promise.receiver);
 
-  return (
-    <Box
-      onClick={onToggle}
-      sx={{
-        p: 3,
-        cursor: "pointer",
-        background: isDarkMode 
-          ? "linear-gradient(135deg, #1e293b 0%, #334155 100%)"
-          : "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
-        borderBottom: "1px solid",
-        borderColor: "divider",
-      }}
-    >
-      <Grid container alignItems="center" spacing={2}>
-        <Grid item xs={12} sm={6}>
-          <Stack direction="row" alignItems="center" spacing={2}>
-            <Chip
-              label={`${statusConfig.icon} ${formatStatus(promise.status)}`}
-              size="small"
-              sx={{
-                bgcolor: statusConfig.bg,
-                color: statusConfig.color,
-                fontWeight: 600,
-              }}
-            />
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <UserAvatarMenu user={senderData.user} />
-              <Typography variant="body2" fontWeight={600}>{senderData.name}</Typography>
-              <Box sx={{ mx: 1 }}>→</Box>
-              <UserAvatarMenu user={receiverData.user} />
-              <Typography variant="body2" fontWeight={600}>{receiverData.name}</Typography>
-            </Stack>
-          </Stack>
-        </Grid>
-        <Grid item xs={12} sm={6} sx={{ textAlign: { xs: "left", sm: "right" } }}>
-          <Stack direction="row" alignItems="center" spacing={1} justifyContent={{ xs: "flex-start", sm: "flex-end" }}>
-            <AccountBalanceWalletIcon color="success" fontSize="small" />
-            <Typography variant="h6" sx={{ fontWeight: 700, color: "success.main", fontFamily: "monospace" }}>
-              ${promise.amount?.toLocaleString() || 0}
-            </Typography>
-          </Stack>
-        </Grid>
-      </Grid>
-    </Box>
-  );
+ return (
+   <Box
+     onClick={onToggle}
+     sx={{
+       p: isExpanded ? 3 : 1,
+       cursor: "pointer",
+       background: isDarkMode 
+         ? "linear-gradient(135deg, #1e293b 0%, #334155 100%)"
+         : "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
+       borderBottom: "1px solid",
+       borderColor: "divider",
+     }}
+   >
+     <Grid container alignItems="center" spacing={isExpanded ? 2 : 1}>
+       <Grid item xs={12} sm={6}>
+         <Stack direction="row" alignItems="center" spacing={isExpanded ? 2 : 1}>
+           <Chip
+             label={`${statusConfig.icon} ${formatStatus(promise.status)}`}
+             size="small"
+             sx={{
+               bgcolor: statusConfig.bg,
+               color: statusConfig.color,
+               fontWeight: 600,
+             }}
+           />
+           <Stack direction="row" alignItems="center" spacing={1}>
+             <UserAvatarMenu user={senderData.user} />
+             <Typography variant={isExpanded ? "body2" : "caption"} fontWeight={600}>{senderData.name}</Typography>
+             <Box sx={{ mx: 1 }}>→</Box>
+             <UserAvatarMenu user={receiverData.user} />
+             <Typography variant={isExpanded ? "body2" : "caption"} fontWeight={600}>{receiverData.name}</Typography>
+           </Stack>
+         </Stack>
+       </Grid>
+       <Grid item xs={12} sm={6} sx={{ textAlign: { xs: "left", sm: "right" } }}>
+         <Stack direction="row" alignItems="center" spacing={1} justifyContent={{ xs: "flex-start", sm: "flex-end" }}>
+           <AccountBalanceWalletIcon color="success" fontSize="small" />
+           <Typography variant={isExpanded ? "h6" : "body2"} sx={{ fontWeight: 700, color: "success.main", fontFamily: "monospace" }}>
+             ${promise.amount?.toLocaleString() || 0}
+           </Typography>
+         </Stack>
+       </Grid>
+     </Grid>
+   </Box>
+ );
 });
 
 // Main promise card component
 const PromiseCard = memo<{
-  promise: CPayment;
-  isExpanded: boolean;
-  onToggle: () => void;
-  isDarkMode: boolean;
+ promise: CPayment;
+ isExpanded: boolean;
+ onToggle: () => void;
+ isDarkMode: boolean;
 }>(({ promise, isExpanded, onToggle, isDarkMode }) => {
-  const { profile, all_friends } = useSelector((state: AppState) => state.filesState);
-  const { updatePromise, handleStatusChange, handleAmountChange, handleReceiverChange, handleDeletePromise } = usePromiseActions(promise);
-  const getUserData = useUserData();
-  const statusOptions = useMemo(() => getStatusOptions(promise, profile.id), [promise, profile.id]);
+ const { profile, all_friends } = useSelector((state: AppState) => state.filesState);
+ const { updatePromise, handleStatusChange, handleAmountChange, handleReceiverChange, handleDeletePromise } = usePromiseActions(promise);
+ const getUserData = useUserData();
+ const statusOptions = useMemo(() => getStatusOptions(promise, profile.id), [promise, profile.id]);
 
-  const handleCellActions = {
-    updateField: useCallback((oldField: string, newField: string) => {
-      const cells = promise.cells?.map(c =>
-        c.field === oldField ? { ...c, field: newField, id: `${promise.id}_${newField}` } : c
-      ) || [];
-      updatePromise({ cells });
-    }, [promise.cells, promise.id, updatePromise]),
+ const handleCellActions = {
+   updateField: useCallback((oldField: string, newField: string) => {
+     const cells = promise.cells?.map(c =>
+       c.field === oldField ? { ...c, field: newField, id: `${promise.id}_${newField}` } : c
+     ) || [];
+     updatePromise({ cells });
+   }, [promise.cells, promise.id, updatePromise]),
 
-    updateValue: useCallback((field: string, value: string) => {
-      const cells = promise.cells?.map(c => c.field === field ? { ...c, value } : c) || [];
-      updatePromise({ cells });
-    }, [promise.cells, updatePromise]),
+   updateValue: useCallback((field: string, value: string) => {
+     const cells = promise.cells?.map(c => c.field === field ? { ...c, value } : c) || [];
+     updatePromise({ cells });
+   }, [promise.cells, updatePromise]),
 
-    add: useCallback(() => {
-      const existingCount = promise.cells?.filter(c => c.field.startsWith("condition")).length || 0;
-      const field = `condition_${existingCount + 1}`;
-      const newCell = { id: `${promise.id}_${field}`, field, value: "" };
-      updatePromise({ cells: [...(promise.cells || []), newCell] });
-    }, [promise.cells, promise.id, updatePromise]),
+   add: useCallback(() => {
+     const existingCount = promise.cells?.filter(c => c.field.startsWith("condition")).length || 0;
+     const field = `condition_${existingCount + 1}`;
+     const newCell = { id: `${promise.id}_${field}`, field, value: "" };
+     updatePromise({ cells: [...(promise.cells || []), newCell] });
+   }, [promise.cells, promise.id, updatePromise]),
 
-    remove: useCallback((field: string) => {
-      const cells = promise.cells?.filter(c => c.field !== field) || [];
-      updatePromise({ cells });
-    }, [promise.cells, updatePromise])
-  };
+   remove: useCallback((field: string) => {
+     const cells = promise.cells?.filter(c => c.field !== field) || [];
+     updatePromise({ cells });
+   }, [promise.cells, updatePromise])
+ };
 
-  return (
-    <Card elevation={0} sx={{ 
-      border: "1px solid", 
-      borderColor: isDarkMode ? "grey.800" : "grey.200", 
-      borderRadius: 3,
-      "&:hover": { boxShadow: 4, transform: "translateY(-2px)" }
-    }}>
-      <PromiseCardHeader 
-        promise={promise} 
-        isExpanded={isExpanded} 
-        onToggle={onToggle} 
-        isDarkMode={isDarkMode} 
-      />
-      
-      <Collapse in={isExpanded}>
-        <CardContent sx={{ p: 3 }}>
-          <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid item xs={12} md={4}>
-              <TextField
-                label="Status"
-                select
-                fullWidth
-                size="small"
-                value={Object.keys(promise.status)[0] || "None"}
-                onChange={(e) => handleStatusChange(e.target.value)}
-              >
-                {statusOptions.map(s => <MenuItem key={s} value={s}>{s}</MenuItem>)}
-              </TextField>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <TextField
-                label="Amount"
-                type="number"
-                fullWidth
-                size="small"
-                value={promise.amount || 0}
-                onChange={(e) => handleAmountChange(e.target.value)}
-                InputProps={{
-                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <TextField
-                label="Receiver"
-                select
-                fullWidth
-                size="small"
-                value={getUserData(promise.receiver).name}
-                onChange={(e) => handleReceiverChange(e.target.value)}
-              >
-                {all_friends?.map(f => <MenuItem key={f.id} value={f.name}>{f.name}</MenuItem>)}
-              </TextField>
-            </Grid>
-          </Grid>
+ return (
+   <Card elevation={0} sx={{ 
+     border: "1px solid", 
+     borderColor: isDarkMode ? "grey.800" : "grey.200",
+     "&:hover": { boxShadow: 4, transform: "translateY(-2px)" }
+   }}>
+     <PromiseCardHeader 
+       promise={promise} 
+       isExpanded={isExpanded} 
+       onToggle={onToggle} 
+       isDarkMode={isDarkMode} 
+     />
+     
+     <Collapse in={isExpanded}>
+       <CardContent>
+         <Grid container spacing={2} sx={{ mb: 3 }}>
+           <Grid item xs={12} md={4}>
+             <TextField
+               label="Status"
+               select
+               fullWidth
+               size="small"
+               value={Object.keys(promise.status)[0] || "None"}
+               onChange={(e) => handleStatusChange(e.target.value)}
+             >
+               {statusOptions.map(s => <MenuItem key={s} value={s}>{s}</MenuItem>)}
+             </TextField>
+           </Grid>
+           <Grid item xs={12} md={4}>
+             <TextField
+               label="Amount"
+               type="number"
+               fullWidth
+               size="small"
+               value={promise.amount || 0}
+               onChange={(e) => handleAmountChange(e.target.value)}
+               InputProps={{
+                 startAdornment: <InputAdornment position="start">$</InputAdornment>,
+               }}
+             />
+           </Grid>
+           <Grid item xs={12} md={4}>
+             <TextField
+               label="Receiver"
+               select
+               fullWidth
+               size="small"
+               value={getUserData(promise.receiver).name}
+               onChange={(e) => handleReceiverChange(e.target.value)}
+             >
+               {all_friends?.map(f => <MenuItem key={f.id} value={f.name}>{f.name}</MenuItem>)}
+             </TextField>
+           </Grid>
+         </Grid>
 
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
-            <DateRangeIcon fontSize="small" color="disabled" />
-            <Typography variant="body2" color="text.secondary">
-              Created on {new Date(promise.date_created / 1000000).toLocaleDateString()}
-            </Typography>
-          </Box>
+         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
+           <DateRangeIcon fontSize="small" color="disabled" />
+           <Typography variant="body2" color="text.secondary">
+             Created on {new Date(promise.date_created / 1000000).toLocaleDateString()}
+           </Typography>
+         </Box>
 
-          <Box>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-              <DescriptionIcon color="primary" />
-              <Typography variant="h6" fontWeight={600}>Agreement Conditions</Typography>
-            </Box>
+         <Box>
+           <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+             <DescriptionIcon color="primary" />
+             <Typography variant="h6" fontWeight={600}>Agreement Conditions</Typography>
+           </Box>
 
-            <Stack spacing={2}>
-              {promise.cells?.map((cell, index) => (
-                <Fade key={cell.id} in timeout={300 + index * 100}>
-                  <div>
-                    <ConditionCell
-                      cell={cell}
-                      onUpdateField={handleCellActions.updateField}
-                      onUpdateValue={handleCellActions.updateValue}
-                      onRemove={handleCellActions.remove}
-                    />
-                  </div>
-                </Fade>
-              ))}
+           <Stack spacing={2}>
+             {promise.cells?.map((cell, index) => (
+                <ConditionCell
+                     cell={cell}
+                     onUpdateField={handleCellActions.updateField}
+                     onUpdateValue={handleCellActions.updateValue}
+                     onRemove={handleCellActions.remove}
+                   />
+             ))}
 
-              <Button
-                onClick={handleCellActions.add}
-                variant="outlined"
-                startIcon={<AddIcon />}
-                sx={{ borderStyle: "dashed", py: 1.5 }}
-              >
-                Add New Condition
-              </Button>
+             <Button
+               onClick={handleCellActions.add}
+               variant="outlined"
+               startIcon={<AddIcon />}
+               sx={{ borderStyle: "dashed", py: 1.5 }}
+             >
+               Add New Condition
+             </Button>
 
-              {!promise.cells?.length && (
-                <Box sx={{ textAlign: "center", py: 3, color: "text.secondary" }}>
-                  <DescriptionIcon sx={{ fontSize: 48, opacity: 0.3, mb: 1 }} />
-                  <Typography variant="body2">No conditions defined yet.</Typography>
-                </Box>
-              )}
-            </Stack>
-          </Box>
+             {!promise.cells?.length && (
+               <Box sx={{ textAlign: "center", py: 3, color: "text.secondary" }}>
+                 <DescriptionIcon sx={{ fontSize: 48, opacity: 0.3, mb: 1 }} />
+                 <Typography variant="body2">No conditions defined yet.</Typography>
+               </Box>
+             )}
+           </Stack>
+         </Box>
 
-          <Box sx={{ mt: 3, pt: 2, borderTop: "1px solid", borderColor: "divider" }}>
-            <Button
-              onClick={handleDeletePromise}
-              variant="outlined"
-              color="error"
-              startIcon={<DeleteIcon />}
-              fullWidth
-            >
-              Delete Agreement
-            </Button>
-          </Box>
-        </CardContent>
-      </Collapse>
-    </Card>
-  );
+         <Box sx={{ mt: 3, pt: 2, borderTop: "1px solid", borderColor: "divider" }}>
+           <Button
+             onClick={handleDeletePromise}
+             variant="outlined"
+             color="error"
+             startIcon={<DeleteIcon />}
+             fullWidth
+           >
+             Delete Agreement
+           </Button>
+         </Box>
+       </CardContent>
+     </Collapse>
+   </Card>
+ );
 });
 
+
+
+const ShareContractButton = memo<{ contractId: string }>(({ contractId }) => {
+ const { enqueueSnackbar } = useSnackbar();
+ const [isShared, setShared] = useState(false);
+ const handleShare = useCallback(() => {
+   const shareUrl = `${window.location.origin}/contract?id=${contractId}`;
+   navigator.clipboard.writeText(shareUrl)
+     .then(() => setShared(true))
+     .catch(() => enqueueSnackbar('Failed to copy link', { variant: 'error' }));
+ }, [contractId, enqueueSnackbar]);
+
+ useEffect(()=>{
+  setTimeout(()=>{
+    setShared(false)
+  },1000)
+ },[isShared])
+ return (
+   <Tooltip title={isShared?"✅ Link is copied":"Share contract"}>
+     <IconButton onClick={handleShare} size="small" color="primary">
+       {isShared? <CheckCircleIcon/> :<ShareIcon fontSize="small" />}
+     </IconButton>
+   </Tooltip>
+ );
+});
+
+
 const AgreementView = memo<{
-  contractId: string;
-  promises: CPayment[];
-  profile: User;
-  isDarkMode: boolean;
-  onSwitchToTable: () => void;
-}>(({ contractId, promises, profile, isDarkMode, onSwitchToTable }) => {
-  const dispatch = useDispatch();
-  const [expandedCards, setExpandedCards] = useState(new Set<string>());
+ contract: CustomContract;
+ profile: User;
+ isDarkMode: boolean;
+ onSwitchToTable: () => void;
+ customContract: { name: string };
+}>(({  contract, profile, isDarkMode, onSwitchToTable }) => {
+ const dispatch = useDispatch();
+ const [expandedCards, setExpandedCards] = useState(new Set<string>());
 
-  const toggleCard = useCallback((id: string) => {
-    setExpandedCards(prev => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  }, []);
+ const handleContractNameChange =  debounce((e) => {
+      dispatch({
+         type: "RENAME_SMART_CONTRACT",
+         contract_id: contract.id,
+         new_name: e.target.value,
+       });
+    }, 250);
 
-  const handleAddPromise = useCallback(() => {
-    dispatch({
-      type: "ADD_PROMISE",
-      contract_id: contractId,
-      promise: createNewPromis(Principal.fromText(profile.id), contractId),
-      insertIndex: promises?.length || 0,
-    });
-  }, [dispatch, promises, profile.id, contractId]);
 
-  return (
-    <Box sx={{ p: 3, maxHeight: "70vh", overflowY: "auto" }}>
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-        <Box>
-          <Typography variant="h5" fontWeight={700} gutterBottom>Agreements</Typography>
-          <Typography variant="body2" color="text.secondary">
-            {promises?.length || 0} active agreements
-          </Typography>
-        </Box>
-        
-        <Stack direction="row" spacing={1}>
-          <Button onClick={handleAddPromise} variant="contained" startIcon={<AddIcon />}>
-            New Agreement
-          </Button>
-          <DeleteContractButton contractId={contractId} />
-          <Button onClick={onSwitchToTable} variant="outlined">Table View</Button>
-        </Stack>
-      </Box>
+ const toggleCard = useCallback((id: string) => {
+   setExpandedCards(prev => {
+     const next = new Set(prev);
+     next.has(id) ? next.delete(id) : next.add(id);
+     return next;
+   });
+ }, []);
 
-      {!promises?.length ? (
-        <Box sx={{ 
-          textAlign: "center", 
-          py: 8,
-          border: "2px dashed",
-          borderColor: "divider",
-          borderRadius: 3,
-          bgcolor: isDarkMode ? "grey.900" : "grey.50",
-        }}>
-          <AccountBalanceWalletIcon sx={{ fontSize: 64, color: "text.disabled", mb: 2 }} />
-          <Typography variant="h6" color="text.secondary" gutterBottom>
-            No Agreements Yet
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Create your first agreement to get started with secure transactions.
-          </Typography>
-          <Button onClick={handleAddPromise} variant="contained" size="large" startIcon={<AddIcon />}>
-            Create First Agreement
-          </Button>
-        </Box>
-      ) : (
-        <Stack spacing={2}>
-          {promises.map((promise, index) => (
-            <Fade key={promise.id} in timeout={200 + index * 100}>
-              <div>
-                <PromiseCard
-                  promise={promise}
-                  isExpanded={expandedCards.has(promise.id)}
-                  onToggle={() => toggleCard(promise.id)}
-                  isDarkMode={isDarkMode}
-                />
-              </div>
-            </Fade>
-          ))}
-        </Stack>
-      )}
-    </Box>
-  );
+ const handleAddPromise = useCallback(() => {
+   dispatch({
+     type: "ADD_PROMISE",
+     contract_id: contract.id,
+     promise: createNewPromis(Principal.fromText(profile.id), contract.id),
+     insertIndex: contract.promises?.length || 0,
+   });
+ }, [dispatch, contract, profile.id, ]);
+
+ return (
+   <Box sx={{ p: 3, maxHeight: "70vh", overflowY: "auto" }}>
+     <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+   <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+    <CopyButton
+      title={"Share contract url."}
+      value={`${window.location.origin}/contract?id=${contract.id}`}
+    />
+
+  <TextField
+    defaultValue={contract?.name||"Untitled"}
+    onChange={handleContractNameChange}
+    variant="standard"
+    sx={{
+      "& .MuiInput-underline:before": { display: "none" },
+      "& .MuiInput-underline:after": { display: "none" },
+      "& .MuiInput-underline:hover:not(.Mui-disabled):before": { display: "none" }
+    }}
+    InputProps={{
+      sx: { fontSize: "1.5rem", fontWeight: 700 }
+    }}
+  />
+</Box>
+       
+       <Stack direction="row" spacing={1}>
+         <Button onClick={handleAddPromise} variant="contained" startIcon={<AddIcon />}>
+           New Agreement
+         </Button>
+         <DeleteContractButton contractId={contract.id} />
+         <Button onClick={onSwitchToTable} variant="outlined">Table View</Button>
+       </Stack>
+     </Box>
+
+     {!contract.promises?.length ? (
+       <Box sx={{ 
+         textAlign: "center", 
+         py: 8,
+         border: "2px dashed",
+         borderColor: "divider",
+         borderRadius: 3,
+         bgcolor: isDarkMode ? "grey.900" : "grey.50",
+       }}>
+         <AccountBalanceWalletIcon sx={{ fontSize: 64, color: "text.disabled", mb: 2 }} />
+         <Typography variant="h6" color="text.secondary" gutterBottom>
+           No Agreements Yet
+         </Typography>
+         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+           Create your first agreement to get started with secure transactions.
+         </Typography>
+         <Button onClick={handleAddPromise} variant="contained" size="large" startIcon={<AddIcon />}>
+           Create First Agreement
+         </Button>
+       </Box>
+     ) : (
+       <Stack spacing={2}>
+         {contract.promises.map((promise, index) => (
+           <Fade key={promise.id} in timeout={200 + index * 100}>
+             <div>
+               <PromiseCard
+                 promise={promise}
+                 isExpanded={expandedCards.has(promise.id)}
+                 onToggle={() => toggleCard(promise.id)}
+                 isDarkMode={isDarkMode}
+               />
+             </div>
+           </Fade>
+         ))}
+       </Stack>
+     )}
+   </Box>
+ );
 });
 
 export default AgreementView;
