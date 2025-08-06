@@ -1,43 +1,43 @@
-import React, { useState } from "react";
-import {
-  Box,
-  Card,
-  CardContent,
-  Stack,
-  Typography,
-  Grid,
-  Button,
-  Paper,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  IconButton,
-  InputAdornment,
-  Link,
-  Select,
-  MenuItem,
-  CircularProgress,
-} from "@mui/material";
+import { useBackendContext } from "@/contexts/BackendContext";
+import { Principal } from "@dfinity/principal";
 import {
   AccountBalanceWallet,
   ArrowDownward,
   ArrowUpward,
-  Send,
   Close,
   ContentCopy,
+  Send,
 } from "@mui/icons-material";
-import { useSelector } from "react-redux";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  IconButton,
+  InputAdornment,
+  Link,
+  MenuItem,
+  Paper,
+  Select,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { useSnackbar } from "notistack";
-import { useBackendContext } from "@/contexts/BackendContext";
+import React, { useState } from "react";
+import { useSelector } from "react-redux";
 import { depositWithOisy } from "./useOisy";
-import { Principal } from "@dfinity/principal";
 
 // Types
 interface Exchange {
@@ -186,34 +186,55 @@ const WalletBalance: React.FC<{ wallet: Wallet }> = ({ wallet }) => (
 
 const ActionButtons: React.FC<{ onAction: (type: DialogType) => void }> = ({
   onAction,
-}) => (
-  <Stack direction="row" spacing={2} sx={{ mb: 4 }}>
-    <Button
-      variant="outlined"
-      startIcon={<ArrowDownward />}
-      onClick={() => onAction("deposit")}
-      fullWidth
-    >
-      Deposit
-    </Button>
-    <Button
-      variant="outlined"
-      startIcon={<ArrowUpward />}
-      onClick={() => onAction("withdraw")}
-      fullWidth
-    >
-      Withdraw
-    </Button>
-    <Button
-      variant="outlined"
-      startIcon={<Send />}
-      onClick={() => onAction("pay")}
-      fullWidth
-    >
-      Pay
-    </Button>
-  </Stack>
-);
+}) => {
+  const { profile } = useSelector((state) => state.filesState);
+
+  return (
+    <Stack direction="row" spacing={2} sx={{ mb: 4 }}>
+      <Button
+        variant="outlined"
+        startIcon={<ArrowDownward />}
+        onClick={async () => {
+          if (import.meta.env.VITE_DFX_NETWORK !== "ic") {
+            onAction("deposit");
+            const approveResult = await ckUSDCActor.icrc1_transfer({
+              to: {
+                owner: Principal.fromText(profile.id),
+                subaccount: [],
+              },
+              fee: [],
+              memo: [],
+              from_subaccount: [],
+              created_at_time: [],
+              amount: BigInt(300000000),
+            });
+
+            console.log({ transferResult });
+          }
+        }}
+        fullWidth
+      >
+        Deposit
+      </Button>
+      <Button
+        variant="outlined"
+        startIcon={<ArrowUpward />}
+        onClick={() => onAction("withdraw")}
+        fullWidth
+      >
+        Withdraw
+      </Button>
+      <Button
+        variant="outlined"
+        startIcon={<Send />}
+        onClick={() => onAction("pay")}
+        fullWidth
+      >
+        Pay
+      </Button>
+    </Stack>
+  );
+};
 
 const TransactionHistory: React.FC<{
   wallet: Wallet;
@@ -281,58 +302,154 @@ const DepositDialog: React.FC<{
   open: boolean;
   onClose: () => void;
   wallet: Wallet;
-}> = ({ open, onClose, wallet }) => (
-  <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-    <DialogTitle>
-      Deposit Funds
-      <IconButton
-        onClick={onClose}
-        sx={{ position: "absolute", right: 8, top: 8 }}
-      >
-        <Close />
-      </IconButton>
-    </DialogTitle>
-    <DialogContent>
-      <Box py={2}>
-        <Typography variant="subtitle2" gutterBottom>
-          Copy your address and go to{" "}
-          <Link
-            href="https://oisy.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-            sx={{ "&:hover": { color: "primary.dark" } }}
-          >
-            oisy.com
-          </Link>{" "}
-          to transfer CKUSDC to your wallet.
-        </Typography>
-        <TextField
-          fullWidth
-          variant="outlined"
-          value={wallet.owner}
-          InputProps={{
-            readOnly: true,
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton onClick={() => copyToClipboard(wallet.owner)}>
-                  <ContentCopy />
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-          Send your funds to this address. The balance will be updated
-          automatically.
-        </Typography>
-      </Box>
-      <Typography color="error">
-        Gas fees of Ethirum is 1$, if you send 1$ only it will be lost and your
-        balance will stay 0$
-      </Typography>
-    </DialogContent>
-  </Dialog>
-);
+  profileId: string;
+}> = ({ open, onClose, wallet }) => {
+  const { profile } = useSelector((state: any) => state.filesState);
+  const [depositMethod, setDepositMethod] = useState<"address" | "oisy">(
+    "address",
+  );
+  const [oisyAmount, setOisyAmount] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const { enqueueSnackbar } = useSnackbar();
+
+  const OisyLogo =
+    "data:image/svg+xml;base64," +
+    btoa(
+      `<svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg"><g class="text-brand-primary"><circle cx="22" cy="22" r="22" fill="#2137fc"></circle></g><path fill-rule="evenodd" clip-rule="evenodd" d="M24.412 33.4193L23.8827 35.7603C23.8037 36.1099 23.4693 36.3405 23.1152 36.2858C22.308 36.161 21.49 36.0177 20.6637 35.8594C20.2842 35.7867 20.0423 35.4133 20.1275 35.0365L20.6067 32.917C20.2711 32.8513 19.9334 32.7802 19.594 32.7042C19.288 32.6344 18.985 32.5615 18.6854 32.4855L18.2064 34.6044C18.1212 34.981 17.7426 35.214 17.3689 35.1168C16.5548 34.905 15.7547 34.6836 14.9723 34.4504C14.6284 34.3479 14.4251 33.9955 14.5043 33.6455L15.0308 31.3164C9.82695 29.2297 6.54161 25.683 7.93603 19.6262L8.27156 18.1421C9.62094 12.0626 14.1109 10.2811 19.7056 10.6393L20.2318 8.31177C20.3109 7.96173 20.646 7.73105 21.0006 7.78645C21.8072 7.91249 22.6247 8.05683 23.4507 8.21592C23.8299 8.28895 24.0714 8.66213 23.9863 9.03875L23.5073 11.1575C23.8104 11.2179 24.1153 11.2824 24.4215 11.3511C24.7609 11.4278 25.0965 11.5083 25.4277 11.5927L25.9065 9.4751C25.9917 9.09826 26.3707 8.86528 26.7445 8.96289C27.5586 9.17544 28.3586 9.39788 29.141 9.63241C29.4843 9.73534 29.6869 10.0874 29.6079 10.437L29.0801 12.7717C34.2161 14.858 37.4261 18.402 36.0643 24.4256L35.7288 25.9097C34.3909 31.9376 29.9492 33.7421 24.412 33.4193ZM31.9629 24.7039L32.1517 23.8687C33.4814 18.3434 29.0601 16.2797 23.6094 14.9676C18.0988 13.8015 13.2196 13.7626 12.0432 19.3226L11.8544 20.1578C10.5189 25.7084 14.9403 27.7721 20.4165 29.09C25.9016 30.2503 30.7807 30.2893 31.9629 24.7039Z" fill="white"></path></svg>`,
+    );
+
+  const handleOisyDeposit = async () => {
+    if (
+      !oisyAmount ||
+      isNaN(Number(oisyAmount)) ||
+      parseFloat(oisyAmount) <= 0
+    ) {
+      enqueueSnackbar("Please enter a valid amount", { variant: "error" });
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      await depositWithOisy(
+        parseFloat(oisyAmount),
+        Principal.fromText(profile.id),
+      );
+      enqueueSnackbar("Deposit initiated successfully", { variant: "success" });
+      onClose();
+      setOisyAmount("");
+    } catch (error: any) {
+      enqueueSnackbar(error.message || "Deposit failed", { variant: "error" });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle>
+        Deposit Funds
+        <IconButton
+          onClick={onClose}
+          sx={{ position: "absolute", right: 8, top: 8 }}
+        >
+          <Close />
+        </IconButton>
+      </DialogTitle>
+      <DialogContent>
+        <Stack spacing={3} sx={{ mt: 2 }}>
+          <Stack direction="row" spacing={1}>
+            <Button
+              variant={depositMethod === "address" ? "contained" : "outlined"}
+              onClick={() => setDepositMethod("address")}
+              fullWidth
+            >
+              Deposit with Address
+            </Button>
+            <Button
+              variant={depositMethod === "oisy" ? "contained" : "outlined"}
+              onClick={() => setDepositMethod("oisy")}
+              fullWidth
+              startIcon={
+                <img
+                  src={OisyLogo}
+                  alt="Oisy"
+                  style={{ width: 20, height: 20 }}
+                />
+              }
+            >
+              Deposit with Oisy
+            </Button>
+          </Stack>
+
+          {depositMethod === "address" ? (
+            <Box>
+              <Typography variant="subtitle2" gutterBottom>
+                Copy your address and go to{" "}
+                <Link
+                  href="https://oisy.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  oisy.com
+                </Link>{" "}
+                to transfer CKUSDC to your wallet.
+              </Typography>
+              <TextField
+                fullWidth
+                variant="outlined"
+                value={wallet.owner}
+                InputProps={{
+                  readOnly: true,
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => copyToClipboard(wallet.owner)}>
+                        <ContentCopy />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+                Send your funds to this address. The balance will be updated
+                automatically.
+              </Typography>
+            </Box>
+          ) : (
+            <Box>
+              <Typography variant="subtitle2" gutterBottom>
+                Enter amount to deposit directly through Oisy integration:
+              </Typography>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <TextField
+                  label="Amount"
+                  type="number"
+                  value={oisyAmount}
+                  onChange={(e) => setOisyAmount(e.target.value)}
+                  sx={{ flex: 1 }}
+                />
+                <Button
+                  variant="contained"
+                  onClick={handleOisyDeposit}
+                  disabled={isProcessing || !oisyAmount}
+                  startIcon={
+                    isProcessing ? <CircularProgress size={20} /> : null
+                  }
+                >
+                  {isProcessing ? "Processing..." : "Deposit"}
+                </Button>
+              </Stack>
+            </Box>
+          )}
+
+          <Typography color="error">
+            Gas fees of Ethereum is 1$, if you send 1$ only it will be lost and
+            your balance will stay 0$
+          </Typography>
+        </Stack>
+      </DialogContent>
+    </Dialog>
+  );
+};
 
 const WithdrawDialog: React.FC<{
   open: boolean;
@@ -516,14 +633,6 @@ const WalletPage: React.FC<{ wallet?: Wallet }> = ({
 
   return (
     <Box sx={{ maxWidth: 1200, margin: "0 auto", p: 3 }}>
-      <Button
-        disabled={!profile?.id}
-        onClick={async () => {
-          await depositWithOisy(100, Principal.fromText(profile?.id));
-        }}
-      >
-        Deposit with oisy
-      </Button>
       <WalletBalance wallet={wallet} />
       <ActionButtons onAction={setOpenDialog} />
       <TransactionHistory
