@@ -90,13 +90,13 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({
     // })
     setConnecting(false);
   };
-  
+
   return (
     <>
-     <UserAvatarMenu
-          user_id={matchingJob?.user_id}
-          // onMessageClick={() => setSelectedUser(otherUser)}
-        />
+      <UserAvatarMenu
+        user_id={matchingJob?.user_id}
+        // onMessageClick={() => setSelectedUser(otherUser)}
+      />
       <Button
         variant="contained"
         color={match?.is_connected ? "success" : "primary"}

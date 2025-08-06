@@ -12,18 +12,18 @@ function ContractPage() {
     return;
   }
   const dispatch = useDispatch();
-const currentContract = contracts[contractId];
+  const currentContract = contracts[contractId];
   return (
     <>
-    <Helmet>
-        <title>{currentContract?.name||"Untitled contract"}</title>
+      <Helmet>
+        <title>{currentContract?.name || "Untitled contract"}</title>
         <link rel="icon" type="image/png" href={"/agreement.png"} />
       </Helmet>
-    <CustomContractComponent
-      profile={profile}
-      all_friends={all_friends}
-      contractId={contractId}
-    />
+      <CustomContractComponent
+        profile={profile}
+        all_friends={all_friends}
+        contractId={contractId}
+      />
     </>
   );
 }

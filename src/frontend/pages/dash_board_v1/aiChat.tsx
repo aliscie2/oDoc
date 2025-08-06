@@ -34,59 +34,99 @@ const AIChatComponent = ({
   const [message, setMessage] = useState("");
   const [welcomeText, setWelcomeText] = useState("");
   const [userHasClosed, setUserHasClosed] = useState(false);
-  const [dataLoaded, setDataLoaded] = useState(false);
 
   const inputRef = useRef(null);
   const chatContainerRef = useRef(null);
 
-  const hasActiveJobs = jobs.some((job) => job.active);
-  const hasAvailabilities = calendar?.availabilities?.length > 0;
-
-  // Wait for data to be loaded before determining welcome state
-  const shouldShowWelcome =
-    dataLoaded &&
-    (jobs.length === 0 || (hasActiveJobs && !hasAvailabilities)) &&
-    !userHasClosed;
-
-  const [isFirstTime, setIsFirstTime] = useState(false);
-
-  // Track when data is actually loaded
-  useEffect(() => {
-    if (inited && (jobs.length > 0 || calendar)) {
-      setDataLoaded(true);
-    }
-  }, [inited, jobs.length, calendar]);
-
-  useEffect(() => {
-    if (dataLoaded) {
-      setIsFirstTime(shouldShowWelcome);
-    }
-  }, [shouldShowWelcome, dataLoaded]);
-
-  const getWelcomeText = () => {
-    if (jobs.length === 0) {
-      return "Hello, are you looking for a job, or you want to post a job, describe with details what you looking for.";
-    }
-    if (hasActiveJobs && !hasAvailabilities) {
-      return "Good job now for other people to find you, let them know when are you available. For example, tell me 'I am available every day from 9 AM to 1 PM except sundays'";
-    }
-    return "";
+  // Data-driven onboarding configuration
+  const ONBOARDING_STEPS = {
+    JOB_SETUP: {
+      id: 0,
+      condition: () => jobs.length === 0,
+      message:
+        "Hello, are you looking for a job, or you want to post a job, describe with details what you looking for.",
+      completedKey: "jobTalkDone",
+    },
+    CALENDAR_SETUP: {
+      id: 1,
+      condition: () =>
+        jobs.some((job) => job.active) && !calendar?.availabilities?.length,
+      message:
+        "Good job now for other people to find you, let them know when are you available. For example, tell me 'I am available every day from 9 AM to 1 PM except sundays'",
+      completedKey: "calendarTalkDone",
+    },
   };
 
-  const fullWelcomeText = getWelcomeText();
+  // Get current step based on conditions
+  const getCurrentStep = () => {
+    return (
+      Object.values(ONBOARDING_STEPS).find((step) => step.condition()) || null
+    );
+  };
 
+  // Get onboarding state from localStorage
+  const getOnboardingState = () => {
+    const state = localStorage.getItem("onboardingState");
+    return state
+      ? JSON.parse(state)
+      : {
+          jobTalkDone: false,
+          calendarTalkDone: false,
+          viewCounts: {},
+        };
+  };
+
+  const [onboardingState, setOnboardingState] = useState(getOnboardingState);
+
+  // Save onboarding state
+  const updateOnboardingState = (updates) => {
+    const newState = { ...onboardingState, ...updates };
+    setOnboardingState(newState);
+    localStorage.setItem("onboardingState", JSON.stringify(newState));
+  };
+
+  const currentStep = getCurrentStep();
+  const stepKey = currentStep?.completedKey;
+  const viewCount = onboardingState.viewCounts[stepKey] || 0;
+
+  // Should show fullscreen welcome
+  const shouldShowWelcome =
+    inited &&
+    currentStep &&
+    !onboardingState[stepKey] &&
+    viewCount < 2 &&
+    !userHasClosed;
+
+  const isFullscreen = shouldShowWelcome && isExpanded;
+
+  // Track page loads for current step
   useEffect(() => {
-    const handleBeforeUnload = (e) => {
-      if (hasActiveJobs && !hasAvailabilities && !userHasClosed) {
-        e.preventDefault();
-        e.returnValue = "Set your availabilities please.";
-        return "Set your availabilities please.";
-      }
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [hasActiveJobs, hasAvailabilities, userHasClosed]);
+    if (!inited || !currentStep) return;
 
+    const newViewCount = viewCount + 1;
+    updateOnboardingState({
+      viewCounts: {
+        ...onboardingState.viewCounts,
+        [stepKey]: newViewCount,
+      },
+    });
+  }, [inited, stepKey]);
+
+  // Auto-expand when should show welcome
+  useEffect(() => {
+    if (shouldShowWelcome && !isExpanded) {
+      onToggle();
+    }
+  }, [shouldShowWelcome, isExpanded, onToggle]);
+
+  // Focus input when expanded (but not during welcome animation)
+  useEffect(() => {
+    if (isExpanded && !shouldShowWelcome) {
+      setTimeout(() => inputRef.current?.focus(), 100);
+    }
+  }, [isExpanded, shouldShowWelcome]);
+
+  // Scroll chat to bottom
   useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop =
@@ -94,8 +134,10 @@ const AIChatComponent = ({
     }
   }, [chatHistory]);
 
+  // Welcome text animation
+  const fullWelcomeText = currentStep?.message || "";
   useEffect(() => {
-    if (isFirstTime && isExpanded && fullWelcomeText) {
+    if (shouldShowWelcome && isExpanded && fullWelcomeText) {
       let index = 0;
       const interval = setInterval(() => {
         if (index < fullWelcomeText.length) {
@@ -107,27 +149,32 @@ const AIChatComponent = ({
       }, 50);
       return () => clearInterval(interval);
     }
-  }, [isFirstTime, isExpanded, fullWelcomeText]);
+  }, [shouldShowWelcome, isExpanded, fullWelcomeText]);
 
+  // Prevent page unload if calendar setup needed
   useEffect(() => {
-    if (dataLoaded && shouldShowWelcome && !isExpanded && !userHasClosed) {
-      onToggle();
-    }
-  }, [dataLoaded, shouldShowWelcome, isExpanded, onToggle, userHasClosed]);
-
-  useEffect(() => {
-    if (isExpanded && !isFirstTime) {
-      setTimeout(() => inputRef.current?.focus(), 100);
-    }
-  }, [isExpanded, isFirstTime]);
+    const handleBeforeUnload = (e) => {
+      if (getCurrentStep()?.id === 1 && !userHasClosed) {
+        e.preventDefault();
+        e.returnValue = "Set your availabilities please.";
+        return "Set your availabilities please.";
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [currentStep?.id, userHasClosed]);
 
   const handleSend = async () => {
     if (!message.trim()) return;
-    if (isFirstTime) {
-      localStorage.setItem("aiChatUsed", "true");
-      setIsFirstTime(false);
+
+    if (shouldShowWelcome) {
+      // Mark current step as completed
+      updateOnboardingState({
+        [stepKey]: true,
+      });
       setUserHasClosed(false);
     }
+
     onSendMessage(message);
     setMessage("");
     setTimeout(() => inputRef.current?.focus(), 100);
@@ -158,8 +205,7 @@ const AIChatComponent = ({
 
   if (!inited) return null;
 
-  const isFullscreen = isFirstTime && isExpanded;
-
+  // Rest of your render methods stay the same...
   const renderFullscreenView = () => (
     <Box
       sx={{
@@ -381,7 +427,6 @@ const AIChatComponent = ({
     </Card>
   );
 };
-
 import { useDispatch } from "react-redux";
 import { undoCalendarAction, undoJobAction } from "./reverseAction";
 import { useChatHandler } from "./useChathandler";

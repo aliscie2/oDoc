@@ -63,17 +63,17 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
   const [chatPosition, setChatPosition] = useState({ x: 0, y: 0 });
   const [isCalled, setCalled] = useState(false);
   const [isLoading, setLoading] = useState(false);
-    
+
   useEffect(() => {
     (async () => {
-      if (user_id && !isCalled){
-        setLoading(true)
+      if (user_id && !isCalled) {
+        setLoading(true);
         const response = await backendActor.get_user(user_id);
-        setLoading(false)
+        setLoading(false);
         if (response.Ok) {
           setUser(response.Ok);
         }
-        setCalled(true)
+        setCalled(true);
       }
     })();
   }, [isCalled, user_id]);
@@ -83,13 +83,13 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
   }
 
   if (!user) {
-    return <Avatar sx={{ width: 28, height: 28, bgcolor: "success.main" }}>
-               <PersonIcon fontSize="small" />
-             </Avatar>;
+    return (
+      <Avatar sx={{ width: 28, height: 28, bgcolor: "success.main" }}>
+        <PersonIcon fontSize="small" />
+      </Avatar>
+    );
   }
 
-             
-  
   const getUserPhoto = () => {
     if (user.photo && user.photo.length > 0) {
       return convertToBlobLink(user.photo);
@@ -167,8 +167,6 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
   const handleCloseChat = () => {
     setActiveChat(null);
   };
-
-
 
   const handleSendMessage = async (chatId: string, message: string) => {
     try {

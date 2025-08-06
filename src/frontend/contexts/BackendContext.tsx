@@ -107,18 +107,15 @@ async function handleAgent(client: AuthClient) {
 
   const identity = await client.getIdentity();
   principal = identity.getPrincipal().toString();
-  try{
-  const agent = await createHttpAgent(identity, host);
-  const actor = createBackendActor(agent);
+  try {
+    const agent = await createHttpAgent(identity, host);
+    const actor = createBackendActor(agent);
 
-  return { actor, agent, principal, identity, client };
-
-  } catch (err){
-      client.logout({ returnTo: "/" });
-
+    return { actor, agent, principal, identity, client };
+  } catch (err) {
+    client.logout({ returnTo: "/" });
   }
-    return {}
-  
+  return {};
 }
 
 interface BackendProviderProps {

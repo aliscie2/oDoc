@@ -44,11 +44,8 @@ function ContractsHistory(props: any) {
 
   return (
     <Box>
-
-       <Helmet>
-        <title>
-          Agreements
-        </title>
+      <Helmet>
+        <title>Agreements</title>
         <link rel="icon" type="image/png" href={"/agreement.png"} />
       </Helmet>
 
