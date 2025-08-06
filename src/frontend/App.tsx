@@ -12,8 +12,8 @@ import { canisterId } from "../declarations/backend";
 import NavBar from "./components/MainComponents/NavBar";
 import TopNavBar from "./components/MainComponents/topNavBar";
 import { useBackendContext } from "./contexts/BackendContext";
-import getckUsdcBalance from "./utils/getBalance";
 import { RootState } from "./redux/reducers";
+import getckUsdcBalance from "./utils/getBalance";
 
 import RegistrationForm from "./components/MainComponents/RegistrationForm";
 import {
@@ -23,8 +23,9 @@ import {
 
 import { Job } from "$/declarations/backend/backend.did";
 import GoogleCalendarOnboarding from "@/components/userBadges/coonectGoogleCalendar";
-import ChatContainer from "./pages/dash_board_v1/aiChat";
 import RunawayJellyfish from "./components/creature/runAeayJellyFish";
+import PWAInstallPopup from "./components/installPWAPopUP";
+import ChatContainer from "./pages/dash_board_v1/aiChat";
 import useSocket from "./websocket/use_socket";
 const MainContent = styled(Box)(({ theme }) => ({
   display: "flex",
@@ -47,27 +48,20 @@ const PageContainer = styled(Box)(({ theme }) => ({
   },
 }));
 
+
 const App: React.FC = () => {
   const { pathname } = useLocation();
 
   // In App.tsx
-  useEffect(() => {
+   useEffect(() => {
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
-        .register("/service-worker.js") // Change from /sw.js to /service-worker.js
-        .then((registration) => console.log("SW registered"))
-        .catch((error) => console.log("SW registration failed"));
+        .register("/service-worker.js")
+        .then((registration) => console.log("SW registered", registration))
+        .catch((error) => console.log("SW registration failed", error));
     }
   }, []);
 
-  useEffect(() => {
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker
-        .register("/sw.js")
-        .then((registration) => console.log("SW registered"))
-        .catch((error) => console.log("SW registration failed"));
-    }
-  }, []);
   const { isLoggedIn, isRegistered } = useSelector(
     (state: any) => state.uiState,
   );
@@ -374,6 +368,7 @@ const App: React.FC = () => {
   }
   return (
     <MainContent>
+      <PWAInstallPopup/>
       {/* <PWAInstallPrompt /> */}
       {/* <SearchPopper /> */}
       <GoogleCalendarOnboarding />

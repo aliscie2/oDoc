@@ -16,7 +16,6 @@ import SNSVoting from "./white_paper";
 
 import DummyShares from "./sharesContract";
 import AffiliateDashboard from "./affiliate";
-import AffiliateRedirect from "./affiliateRedirect";
 
 import ContractPage from "./profile/ContractPage";
 import { useNavigate } from "react-router-dom";
