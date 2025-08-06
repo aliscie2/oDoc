@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   Avatar,
   IconButton,
@@ -25,40 +25,71 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../redux/reducers";
 import { randomString } from "../../DataProcessing/dataSamples";
 import { convertToBlobLink } from "@/DataProcessing/imageToVec";
-
+import PersonIcon from "@mui/icons-material/Person";
 interface UserAvatarMenuProps {
-  user: {
+  user?: {
     id: string;
     name: string;
     photo?: Uint8Array;
   };
   onMessageClick?: () => void;
+  sx?: any;
+  hide?: string[];
+  user_id?: string;
 }
 
 const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
-  user,
+  user: initialUser,
   onMessageClick,
   sx,
   hide = [],
+  user_id,
 }) => {
-  if (!user) {
-    return <CircularProgress />;
-  }
-  const navigate = useNavigate();
   const { backendActor } = useBackendContext();
+  const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
-
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [reviewOpen, setReviewOpen] = useState(false);
-  const [rating, setRating] = useState<number>(0);
-  const [comment, setComment] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   const { chats } = useSelector((state: RootState) => state.chatsState);
   const { profile, posts } = useSelector(
     (state: RootState) => state.filesState,
   );
 
+  const [user, setUser] = useState(initialUser);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [rating, setRating] = useState<number>(0);
+  const [comment, setComment] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeChat, setActiveChat] = useState<any>(null);
+  const [chatPosition, setChatPosition] = useState({ x: 0, y: 0 });
+  const [isCalled, setCalled] = useState(false);
+  const [isLoading, setLoading] = useState(false);
+    
+  useEffect(() => {
+    (async () => {
+      if (user_id && !isCalled){
+        setLoading(true)
+        const response = await backendActor.get_user(user_id);
+        setLoading(false)
+        if (response.Ok) {
+          setUser(response.Ok);
+        }
+        setCalled(true)
+      }
+    })();
+  }, [isCalled, user_id]);
+
+  if (isLoading) {
+    return <CircularProgress />;
+  }
+
+  if (!user) {
+    return <Avatar sx={{ width: 28, height: 28, bgcolor: "success.main" }}>
+               <PersonIcon fontSize="small" />
+             </Avatar>;
+  }
+
+             
+  
   const getUserPhoto = () => {
     if (user.photo && user.photo.length > 0) {
       return convertToBlobLink(user.photo);
@@ -83,10 +114,7 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
     handleClose();
   };
 
-  const [activeChat, setActiveChat] = useState<any>(null);
-  const [chatPosition, setChatPosition] = useState({ x: 0, y: 0 });
-
-  const handleMessage = useCallback(() => {
+  const handleMessage = () => {
     const existingChat = chats.find((chat) =>
       chat.members.some(
         (member) =>
@@ -134,18 +162,13 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
     }
 
     handleClose();
-  }, [user, activeChat, handleClose, chats, profile]);
+  };
 
-  const handleCloseChat = useCallback(() => {
+  const handleCloseChat = () => {
     setActiveChat(null);
-  }, []);
+  };
 
-  const handleChatPositionChange = useCallback(
-    (chatId: string, position: { x: number; y: number }) => {
-      setChatPosition(position);
-    },
-    [],
-  );
+
 
   const handleSendMessage = async (chatId: string, message: string) => {
     try {

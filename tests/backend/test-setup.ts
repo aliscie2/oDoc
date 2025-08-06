@@ -34,31 +34,31 @@ beforeAll(async () => {
   const minterIdentity = createIdentity("minter");
 
   const initArgs: InitArgs = {
-  decimals: [6],
-  token_symbol: "ckUSDC",
-  token_name: "ckUSDC",
-  transfer_fee: 10000n,
-  metadata: [],
-  minting_account: {
-    owner: minterIdentity.getPrincipal(),
-    subaccount: [],
-  },
-  initial_balances: [],
-  fee_collector_account: [],
-  archive_options: {
-    num_blocks_to_archive: 1000n,
-    max_transactions_per_response: [],
-    trigger_threshold: 2000n,
-    more_controller_ids: [],
-    max_message_size_bytes: [],
-    cycles_for_archive_creation: [100000000000000n],
-    node_max_memory_size_bytes: [3221225472n],
-    controller_id: Principal.fromText("2vxsx-fae"),
-  },
-  max_memo_length: [80],
-  index_principal: [], // Empty array means no index canister
-  feature_flags: [{ icrc2: true }],
-};
+    decimals: [6],
+    token_symbol: "ckUSDC",
+    token_name: "ckUSDC",
+    transfer_fee: 10000n,
+    metadata: [],
+    minting_account: {
+      owner: minterIdentity.getPrincipal(),
+      subaccount: [],
+    },
+    initial_balances: [],
+    fee_collector_account: [],
+    archive_options: {
+      num_blocks_to_archive: 1000n,
+      max_transactions_per_response: [],
+      trigger_threshold: 2000n,
+      more_controller_ids: [],
+      max_message_size_bytes: [],
+      cycles_for_archive_creation: [100000000000000n],
+      node_max_memory_size_bytes: [3221225472n],
+      controller_id: Principal.fromText("2vxsx-fae"),
+    },
+    max_memo_length: [80],
+    index_principal: [], // Empty array means no index canister
+    feature_flags: [{ icrc2: true }],
+  };
 
   const ckusdcFixture: CanisterFixture<CkusdcService> =
     await globalThis.testPic.setupCanister({

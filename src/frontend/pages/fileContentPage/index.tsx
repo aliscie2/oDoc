@@ -1,28 +1,28 @@
-import React, { memo, useCallback, useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { debounce } from "lodash";
+import ViewListIcon from "@mui/icons-material/ViewList";
 import {
+  alpha,
+  Box,
+  Collapse,
+  IconButton,
   Input,
   styled,
-  Box,
   Switch,
   Tooltip,
-  IconButton,
-  Collapse,
-  alpha,
   Typography,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import ViewListIcon from "@mui/icons-material/ViewList";
+import { debounce } from "lodash";
+import { memo, useCallback, useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
+import { Link } from "react-router-dom";
 import EditorComponent from "../../components/EditorComponent";
 import NestedTabMenu from "./contentTab";
-import { Link } from "react-router-dom";
 
 import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
-import { NOTFOUND404 } from "@/components/creature/logoSVG";
 import { Helmet } from "react-helmet-async";
+import NotFound from "../notFound404";
 
 const ExpandingInput = styled(Input)(({ theme }) => ({
   "& input": {
@@ -64,24 +64,6 @@ const ToggleWrapper = styled(Box)(({ theme }) => ({
   "&.hidden": {
     opacity: 0,
     transform: "translateX(-20px)",
-  },
-}));
-
-const StyledSwitch = styled(Switch)(({ theme }) => ({
-  padding: 8,
-  "& .MuiSwitch-track": {
-    borderRadius: 22 / 2,
-    backgroundColor:
-      theme.palette.mode === "dark"
-        ? alpha(theme.palette.common.white, 0.08)
-        : alpha(theme.palette.common.black, 0.05),
-    opacity: 1,
-  },
-  "& .MuiSwitch-thumb": {
-    boxShadow: "none",
-    width: 16,
-    height: 16,
-    margin: 2,
   },
 }));
 
@@ -163,14 +145,7 @@ function FileContentPage() {
         alignItems="center"
         minHeight="100vh"
       >
-        <RunawayJellyfish
-          jellyfishOffsetX={-200}
-          jellyfishOffsetY={isMobile ? 50 : 20}
-          logoSvgScale={isMobile ? 1.2 : 3}
-          LogoSvg={NOTFOUND404}
-          thinking={true}
-          scale={isMobile ? 1 : 2}
-        />
+        <NotFound />
       </Box>
     );
   }

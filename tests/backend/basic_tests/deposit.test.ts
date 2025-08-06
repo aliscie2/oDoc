@@ -4,9 +4,6 @@ import { createIdentity } from "@dfinity/pic";
 import { Principal } from "@dfinity/principal";
 import { deposit, registerUser } from "../utils";
 
-
-
-
 async function createDummyUser(id: string) {
   const user = createIdentity(`dummy_${id}`);
   await registerUser(`dummy_${id}`);
@@ -26,31 +23,31 @@ test("should signup new user successfully and receive initial balance", async ()
   }
 });
 
+test("should withdraw successfully and update balance", async () => {
+  const { user: mainUser } = await registerUser("withdrawer");
+  await deposit(mainUser, 300_000_000);
 
+  const targetUser = await createDummyUser("target");
+  const targetAddress = targetUser.getPrincipal().toString();
 
-test('should withdraw successfully and update balance', async () => {
-    const { user: mainUser } = await registerUser('withdrawer');
-    await deposit(mainUser, 300_000_000);
-    
-    const targetUser = await createDummyUser('target');
-    const targetAddress = targetUser.getPrincipal().toString();
-    
-    globalThis.testActor.setIdentity(mainUser);
-    
-    let initData = await globalThis.testActor.get_initial_data();
-    expect('Ok' in initData).toBe(true);
-    const initialBalance = initData.Ok.Wallet.balance;
-    expect(initialBalance).toBe(299);
-    const withdraw = await globalThis.testActor.withdraw_ckusdt(BigInt(299), targetAddress);
-    expect('Ok' in withdraw).toBe(true);
-    
-    initData = await globalThis.testActor.get_initial_data();
-    expect('Ok' in initData).toBe(true);
-    const finalBalance = initData.Ok.Wallet.balance;
-    
-    expect(finalBalance).toBe(0);
+  globalThis.testActor.setIdentity(mainUser);
+
+  let initData = await globalThis.testActor.get_initial_data();
+  expect("Ok" in initData).toBe(true);
+  const initialBalance = initData.Ok.Wallet.balance;
+  expect(initialBalance).toBe(299);
+  const withdraw = await globalThis.testActor.withdraw_ckusdt(
+    BigInt(299),
+    targetAddress,
+  );
+  expect("Ok" in withdraw).toBe(true);
+
+  initData = await globalThis.testActor.get_initial_data();
+  expect("Ok" in initData).toBe(true);
+  const finalBalance = initData.Ok.Wallet.balance;
+
+  expect(finalBalance).toBe(0);
 });
-
 
 test("reentrancy protection test - should prevent concurrent withdrawals", async () => {
   const { user: mainUser } = await registerUser("mainUser");
@@ -60,9 +57,9 @@ test("reentrancy protection test - should prevent concurrent withdrawals", async
   const attackerAddres = attackerUser.getPrincipal().toString();
 
   let iBalance = await globalThis.ckusdcActor.icrc1_balance_of({
-       owner: attackerUser.getPrincipal(),
-       subaccount: []
-   });
+    owner: attackerUser.getPrincipal(),
+    subaccount: [],
+  });
 
   globalThis.testActor.setIdentity(mainUser);
 
@@ -99,14 +96,14 @@ test("reentrancy protection test - should prevent concurrent withdrawals", async
   ).length;
 
   let fBalance = await globalThis.ckusdcActor.icrc1_balance_of({
-       owner: attackerUser.getPrincipal(),
-       subaccount: []
-   });
+    owner: attackerUser.getPrincipal(),
+    subaccount: [],
+  });
 
-   let canisterBalance = await globalThis.ckusdcActor.icrc1_balance_of({
-       owner: Principal.fromText(globalThis.backendCanisterId),
-       subaccount: []
-   });
+  let canisterBalance = await globalThis.ckusdcActor.icrc1_balance_of({
+    owner: Principal.fromText(globalThis.backendCanisterId),
+    subaccount: [],
+  });
 
   globalThis.testActor.setIdentity(mainUser);
   let initData = await globalThis.testActor.get_initial_data();

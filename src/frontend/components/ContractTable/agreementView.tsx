@@ -1,86 +1,100 @@
+import { CPayment } from "$/declarations/backend/backend.did";
 import { Principal } from "@dfinity/principal";
-import { useSnackbar } from "notistack";
-import { memo, useCallback, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-
+import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
+import AddIcon from "@mui/icons-material/Add";
+import CancelIcon from "@mui/icons-material/Cancel";
+import DateRangeIcon from "@mui/icons-material/DateRange";
+import DeleteIcon from "@mui/icons-material/Delete";
+import DescriptionIcon from "@mui/icons-material/Description";
+import SaveIcon from "@mui/icons-material/Save";
 import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
-  Chip,
-  Collapse,
-  Divider,
-  Grid,
-  IconButton,
-  InputAdornment,
-  MenuItem,
-  Paper,
-  Select,
-  Stack,
-  TextField,
-  Typography,
+  Box, Button,
+  Card, CardContent,
+  Chip, Collapse, Fade, Grid, IconButton, InputAdornment,
+  MenuItem, Paper, Stack, TextField,
+  Tooltip,
+  Typography
 } from "@mui/material";
+import { useSnackbar } from "notistack";
+import { memo, useCallback, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import UserAvatarMenu from "../MainComponents/UserAvatarMenu";
 import DeleteContractButton from "./deleteContractButton";
 import { createNewPromis, getStatusOptions } from "./utils";
-// Add these imports at the top
-// Add these imports
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import CloseIcon from "@mui/icons-material/Close";
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 
-const PromiseCard = memo(({ promise, isExpanded, onToggle, isDarkMode }) => {
+interface User {
+  id: string;
+  name: string;
+}
+
+interface AppState {
+  filesState: {
+    profile: User;
+    all_friends: User[];
+    wallet: { balance: number };
+    contracts: Record<string, { promises: CPayment[] }>;
+  };
+}
+
+// Utility functions
+const formatStatus = (status: any): string => {
+  const key = Object.keys(status || {})[0] || "None";
+  return key === "Objected" && status?.[key] ? `${key}: ${status[key]}` : key;
+};
+
+const getStatusConfig = (status: any) => {
+  const configs = {
+    None: { color: "#64748b", bg: "#f1f5f9", icon: "⏳" },
+    Released: { color: "#059669", bg: "#ecfdf5", icon: "✅" },
+    Confirmed: { color: "#0284c7", bg: "#eff6ff", icon: "🤝" },
+    Objected: { color: "#dc2626", bg: "#fef2f2", icon: "⚠️" },
+    HighPromise: { color: "#ea580c", bg: "#fff7ed", icon: "⭐" },
+  };
+  const key = Object.keys(status || {})[0] || "None";
+  return configs[key as keyof typeof configs] || configs.None;
+};
+
+// Custom hooks
+const usePromiseActions = (promise: CPayment) => {
   const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
-  const { profile, all_friends, wallet, contracts } = useSelector(state => state.filesState);
-  const [editingKey, setEditingKey] = useState(null);
-  const [editingValue, setEditingValue] = useState("");
-  const [editingCell, setEditingCell] = useState(null);
+  const { profile, all_friends, wallet, contracts } = useSelector((state: AppState) => state.filesState);
 
-  const getUserName = useCallback((principalId) => {
-    const id = principalId?.toString();
-    return id === profile.id ? "You" : all_friends?.find(u => u.id === id)?.name || "Unknown";
-  }, [profile.id, all_friends]);
+  const updatePromise = useCallback((updates: Partial<CPayment>) => {
+    const currentContract = Object.values(contracts).find(c =>
+      c.promises?.some(p => p.id === promise.id)
+    );
+    if (!currentContract) return;
 
-  const updatePromise = useCallback((updates) => {
-    const currentContract = Object.values(contracts).find(c => c.promises?.some(p => p.id === promise.id));
-    const updatedPromises = currentContract.promises.map(p => p.id === promise.id ? { ...p, ...updates } : p);
-    dispatch({ type: "UPDATE_PROMISES", contract_id: promise.contract_id, promises: updatedPromises });
+    const updatedPromises = currentContract.promises.map(p =>
+      p.id === promise.id ? { ...p, ...updates } : p
+    );
+    
+    dispatch({
+      type: "UPDATE_PROMISES",
+      contract_id: promise.contract_id,
+      promises: updatedPromises,
+    });
   }, [dispatch, promise, contracts]);
 
-  const handleKeyChange = useCallback((oldKey, newKey) => {
-    if (!newKey || oldKey === newKey) return;
-    const cells = promise.cells?.map(c => c.field === oldKey ? { ...c, field: newKey, id: `${promise.id}_${newKey}` } : c) || [];
-    updatePromise({ cells });
-    setEditingKey(null);
-    setEditingValue("");
-  }, [updatePromise, promise.cells]);
-
-  const getStatusColor = (status) => {
-    const key = Object.keys(status || {})[0] || "None";
-    return { None: "#9e9e9e", Released: "#4caf50", Confirmed: "#2196f3", Objected: "#f44336", HighPromise: "#ff9800" }[key];
-  };
-
-  const formatStatus = (status) => {
-    const key = Object.keys(status || {})[0] || "None";
-    const val = status?.[key];
-    return key === "Objected" && val ? `${key}: ${val}` : key;
-  };
-
-  const handleStatusChange = useCallback((newStatus) => {
-    let statusValue = null;
+  const handleStatusChange = useCallback((newStatus: string) => {
+    const statusMap: Record<string, any> = {
+      None: { None: null },
+      Released: { Released: null },
+      Confirmed: { Confirmed: null },
+      HighPromise: { HighPromise: null },
+    };
+    
     if (newStatus === "Objected") {
       const reason = prompt("Enter objection reason:");
       if (reason === null) return;
-      statusValue = reason || "";
+      statusMap.Objected = { Objected: reason || "" };
     }
-    updatePromise({ status: { [newStatus]: statusValue } });
+    
+    updatePromise({ status: statusMap[newStatus] });
   }, [updatePromise]);
 
-  const handleAmountChange = useCallback((newAmount) => {
+  const handleAmountChange = useCallback((newAmount: string) => {
     const amount = parseFloat(newAmount) || 0;
     if (amount > wallet.balance) {
       enqueueSnackbar("Error: Not enough balance", { variant: "error" });
@@ -89,7 +103,7 @@ const PromiseCard = memo(({ promise, isExpanded, onToggle, isDarkMode }) => {
     updatePromise({ amount });
   }, [updatePromise, wallet.balance, enqueueSnackbar]);
 
-  const handleReceiverChange = useCallback((newReceiver) => {
+  const handleReceiverChange = useCallback((newReceiver: string) => {
     const user = all_friends?.find(u => u.name === newReceiver);
     if (!user || promise.sender.toString() === user.id) {
       enqueueSnackbar("Error: You can't send to yourself", { variant: "error" });
@@ -98,340 +112,440 @@ const PromiseCard = memo(({ promise, isExpanded, onToggle, isDarkMode }) => {
     updatePromise({ receiver: Principal.fromText(user.id) });
   }, [updatePromise, all_friends, promise.sender, enqueueSnackbar]);
 
-  const handleCellChange = useCallback((field, value) => {
-    const updatedCells = promise.cells?.map(c => c.field === field ? { ...c, value } : c) || [];
-    updatePromise({ cells: updatedCells });
-  }, [updatePromise, promise.cells]);
-
-  const handleAddCell = useCallback(() => {
-    const existingUntitled = promise.cells?.filter(c => c.field.startsWith("untitled")).length || 0;
-    const field = existingUntitled === 0 ? "untitled" : `untitled_${existingUntitled}`;
-    const newCell = { id: `${promise.id}_${field}`, field, value: "" };
-    const cells = [...(promise.cells || []), newCell];
-    updatePromise({ cells });
-  }, [promise.cells, promise.id, updatePromise]);
-
-  const handleRemoveCell = useCallback((field) => {
-    const cells = promise.cells?.filter(c => c.field !== field) || [];
-    updatePromise({ cells });
-  }, [updatePromise, promise.cells]);
-
   const handleDeletePromise = useCallback(() => {
     if (window.confirm("Delete this agreement?")) {
-      dispatch({ type: "DELETE_PROMISE", contract_id: promise.contract_id, id: promise.id });
+      dispatch({
+        type: "DELETE_PROMISE",
+        contract_id: promise.contract_id,
+        id: promise.id,
+      });
     }
   }, [dispatch, promise]);
 
-  const statusColor = getStatusColor(promise.status);
-  const statusOptions = getStatusOptions(promise, profile.id);
+  return {
+    updatePromise,
+    handleStatusChange,
+    handleAmountChange,
+    handleReceiverChange,
+    handleDeletePromise
+  };
+};
+
+const useUserData = () => {
+  const { profile, all_friends } = useSelector((state: AppState) => state.filesState);
+  
+  return useCallback((principalId: Principal) => {
+    const id = principalId?.toString();
+    if (id === profile.id) return { name: "You", user: profile };
+    const friend = all_friends?.find(u => u.id === id);
+    return { name: friend?.name || "Unknown", user: friend };
+  }, [profile, all_friends]);
+};
+
+// Editable field component
+const EditableField = memo<{
+  value: string;
+  onSave: (value: string) => void;
+  multiline?: boolean;
+  placeholder?: string;
+}>(({ value, onSave, multiline = false, placeholder = "Click to edit..." }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState(value);
+
+  const handleSave = () => {
+    onSave(editValue.trim());
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditValue(value);
+    setIsEditing(false);
+  };
+
+  if (isEditing) {
+    return (
+      <Stack spacing={1}>
+        <TextField
+          value={editValue}
+          onChange={(e) => setEditValue(e.target.value)}
+          multiline={multiline}
+          rows={multiline ? 3 : 1}
+          fullWidth
+          variant="outlined"
+          size="small"
+          autoFocus
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !multiline) handleSave();
+            if (e.key === "Escape") handleCancel();
+          }}
+        />
+        <Stack direction="row" spacing={1} justifyContent="flex-end">
+          <IconButton onClick={handleSave} size="small" color="success">
+            <SaveIcon fontSize="small" />
+          </IconButton>
+          <IconButton onClick={handleCancel} size="small" color="error">
+            <CancelIcon fontSize="small" />
+          </IconButton>
+        </Stack>
+      </Stack>
+    );
+  }
 
   return (
-    <Paper sx={{ 
-      borderLeft: `4px solid ${statusColor}`, 
-      borderRadius: 1,
-      overflow: 'hidden',
-      mb: 1
-    }}>
-      <Box 
-        onClick={onToggle}
-        sx={{ 
-          p: 2, 
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 2,
-          '&:hover': { bgcolor: 'action.hover' }
+    <Box
+      onClick={() => setIsEditing(true)}
+      sx={{
+        cursor: "text",
+        minHeight: multiline ? "3rem" : "auto",
+        p: 1,
+        borderRadius: 1,
+        border: "1px dashed transparent",
+        "&:hover": { borderColor: "primary.main", bgcolor: "grey.50" }
+      }}
+    >
+      <Typography
+        variant="body2"
+        sx={{
+          color: value ? "text.primary" : "text.secondary",
+          fontStyle: value ? "normal" : "italic"
         }}
       >
-        <Chip 
-          label={formatStatus(promise.status)} 
-          size="small"
-          sx={{ 
-            bgcolor: statusColor, 
-            color: 'white',
-            minWidth: 80,
-            fontSize: '0.75rem'
-          }} 
-        />
-        
-        <Typography variant="body2" sx={{ flex: 1 }}>
-          <Box component="span" sx={{ fontWeight: 500 }}>{getUserName(promise.sender)}</Box>
-          {' → '}
-          <Box component="span" sx={{ fontWeight: 500 }}>{getUserName(promise.receiver)}</Box>
-        </Typography>
-        
-        <Typography 
-          variant="h6" 
-          sx={{ 
-            color: 'success.main', 
-            fontWeight: 600,
-            fontFamily: 'monospace'
-          }}
-        >
-          ${promise.amount?.toLocaleString() || 0}
-        </Typography>
-        
-        <Box sx={{ color: 'text.secondary', fontSize: '1.2rem' }}>
-          {isExpanded ? '▼' : '▶'}
-        </Box>
-      </Box>
+        {value || placeholder}
+      </Typography>
+    </Box>
+  );
+});
 
+// Condition cell component
+const ConditionCell = memo<{
+  cell: { id: string; field: string; value: string };
+  onUpdateField: (oldField: string, newField: string) => void;
+  onUpdateValue: (field: string, value: string) => void;
+  onRemove: (field: string) => void;
+}>(({ cell, onUpdateField, onUpdateValue, onRemove }) => (
+  <Paper elevation={0} sx={{ p: 2, border: "1px solid", borderColor: "grey.300", borderRadius: 2 }}>
+    <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+      <Box sx={{ width: 6, height: 6, borderRadius: "50%", bgcolor: "primary.main", mr: 1 }} />
+      <Box sx={{ flex: 1 }}>
+        <EditableField
+          value={cell.field.replace(/_/g, " ")}
+          onSave={(newField) => onUpdateField(cell.field, newField.replace(/\s+/g, "_"))}
+        />
+      </Box>
+      <Tooltip title="Remove condition">
+        <IconButton onClick={() => onRemove(cell.field)} size="small" color="error">
+          <DeleteIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
+    </Box>
+    <EditableField
+      value={cell.value}
+      onSave={(newValue) => onUpdateValue(cell.field, newValue)}
+      multiline
+      placeholder="Describe this condition..."
+    />
+  </Paper>
+));
+
+// Promise card header
+const PromiseCardHeader = memo<{
+  promise: CPayment;
+  isExpanded: boolean;
+  onToggle: () => void;
+  isDarkMode: boolean;
+}>(({ promise, isExpanded, onToggle, isDarkMode }) => {
+  const getUserData = useUserData();
+  const statusConfig = getStatusConfig(promise.status);
+  const senderData = getUserData(promise.sender);
+  const receiverData = getUserData(promise.receiver);
+
+  return (
+    <Box
+      onClick={onToggle}
+      sx={{
+        p: 3,
+        cursor: "pointer",
+        background: isDarkMode 
+          ? "linear-gradient(135deg, #1e293b 0%, #334155 100%)"
+          : "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
+        borderBottom: "1px solid",
+        borderColor: "divider",
+      }}
+    >
+      <Grid container alignItems="center" spacing={2}>
+        <Grid item xs={12} sm={6}>
+          <Stack direction="row" alignItems="center" spacing={2}>
+            <Chip
+              label={`${statusConfig.icon} ${formatStatus(promise.status)}`}
+              size="small"
+              sx={{
+                bgcolor: statusConfig.bg,
+                color: statusConfig.color,
+                fontWeight: 600,
+              }}
+            />
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <UserAvatarMenu user={senderData.user} />
+              <Typography variant="body2" fontWeight={600}>{senderData.name}</Typography>
+              <Box sx={{ mx: 1 }}>→</Box>
+              <UserAvatarMenu user={receiverData.user} />
+              <Typography variant="body2" fontWeight={600}>{receiverData.name}</Typography>
+            </Stack>
+          </Stack>
+        </Grid>
+        <Grid item xs={12} sm={6} sx={{ textAlign: { xs: "left", sm: "right" } }}>
+          <Stack direction="row" alignItems="center" spacing={1} justifyContent={{ xs: "flex-start", sm: "flex-end" }}>
+            <AccountBalanceWalletIcon color="success" fontSize="small" />
+            <Typography variant="h6" sx={{ fontWeight: 700, color: "success.main", fontFamily: "monospace" }}>
+              ${promise.amount?.toLocaleString() || 0}
+            </Typography>
+          </Stack>
+        </Grid>
+      </Grid>
+    </Box>
+  );
+});
+
+// Main promise card component
+const PromiseCard = memo<{
+  promise: CPayment;
+  isExpanded: boolean;
+  onToggle: () => void;
+  isDarkMode: boolean;
+}>(({ promise, isExpanded, onToggle, isDarkMode }) => {
+  const { profile, all_friends } = useSelector((state: AppState) => state.filesState);
+  const { updatePromise, handleStatusChange, handleAmountChange, handleReceiverChange, handleDeletePromise } = usePromiseActions(promise);
+  const getUserData = useUserData();
+  const statusOptions = useMemo(() => getStatusOptions(promise, profile.id), [promise, profile.id]);
+
+  const handleCellActions = {
+    updateField: useCallback((oldField: string, newField: string) => {
+      const cells = promise.cells?.map(c =>
+        c.field === oldField ? { ...c, field: newField, id: `${promise.id}_${newField}` } : c
+      ) || [];
+      updatePromise({ cells });
+    }, [promise.cells, promise.id, updatePromise]),
+
+    updateValue: useCallback((field: string, value: string) => {
+      const cells = promise.cells?.map(c => c.field === field ? { ...c, value } : c) || [];
+      updatePromise({ cells });
+    }, [promise.cells, updatePromise]),
+
+    add: useCallback(() => {
+      const existingCount = promise.cells?.filter(c => c.field.startsWith("condition")).length || 0;
+      const field = `condition_${existingCount + 1}`;
+      const newCell = { id: `${promise.id}_${field}`, field, value: "" };
+      updatePromise({ cells: [...(promise.cells || []), newCell] });
+    }, [promise.cells, promise.id, updatePromise]),
+
+    remove: useCallback((field: string) => {
+      const cells = promise.cells?.filter(c => c.field !== field) || [];
+      updatePromise({ cells });
+    }, [promise.cells, updatePromise])
+  };
+
+  return (
+    <Card elevation={0} sx={{ 
+      border: "1px solid", 
+      borderColor: isDarkMode ? "grey.800" : "grey.200", 
+      borderRadius: 3,
+      "&:hover": { boxShadow: 4, transform: "translateY(-2px)" }
+    }}>
+      <PromiseCardHeader 
+        promise={promise} 
+        isExpanded={isExpanded} 
+        onToggle={onToggle} 
+        isDarkMode={isDarkMode} 
+      />
+      
       <Collapse in={isExpanded}>
-        <Divider />
-        <Box sx={{ p: 2, pt: 1.5 }}>
-          <Grid container spacing={2} sx={{ mb: 2 }}>
-            <Grid item xs={12} sm={4}>
-              <TextField 
-                label="Status" 
-                select 
+        <CardContent sx={{ p: 3 }}>
+          <Grid container spacing={2} sx={{ mb: 3 }}>
+            <Grid item xs={12} md={4}>
+              <TextField
+                label="Status"
+                select
                 fullWidth
                 size="small"
                 value={Object.keys(promise.status)[0] || "None"}
-                onChange={e => handleStatusChange(e.target.value)}
+                onChange={(e) => handleStatusChange(e.target.value)}
               >
                 {statusOptions.map(s => <MenuItem key={s} value={s}>{s}</MenuItem>)}
               </TextField>
             </Grid>
-            
-            <Grid item xs={12} sm={4}>
-              <TextField 
-                label="Amount" 
+            <Grid item xs={12} md={4}>
+              <TextField
+                label="Amount"
                 type="number"
                 fullWidth
                 size="small"
                 value={promise.amount || 0}
-                onChange={e => handleAmountChange(e.target.value)}
-                InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
+                onChange={(e) => handleAmountChange(e.target.value)}
+                InputProps={{
+                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                }}
               />
             </Grid>
-            
-            <Grid item xs={12} sm={4}>
-              <TextField 
-                label="Receiver" 
-                select 
+            <Grid item xs={12} md={4}>
+              <TextField
+                label="Receiver"
+                select
                 fullWidth
                 size="small"
-                value={getUserName(promise.receiver)}
-                onChange={e => handleReceiverChange(e.target.value)}
+                value={getUserData(promise.receiver).name}
+                onChange={(e) => handleReceiverChange(e.target.value)}
               >
                 {all_friends?.map(f => <MenuItem key={f.id} value={f.name}>{f.name}</MenuItem>)}
               </TextField>
             </Grid>
           </Grid>
 
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
-            Created: {new Date(promise.date_created / 1000000).toLocaleDateString()}
-          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
+            <DateRangeIcon fontSize="small" color="disabled" />
+            <Typography variant="body2" color="text.secondary">
+              Created on {new Date(promise.date_created / 1000000).toLocaleDateString()}
+            </Typography>
+          </Box>
 
-          {promise.cells?.length > 0 && (
-            <Box sx={{ mb: 2 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                  Agreement Conditions
-                </Typography>
-                <IconButton onClick={handleAddCell} size="small" color="primary">
-                  <AddIcon fontSize="small" />
-                </IconButton>
-              </Box>
-              
-              <Stack spacing={2}>
-                {promise.cells.map(cell => (
-                  <Box key={cell.id} sx={{ 
-                    p: 2,
-                    bgcolor: isDarkMode ? 'grey.900' : 'grey.50',
-                    borderRadius: 1,
-                    border: '1px solid',
-                    borderColor: 'divider'
-                  }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-                      {editingKey === cell.field ? (
-                        <TextField 
-                          value={editingValue} 
-                          onChange={e => setEditingValue(e.target.value)}
-                          onBlur={e => handleKeyChange(cell.field, e.target.value)}
-                          onKeyDown={e => {
-                            if (e.key === "Enter") handleKeyChange(cell.field, editingValue);
-                            if (e.key === "Escape") { setEditingKey(null); setEditingValue(""); }
-                          }}
-                          autoFocus 
-                          size="small"
-                          variant="standard"
-                          sx={{ 
-                            '& .MuiInput-underline:before': { borderBottomColor: 'primary.main' },
-                            '& .MuiInput-underline:after': { borderBottomColor: 'primary.main' }
-                          }}
-                        />
-                      ) : (
-                        <Typography 
-                          variant="h6" 
-                          sx={{ 
-                            cursor: 'pointer',
-                            textDecoration: 'underline dotted',
-                            textTransform: 'capitalize',
-                            fontSize: '1.1rem',
-                            fontWeight: 500,
-                            '&:hover': { color: 'primary.main' }
-                          }}
-                          onClick={() => { setEditingKey(cell.field); setEditingValue(cell.field); }}
-                        >
-                          {cell.field.replace(/_/g, " ")}
-                        </Typography>
-                      )}
-                      
-                      <IconButton 
-                        onClick={() => handleRemoveCell(cell.field)} 
-                        size="small" 
-                        sx={{ color: 'error.main' }}
-                      >
-                        <CloseIcon fontSize="small" />
-                      </IconButton>
-                    </Box>
-                    
-                    {editingCell === cell.id ? (
-                      <TextField
-                        value={cell.value || ""}
-                        onChange={e => handleCellChange(cell.field, e.target.value)}
-                        onBlur={() => setEditingCell(null)}
-                        autoFocus
-                        multiline
-                        rows={3}
-                        fullWidth
-                        variant="outlined"
-                        placeholder="Enter condition description..."
-                        sx={{ bgcolor: 'background.paper' }}
-                      />
-                    ) : (
-                      <Typography 
-                        variant="body1" 
-                        sx={{ 
-                          lineHeight: 1.6,
-                          cursor: 'text',
-                          minHeight: '1.5rem',
-                          color: cell.value ? 'text.primary' : 'text.secondary',
-                          fontStyle: cell.value ? 'normal' : 'italic',
-                          '&:hover': { bgcolor: isDarkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }
-                        }}
-                        onClick={() => setEditingCell(cell.id)}
-                      >
-                        {cell.value || "Click to add description..."}
-                      </Typography>
-                    )}
-                  </Box>
-                ))}
-              </Stack>
+          <Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+              <DescriptionIcon color="primary" />
+              <Typography variant="h6" fontWeight={600}>Agreement Conditions</Typography>
             </Box>
-          )}
 
-          {!promise.cells?.length && (
-            <Button 
-              onClick={handleAddCell} 
-              startIcon={<AddIcon />} 
-              variant="outlined" 
-              size="small"
-              sx={{ mb: 2 }}
+            <Stack spacing={2}>
+              {promise.cells?.map((cell, index) => (
+                <Fade key={cell.id} in timeout={300 + index * 100}>
+                  <div>
+                    <ConditionCell
+                      cell={cell}
+                      onUpdateField={handleCellActions.updateField}
+                      onUpdateValue={handleCellActions.updateValue}
+                      onRemove={handleCellActions.remove}
+                    />
+                  </div>
+                </Fade>
+              ))}
+
+              <Button
+                onClick={handleCellActions.add}
+                variant="outlined"
+                startIcon={<AddIcon />}
+                sx={{ borderStyle: "dashed", py: 1.5 }}
+              >
+                Add New Condition
+              </Button>
+
+              {!promise.cells?.length && (
+                <Box sx={{ textAlign: "center", py: 3, color: "text.secondary" }}>
+                  <DescriptionIcon sx={{ fontSize: 48, opacity: 0.3, mb: 1 }} />
+                  <Typography variant="body2">No conditions defined yet.</Typography>
+                </Box>
+              )}
+            </Stack>
+          </Box>
+
+          <Box sx={{ mt: 3, pt: 2, borderTop: "1px solid", borderColor: "divider" }}>
+            <Button
+              onClick={handleDeletePromise}
+              variant="outlined"
+              color="error"
+              startIcon={<DeleteIcon />}
+              fullWidth
             >
-              Add Condition
+              Delete Agreement
             </Button>
-          )}
-
-          <Button 
-            onClick={handleDeletePromise} 
-            variant="outlined" 
-            color="error" 
-            size="small"
-            startIcon={<DeleteIcon />}
-            fullWidth
-          >
-            Delete Agreement
-          </Button>
-        </Box>
+          </Box>
+        </CardContent>
       </Collapse>
-    </Paper>
+    </Card>
   );
 });
 
-const AgreementView = memo(
-  ({ contractId, promises, profile, isDarkMode, onSwitchToTable }) => {
-    console.log({ promises });
-    const dispatch = useDispatch();
-    const contracts = useSelector((state) => state.filesState.contracts);
-    const [expandedCards, setExpandedCards] = useState(new Set());
+const AgreementView = memo<{
+  contractId: string;
+  promises: CPayment[];
+  profile: User;
+  isDarkMode: boolean;
+  onSwitchToTable: () => void;
+}>(({ contractId, promises, profile, isDarkMode, onSwitchToTable }) => {
+  const dispatch = useDispatch();
+  const [expandedCards, setExpandedCards] = useState(new Set<string>());
 
-    const toggleCard = useCallback((id) => {
-      setExpandedCards((prev) => {
-        const next = new Set(prev);
-        next.has(id) ? next.delete(id) : next.add(id);
-        return next;
-      });
-    }, []);
+  const toggleCard = useCallback((id: string) => {
+    setExpandedCards(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }, []);
 
-    const handleAddPromise = useCallback(() => {
-      dispatch({
-        type: "ADD_PROMISE",
-        contract_id: contractId,
-        promise: createNewPromis(Principal.fromText(profile.id), contractId),
-        insertIndex: promises?.length || 0,
-      });
-    }, [dispatch, promises, profile.id, contracts]);
+  const handleAddPromise = useCallback(() => {
+    dispatch({
+      type: "ADD_PROMISE",
+      contract_id: contractId,
+      promise: createNewPromis(Principal.fromText(profile.id), contractId),
+      insertIndex: promises?.length || 0,
+    });
+  }, [dispatch, promises, profile.id, contractId]);
 
-    return (
-      <Box sx={{ p: 2, maxHeight: "70vh", overflowY: "auto" }}>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mb: 2,
-          }}
-        >
-          <Typography variant="h6">
-            Agreements ({promises?.length || 0})
+  return (
+    <Box sx={{ p: 3, maxHeight: "70vh", overflowY: "auto" }}>
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+        <Box>
+          <Typography variant="h5" fontWeight={700} gutterBottom>Agreements</Typography>
+          <Typography variant="body2" color="text.secondary">
+            {promises?.length || 0} active agreements
           </Typography>
-          <Stack direction="row" spacing={1}>
-            <Button
-              onClick={handleAddPromise}
-              variant="outlined"
-              color="success"
-              startIcon={<AddIcon />}
-            >
-              Add Promise
-            </Button>
-            <DeleteContractButton contractId={contractId} />
-            <Button onClick={onSwitchToTable} variant="outlined">
-              Switch to Table
-            </Button>
-          </Stack>
         </Box>
-
-        {!promises?.length ? (
-          <Box
-            sx={{
-              textAlign: "center",
-              py: 5,
-              color: isDarkMode ? "#aaa" : "#666",
-            }}
-          >
-            <Typography>
-              No agreements found. Click "Add Promise" to create your first
-              agreement.
-            </Typography>
-          </Box>
-        ) : (
-          <Stack spacing={1.5}>
-            {promises.map((promise) => (
-              <PromiseCard
-                key={promise.id}
-                promise={promise}
-                isExpanded={expandedCards.has(promise.id)}
-                onToggle={() => toggleCard(promise.id)}
-                isDarkMode={isDarkMode}
-              />
-            ))}
-          </Stack>
-        )}
+        
+        <Stack direction="row" spacing={1}>
+          <Button onClick={handleAddPromise} variant="contained" startIcon={<AddIcon />}>
+            New Agreement
+          </Button>
+          <DeleteContractButton contractId={contractId} />
+          <Button onClick={onSwitchToTable} variant="outlined">Table View</Button>
+        </Stack>
       </Box>
-    );
-  },
-);
+
+      {!promises?.length ? (
+        <Box sx={{ 
+          textAlign: "center", 
+          py: 8,
+          border: "2px dashed",
+          borderColor: "divider",
+          borderRadius: 3,
+          bgcolor: isDarkMode ? "grey.900" : "grey.50",
+        }}>
+          <AccountBalanceWalletIcon sx={{ fontSize: 64, color: "text.disabled", mb: 2 }} />
+          <Typography variant="h6" color="text.secondary" gutterBottom>
+            No Agreements Yet
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            Create your first agreement to get started with secure transactions.
+          </Typography>
+          <Button onClick={handleAddPromise} variant="contained" size="large" startIcon={<AddIcon />}>
+            Create First Agreement
+          </Button>
+        </Box>
+      ) : (
+        <Stack spacing={2}>
+          {promises.map((promise, index) => (
+            <Fade key={promise.id} in timeout={200 + index * 100}>
+              <div>
+                <PromiseCard
+                  promise={promise}
+                  isExpanded={expandedCards.has(promise.id)}
+                  onToggle={() => toggleCard(promise.id)}
+                  isDarkMode={isDarkMode}
+                />
+              </div>
+            </Fade>
+          ))}
+        </Stack>
+      )}
+    </Box>
+  );
+});
 
 export default AgreementView;

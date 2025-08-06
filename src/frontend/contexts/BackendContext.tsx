@@ -15,6 +15,8 @@ import {
   Identity,
 } from "@dfinity/agent";
 import { canisterId, idlFactory } from "../../declarations/backend";
+import { canisterId as IIID, idlFactory as IIFactory } from "../../declarations/internet_identity";
+import { canisterId as ckID, idlFactory as ckFactory } from "../../declarations/ckusdc_ledger";
 import { _SERVICE } from "../../declarations/backend/backend.did";
 import { useDispatch, useSelector } from "react-redux";
 import getLedgerActor from "./ckudc_ledger_actor";
@@ -79,9 +81,7 @@ const createHttpAgent = async (
   return agent;
 };
 
-const createBackendActor = (
-  agent: HttpAgent,
-): ActorSubclass<_SERVICE> => {
+const createBackendActor = (agent: HttpAgent): ActorSubclass<_SERVICE> => {
   return Actor.createActor<_SERVICE>(idlFactory, {
     agent,
     canisterId,
@@ -90,7 +90,7 @@ const createBackendActor = (
 
 const getIdentityProvider = (port: string): string => {
   if (import.meta.env.VITE_DFX_NETWORK !== "ic") {
-    return `http://${import.meta.env.VITE_INTERNET_IDENTITY}.localhost:${port}`;
+    return `http://${IIID}.localhost:${port}`;
   }
   return "https://identity.ic0.app/#authorize";
 };
@@ -108,11 +108,18 @@ async function handleAgent(client: AuthClient) {
 
   const identity = await client.getIdentity();
   principal = identity.getPrincipal().toString();
-
+  try{
   const agent = await createHttpAgent(identity, host);
   const actor = createBackendActor(agent);
 
   return { actor, agent, principal, identity, client };
+
+  } catch (err){
+      client.logout({ returnTo: "/" });
+
+  }
+    return {}
+  
 }
 
 interface BackendProviderProps {

@@ -260,8 +260,10 @@ const JobSelector: React.FC = () => {
     <Box sx={{ width: "100%", margin: 0, padding: 0 }}>
       <Helmet>
         <title>
-          {currentJob?`${Object.keys(currentJob?.category || {})[0]}:  ${currentJob?.job_titles[0]}` ||
-            "Jobs":"ICPJobs"}
+          {currentJob
+            ? `${Object.keys(currentJob?.category || {})[0]}:  ${currentJob?.job_titles[0]}` ||
+              "Jobs"
+            : "ICPJobs"}
         </title>
       </Helmet>
 

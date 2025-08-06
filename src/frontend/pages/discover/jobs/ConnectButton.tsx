@@ -90,28 +90,13 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({
     // })
     setConnecting(false);
   };
-
-  const [currUser, setUser] = useState<null | User>(null);
-  const user_id = matchingJob?.user_id;
-
-  useEffect(() => {
-    (async () => {
-      const response = await backendActor.get_user(user_id);
-      console.log({ response, matchingJob });
-      if (response.Ok) {
-        setUser(response.Ok);
-      }
-    })();
-  }, [jobId]);
-
+  
   return (
     <>
-      {currUser && (
-        <UserAvatarMenu
-          user={currUser}
+     <UserAvatarMenu
+          user_id={matchingJob?.user_id}
           // onMessageClick={() => setSelectedUser(otherUser)}
         />
-      )}
       <Button
         variant="contained"
         color={match?.is_connected ? "success" : "primary"}
