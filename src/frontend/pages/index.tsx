@@ -49,7 +49,7 @@ function Pages() {
       return <ICPJobsLandingPage />;
     }
   };
-
+  
   return (
     <Routes>
       <Route path="/" element={<MainPage />} />
@@ -78,7 +78,6 @@ function Pages() {
       <Route path="/vote" element={<SNSVoting />} />
       <Route path="/shares_contract" element={<DummyShares />} />
       <Route path="/affiliate" element={<AffiliateDashboard />} />
-      <Route path="/f" element={<AffiliateRedirect />} />
       <Route path="/*" element={<FileContentPage />} />
       <Route path="/calendar" element={<CalendarView />} />
       <Route path="/achievementCard" element={<AchievementPage />} />
