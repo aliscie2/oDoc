@@ -1,7 +1,5 @@
 use crate::contracts::{CContract, CustomContract};
-use crate::files_content::TableUpdates;
 use crate::tables::ContractPermissionType;
-use candid::Principal;
 use ic_cdk::caller;
 
 pub struct CContractValidationRule {

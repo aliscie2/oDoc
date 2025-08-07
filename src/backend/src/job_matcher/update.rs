@@ -54,7 +54,7 @@ fn update_job(updates: Vec<JobUpdate>, ai_credits: Option<f32>) -> Result<(), St
     let caller_id = ic_cdk::caller().to_string();
     let current_time = ic_cdk::api::time() as f64;
 
-    for mut update in updates {
+    for update in updates {
         let mut job = Job::get(&update.id).unwrap_or_else(|| Job::new(update.id.clone()));
 
         if job.user_id != caller_id {

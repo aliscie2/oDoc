@@ -2,7 +2,6 @@ use crate::{
     contracts::{CPayment, PaymentStatus},
     Wallet,
 };
-use candid::Principal;
 use ic_cdk::caller;
 
 pub struct ValidationRule {

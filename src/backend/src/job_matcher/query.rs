@@ -21,7 +21,7 @@ fn get_my_jobs() -> GetJobs {
         let good_matches = job
             .matches
             .iter()
-            .filter(|saved_match| is_match_score_good_enough(saved_match, &job))
+            .filter(|saved_match| is_match_score_good_enough(saved_match, job))
             .collect::<Vec<_>>();
 
         for saved_match in good_matches {
@@ -89,7 +89,7 @@ fn filter_and_limit_jobs(
 ) -> Vec<Job> {
     let mut filtered_jobs: Vec<Job> = jobs
         .into_iter()
-        .filter(|job| is_job_recent(job))
+        .filter(is_job_recent)
         .filter(|job| has_good_skill_overlap(job, current_skills))
         .collect();
 

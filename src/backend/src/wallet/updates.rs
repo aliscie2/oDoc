@@ -1,6 +1,5 @@
 use crate::ckusdc_index_types::GetTransactions;
 use crate::current_user_state::types::TransferGuard;
-use crate::current_user_state::UserState;
 use crate::wallet::error::Error;
 use crate::workspaces::nat_to_u64;
 use crate::{CPayment, ExchangeType, PaymentStatus, Wallet};
