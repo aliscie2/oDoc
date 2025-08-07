@@ -610,22 +610,22 @@ const WalletPage: React.FC<{ wallet?: Wallet }> = ({
   );
 
   if (!profile) {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center">
-      <div className="mb-6">
-        <Typography variant="h5" className="text-gray-600 mb-2">
-          Authentication Required
-        </Typography>
-        <Typography variant="body1" className="text-gray-500">
-          Please log in to access your wallet and continue.
-        </Typography>
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center">
+        <div className="mb-6">
+          <Typography variant="h5" className="text-gray-600 mb-2">
+            Authentication Required
+          </Typography>
+          <Typography variant="body1" className="text-gray-500">
+            Please log in to access your wallet and continue.
+          </Typography>
+        </div>
+        <div className="mb-6">
+          <RunawayJellyfish scale={3} runaway={true} />
+        </div>
       </div>
-      <div className="mb-6">
-        <RunawayJellyfish scale={3} runaway={true} />
-      </div>
-    </div>
-  );
-}
+    );
+  }
   const { enqueueSnackbar } = useSnackbar();
 
   const { executeTransaction, isProcessing } = useWalletTransactions(

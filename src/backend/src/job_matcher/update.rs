@@ -45,70 +45,61 @@ fn add_to_search(skills: &Vec<String>, job_id: &String, category: &Category) {
 fn update_job(updates: Vec<JobUpdate>, ai_credits: Option<f32>) -> Result<(), String> {
     if ic_cdk::caller().to_string() == Principal::anonymous().to_string() {
         return Err("Permission denied (anonymous)".to_string());
-    };
+    }
+
     if let Some(credits) = ai_credits {
         UserState::set_credits(credits);
     }
 
-    let updates: Vec<JobUpdate> = updates
-        .into_iter()
-        .map(|mut update| {
-            update.updates = update
-                .updates
-                .into_iter()
-                .map(|mut u| {
-                    if u.field == "skills" {
-                        u.values = u.values.into_iter().map(|s| s.to_lowercase()).collect();
-                    }
-                    u
-                })
-                .collect();
-            update
-        })
-        .collect();
+    let caller_id = ic_cdk::caller().to_string();
+    let current_time = ic_cdk::api::time() as f64;
 
-    for update in updates {
-        let mut job = match Job::get(&update.id) {
-            Some(job) => job,
-            None => Job::new(update.id.clone()),
-        };
+    for mut update in updates {
+        let mut job = Job::get(&update.id).unwrap_or_else(|| Job::new(update.id.clone()));
 
-        if job.user_id != ic_cdk::caller().to_string() {
-            return Err("Permission denied (not aowner)".to_string());
+        if job.user_id != caller_id {
+            return Err("Permission denied (not owner)".to_string());
         }
 
-        let mut job_updated = !update.updates.is_empty();
+        let mut needs_update = false;
 
-        for d in update.updates {
-            if &d.field == "skills" {
+        // Process field updates
+        for mut field_update in update.updates {
+            if field_update.field == "skills" {
                 delete_from_search(job.id.clone());
+                field_update.values = field_update
+                    .values
+                    .into_iter()
+                    .map(|s| s.to_lowercase())
+                    .collect();
                 let category = update.category.as_ref().unwrap_or(&job.category);
-                add_to_search(&d.values, &job.id, category);
+                add_to_search(&field_update.values, &job.id, category);
             }
-            job.update(&d.field, d.values);
+            job.update(&field_update.field, field_update.values);
+            needs_update = true;
         }
 
+        // Handle other updates
         if let Some(active) = update.active {
             job.active = active;
-            job_updated = true;
+            needs_update = true;
         }
         if let Some(score) = update.required_match_score {
             job.required_match_score = score;
-            job_updated = true;
+            needs_update = true;
         }
-        if let Some(category) = update.category.clone() {
+        if let Some(category) = update.category {
             job.category = category;
-            job_updated = true;
+            needs_update = true;
         }
 
-        if job_updated {
-            job.date_updated = ic_cdk::api::time() as f64;
+        if needs_update {
+            job.date_updated = current_time;
+            job.save();
         }
-
-        job.save();
 
         if let Some(matches) = update.matches {
-            Job::update_matches(update.id.clone(), matches)?;
+            Job::update_matches(update.id, matches)?;
         }
     }
     Ok(())

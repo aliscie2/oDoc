@@ -20,7 +20,9 @@ export default defineConfig({
     ],
     globals: true,
     environment: 'node',
+    globalSetup: ['./tests/backend/global-setup.ts'],
     setupFiles: ['./tests/backend/test-setup.ts'],
-    testTimeout: 10000,
+    testTimeout: 30000,
+    hookTimeout: 120000,
   }
 });

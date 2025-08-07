@@ -1,46 +1,62 @@
-import { Button, Checkbox, Dialog, DialogActions, DialogContent, FormControlLabel, Typography } from "@mui/material";
+import {
+  Button,
+  Checkbox,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  FormControlLabel,
+  Typography,
+} from "@mui/material";
 import { ChangeEvent, useEffect, useState } from "react";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
 export default function PWAInstallPopup(): JSX.Element | null {
   const [showPopup, setShowPopup] = useState<boolean>(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [deferredPrompt, setDeferredPrompt] =
+    useState<BeforeInstallPromptEvent | null>(null);
   const [dontShowAgain, setDontShowAgain] = useState<boolean>(false);
 
   useEffect(() => {
-    if (localStorage.getItem('pwa-install-dismissed') === 'true') return;
-    
+    if (localStorage.getItem("pwa-install-dismissed") === "true") return;
+
     const handleBeforeInstallPrompt = (e: BeforeInstallPromptEvent) => {
       e.preventDefault();
       setDeferredPrompt(e);
       setShowPopup(true);
     };
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt as EventListener);
-    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt as EventListener);
+    window.addEventListener(
+      "beforeinstallprompt",
+      handleBeforeInstallPrompt as EventListener,
+    );
+    return () =>
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt as EventListener,
+      );
   }, []);
 
   const handleInstall = async (): Promise<void> => {
     if (!deferredPrompt) return;
-    
+
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-    
+
     setDeferredPrompt(null);
     setShowPopup(false);
-    
-    if (dontShowAgain || outcome === 'accepted') {
-      localStorage.setItem('pwa-install-dismissed', 'true');
+
+    if (dontShowAgain || outcome === "accepted") {
+      localStorage.setItem("pwa-install-dismissed", "true");
     }
   };
 
   const handleClose = (): void => {
     if (dontShowAgain) {
-      localStorage.setItem('pwa-install-dismissed', 'true');
+      localStorage.setItem("pwa-install-dismissed", "true");
     }
     setShowPopup(false);
   };
@@ -49,7 +65,7 @@ export default function PWAInstallPopup(): JSX.Element | null {
 
   return (
     <Dialog open={showPopup} onClose={handleClose} maxWidth="xs" fullWidth>
-      <DialogContent sx={{ p: 3, textAlign: 'center' }}>
+      <DialogContent sx={{ p: 3, textAlign: "center" }}>
         <Typography variant="h6" gutterBottom>
           Install App
         </Typography>
@@ -58,9 +74,11 @@ export default function PWAInstallPopup(): JSX.Element | null {
         </Typography>
         <FormControlLabel
           control={
-            <Checkbox 
+            <Checkbox
               checked={dontShowAgain}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setDontShowAgain(e.target.checked)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setDontShowAgain(e.target.checked)
+              }
               size="small"
             />
           }

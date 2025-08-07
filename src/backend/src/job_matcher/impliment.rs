@@ -197,24 +197,16 @@ impl Job {
     pub fn update_matches(job_id: String, matches: Vec<Match>) -> Result<(), String> {
         crate::JOBS_MATCH_STORE.with(|store| {
             let mut store = store.borrow_mut();
-
-            // Get the job we're updating matches for
             let mut job = match store.get(&job_id) {
                 Some(j) => j.clone(),
                 None => return Err("Job not found".to_string()),
             };
 
-            // Update the job's matches
             job.matches = matches;
-            // job.date_updated = ic_cdk::api::time() as f64;
-
-            // Save the updated job
             store.insert(job_id.clone(), job.clone());
 
-            // Create reciprocal matches for other jobs
             for match_item in &job.matches {
                 if let Some(mut other_job) = store.get(&match_item.job_id) {
-                    // Create reciprocal match
                     let reciprocal_match = Match {
                         score: match_item.score,
                         job_id: job_id.clone(),
@@ -225,22 +217,14 @@ impl Job {
                         cover_letter: match_item.cover_letter.clone(),
                     };
 
-                    // Remove existing match if it exists
                     other_job.matches.retain(|m| m.job_id != job_id);
-
-                    // Add the new reciprocal match
-                    // other_job.date_updated = ic_cdk::api::time() as f64;
                     other_job.matches.push(reciprocal_match);
-
-                    // Save the other job
                     store.insert(match_item.job_id.clone(), other_job);
                 }
             }
-
             Ok(())
         })
     }
-
     pub fn get_all_user_emails() -> Vec<String> {
         crate::JOBS_MATCH_STORE.with(|store| {
             store

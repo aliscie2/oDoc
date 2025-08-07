@@ -1,4 +1,3 @@
-// /tests/backend/test-setup.ts
 import { _SERVICE, idlFactory } from "$/declarations/backend/backend.did.js";
 import {
   idlFactory as ckusdcIdlFactory,
@@ -8,7 +7,6 @@ import {
 } from "$/declarations/ckusdc_ledger/ckusdc_ledger.did.js";
 import { IDL } from "@dfinity/candid";
 import {
-  Actor,
   CanisterFixture,
   PocketIc,
   PocketIcServer,
@@ -17,42 +15,19 @@ import {
 import { Principal } from "@dfinity/principal";
 import path from "path";
 
-declare global {
-  var testPic: PocketIc;
-  var testActor: Actor<_SERVICE>;
-  var ckusdcActor: Actor<CkusdcService>;
-  var backendCanisterId: string;
-  var currentMockTime: number;
-  var oneHourLater: () => Promise<Date>;
-  var timeLater: (milliseconds: number) => Promise<Date>;
-}
-
 const wasmPath = path.resolve(__dirname, "backend.wasm.gz");
 const ckusdcPath = path.resolve(__dirname, "ic-icrc1-ledger.wasm.gz");
 
-beforeAll(async () => {
+export async function setup() {
+  console.log("Setting up global test environment...");
+
   const picServer = await PocketIcServer.start({
     showCanisterLogs: true,
     showRuntimeLogs: true,
   });
-  globalThis.testPic = await PocketIc.create(picServer.getUrl());
 
-  await globalThis.testPic.resetTime();
-
-  // Time manipulation helpers
-  globalThis.oneHourLater = async () => {
-    const currentTime = await globalThis.testPic.getTime();
-    const newTime = new Date(currentTime + 60 * 60 * 1000);
-    await globalThis.testPic.setTime(newTime);
-    return newTime;
-  };
-
-  globalThis.timeLater = async (milliseconds) => {
-    const currentTime = await globalThis.testPic.getTime();
-    const newTime = new Date(currentTime + milliseconds);
-    await globalThis.testPic.setTime(newTime);
-    return newTime;
-  };
+  const testPic = await PocketIc.create(picServer.getUrl());
+  await testPic.resetTime();
 
   const testIdentity = createIdentity("1");
   const minterIdentity = createIdentity("minter");
@@ -85,39 +60,43 @@ beforeAll(async () => {
   };
 
   const ckusdcFixture: CanisterFixture<CkusdcService> =
-    await globalThis.testPic.setupCanister({
+    await testPic.setupCanister({
       idlFactory: ckusdcIdlFactory,
       wasm: ckusdcPath,
       arg: IDL.encode(init({ IDL }), [{ Init: initArgs }]),
       targetCanisterId: Principal.fromText("xevnm-gaaaa-aaaar-qafnq-cai"),
     });
 
-  globalThis.ckusdcActor = ckusdcFixture.actor;
-
-  const fixture: CanisterFixture<_SERVICE> =
-    await globalThis.testPic.setupCanister({
-      idlFactory,
-      wasm: wasmPath,
-      arg: IDL.encode(
-        [],
-        [
-          {
-            ckethLedger: Principal.fromText("xevnm-gaaaa-aaaar-qafnq-cai"),
-            collector_account: {
-              owner: testIdentity.getPrincipal(),
-              subaccount: [],
-            },
-            ckethMinter: Principal.fromText("xevnm-gaaaa-aaaar-qafnq-cai"),
+  const fixture: CanisterFixture<_SERVICE> = await testPic.setupCanister({
+    idlFactory,
+    wasm: wasmPath,
+    arg: IDL.encode(
+      [],
+      [
+        {
+          ckethLedger: Principal.fromText("xevnm-gaaaa-aaaar-qafnq-cai"),
+          collector_account: {
+            owner: testIdentity.getPrincipal(),
+            subaccount: [],
           },
-        ],
-      ),
-    });
+          ckethMinter: Principal.fromText("xevnm-gaaaa-aaaar-qafnq-cai"),
+        },
+      ],
+    ),
+  });
 
-  globalThis.testActor = fixture.actor;
-  globalThis.backendCanisterId = fixture.canisterId.toString();
-  console.log("Backend canister ID:", globalThis.backendCanisterId);
-}, 60000);
+  // Store in global for access in tests
+  (globalThis as any).__testPic = testPic;
+  (globalThis as any).__testActor = fixture.actor;
+  (globalThis as any).__ckusdcActor = ckusdcFixture.actor;
+  (globalThis as any).__backendCanisterId = fixture.canisterId.toString();
 
-afterAll(async () => {
-  if (globalThis.testPic) await globalThis.testPic.tearDown();
-});
+  console.log("Global setup complete");
+}
+
+export async function teardown() {
+  console.log("Tearing down global test environment...");
+  if ((globalThis as any).__testPic) {
+    await (globalThis as any).__testPic.tearDown();
+  }
+}

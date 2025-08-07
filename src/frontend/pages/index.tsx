@@ -48,7 +48,7 @@ function Pages() {
       return <ICPJobsLandingPage />;
     }
   };
-  
+
   return (
     <Routes>
       <Route path="/" element={<MainPage />} />

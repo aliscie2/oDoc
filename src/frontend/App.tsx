@@ -48,12 +48,11 @@ const PageContainer = styled(Box)(({ theme }) => ({
   },
 }));
 
-
 const App: React.FC = () => {
   const { pathname } = useLocation();
 
   // In App.tsx
-   useEffect(() => {
+  useEffect(() => {
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
         .register("/service-worker.js")
@@ -368,7 +367,7 @@ const App: React.FC = () => {
   }
   return (
     <MainContent>
-      <PWAInstallPopup/>
+      <PWAInstallPopup />
       {/* <PWAInstallPrompt /> */}
       {/* <SearchPopper /> */}
       <GoogleCalendarOnboarding />
