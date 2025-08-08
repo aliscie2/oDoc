@@ -1,4 +1,3 @@
-import { useBackendContext } from "@/contexts/BackendContext";
 import { RootState } from "@/redux/reducers";
 import {
   Box,
@@ -8,17 +7,12 @@ import {
   CircularProgress,
   Typography,
 } from "@mui/material";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useSelector } from "react-redux";
-import JobDetails from "./discover/jobs/JobDetails";
-import { JOB_MATCHING_PROMPT } from "./discover/jobs/utils/jobMatchingPrompt";
-import { textToJson } from "./discover/jobs/utils/processResponseJobs";
 import ConnectButton from "./discover/jobs/ConnectButton";
+import JobDetails from "./discover/jobs/JobDetails";
 
 const JobPage = () => {
-  const { backendActor } = useBackendContext();
-  const { jobs } = useSelector<RootState>((state) => state.jobState);
-  const { aiAgent } = useSelector<RootState>((state) => state.AIState);
   const { profile } = useSelector<RootState>((state) => state.filesState);
   const { isRegistered } = useSelector<RootState>((state) => state.uiState);
 
@@ -37,115 +31,6 @@ const JobPage = () => {
       : jobData.job;
     return currentJob && currentJob.user_id !== profile.id;
   }, [isRegistered, profile, jobData.job]);
-
-  const shouldWaitForProfile = useMemo(
-    () => isRegistered && !profile,
-    [isRegistered, profile],
-  );
-
-  useEffect(() => {
-    const loadJobData = async () => {
-      const jobId = new URLSearchParams(window.location.search).get("id");
-
-      if (!jobId || !backendActor) {
-        setJobData((prev) => ({
-          ...prev,
-          loading: false,
-          error: "Invalid job ID",
-        }));
-        return;
-      }
-
-      if (shouldWaitForProfile) {
-        setJobData((prev) => ({ ...prev, loading: true }));
-        return;
-      }
-
-      try {
-        setJobData((prev) => ({ ...prev, loading: true, error: null }));
-
-        const fetchedJob = await backendActor.get_job(jobId);
-        const currentJob = Array.isArray(fetchedJob)
-          ? fetchedJob[0]
-          : fetchedJob;
-
-        // Check if user owns this job
-        if (
-          !isRegistered ||
-          !profile ||
-          !currentJob ||
-          currentJob.user_id === profile.id
-        ) {
-          setJobData({
-            job: fetchedJob,
-            matches: [],
-            loading: false,
-            error: null,
-          });
-          return;
-        }
-
-        const categoryKey = Object.keys(currentJob.category || {})[0];
-        const potentialMatches = jobs.filter(
-          (j) => Object.keys(j.category || {})[0] !== categoryKey,
-        );
-
-        if (potentialMatches.length === 0) {
-          setJobData({
-            job: fetchedJob,
-            matches: [],
-            loading: false,
-            error: null,
-          });
-          return;
-        }
-
-        const cacheKey = `job_data_${jobId}`;
-        const cachedData = sessionStorage.getItem(cacheKey);
-
-        let aiResponse;
-        if (cachedData) {
-          aiResponse = JSON.parse(cachedData).aiResponse;
-        } else {
-          aiResponse = await aiAgent.sendMessage(`
-            ${JOB_MATCHING_PROMPT}
-            candidates: ${JSON.stringify(potentialMatches)},
-            Current: ${JSON.stringify(currentJob)}
-          `);
-          sessionStorage.setItem(
-            cacheKey,
-            JSON.stringify({ fetchedJob, aiResponse }),
-          );
-        }
-
-        const parsed = textToJson(aiResponse)?.extractedData;
-        const processedMatches =
-          parsed.matches
-            ?.map((match) => ({
-              ...match,
-              job: potentialMatches.find((j) => j.id === match.candidate_id),
-              score: Math.max(0, Math.min(100, (match.score || 0) * 10)),
-            }))
-            .sort((a, b) => b.score - a.score) || [];
-
-        setJobData({
-          job: fetchedJob,
-          matches: processedMatches,
-          loading: false,
-          error: null,
-        });
-      } catch (error) {
-        setJobData((prev) => ({
-          ...prev,
-          loading: false,
-          error: "Failed to load job data",
-        }));
-        console.error("Error loading job:", error);
-      }
-    };
-
-    loadJobData();
-  }, [backendActor, jobs, aiAgent, profile, isRegistered]);
 
   const renderMinimalMatchCard = ({ job, score, missmatching_skills }) => (
     <Card key={job?.id} sx={{ mb: 1 }}>

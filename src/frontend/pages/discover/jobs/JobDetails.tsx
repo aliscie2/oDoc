@@ -27,6 +27,7 @@ import { Link } from "react-router-dom";
 import { formatRelativeTime } from "@/utils/time";
 import { useSelector } from "react-redux";
 import { useBackendContext } from "@/contexts/BackendContext";
+import MarkdownMessage from "@/pages/dash_board_v1/markDownMessageRdnder";
 
 interface JobDetailsProps {
   job: Job;
@@ -46,7 +47,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
 
   const { profile } = useSelector((state: any) => state.filesState);
   const { backendActor } = useBackendContext();
-  const canEdit = Object.keys(job.category)[0] == "Talent";
+  const canEdit = Object.keys(job.category)[0] !== "Talent";
 
   const handleSaveCoverLetter = async () => {
     if (!match) return;
@@ -373,16 +374,10 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
                 }}
               />
             ) : (
-              <Typography
-                variant="body1"
-                sx={{
-                  lineHeight: 1.7,
-                  fontSize: { xs: "0.9rem", sm: "1.1rem" },
-                  whiteSpace: "pre-wrap",
-                }}
-              >
-                {match.cover_letter || "No cover letter written yet."}
-              </Typography>
+              <MarkdownMessage
+                message={match.cover_letter || "No cover letter written yet."}
+                isUser={false}
+              />
             )}
           </CardContent>
         </Card>

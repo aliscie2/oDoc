@@ -138,7 +138,7 @@ const JobSelector: React.FC = () => {
       : "Uncategorized";
 
   const getJobTitle = (job: Job) =>
-    job.job_titles ? truncateText(job.job_titles) : "Untitled Job";
+    job.job_titles ? truncateText(job.job_titles[0]) : "Untitled Job";
 
   const jobActions = [
     {

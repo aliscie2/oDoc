@@ -239,7 +239,7 @@ export class AIAgent {
           body: JSON.stringify({
             contents,
             generationConfig: {
-              maxOutputTokens: AIAgent.MYSTATICS.isFreeTier ? 2000 : 4000,
+              maxOutputTokens: 90000,
               temperature: 0.7,
             },
           }),
@@ -251,7 +251,6 @@ export class AIAgent {
       }
 
       const data = await response.json();
-      console.log({ data });
       const assistantMessage =
         data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
 
@@ -298,119 +297,6 @@ export class AIAgent {
     }
   }
 
-  // async sendMessage(
-  //   message: string,
-  //   quick: boolean = false,
-  //   systemPrompt?: string,
-  // ): Promise<string> {
-  //   const estimatedCost = this.estimateInputCost(message);
-  //   const requestCheck = this.shouldAllowRequest(estimatedCost);
-
-  //   if (!requestCheck.allowed) {
-  //     this.showAlert(requestCheck.reason || "Request not allowed");
-  //     throw new Error("INSUFFICIENT_CREDITS");
-  //   }
-
-  //   try {
-  //     const apiToken = import.meta.env.VITE_HUGING_FACE_TOKEN;
-  //     const compressedHistory = this.compressHistory();
-
-  //     // Build conversation context
-  //     let conversationContext = "";
-  //     if (systemPrompt) {
-  //       conversationContext += `<|system|>\n${systemPrompt}<|end|>\n`;
-  //     }
-
-  //     // Add history in alternating user/assistant format
-  //     compressedHistory.forEach((msg) => {
-  //       const role = msg.role === "user" ? "user" : "assistant";
-  //       conversationContext += `<|${role}|>\n${msg.parts[0]}<|end|>\n`;
-  //     });
-
-  //     // Add current message
-  //     conversationContext += `<|user|>\n${message}<|end|>\n<|assistant|>`;
-
-  //     const response = await fetch(
-  //       "https://api-inference.huggingface.co/models/microsoft/Phi-3-mini-4k-instruct",
-  //       {
-  //         method: "POST",
-  //         headers: {
-  //           Authorization: `Bearer ${apiToken}`,
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify({
-  //           inputs: conversationContext,
-  //           parameters: {
-  //             max_new_tokens: 2000,
-  //             temperature: 0.7,
-  //             return_full_text: false,
-  //           },
-  //         }),
-  //       },
-  //     );
-
-  //     if (!response.ok) {
-  //       console.log({ response });
-  //       throw new Error(`API request failed with status ${response.status}`);
-  //     }
-
-  //     const data = await response.json();
-
-  //     const assistantMessage = Array.isArray(data)
-  //       ? data[0]?.generated_text?.trim() || ""
-  //       : "";
-  //     const DETECTION_RATE =
-  //       message.length < 500
-  //         ? 0.001
-  //         : Math.min(message.length / 100000 + 0.01, 0.07);
-  //     // Update stats (Hugging Face doesn't provide token counts, so estimate)
-  //     if (!AIAgent.MYSTATICS.isFreeTier) {
-  //       AIAgent.MYSTATICS.credits = Math.max(
-  //         0,
-  //         AIAgent.MYSTATICS.credits - DETECTION_RATE,
-  //       );
-  //     }
-
-  //     // Add to conversation history
-  //     if (message.trim()) {
-  //       AIAgent.MYSTATICS.conversationHistory.push({
-  //         role: "user",
-  //         parts: [message],
-  //       });
-  //     }
-
-  //     if (assistantMessage) {
-  //       AIAgent.MYSTATICS.conversationHistory.push({
-  //         role: "model",
-  //         parts: [assistantMessage],
-  //       });
-  //     }
-
-  //     return assistantMessage;
-  //   } catch (error) {
-  //     console.error("Error calling Hugging Face API:", error);
-
-  //     if (error instanceof Error) {
-  //       if (error.message === "INSUFFICIENT_CREDITS") {
-  //         throw error;
-  //       } else if (error.message.includes("403")) {
-  //         this.showAlert("API token invalid or unauthorized");
-  //       } else if (error.message.includes("429")) {
-  //         this.showAlert("Rate limit exceeded");
-  //       } else {
-  //         this.showAlert("API request failed - please try again");
-  //       }
-  //     }
-
-  //     throw new Error(
-  //       error instanceof Error
-  //         ? error.message
-  //         : "Failed to get response from AI",
-  //     );
-  //   }
-  // }
-
-  // Update usage stats only (for free tier)
   private updateUsageStats(usageMetadata?: AIUsageMetadata): void {
     if (!usageMetadata) return;
 
@@ -430,7 +316,7 @@ export class AIAgent {
     if (!usageMetadata) return 0;
     // TODO update this later
     // const pricing = this.getCurrentPricing();
-    const cost = 0.05;
+    const cost = 0.01;
 
     // if (usageMetadata.promptTokenCount) {
     //   GeminiAgent.MYSTATICS.totalInputTokens += usageMetadata.promptTokenCount;

@@ -22,33 +22,9 @@ import GoogleCalendarButton from "./addEventToGoogleCalenar";
 import { Link } from "react-router-dom";
 import { useGoogleCalendar } from "./googleAccounts/useGoogleCalendar";
 import { useBackendContext } from "@/contexts/BackendContext";
+import { Job } from "$/declarations/backend/backend.did";
 
 // Job interface based on your Rust struct
-interface Job {
-  notification_id: string;
-  notification_username: string;
-  id: string;
-  user_id: string;
-  skills: string[];
-  education: string[];
-  links: string[];
-  experience: string[];
-  certifications: string[];
-  job_titles: string[];
-  description: string;
-  proficiency_level: string;
-  date_created: number;
-  date_updated: number;
-  active: boolean;
-  matches: any[]; // Define Match interface if needed
-  required_match_score: number;
-  category: any; // Define Category interface if needed
-  trust_score: string;
-  trust_note: string;
-  emails: string[];
-  contacts: string[];
-}
-
 const EventDialog = ({ open, onClose, slotInfo, selectedEvent = null }) => {
   const { backendActor } = useBackendContext();
   const { profile } = useSelector((state: any) => state.filesState);

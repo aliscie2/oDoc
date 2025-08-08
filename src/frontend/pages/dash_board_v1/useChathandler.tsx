@@ -149,7 +149,12 @@ export const useChatHandler = () => {
 
   const processMessage = async (message, messageId, isQuick = true) => {
     const compact_message =
-      message.length > 2000 ? compactMessage(message) : message;
+      message.length > 2000
+        ? compactMessage(
+            message +
+              `current topic ${location.pathname == "/" ? "Job" : location.pathname}`,
+          )
+        : message;
 
     try {
       let parsed = {};

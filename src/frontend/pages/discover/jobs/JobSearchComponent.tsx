@@ -21,62 +21,97 @@ import { Job, Match } from "$/declarations/backend/backend.did";
 import ConnectButton from "./ConnectButton";
 import { useBackendContext } from "@/contexts/BackendContext";
 import JobDetails from "./JobDetails";
-
 import { textToJson } from "./utils/processResponseJobs";
-import { JOB_MATCHING_PROMPT } from "./utils/jobMatchingPrompt";
+import {
+  compressJobForMatching,
+  compressJobsForMatching,
+  JOB_MATCHING_PROMPT,
+} from "./utils/jobMatchingPrompt";
+import { mockJobMatchResponse } from "./utils/mockJobMatches";
+import { RootState } from "@/redux/reducers";
+
+interface ProcessedMatch {
+  job: Job;
+  match: Match;
+  score: number;
+}
+
+interface AIMatchResponse {
+  candidate_id: string;
+  score: number;
+  missmatching_skills: string[];
+  cover_letter: string;
+}
+
+// Constants
+const SCORE_THRESHOLDS = {
+  HIGH: 70,
+  MEDIUM: 30,
+} as const;
+
+const COLORS = {
+  HIGH_SCORE: "#4caf50",
+  MEDIUM_SCORE: "#ff9800",
+  LOW_SCORE: "#f44336",
+} as const;
 
 const JobSearchComponent: React.FC = () => {
   const { backendActor } = useBackendContext();
   const dispatch = useDispatch();
-  const { currentJobId, jobs, matchingJobs } = useSelector(
-    (state: any) => state.jobState,
-  );
-  const { aiAgent } = useSelector((state: any) => state.AIState);
   const theme = useTheme();
 
+  // Redux selectors
+  const { currentJobId, jobs, matchingJobs } = useSelector(
+    (state: RootState) => state.jobState,
+  );
+  const { aiAgent } = useSelector((state: RootState) => state.AIState);
+  const { isRegistered } = useSelector((state: RootState) => state.uiState);
+
+  // Local state
   const [loading, setLoading] = useState(false);
   const [openDialogId, setOpenDialogId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [calledJobs, setCalledJobs] = useState(new Set());
+  const [processedJobIds] = useState(new Set<string>());
 
+  // Computed values
   const currentJob = useMemo(
-    () => jobs?.find((job: Job) => job.id === currentJobId),
+    () => jobs?.find((job: Job) => job.id === currentJobId) || null,
     [jobs, currentJobId],
   );
+
   const isValidSetup = useMemo(
-    () => currentJobId && currentJob && backendActor && aiAgent,
+    () => Boolean(currentJobId && currentJob && backendActor && aiAgent),
     [currentJobId, currentJob, backendActor, aiAgent],
   );
 
-  const { isLoggedIn, isRegistered } = useSelector(
-    (state: any) => state.uiState,
-  );
+  const sortedMatches = useMemo((): ProcessedMatch[] => {
+    if (!currentJob?.matches || !matchingJobs) return [];
 
-  const { sortedMatches, debugInfo } = useMemo(() => {
-    if (!currentJob?.matches)
-      return { sortedMatches: [], debugInfo: { found: 0 } };
+    const validMatches = currentJob.matches
+      .filter((match): match is Match =>
+        Boolean(match?.job_id && match.job_id !== currentJobId),
+      )
+      .map((match) => {
+        const job = matchingJobs.find((j: Job) => j?.id === match.job_id);
+        if (!job) return null;
 
-    const matches = currentJob.matches.filter(Boolean);
-    const validMatches = matches
-      .map((match) => ({
-        job: matchingJobs?.find((j: Job) => j?.id === match?.job_id),
-        match,
-      }))
-      .filter(({ job, match }) => job && match?.job_id !== currentJobId)
-      .sort((a, b) => (b.match?.score || 0) - (a.match?.score || 0));
+        const score = Math.round((match.score || 0) * 100);
+        return { job, match, score };
+      })
+      .filter((item): item is ProcessedMatch => Boolean(item))
+      .sort((a, b) => b.score - a.score);
 
-    return {
-      sortedMatches: validMatches,
-      debugInfo: { found: validMatches.length },
-    };
+    console.log("Processed matches:", validMatches);
+    return validMatches;
   }, [currentJob, matchingJobs, currentJobId]);
 
+  // Utility functions
   const getLookingForCategory = useCallback((job: Job) => {
     const categoryKey = Object.keys(job?.category || {})[0];
     return categoryKey === "Job" ? { Talent: null } : { Job: null };
   }, []);
 
-  const truncateTitle = useCallback((title: string, maxWords = 3) => {
+  const truncateTitle = useCallback((title: string, maxWords = 3): string => {
     if (!title) return "Untitled";
     const words = title.split(" ");
     return (
@@ -85,134 +120,157 @@ const JobSearchComponent: React.FC = () => {
     );
   }, []);
 
-  const getScoreColor = useCallback((score: number) => {
-    if (score >= 80) return "success";
-    if (score >= 60) return "warning";
-    return "error";
+  const getScoreColor = useCallback((score: number): string => {
+    if (score >= SCORE_THRESHOLDS.HIGH) return COLORS.HIGH_SCORE;
+    if (score >= SCORE_THRESHOLDS.MEDIUM) return COLORS.MEDIUM_SCORE;
+    return COLORS.LOW_SCORE;
   }, []);
 
-  const findMatches = async () => {
-    if (!isValidSetup) return;
+  // API functions
+  const processAIMatches = useCallback(
+    (aiMatches: AIMatchResponse[], jobIds: string[]): Match[] => {
+      // Remove duplicates and filter valid matches
+      const uniqueMatches = new Map<string, AIMatchResponse>();
+
+      aiMatches.forEach((match) => {
+        if (match.candidate_id && match.candidate_id !== currentJobId) {
+          const existing = uniqueMatches.get(match.candidate_id);
+          // Keep the match with higher score if duplicate
+          if (!existing || match.score > existing.score) {
+            uniqueMatches.set(match.candidate_id, match);
+          }
+        }
+      });
+
+      return Array.from(uniqueMatches.values())
+        .filter((match) => jobIds.includes(match.candidate_id))
+        .map(
+          (match): Match => ({
+            job_id: match.candidate_id,
+            score: Math.max(0, Math.min(1, match.score / 10)), // Normalize to 0-1
+            missmatching_skills: match.missmatching_skills || [],
+            date_updated: Number(Date.now() * 1e6),
+            is_connected: false,
+            user_id: "",
+            cover_letter: match.cover_letter || "",
+          }),
+        );
+    },
+    [currentJobId],
+  );
+
+  const findMatches = useCallback(async () => {
+    if (!isValidSetup || !currentJob) return;
 
     setLoading(true);
     setError(null);
 
     try {
-      const newMatchingJobs = await backendActor.get_matches(
-        currentJobId,
+      const candidateJobs = await backendActor.get_matches(
+        currentJobId!,
         (currentJob.skills || []).map((skill) => skill.toLowerCase()),
         getLookingForCategory(currentJob),
       );
 
-      if (!newMatchingJobs?.length) {
+      console.log("Candidate jobs from backend:", candidateJobs);
+
+      if (!candidateJobs?.length) {
         setLoading(false);
         return;
       }
 
-      let processedMatches;
-      try {
-        let parsed = {};
-        // if (import.meta.env.VITE_DFX_NETWORK !== "ic") {
-        //   parsed = mockAIJobMatchResponse(newMatchingJobs, currentJob);
-        // } else {
-        //   const aiResponse = await aiAgent.sendMessage(`
-        //   ${JOB_MATCHING_PROMPT}
-        //   candidates: ${JSON.stringify(newMatchingJobs)},
-        //   Current: ${JSON.stringify(currentJob)}
-        // `);
-        //   parsed = textToJson(aiResponse)?.extractedData;
-        // }
+      let processedMatches: Match[];
 
-        const aiResponse = await aiAgent.sendMessage(`
-          ${JOB_MATCHING_PROMPT}
-          candidates: ${JSON.stringify(newMatchingJobs)},
-          Current: ${JSON.stringify(currentJob)}
-        `);
-        parsed = textToJson(aiResponse)?.extractedData;
+      if (import.meta.env.VITE_DFX_NETWORK === "local") {
+        const mockResponse = mockJobMatchResponse(candidateJobs, currentJob);
+        processedMatches = processAIMatches(
+          mockResponse.matches || [],
+          candidateJobs.map((j) => j.id),
+        );
+      } else {
+        const compressedCandidates = compressJobsForMatching(candidateJobs);
+        const compressedCurrentJob = compressJobForMatching(currentJob);
 
-        processedMatches =
-          parsed.matches?.map((match) => ({
-            job_id: match.candidate_id,
-            score: Math.max(0, Math.min(10, match.score || 0)),
-            missmatching_skills: match.missmatching_skills || [],
-            date_updated: Date.now() * 1e6,
-            is_connected: false,
-            user_id: "",
-            cover_letter: match.cover_letter || "",
-          })) || [];
-      } catch (aiError) {
-        alert("AI processing failed, using basic scoring:", aiError);
-        processedMatches = newMatchingJobs.map((job) => ({
-          job_id: job.id,
-          score: 5,
-          missmatching_skills: [],
-          date_updated: Date.now() * 1e6,
-          is_connected: false,
-          user_id: "",
-          cover_letter: "",
-        }));
+        // Remove ID to prevent AI confusion
+        delete compressedCurrentJob["id"];
+
+        const aiResponse = await aiAgent.sendMessage(
+          `candidates: ${JSON.stringify(compressedCandidates)}, Current: ${JSON.stringify(compressedCurrentJob)}`,
+          false,
+          JOB_MATCHING_PROMPT,
+        );
+
+        if (!aiResponse) {
+          throw new Error("AI returned no response");
+        }
+
+        const parsed = textToJson(aiResponse)?.extractedData;
+        console.log("AI parsed response:", parsed);
+
+        processedMatches = processAIMatches(
+          parsed?.matches || [],
+          candidateJobs.map((j) => j.id),
+        );
       }
 
-      const validMatches = processedMatches.filter(
-        (m) => m.job_id !== currentJobId,
-      );
-      if (validMatches.length > 0) {
+      console.log("Final processed matches:", processedMatches);
+
+      if (processedMatches.length > 0) {
         dispatch({
           type: "UPDATE_MATCHING_JOBS",
-          matchingJobs: newMatchingJobs,
-          matches: validMatches,
+          matchingJobs: candidateJobs,
+          matches: processedMatches,
         });
       }
     } catch (err) {
-      console.log("Error finding matches:", err);
+      console.error("Error finding matches:", err);
       setError(err instanceof Error ? err.message : "Failed to load matches");
     } finally {
       setLoading(false);
     }
-  };
-
+  }, [
+    isValidSetup,
+    currentJob,
+    currentJobId,
+    backendActor,
+    aiAgent,
+    getLookingForCategory,
+    processAIMatches,
+    dispatch,
+  ]);
+  // Effects
   useEffect(() => {
     if (
       currentJobId &&
       aiAgent?.remainingCredits() > 0 &&
-      !calledJobs.has(currentJobId)
+      !processedJobIds.has(currentJobId)
     ) {
-      setCalledJobs((prev) => new Set(prev).add(currentJobId));
+      processedJobIds.add(currentJobId);
       findMatches();
     }
-  }, [jobs, isRegistered]);
+  }, [currentJobId, aiAgent, findMatches, processedJobIds]);
 
+  // Event handlers
   const handleOpenDialog = useCallback(
     (jobId: string) => setOpenDialogId(jobId),
     [],
   );
   const handleCloseDialog = useCallback(() => setOpenDialogId(null), []);
-  const handleRemoveMatch = useCallback(
-    (jobId: string) => {
-      dispatch({ type: "DELETE_MATCH", id: jobId });
-    },
-    [dispatch],
-  );
 
+  // Render functions
   const renderMatchCard = useCallback(
-    ({ job, match }: { job: Job; match: Match }) => {
-      const score = match.score ? Math.round(match.score * 10) : 0;
-      const scoreColor =
-        score >= 70 ? "#4caf50" : score >= 30 ? "#ff9800" : "#f44336";
+    ({ job, match, score }: ProcessedMatch) => {
+      const scoreColor = getScoreColor(score);
 
       return (
         <Card
           key={job.id}
           sx={{
-            transition: "all 0.2s ease",
-            "&:hover": {
-              transform: "translateY(-1px)",
-              boxShadow: theme.shadows[2],
-            },
-            minHeight: "auto",
+            transition: "transform 0.2s ease",
+            "&:hover": { transform: "translateY(-1px)" },
           }}
         >
-          <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
+          <CardContent sx={{ p: 2 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
               <Box sx={{ position: "relative", display: "inline-flex" }}>
                 <CircularProgress
@@ -224,11 +282,11 @@ const JobSearchComponent: React.FC = () => {
                 />
                 <Box
                   sx={{
+                    position: "absolute",
                     top: 0,
                     left: 0,
-                    bottom: 0,
                     right: 0,
-                    position: "absolute",
+                    bottom: 0,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -236,7 +294,6 @@ const JobSearchComponent: React.FC = () => {
                 >
                   <Typography
                     variant="caption"
-                    component="div"
                     sx={{
                       fontSize: "0.7rem",
                       fontWeight: 600,
@@ -249,26 +306,18 @@ const JobSearchComponent: React.FC = () => {
               </Box>
 
               <Typography variant="subtitle2" sx={{ flex: 1, fontWeight: 600 }}>
-                {truncateTitle(job.job_titles?.[0])}
+                {truncateTitle(job.job_titles?.[0] || "")}
               </Typography>
 
               <IconButton
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleOpenDialog(job.id);
-                }}
+                onClick={() => handleOpenDialog(job.id)}
                 size="small"
                 sx={{ color: "primary.main" }}
               >
                 <Visibility />
               </IconButton>
 
-              <ConnectButton
-                jobId={job.id}
-                matchingJob={matchingJobs?.find(
-                  (job: Job) => job.id === job.id,
-                )}
-              />
+              <ConnectButton jobId={job.id} matchingJob={job} />
             </Box>
 
             {match.missmatching_skills?.length > 0 && (
@@ -276,7 +325,7 @@ const JobSearchComponent: React.FC = () => {
                 <Typography
                   variant="caption"
                   color="text.secondary"
-                  sx={{ fontSize: "0.7rem", fontWeight: 500 }}
+                  sx={{ fontSize: "0.7rem" }}
                 >
                   Mismatches:
                 </Typography>
@@ -309,9 +358,10 @@ const JobSearchComponent: React.FC = () => {
         </Card>
       );
     },
-    [theme, truncateTitle, handleOpenDialog],
+    [getScoreColor, truncateTitle, handleOpenDialog],
   );
 
+  // Loading state
   if (loading) {
     return (
       <Box
@@ -331,6 +381,7 @@ const JobSearchComponent: React.FC = () => {
     );
   }
 
+  // No job selected
   if (!currentJobId || !currentJob) {
     return (
       <Box sx={{ textAlign: "center", py: 8 }}>
@@ -341,6 +392,7 @@ const JobSearchComponent: React.FC = () => {
     );
   }
 
+  // Error state
   if (error) {
     return (
       <Alert severity="error" sx={{ mb: 3 }}>
@@ -353,6 +405,7 @@ const JobSearchComponent: React.FC = () => {
     );
   }
 
+  // Main render
   return (
     <Box sx={{ py: 2 }}>
       {sortedMatches.length === 0 ? (
@@ -376,22 +429,13 @@ const JobSearchComponent: React.FC = () => {
             display: "grid",
             gap: 1.5,
             pr: 1,
-            "&::-webkit-scrollbar": { width: "6px" },
-            "&::-webkit-scrollbar-track": {
-              background: "#f1f1f1",
-              borderRadius: "3px",
-            },
-            "&::-webkit-scrollbar-thumb": {
-              background: "#c1c1c1",
-              borderRadius: "3px",
-            },
-            "&::-webkit-scrollbar-thumb:hover": { background: "#a8a8a8" },
           }}
         >
           {sortedMatches.map(renderMatchCard)}
         </Box>
       )}
 
+      {/* Dialogs */}
       {sortedMatches.map(({ job }) => {
         const match = currentJob.matches?.find((m) => m.job_id === job.id);
         return (
@@ -401,31 +445,9 @@ const JobSearchComponent: React.FC = () => {
             onClose={handleCloseDialog}
             maxWidth="md"
             fullWidth
-            PaperProps={{
-              sx: {
-                borderRadius: { xs: 0, sm: 2 },
-                m: { xs: 0, sm: 2 },
-                maxHeight: { xs: "100vh", sm: "90vh" },
-                height: { xs: "100vh", sm: "auto" },
-                width: { xs: "100vw", sm: "auto" },
-                maxWidth: { xs: "100vw", sm: "none" },
-              },
-            }}
-            sx={{
-              "& .MuiDialog-container": {
-                alignItems: { xs: "stretch", sm: "center" },
-                p: { xs: 0, sm: 3 },
-              },
-              "& .MuiBackdrop-root": {
-                backgroundColor: {
-                  xs: "transparent",
-                  sm: "rgba(0, 0, 0, 0.5)",
-                },
-              },
-            }}
           >
             <DialogTitle>Job Details</DialogTitle>
-            <DialogContent sx={{ p: { xs: 0, sm: 0 } }}>
+            <DialogContent>
               <JobDetails job={job} match={match} />
             </DialogContent>
             <DialogActions>
@@ -439,4 +461,5 @@ const JobSearchComponent: React.FC = () => {
     </Box>
   );
 };
+
 export default JobSearchComponent;

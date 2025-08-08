@@ -1,4 +1,7 @@
-export const loginAs = async (identityNumber: string, page) => {
+import { Page } from "@playwright/test";
+
+
+export const loginAs = async (identityNumber: string, page:Page) => {
   await page.goto("http://localhost:5173/");
   const page1Promise = page.waitForEvent("popup");
   await page

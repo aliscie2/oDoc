@@ -4,6 +4,7 @@ import {
   Button,
   Card,
   CardContent,
+  CircularProgress,
   IconButton,
   TextField,
   Typography,
@@ -50,7 +51,9 @@ const AIChatComponent = ({
     CALENDAR_SETUP: {
       id: 1,
       condition: () =>
-        jobs.some((job) => job.active) && !calendar?.availabilities?.length,
+        is_profile_complete &&
+        jobs.some((job) => job.active) &&
+        !calendar?.availabilities?.length,
       message:
         "Good job now for other people to find you, let them know when are you available. For example, tell me 'I am available every day from 9 AM to 1 PM except sundays'",
       completedKey: "calendarTalkDone",
@@ -375,7 +378,7 @@ const AIChatComponent = ({
           onClick={handleSend}
           sx={{ flexShrink: 0 }}
         >
-          <Send />
+          {isLoading ? <CircularProgress /> : <Send />}
         </IconButton>
       </Box>
     </>
