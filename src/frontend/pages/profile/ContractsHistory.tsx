@@ -9,7 +9,6 @@ import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Divider from "@mui/material/Divider";
 import { v4 as uuidv4 } from "uuid";
-import NotificationPromises from "../../components/ContractTable/notificationPromises";
 import { Typography } from "@mui/material";
 import React from "react";
 import { Helmet } from "react-helmet-async";
@@ -54,9 +53,9 @@ function ContractsHistory(props: any) {
       </Button>
       <Divider />
       <List dense>
-        <ListItem>
+        {/* <ListItem>
           <NotificationPromises />
-        </ListItem>
+        </ListItem> */}
 
         <Typography
           variant="h6"

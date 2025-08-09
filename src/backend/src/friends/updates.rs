@@ -28,9 +28,9 @@ pub fn send_friend_request(user_principal: String) -> Result<User, String> {
         let mut store = friends_store.borrow_mut();
         let new_friend = Friend {
             id: id1.clone(),
-            sender: User::get_user_from_text_principal(&caller().to_string())
+            sender: User::get(&caller().to_string())
                 .ok_or("Sender user not found".to_string())?,
-            receiver: User::get_user_from_text_principal(&user_principal)
+            receiver: User::get(&user_principal)
                 .ok_or("Receiver user not found".to_string())?,
             confirmed: false,
         };
@@ -41,7 +41,7 @@ pub fn send_friend_request(user_principal: String) -> Result<User, String> {
         // Notify after successful save
         websocket::notify_friend_request(new_friend);
 
-        User::get_user_from_text_principal(&user_principal)
+        User::get(&user_principal)
             .ok_or("User not found after save".to_string())
     })
 }
@@ -49,7 +49,7 @@ pub fn send_friend_request(user_principal: String) -> Result<User, String> {
 // id sender_left + receiver_right
 #[update]
 pub fn accept_friend_request(user_principal: String) -> Result<User, String> {
-    let sender = User::get_user_from_text_principal(&user_principal);
+    let sender = User::get(&user_principal);
     if sender.is_none() {
         return Err("User not found".to_string());
     }
@@ -59,7 +59,7 @@ pub fn accept_friend_request(user_principal: String) -> Result<User, String> {
     let friend = Friend {
         id: user_principal.clone() + &caller().to_string(),
         sender,
-        receiver: User::get_user_from_text_principal(&caller().to_string()).unwrap(),
+        receiver: User::get(&caller().to_string()).unwrap(),
         confirmed: true,
     };
     friend.pure_save();
@@ -75,7 +75,7 @@ pub fn accept_friend_request(user_principal: String) -> Result<User, String> {
         notification.is_seen = true;
         notification.pure_save();
     }
-    Ok(User::get_user_from_text_principal(&user_principal).unwrap())
+    Ok(User::get(&user_principal).unwrap())
 }
 
 #[update]
@@ -96,7 +96,7 @@ pub fn unfriend(user_principal: String) -> Result<User, String> {
     };
     new_note.save();
 
-    Ok(User::get_user_from_text_principal(&user_principal).unwrap())
+    Ok(User::get(&user_principal).unwrap())
 }
 
 // sender_left + receiver_right
@@ -123,7 +123,7 @@ pub fn cancel_friend_request(user_principal: String) -> Result<User, String> {
     };
     new_note.save();
 
-    Ok(User::get_user_from_text_principal(&user_principal).unwrap())
+    Ok(User::get(&user_principal).unwrap())
 }
 
 #[update]
@@ -143,5 +143,5 @@ pub fn reject_friend_request(user_principal: String) -> Result<User, String> {
     };
     new_note.save();
 
-    Ok(User::get_user_from_text_principal(&user_principal).unwrap())
+    Ok(User::get(&user_principal).unwrap())
 }

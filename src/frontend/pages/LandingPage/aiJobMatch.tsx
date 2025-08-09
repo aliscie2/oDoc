@@ -34,6 +34,7 @@ import GitHubIcon from "@mui/icons-material/GitHub";
 import { useBackendContext } from "@/contexts/BackendContext";
 import { useSelector } from "react-redux";
 import { Helmet } from "react-helmet-async";
+import JobTutorialComponent from "./jobTutorial";
 
 const DiscordIcon = (props) => (
   <SvgIcon {...props}>
@@ -230,31 +231,18 @@ const EcosystemSection = () => {
 
 const HowItWorksSection = () => {
   const steps = [
-    {
-      icon: <People sx={{ fontSize: 32 }} />,
-      title: "Create Profile",
-      description:
-        "Share your ICP expertise and career aspirations with our intelligent system",
-    },
-    {
-      icon: <SmartToy sx={{ fontSize: 32 }} />,
-      title: "AI Analysis",
-      description:
-        "Advanced algorithms analyze market trends to identify your perfect opportunities",
-    },
-    {
-      icon: <Notifications sx={{ fontSize: 32 }} />,
-      title: "Smart Matching",
-      description:
-        "Receive curated opportunities or connect instantly with premium matches",
-    },
-    {
-      icon: <CalendarMonth sx={{ fontSize: 32 }} />,
-      title: "Seamless Connect",
-      description:
-        "Schedule interviews effortlessly with our intelligent calendar system",
-    },
+    { name: 'Show Chat', duration: 800 },
+    { name: 'Expand Chat', duration: 600 },
+    { name: 'Type Message 1', duration: 2000 },
+    { name: 'Send Message 1', duration: 600 },
+    { name: 'Type Message 2', duration: 2000 },
+    { name: 'Send Message 2', duration: 600 },
+    { name: 'Show Matches', duration: 1000 },
+    { name: 'Show Success', duration: 1500 },
+    { name: 'Reset', duration: 500 }
   ];
+
+
 
   return (
     <Box sx={{ mb: 10 }}>
@@ -667,29 +655,6 @@ const StatsSection = () => {
   );
 };
 
-const FeatureCard = ({ title, description, icon, features }) => (
-  <Card sx={{ h: "100%", borderRadius: 3, p: 2 }}>
-    <CardContent>
-      <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-        {icon}
-        <Typography variant="h6" fontWeight="bold" sx={{ ml: 2 }}>
-          {title}
-        </Typography>
-      </Box>
-      <Typography variant="body2" color="text.secondary" paragraph>
-        {description}
-      </Typography>
-      <List dense>
-        {features.map((feature, index) => (
-          <ListItem key={index} sx={{ pl: 0 }}>
-            <CheckCircle sx={{ color: "success.main", mr: 1, fontSize: 20 }} />
-            <ListItemText primary={feature} />
-          </ListItem>
-        ))}
-      </List>
-    </CardContent>
-  </Card>
-);
 export default function ICPJobsLandingPage() {
   const isMobile = useMediaQuery("(max-width:900px)");
 
@@ -734,7 +699,6 @@ export default function ICPJobsLandingPage() {
             AI-Powered Career Matching for the Internet Computer Ecosystem, and
             everyone.
           </Typography>
-
           <Stack
             direction="row"
             spacing={1}
@@ -771,7 +735,8 @@ export default function ICPJobsLandingPage() {
 
           <StatsSection />
         </Box>
-
+        <JobTutorialComponent/>
+          <Divider style={{marginBottom:"50px"}}/>
         <EcosystemSection />
 
         {/* Main Features - Simplified */}

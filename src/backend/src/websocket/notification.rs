@@ -163,7 +163,7 @@ impl Notification {
             if let Some(user_notifications) = user_notifications {
                 let mut notifications_list = user_notifications.notifications;
                 notifications_list.retain(|notification| notification.id != self.id);
-                notifications_list.push(self.clone());
+                notifications_list.insert(0, self.clone());
                 notifications.insert(
                     self.receiver.to_text(),
                     NotificationVec {

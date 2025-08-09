@@ -40,10 +40,14 @@ import { useSelector } from "react-redux";
 import { depositWithOisy } from "./useOisy";
 import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
 
-// Types
+// Enhanced Types
+interface TransactionType {
+  [key: string]: any;
+}
+
 interface Exchange {
   date_created: number;
-  _type: { [key: string]: any };
+  _type: TransactionType;
   from: string;
   to: string;
   amount: number;
@@ -63,30 +67,100 @@ interface Friend {
   name: string;
 }
 
+interface Profile {
+  id: string;
+  [key: string]: any;
+}
+
+interface ReduxState {
+  filesState: {
+    all_friends: Friend[];
+    profile: Profile | null;
+  };
+}
+
 type DialogType = "" | "deposit" | "withdraw" | "pay";
+type DepositMethod = "address" | "oisy";
+
+interface ActionButton {
+  type: DialogType;
+  label: string;
+  icon: React.ReactElement;
+  color?: "primary" | "secondary" | "error" | "info" | "success" | "warning";
+  variant?: "contained" | "outlined" | "text";
+}
+
+interface WalletStat {
+  label: string;
+  value: string;
+  color?: string;
+  variant?: "h3" | "h4" | "h5" | "h6";
+}
+
+interface TransactionTypeConfig {
+  label: string;
+  isCredit: boolean;
+}
+
+// Configuration Objects
+const TRANSACTION_TYPE_CONFIG: Record<string, TransactionTypeConfig> = {
+  Withdraw: { label: "Withdrawal", isCredit: false },
+  Deposit: { label: "Deposit", isCredit: true },
+  LocalSend: { label: "Local send", isCredit: false },
+  LocalReceive: { label: "Received", isCredit: true },
+};
+
+const ACTION_BUTTONS: ActionButton[] = [
+  {
+    type: "deposit",
+    label: "Deposit",
+    icon: <ArrowDownward />,
+    variant: "outlined",
+  },
+  {
+    type: "withdraw",
+    label: "Withdraw",
+    icon: <ArrowUpward />,
+    variant: "outlined",
+  },
+  {
+    type: "pay",
+    label: "Pay",
+    icon: <Send />,
+    variant: "outlined",
+  },
+];
+
+const OISY_LOGO = `data:image/svg+xml;base64,${btoa(
+  `<svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg"><g class="text-brand-primary"><circle cx="22" cy="22" r="22" fill="#2137fc"></circle></g><path fill-rule="evenodd" clip-rule="evenodd" d="M24.412 33.4193L23.8827 35.7603C23.8037 36.1099 23.4693 36.3405 23.1152 36.2858C22.308 36.161 21.49 36.0177 20.6637 35.8594C20.2842 35.7867 20.0423 35.4133 20.1275 35.0365L20.6067 32.917C20.2711 32.8513 19.9334 32.7802 19.594 32.7042C19.288 32.6344 18.985 32.5615 18.6854 32.4855L18.2064 34.6044C18.1212 34.981 17.7426 35.214 17.3689 35.1168C16.5548 34.905 15.7547 34.6836 14.9723 34.4504C14.6284 34.3479 14.4251 33.9955 14.5043 33.6455L15.0308 31.3164C9.82695 29.2297 6.54161 25.683 7.93603 19.6262L8.27156 18.1421C9.62094 12.0626 14.1109 10.2811 19.7056 10.6393L20.2318 8.31177C20.3109 7.96173 20.646 7.73105 21.0006 7.78645C21.8072 7.91249 22.6247 8.05683 23.4507 8.21592C23.8299 8.28895 24.0714 8.66213 23.9863 9.03875L23.5073 11.1575C23.8104 11.2179 24.1153 11.2824 24.4215 11.3511C24.7609 11.4278 25.0965 11.5083 25.4277 11.5927L25.9065 9.4751C25.9917 9.09826 26.3707 8.86528 26.7445 8.96289C27.5586 9.17544 28.3586 9.39788 29.141 9.63241C29.4843 9.73534 29.6869 10.0874 29.6079 10.437L29.0801 12.7717C34.2161 14.858 37.4261 18.402 36.0643 24.4256L35.7288 25.9097C34.3909 31.9376 29.9492 33.7421 24.412 33.4193ZM31.9629 24.7039L32.1517 23.8687C33.4814 18.3434 29.0601 16.2797 23.6094 14.9676C18.0988 13.8015 13.2196 13.7626 12.0432 19.3226L11.8544 20.1578C10.5189 25.7084 14.9403 27.7721 20.4165 29.09C25.9016 30.2503 30.7807 30.2893 31.9629 24.7039Z" fill="white"></path></svg>`
+)}`;
 
 // Custom Hooks
-const useWalletTransactions = (backendActor: any, enqueueSnackbar: any) => {
-  const [isProcessing, setIsProcessing] = useState(false);
+const useWalletTransactions = (
+  backendActor: any,
+  enqueueSnackbar: (message: string, options?: any) => void
+) => {
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
   const executeTransaction = async (
     type: string,
     amount: string,
-    target: string,
-  ) => {
+    target: string
+  ): Promise<boolean> => {
     if (!amount || isNaN(Number(amount)) || parseFloat(amount) <= 0) {
-      alert("Please enter a valid amount");
+      enqueueSnackbar("Please enter a valid amount", { variant: "error" });
       return false;
     }
 
     setIsProcessing(true);
     try {
-      let result;
+      let result: any;
+      
       if (type === "pay") {
         result = await backendActor.internal_transaction(
           parseFloat(amount),
           target,
-          { LocalSend: null },
+          { LocalSend: null }
         );
       } else if (type === "withdraw") {
         result = await backendActor.withdraw_ckusdt(Number(amount), target);
@@ -121,7 +195,7 @@ const formatRelativeTime = (timestamp: number): string => {
   return new Date(timestamp).toLocaleDateString();
 };
 
-const copyToClipboard = (text: string) => {
+const copyToClipboard = (text: string): void => {
   navigator.clipboard.writeText(text);
   alert("Address copied to clipboard!");
 };
@@ -129,110 +203,119 @@ const copyToClipboard = (text: string) => {
 const getTransactionType = (exchange: Exchange): string => {
   if (!exchange._type) return "";
   const type = Object.keys(exchange._type)[0];
-  const typeMap: { [key: string]: string } = {
-    Withdraw: "Withdrawal",
-    Deposit: "Deposit",
-    LocalSend: "Local send",
-    LocalReceive: "Received",
-  };
-  return typeMap[type] || type;
+  return TRANSACTION_TYPE_CONFIG[type]?.label || type;
 };
 
 const getUserDisplayName = (
   userId: string,
   profileId: string,
-  friends: Friend[],
+  friends: Friend[]
 ): string => {
   if (userId === profileId) return "You";
   return friends.find((f) => f.id === userId)?.name || userId;
 };
 
+const getTransactionColor = (
+  exchange: Exchange,
+  profileId: string
+): "success.main" | "error.main" => {
+  const typeKey = Object.keys(exchange._type)[0];
+  const typeConfig = TRANSACTION_TYPE_CONFIG[typeKey];
+  
+  // If it's a credit transaction or user is receiver, show green
+  if (typeConfig?.isCredit || exchange.to === profileId) {
+    return "success.main";
+  }
+  
+  return "error.main";
+};
+
+const getWalletStats = (wallet: Wallet): WalletStat[] => [
+  {
+    label: "Available Balance",
+    value: `$${wallet.balance.toFixed(2)}`,
+    variant: "h3",
+  },
+  {
+    label: "Total Debts",
+    value: `$${wallet.total_debt}`,
+    variant: "h4",
+    color: "error",
+  },
+  {
+    label: "Total Received",
+    value: `$${wallet.received}`,
+    variant: "h6",
+    color: "success.main",
+  },
+  {
+    label: "Total Spent",
+    value: `$${wallet.spent}`,
+    variant: "h6",
+    color: "error",
+  },
+];
+
 // Components
-const WalletBalance: React.FC<{ wallet: Wallet }> = ({ wallet }) => (
-  <Card sx={{ mb: 4 }}>
-    <CardContent>
-      <Stack spacing={3}>
-        <Box display="flex" alignItems="center" gap={1}>
-          <AccountBalanceWallet />
-          <Typography variant="h5">Your Wallet</Typography>
-        </Box>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
-            <Typography color="text.secondary">Available Balance</Typography>
-            <Typography variant="h3">${wallet.balance.toFixed(2)}</Typography>
+const WalletBalance: React.FC<{ wallet: Wallet }> = ({ wallet }) => {
+  const stats = getWalletStats(wallet);
+
+  return (
+    <Card sx={{ mb: 4 }}>
+      <CardContent>
+        <Stack spacing={3}>
+          <Box display="flex" alignItems="center" gap={1}>
+            <AccountBalanceWallet />
+            <Typography variant="h5">Your Wallet</Typography>
+          </Box>
+          <Grid container spacing={3}>
+            {stats.map((stat, index) => (
+              <Grid item xs={index < 2 ? 12 : 6} md={index < 2 ? 6 : 6} key={stat.label}>
+                <Typography color="text.secondary">{stat.label}</Typography>
+                <Typography variant={stat.variant} color={stat.color}>
+                  {stat.value}
+                </Typography>
+              </Grid>
+            ))}
           </Grid>
-          <Grid item xs={12} md={6}>
-            <Typography color="text.secondary">Total Debts</Typography>
-            <Typography variant="h4" color="error">
-              ${wallet.total_debt}
-            </Typography>
-          </Grid>
-          <Grid item xs={6}>
-            <Typography color="text.secondary">Total Received</Typography>
-            <Typography color="success.main" variant="h6">
-              ${wallet.received}
-            </Typography>
-          </Grid>
-          <Grid item xs={6}>
-            <Typography color="text.secondary">Total Spent</Typography>
-            <Typography color="error" variant="h6">
-              ${wallet.spent}
-            </Typography>
-          </Grid>
-        </Grid>
-      </Stack>
-    </CardContent>
-  </Card>
-);
+        </Stack>
+      </CardContent>
+    </Card>
+  );
+};
 
 const ActionButtons: React.FC<{ onAction: (type: DialogType) => void }> = ({
   onAction,
 }) => {
-  const { profile } = useSelector((state) => state.filesState);
+  const { profile } = useSelector((state: ReduxState) => state.filesState);
+
+  const handleDepositClick = async (actionType: DialogType) => {
+    if (import.meta.env.VITE_DFX_NETWORK !== "ic") {
+      onAction(actionType);
+      // Development environment logic
+      // const approveResult = await ckUSDCActor.icrc1_transfer({...});
+    } else {
+      onAction(actionType);
+    }
+  };
 
   return (
     <Stack direction="row" spacing={2} sx={{ mb: 4 }}>
-      <Button
-        variant="outlined"
-        startIcon={<ArrowDownward />}
-        onClick={async () => {
-          if (import.meta.env.VITE_DFX_NETWORK !== "ic") {
-            onAction("deposit");
-            const approveResult = await ckUSDCActor.icrc1_transfer({
-              to: {
-                owner: Principal.fromText(profile.id),
-                subaccount: [],
-              },
-              fee: [],
-              memo: [],
-              from_subaccount: [],
-              created_at_time: [],
-              amount: BigInt(300000000),
-            });
-
-            console.log({ transferResult });
+      {ACTION_BUTTONS.map((button) => (
+        <Button
+          key={button.type}
+          variant={button.variant}
+          startIcon={button.icon}
+          onClick={() => 
+            button.type === "deposit" 
+              ? handleDepositClick(button.type)
+              : onAction(button.type)
           }
-        }}
-        fullWidth
-      >
-        Deposit
-      </Button>
-      <Button
-        variant="outlined"
-        startIcon={<ArrowUpward />}
-        onClick={() => onAction("withdraw")}
-        fullWidth
-      >
-        Withdraw
-      </Button>
-      <Button
-        variant="outlined"
-        startIcon={<Send />}
-        onClick={() => onAction("pay")}
-        fullWidth
-      >
-        Pay
-      </Button>
+          fullWidth
+        >
+          {button.label}
+        </Button>
+      ))}
     </Stack>
   );
 };
@@ -273,12 +356,7 @@ const TransactionHistory: React.FC<{
               <TableCell
                 align="right"
                 sx={{
-                  color:
-                    exchange._type &&
-                    (Object.keys(exchange._type)[0] === "Deposit" ||
-                      Object.keys(exchange._type)[0] === "LocalReceive")
-                      ? "success.main"
-                      : "error.main",
+                  color: getTransactionColor(exchange, profileId),
                 }}
               >
                 ${Math.abs(exchange.amount).toFixed(2)}
@@ -303,38 +381,27 @@ const DepositDialog: React.FC<{
   open: boolean;
   onClose: () => void;
   wallet: Wallet;
-  profileId: string;
 }> = ({ open, onClose, wallet }) => {
-  const { profile } = useSelector((state: any) => state.filesState);
-  const [depositMethod, setDepositMethod] = useState<"address" | "oisy">(
-    "address",
-  );
-  const [oisyAmount, setOisyAmount] = useState("");
-  const [isProcessing, setIsProcessing] = useState(false);
+  const { profile } = useSelector((state: ReduxState) => state.filesState);
+  const [depositMethod, setDepositMethod] = useState<DepositMethod>("address");
+  const [oisyAmount, setOisyAmount] = useState<string>("");
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const { enqueueSnackbar } = useSnackbar();
 
-  const OisyLogo =
-    "data:image/svg+xml;base64," +
-    btoa(
-      `<svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg"><g class="text-brand-primary"><circle cx="22" cy="22" r="22" fill="#2137fc"></circle></g><path fill-rule="evenodd" clip-rule="evenodd" d="M24.412 33.4193L23.8827 35.7603C23.8037 36.1099 23.4693 36.3405 23.1152 36.2858C22.308 36.161 21.49 36.0177 20.6637 35.8594C20.2842 35.7867 20.0423 35.4133 20.1275 35.0365L20.6067 32.917C20.2711 32.8513 19.9334 32.7802 19.594 32.7042C19.288 32.6344 18.985 32.5615 18.6854 32.4855L18.2064 34.6044C18.1212 34.981 17.7426 35.214 17.3689 35.1168C16.5548 34.905 15.7547 34.6836 14.9723 34.4504C14.6284 34.3479 14.4251 33.9955 14.5043 33.6455L15.0308 31.3164C9.82695 29.2297 6.54161 25.683 7.93603 19.6262L8.27156 18.1421C9.62094 12.0626 14.1109 10.2811 19.7056 10.6393L20.2318 8.31177C20.3109 7.96173 20.646 7.73105 21.0006 7.78645C21.8072 7.91249 22.6247 8.05683 23.4507 8.21592C23.8299 8.28895 24.0714 8.66213 23.9863 9.03875L23.5073 11.1575C23.8104 11.2179 24.1153 11.2824 24.4215 11.3511C24.7609 11.4278 25.0965 11.5083 25.4277 11.5927L25.9065 9.4751C25.9917 9.09826 26.3707 8.86528 26.7445 8.96289C27.5586 9.17544 28.3586 9.39788 29.141 9.63241C29.4843 9.73534 29.6869 10.0874 29.6079 10.437L29.0801 12.7717C34.2161 14.858 37.4261 18.402 36.0643 24.4256L35.7288 25.9097C34.3909 31.9376 29.9492 33.7421 24.412 33.4193ZM31.9629 24.7039L32.1517 23.8687C33.4814 18.3434 29.0601 16.2797 23.6094 14.9676C18.0988 13.8015 13.2196 13.7626 12.0432 19.3226L11.8544 20.1578C10.5189 25.7084 14.9403 27.7721 20.4165 29.09C25.9016 30.2503 30.7807 30.2893 31.9629 24.7039Z" fill="white"></path></svg>`,
-    );
-
-  const handleOisyDeposit = async () => {
-    if (
-      !oisyAmount ||
-      isNaN(Number(oisyAmount)) ||
-      parseFloat(oisyAmount) <= 0
-    ) {
+  const handleOisyDeposit = async (): Promise<void> => {
+    if (!oisyAmount || isNaN(Number(oisyAmount)) || parseFloat(oisyAmount) <= 0) {
       enqueueSnackbar("Please enter a valid amount", { variant: "error" });
+      return;
+    }
+
+    if (!profile) {
+      enqueueSnackbar("Profile not found", { variant: "error" });
       return;
     }
 
     setIsProcessing(true);
     try {
-      await depositWithOisy(
-        parseFloat(oisyAmount),
-        Principal.fromText(profile.id),
-      );
+      await depositWithOisy(parseFloat(oisyAmount), Principal.fromText(profile.id));
       enqueueSnackbar("Deposit initiated successfully", { variant: "success" });
       onClose();
       setOisyAmount("");
@@ -372,7 +439,7 @@ const DepositDialog: React.FC<{
               fullWidth
               startIcon={
                 <img
-                  src={OisyLogo}
+                  src={OISY_LOGO}
                   alt="Oisy"
                   style={{ width: 20, height: 20 }}
                 />
@@ -498,7 +565,7 @@ const WithdrawDialog: React.FC<{
         />
       </Stack>
       <Typography color="error">
-        Gas fees of Ethirum is 1$, if you send 1$ only it will be lost and your
+        Gas fees of Ethereum is 1$, if you send 1$ only it will be lost and your
         external wallet will get 0$
       </Typography>
     </DialogContent>
@@ -599,15 +666,37 @@ const PayDialog: React.FC<{
 const WalletPage: React.FC<{ wallet?: Wallet }> = ({
   wallet = {} as Wallet,
 }) => {
-  const [amount, setAmount] = useState("");
-  const [recipient, setRecipient] = useState("");
-  const [withdrawAddress, setWithdrawAddress] = useState("");
+  const [amount, setAmount] = useState<string>("");
+  const [recipient, setRecipient] = useState<string>("");
+  const [withdrawAddress, setWithdrawAddress] = useState<string>("");
   const [openDialog, setOpenDialog] = useState<DialogType>("");
-  const { backendActor, ckUSDCActor } = useBackendContext();
-
+  
+  const { backendActor } = useBackendContext();
   const { all_friends, profile } = useSelector(
-    (state: any) => state.filesState,
+    (state: ReduxState) => state.filesState
   );
+  const { enqueueSnackbar } = useSnackbar();
+
+  const { executeTransaction, isProcessing } = useWalletTransactions(
+    backendActor,
+    enqueueSnackbar
+  );
+
+  const handleClose = (): void => setOpenDialog("");
+
+  const resetForm = (): void => {
+    setAmount("");
+    setWithdrawAddress("");
+    setRecipient("");
+  };
+
+  const handleTransaction = async (type: string, target: string): Promise<void> => {
+    const success = await executeTransaction(type, amount, target);
+    if (success) {
+      handleClose();
+      resetForm();
+    }
+  };
 
   if (!profile) {
     return (
@@ -626,28 +715,6 @@ const WalletPage: React.FC<{ wallet?: Wallet }> = ({
       </div>
     );
   }
-  const { enqueueSnackbar } = useSnackbar();
-
-  const { executeTransaction, isProcessing } = useWalletTransactions(
-    backendActor,
-    enqueueSnackbar,
-  );
-
-  const handleClose = () => setOpenDialog("");
-
-  const resetForm = () => {
-    setAmount("");
-    setWithdrawAddress("");
-    setRecipient("");
-  };
-
-  const handleTransaction = async (type: string, target: string) => {
-    const success = await executeTransaction(type, amount, target);
-    if (success) {
-      handleClose();
-      resetForm();
-    }
-  };
 
   return (
     <Box sx={{ maxWidth: 1200, margin: "0 auto", p: 3 }}>
@@ -656,7 +723,7 @@ const WalletPage: React.FC<{ wallet?: Wallet }> = ({
       <TransactionHistory
         wallet={wallet}
         friends={all_friends}
-        profileId={profile?.id}
+        profileId={profile.id}
       />
 
       <DepositDialog
@@ -684,7 +751,7 @@ const WalletPage: React.FC<{ wallet?: Wallet }> = ({
         amount={amount}
         setAmount={setAmount}
         friends={all_friends}
-        profileId={profile?.id}
+        profileId={profile.id}
         onConfirm={() => handleTransaction("pay", recipient)}
         isProcessing={isProcessing}
       />

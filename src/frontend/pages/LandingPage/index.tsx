@@ -289,7 +289,7 @@ export default function OdocLandingPage() {
             variant="h6"
             sx={{ mb: 3, opacity: 0.7, fontWeight: 400 }}
           >
-            The unified freelance platform
+            Work tool kit for freelancers & online workers
           </Typography>
           <Stack
             direction="row"
@@ -523,7 +523,6 @@ export default function OdocLandingPage() {
         <img
           src={"/public/calendar.png"}
           style={{
-            transform: "scaleX(-1)",
             width: isMobile ? "150px" : "500px",
             objectFit: "contain",
           }}

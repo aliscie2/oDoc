@@ -53,6 +53,8 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
     (state: RootState) => state.filesState,
   );
 
+
+
   const [user, setUser] = useState(initialUser);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
@@ -64,6 +66,14 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
   const [isCalled, setCalled] = useState(false);
   const [isLoading, setLoading] = useState(false);
 
+
+
+
+   useEffect(() => {
+    setUser(initialUser);
+  }, [initialUser]);
+
+  
   useEffect(() => {
     (async () => {
       if (user_id && !isCalled) {

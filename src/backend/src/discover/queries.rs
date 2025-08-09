@@ -38,7 +38,7 @@ fn search_posts(text_to_find: String) -> Vec<PostUser> {
                     .iter()
                     .filter(|node| node.text.contains(&text_to_find))
                     .map(move |_| {
-                        let user = User::get_user_from_text_principal(&post.creator).unwrap();
+                        let user = User::get(&post.creator).unwrap();
                         let creator = UserFE {
                             id: user.id.clone(),
                             name: user.name.clone(),

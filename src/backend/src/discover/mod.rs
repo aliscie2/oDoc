@@ -203,7 +203,7 @@ impl Post {
                 .take(actual_count)
                 .map(|(_, post)| {
                     let mut user: User = User::default();
-                    if let Some(u) = User::get_user_from_text_principal(&post.creator) {
+                    if let Some(u) = User::get(&post.creator) {
                         user = u
                     }
 
@@ -255,7 +255,7 @@ impl Post {
             filtered_posts
                 .into_iter()
                 .map(|post| {
-                    let user = User::get_user_from_text_principal(&post.creator).unwrap();
+                    let user = User::get(&post.creator).unwrap();
                     let is_first_occurrence = user_seen.insert(user.id.clone());
                     let creator = UserFE {
                         id: user.id.clone(),
