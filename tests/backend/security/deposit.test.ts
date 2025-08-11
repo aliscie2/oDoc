@@ -63,7 +63,7 @@ test("reentrancy protection test - should prevent concurrent withdrawals", async
 
   globalThis.testActor.setIdentity(mainUser);
 
-  const withdrawalPromises = Array.from({ length: 5 }, (_, i) =>
+  const withdrawalPromises = Array.from({ length: 50 }, (_, i) =>
     globalThis.testActor
       .withdraw_ckusdt(BigInt(299), attackerAddres)
       .then((result: Result_6) => {

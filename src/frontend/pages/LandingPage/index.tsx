@@ -56,6 +56,7 @@ import getckUsdcBalance from "@/utils/getBalance";
 import { canisterId } from "$/declarations/backend";
 import { useBackendContext } from "@/contexts/BackendContext";
 import { Helmet } from "react-helmet-async";
+import ProgressiveTutorialMobile from "./promiseTutorial";
 
 const StatsSection = () => {
   const [stats, setStats] = useState({
@@ -799,6 +800,7 @@ export default function OdocLandingPage() {
         <link rel="icon" type="image/png" href={"/logo.png"} />
       </Helmet>
       <Container maxWidth="lg" sx={{ py: 4 }}>
+        <ProgressiveTutorialMobile />
         {features.map((feature, index) => (
           <FeatureSection key={index} {...feature}>
             {feature.children}

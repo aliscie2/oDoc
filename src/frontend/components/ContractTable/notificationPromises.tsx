@@ -178,37 +178,37 @@ function NotificationPromises() {
   }
 
   const handleCustomCellChange = (params) => {
-  // Update the cell value in the data
-  const { data, colDef, newValue, oldValue } = params;
-  
-  if (newValue !== oldValue) {
-    // Find the existing cell or create a new one
-    const existingCellIndex = data.cells?.findIndex(cell => cell.field === colDef.field);
-    
-    if (existingCellIndex !== -1) {
-      // Update existing cell
-      data.cells[existingCellIndex].value = newValue;
-    } else {
-      // Create new cell if it doesn't exist
-      if (!data.cells) data.cells = [];
-      data.cells.push({
-        field: colDef.field,
-        value: newValue
-      });
+    // Update the cell value in the data
+    const { data, colDef, newValue, oldValue } = params;
+
+    if (newValue !== oldValue) {
+      // Find the existing cell or create a new one
+      const existingCellIndex = data.cells?.findIndex(
+        (cell) => cell.field === colDef.field,
+      );
+
+      if (existingCellIndex !== -1) {
+        // Update existing cell
+        data.cells[existingCellIndex].value = newValue;
+      } else {
+        // Create new cell if it doesn't exist
+        if (!data.cells) data.cells = [];
+        data.cells.push({
+          field: colDef.field,
+          value: newValue,
+        });
+      }
+
+      // Optional: Add any additional logic here like validation or API calls
+      console.log(`Updated ${colDef.field}: ${oldValue} -> ${newValue}`);
     }
-    
-    // Optional: Add any additional logic here like validation or API calls
-    console.log(`Updated ${colDef.field}: ${oldValue} -> ${newValue}`);
-  }
-};
-
-
+  };
 
   const promisesData = transformPromisesDataAndColumns(
     promises,
     getPaymentColumnDefs(true),
     true,
-    handleCustomCellChange
+    handleCustomCellChange,
   );
 
   const rowClassRules: RowClassRules = {

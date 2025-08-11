@@ -231,18 +231,16 @@ const EcosystemSection = () => {
 
 const HowItWorksSection = () => {
   const steps = [
-    { name: 'Show Chat', duration: 800 },
-    { name: 'Expand Chat', duration: 600 },
-    { name: 'Type Message 1', duration: 2000 },
-    { name: 'Send Message 1', duration: 600 },
-    { name: 'Type Message 2', duration: 2000 },
-    { name: 'Send Message 2', duration: 600 },
-    { name: 'Show Matches', duration: 1000 },
-    { name: 'Show Success', duration: 1500 },
-    { name: 'Reset', duration: 500 }
+    { name: "Show Chat", duration: 800 },
+    { name: "Expand Chat", duration: 600 },
+    { name: "Type Message 1", duration: 2000 },
+    { name: "Send Message 1", duration: 600 },
+    { name: "Type Message 2", duration: 2000 },
+    { name: "Send Message 2", duration: 600 },
+    { name: "Show Matches", duration: 1000 },
+    { name: "Show Success", duration: 1500 },
+    { name: "Reset", duration: 500 },
   ];
-
-
 
   return (
     <Box sx={{ mb: 10 }}>
@@ -735,8 +733,8 @@ export default function ICPJobsLandingPage() {
 
           <StatsSection />
         </Box>
-        <JobTutorialComponent/>
-          <Divider style={{marginBottom:"50px"}}/>
+        <JobTutorialComponent />
+        <Divider style={{ marginBottom: "50px" }} />
         <EcosystemSection />
 
         {/* Main Features - Simplified */}

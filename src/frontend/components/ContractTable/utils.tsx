@@ -24,7 +24,7 @@ export const transformPromisesDataAndColumns = (
   promises,
   existingColumnDefs,
   isPromise,
-  handleCustomCellChange
+  handleCustomCellChange,
 ) => {
   // Transform rows and collect unique cell fields
   const uniqueFields = new Set();
@@ -82,7 +82,7 @@ export const getStatusOptions = (payment: CPayment, profileId: string) => {
   if (!payment.status) {
     return ["None"]; // or whatever default you want
   }
-  
+
   const isSender = profileId === payment.sender.toString();
   const currentStatus = Object.keys(payment.status)[0];
 

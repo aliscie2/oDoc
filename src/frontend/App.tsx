@@ -168,7 +168,7 @@ const App: React.FC = () => {
               const _ = await backendActor.drop_free_credits();
               dispatch({
                 type: "INIT_AI_CREDITS",
-                credits: 5,
+                credits: 1,
                 isFree: true,
               });
             } else if (!aiCredits.Err) {
