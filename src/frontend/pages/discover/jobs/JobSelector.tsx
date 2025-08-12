@@ -21,8 +21,9 @@ import {
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import JobDetails from "./JobDetails";
-import JobBriefData from "./quickBar";
+import JobUpdateAnimation from "./quickBar";
 import { Helmet } from "react-helmet-async";
+import JobCompletionProgress from "@/components/JobCompletionProgress";
 
 const JobSelector: React.FC = () => {
   const dispatch = useDispatch();
@@ -54,7 +55,7 @@ const JobSelector: React.FC = () => {
     "experienceLevel",
   ];
   const MAX_JOBS = 4;
-  const HIGHLIGHT_DURATION = 4000;
+
   const COPY_SUCCESS_DURATION = 2000;
 
   const compareJobFields = (current: Job, previous: Job): Set<string> => {
@@ -130,7 +131,7 @@ const JobSelector: React.FC = () => {
   };
 
   const truncateText = (text: string, maxLength: number = 40) =>
-    text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
+    text?.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
 
   const getJobCategory = (job: Job) =>
     job.category
@@ -180,53 +181,39 @@ const JobSelector: React.FC = () => {
       onClick={() => handleJobSelect(job.id)}
       sx={{ py: 1, "&:hover": { bgcolor: theme.palette.action.hover } }}
     >
-      <Box
-        sx={{ display: "flex", alignItems: "center", gap: 1, width: "100%" }}
-      >
-        <Chip
-          label={getJobCategory(job)}
-          size="small"
-          color="secondary"
-          variant="outlined"
-        />
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography
-            variant="body1"
-            sx={{
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {getJobTitle(job)}
-          </Typography>
-        </Box>
-        <Box sx={{ display: "flex", gap: 1 }}>
-          {jobActions.map(({ action, icon, color, tooltip, disabled }) => {
-            const isDisabled = disabled(job);
-            const buttonColor = color(job);
-            const ActionButton = (
-              <IconButton
-                size="small"
-                disabled={isDisabled}
-                color={
-                  typeof buttonColor === "string" &&
-                  [
-                    "primary",
-                    "secondary",
-                    "success",
-                    "error",
-                    "info",
-                    "warning",
-                  ].includes(buttonColor)
-                    ? (buttonColor as any)
-                    : undefined
-                }
-                onClick={(event) => handleJobAction(job, action, event)}
-                sx={{
-                  color:
+      <Box sx={{ width: "100%" }}>
+        <Box
+          sx={{ display: "flex", alignItems: "center", gap: 1, width: "100%" }}
+        >
+          <Chip
+            label={getJobCategory(job)}
+            size="small"
+            color="secondary"
+            variant="outlined"
+          />
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography
+              variant="body1"
+              sx={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {getJobTitle(job)}
+            </Typography>
+          </Box>
+          <Box sx={{ display: "flex", gap: 1 }}>
+            {jobActions.map(({ action, icon, color, tooltip, disabled }) => {
+              const isDisabled = disabled(job);
+              const buttonColor = color(job);
+              const ActionButton = (
+                <IconButton
+                  size="small"
+                  disabled={isDisabled}
+                  color={
                     typeof buttonColor === "string" &&
-                    ![
+                    [
                       "primary",
                       "secondary",
                       "success",
@@ -234,22 +221,41 @@ const JobSelector: React.FC = () => {
                       "info",
                       "warning",
                     ].includes(buttonColor)
-                      ? buttonColor
-                      : undefined,
-                  "&:hover": { bgcolor: theme.palette.info.light + "20" },
-                }}
-              >
-                {icon(job)}
-              </IconButton>
-            );
-            return tooltip ? (
-              <Tooltip key={action} title={tooltip(job)} arrow>
-                {ActionButton}
-              </Tooltip>
-            ) : (
-              <div key={action}>{ActionButton}</div>
-            );
-          })}
+                      ? (buttonColor as any)
+                      : undefined
+                  }
+                  onClick={(event) => handleJobAction(job, action, event)}
+                  sx={{
+                    color:
+                      typeof buttonColor === "string" &&
+                      ![
+                        "primary",
+                        "secondary",
+                        "success",
+                        "error",
+                        "info",
+                        "warning",
+                      ].includes(buttonColor)
+                        ? buttonColor
+                        : undefined,
+                    "&:hover": { bgcolor: theme.palette.info.light + "20" },
+                  }}
+                >
+                  {icon(job)}
+                </IconButton>
+              );
+              return tooltip ? (
+                <Tooltip key={action} title={tooltip(job)} arrow>
+                  {ActionButton}
+                </Tooltip>
+              ) : (
+                <div key={action}>{ActionButton}</div>
+              );
+            })}
+          </Box>
+        </Box>
+        <Box sx={{ mt: 1, px: 0.5 }}>
+          <JobCompletionProgress job={job} />
         </Box>
       </Box>
     </MenuItem>
@@ -271,7 +277,6 @@ const JobSelector: React.FC = () => {
         elevation={0}
         sx={{
           border: `1px solid ${theme.palette.divider}`,
-          borderRadius: 3,
           overflow: "hidden",
           transition: "all 0.3s ease",
         }}
@@ -289,25 +294,32 @@ const JobSelector: React.FC = () => {
             bgcolor: theme.palette.background.paper,
           }}
           renderValue={() => (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              {currentJob ? (
-                <>
-                  <Chip
-                    label={getJobCategory(currentJob)}
-                    size="small"
-                    color="primary"
-                    variant="outlined"
-                  />
-                  <Typography variant="body1" sx={{ flex: 1 }}>
-                    {getJobTitle(currentJob)}
-                  </Typography>
-                </>
-              ) : (
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Add sx={{ color: theme.palette.text.secondary }} />
-                  <Typography variant="body1" color="textSecondary">
-                    Select or create a job
-                  </Typography>
+            <Box sx={{ width: "100%" }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                {currentJob ? (
+                  <>
+                    <Chip
+                      label={getJobCategory(currentJob)}
+                      size="small"
+                      color="primary"
+                      variant="outlined"
+                    />
+                    <Typography variant="body1" sx={{ flex: 1 }}>
+                      {getJobTitle(currentJob)}
+                    </Typography>
+                  </>
+                ) : (
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Add sx={{ color: theme.palette.text.secondary }} />
+                    <Typography variant="body1" color="textSecondary">
+                      Select or create a job
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
+              {currentJob && (
+                <Box sx={{ mt: 1 }}>
+                  <JobCompletionProgress job={currentJob} />
                 </Box>
               )}
             </Box>
@@ -354,7 +366,7 @@ const JobSelector: React.FC = () => {
 
       <Collapse in={showBriefData} timeout={400}>
         <Box data-testid="job-brief-data">
-          <JobBriefData currentJob={currentJob} />
+          <JobUpdateAnimation currentJob={currentJob} jobs={jobs} />
         </Box>
       </Collapse>
 
@@ -392,7 +404,9 @@ const JobSelector: React.FC = () => {
         </DialogTitle>
 
         <DialogContent sx={{ p: { xs: 0, sm: 0 } }}>
-          {selectedJob && <JobDetails job={selectedJob} showEmails={true} />}
+          {selectedJob && (
+            <JobDetails job={selectedJob} match={null} showEmails={true} />
+          )}
         </DialogContent>
 
         <DialogActions

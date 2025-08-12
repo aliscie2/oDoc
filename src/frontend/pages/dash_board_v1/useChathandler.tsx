@@ -35,6 +35,7 @@ export const useChatHandler = () => {
       
       User input: ${message}
     `;
+    
     let eventRes = [];
 
     if (import.meta.env.VITE_DFX_NETWORK === "local") {
@@ -69,7 +70,6 @@ export const useChatHandler = () => {
 
   const handleJobsCase = async (message, parsed, isQuick) => {
     const prompt = `
-      ${PROMPTS.JOB}
       User Input: ${message.trim()},
       Current Job Data: ${JSON.stringify(currentJobRef.current)}
     `;
@@ -83,11 +83,11 @@ export const useChatHandler = () => {
         message.split("//")[0],
       );
     } else {
-      const jobRes = await aiAgent.sendMessage(prompt, false);
+      const jobRes = await aiAgent.sendMessage(prompt, false, PROMPTS.JOB);
       parsedJob = textToJson(jobRes).extractedData;
     }
 
-    if (parsedJob.done) {
+    if (parsedJob?.done) {
       dispatch({ type: "IS_PROFILE_COMPELETE" });
     }
     // Validation logic
@@ -170,10 +170,13 @@ export const useChatHandler = () => {
           };
         }
       } else {
+        
         const classifyMessageRes = await aiAgent.sendMessage(`
+        current classifier: ${location.pathname =="/"?"Job":location.pathname}
         ${PROMPTS.CLASSIFY}
         Message:${compact_message}
         `);
+        console.log({XX: location.pathname =="/"?"Job":location.pathname})
         parsed = textToJson(classifyMessageRes).extractedData;
       }
 

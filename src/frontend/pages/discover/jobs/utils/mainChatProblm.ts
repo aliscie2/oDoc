@@ -6,6 +6,7 @@ export const CLASSSIFER_PRPT = `You are a message classifier. Analyze the user m
 }
 
 Classification rules:
+- take "current classifier" if it make sanse else reclassify.
 - CALENDAR: scheduling, appointments, meetings, availability, time-related requests
 - JOB: hiring, recruiting, CV/resume, skills, job search, salary, work positions
 - null: unclear, ambiguous, or unrelated to both categories
