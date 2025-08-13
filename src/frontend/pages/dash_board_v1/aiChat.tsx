@@ -1,8 +1,7 @@
-import { Chat, Close, Redo, Refresh, Send, Undo } from "@mui/icons-material";
+import { Close, Redo, Refresh, Send, Undo } from "@mui/icons-material";
 import {
   Box,
   Button,
-  Card,
   CircularProgress,
   IconButton,
   TextField,
@@ -18,100 +17,27 @@ import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
 import AICreditsComponent from "./AICreditsCompnent";
 import { undoCalendarAction, undoJobAction } from "./reverseAction";
 import { useChatHandler } from "./useChathandler";
+import MarkdownMessage from "./markDownMessageRdnder";
 
-// Onboarding System
-class OnboardingManager {
-  private static configs = {
-    JOB: {
-      message: "Are you looking for a job or talent? Tell me in details please",
-      key: "jobOnboardingShown",
-    },
-    CALENDAR: {
-      message:
-        "Please tell me for example I am available every day from 9 to 6 pm",
-      key: "calendarOnboardingShown",
-    },
-  };
-
-  static getState(jobsLength: number, calendarLength: number) {
-    const jobDone = localStorage.getItem(this.configs.JOB.key) === "completed";
-    const calDone =
-      localStorage.getItem(this.configs.CALENDAR.key) === "completed";
-
-    if (jobsLength === 0 && !jobDone)
-      return { step: "JOB", message: this.configs.JOB.message, active: true };
-    if (jobsLength > 0 && calendarLength === 0 && !calDone)
-      return {
-        step: "CALENDAR",
-        message: this.configs.CALENDAR.message,
-        active: true,
-      };
-    return { step: "NONE", message: "", active: false };
-  }
-
-  static complete(step: string) {
-    const config = this.configs[step as keyof typeof this.configs];
-    if (config) localStorage.setItem(config.key, "completed");
-  }
-}
-
-// Typing Animation Component
-const TypingMessage = ({
-  message,
-  onComplete,
-}: {
-  message: string;
-  onComplete: () => void;
-}) => {
-  const [text, setText] = useState("");
-  const theme = useTheme();
-
-  useEffect(() => {
-    let i = 0;
-    const timer = setInterval(() => {
-      if (i < message.length) {
-        setText(message.slice(0, i + 1));
-        i++;
-      } else {
-        clearInterval(timer);
-        setTimeout(onComplete, 1000);
-      }
-    }, 50);
-    return () => clearInterval(timer);
-  }, [message, onComplete]);
-
-  return (
-    <Box
-      sx={{
-        bgcolor: theme.palette.primary.main + "20",
-        border: `1px solid ${theme.palette.primary.main}`,
-        borderRadius: "12px",
-        p: 1.5,
-        mb: 1,
-      }}
-    >
-      <Typography
-        variant="caption"
-        sx={{
-          color: theme.palette.primary.main,
-          fontSize: "0.7rem",
-          mb: 0.5,
-          display: "block",
-          fontWeight: 600,
-        }}
-      >
-        AI Assistant
-      </Typography>
-      <Typography
-        variant="body2"
-        sx={{ color: theme.palette.text.primary, fontFamily: "monospace" }}
-      >
-        {text}
-        <span style={{ color: theme.palette.primary.main }}>|</span>
-      </Typography>
-    </Box>
-  );
-};
+// Onboarding Data
+const getOnboardingData = (navigate: any, isPageReloaded: boolean) => [
+  {
+    id: "job-search",
+    text: "👋 Welcome! I'm here to help you find the perfect opportunities or connect you with top talent. \n\n**Let's get started:**\n- Are you looking for your next career move? \n- Or are you hiring and need to find the right candidates?\n\nTell me about your goals, preferred roles, skills, or what kind of talent you're seeking. The more details you share, the better I can assist you!",
+    condition: (jobs: any[], calendar: any) => jobs.length === 0,
+    key: "jobOnboardingShown",
+  },
+  {
+    id: "calendar-setup",
+    text: "🗓️ Perfect! Now let's set up your availability so potential matches can book interviews with you.\n\n**Share your interview schedule:**\n- What days work best for interviews?\n- What are your preferred hours? (e.g., \"I'm available for interviews Monday-Friday, 9 AM to 6 PM\")\n- Any specific time zones or scheduling preferences?\n\nThis allows employers or candidates to easily book interview slots that work for both of you!",
+    condition: (jobs: any[], calendar: any) =>
+      jobs.length > 0 &&
+      (calendar.availabilities?.length || 0) === 0 &&
+      isPageReloaded,
+    key: "calendarOnboardingShown",
+    onCondition: () => navigate("/calendar"),
+  },
+];
 
 // Types
 interface ChatMessage {
@@ -123,84 +49,236 @@ interface ChatMessage {
   canRetry?: boolean;
   action_type?: string;
   actions?: any[];
+  isTyping?: boolean;
 }
 
-interface AIChatProps {
-  isExpanded: boolean;
-  onToggle: () => void;
-  chatHistory: ChatMessage[];
-  onSendMessage: (message: string) => void;
-  isLoading: boolean;
-  onUndoMessage: (id: string | number) => void;
-  onRedoMessage: (id: string | number) => void;
-  onboardingMessage?: string;
-  showTyping?: boolean;
-}
+// Typing Markdown Message Component
+const TypingMarkdownMessage = ({
+  text,
+  onComplete,
+}: {
+  text: string;
+  onComplete?: () => void;
+}) => {
+  const [displayText, setDisplayText] = useState("");
+  const theme = useTheme();
 
-const AIChatComponent = ({
-  isExpanded,
-  onToggle,
+  useEffect(() => {
+    if (!text) return;
+
+    // Calculate typing speed based on text length
+    const baseSpeed = 30; // Base speed in ms
+    const maxSpeed = 10; // Fastest speed for long text
+    const speedThreshold = 200; // Characters threshold for speed adjustment
+
+    const typingSpeed =
+      text.length > speedThreshold
+        ? Math.max(maxSpeed, baseSpeed - (text.length - speedThreshold) / 20)
+        : baseSpeed;
+
+    let currentIndex = 0;
+    setDisplayText("");
+
+    const timer = setInterval(() => {
+      if (currentIndex < text.length) {
+        setDisplayText(text.slice(0, currentIndex + 1));
+        currentIndex++;
+      } else {
+        clearInterval(timer);
+        onComplete?.();
+      }
+    }, typingSpeed);
+
+    return () => clearInterval(timer);
+  }, [text, onComplete]);
+
+  // Add cursor to the display text when still typing
+  const textWithCursor =
+    displayText.length < text.length
+      ? displayText +
+        `<span style="color: ${theme.palette.primary.main}; animation: blink 1s infinite;">|</span><style>@keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }</style>`
+      : displayText;
+
+  return <MarkdownMessage message={textWithCursor} isUser={false} />;
+};
+
+// Chat History Component
+const ChatHistory = ({
   chatHistory,
-  onSendMessage,
-  isLoading,
   onUndoMessage,
   onRedoMessage,
-  onboardingMessage,
-  showTyping = false,
-}: AIChatProps) => {
+  onRetry,
+  onTypingComplete,
+}: {
+  chatHistory: ChatMessage[];
+  onUndoMessage: (id: string | number) => void;
+  onRedoMessage: (id: string | number) => void;
+  onRetry: (id: string | number) => void;
+  onTypingComplete: (id: string | number) => void;
+}) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const { aiAgent } = useSelector((state: any) => state.AIState);
-
-  const [message, setMessage] = useState("");
-  const [showWelcomeTyping, setShowWelcomeTyping] = useState(false);
-  const [typingDone, setTypingDone] = useState(false);
-
-  const inputRef = useRef<HTMLInputElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
-
-  // Auto-focus and scroll effects
-  useEffect(() => {
-    if (isExpanded) {
-      setTimeout(() => inputRef.current?.focus(), 100);
-      if (
-        chatHistory.length === 0 &&
-        !showWelcomeTyping &&
-        !typingDone &&
-        showTyping
-      ) {
-        setTimeout(() => setShowWelcomeTyping(true), 500);
-      }
-    }
-  }, [
-    isExpanded,
-    chatHistory.length,
-    showWelcomeTyping,
-    typingDone,
-    showTyping,
-  ]);
 
   useEffect(() => {
     if (chatRef.current) {
       chatRef.current.scrollTop = chatRef.current.scrollHeight;
     }
-  }, [chatHistory, showWelcomeTyping]);
+  }, [chatHistory]);
+
+  const isDark = theme.palette.mode === "dark";
+  const accent = theme.palette.primary.main;
+
+  return (
+    <Box
+      ref={chatRef}
+      sx={{
+        maxHeight: { xs: 250, sm: 300 },
+        overflowY: "auto",
+        
+        "&::-webkit-scrollbar": {
+          width: "6px",
+        },
+        "&::-webkit-scrollbar-track": {
+          bgcolor: "transparent",
+        },
+        "&::-webkit-scrollbar-thumb": {
+          bgcolor: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.2)",
+          borderRadius: "3px",
+        },
+      }}
+    >
+      {chatHistory.map((msg, idx) => (
+        <Box key={`${msg.id}-${idx}`} mb={1}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: msg.type === "user" ? "flex-end" : "flex-start",
+              mb: 0.5,
+            }}
+          >
+            <Box
+              sx={{
+                maxWidth: { xs: "95%", sm: "80%" }, // Wider messages on mobile
+                bgcolor:
+                  msg.type === "user"
+                    ? isDark
+                      ? "rgba(33, 150, 243, 0.3)"
+                      : "rgba(33, 150, 243, 0.2)"
+                    : isDark
+                      ? "rgba(158, 158, 158, 0.3)"
+                      : "rgba(158, 158, 158, 0.2)",
+                p: { xs: 1, sm: 1.5 }, // Reduced padding on mobile
+                borderRadius: 1,
+                border: `1px solid ${msg.type === "user" ? accent : "rgba(158, 158, 158, 0.3)"}`,
+              }}
+            >
+              <Typography
+                variant="caption"
+                sx={{
+                  color:
+                    msg.type === "user" ? accent : theme.palette.text.secondary,
+                  fontSize: "0.7rem",
+                  mb: 0.5,
+                  display: "block",
+                  fontWeight: 600,
+                }}
+              >
+                {msg.type === "user" ? "You" : "AI Assistant"}
+              </Typography>
+              {msg.type === "ai" && msg.isTyping ? (
+                <TypingMarkdownMessage
+                  text={msg.message}
+                  onComplete={() => onTypingComplete(msg.id)}
+                />
+              ) : (
+                <MarkdownMessage
+                  message={msg.message}
+                  isUser={msg.type === "user"}
+                />
+              )}
+            </Box>
+          </Box>
+
+          {msg.type === "ai" &&
+            (msg.canUndo || msg.canRedo || msg.canRetry) && (
+              <Box
+                display="flex"
+                gap={0.5}
+                justifyContent="flex-start"
+                sx={{ ml: 1 }}
+              >
+                {msg.canRetry && (
+                  <Button
+                    size="small"
+                    startIcon={<Refresh fontSize="small" />}
+                    onClick={() => onRetry(msg.id)}
+                    sx={{
+                      color: accent,
+                      minWidth: "auto",
+                      p: 0.25,
+                      fontSize: "0.7rem",
+                    }}
+                  >
+                    Retry
+                  </Button>
+                )}
+                {msg.canUndo && (
+                  <Button
+                    size="small"
+                    startIcon={<Undo fontSize="small" />}
+                    onClick={() => onUndoMessage(msg.id)}
+                    sx={{
+                      color: theme.palette.warning.main,
+                      minWidth: "auto",
+                      p: 0.25,
+                      fontSize: "0.7rem",
+                    }}
+                  >
+                    Undo
+                  </Button>
+                )}
+                {msg.canRedo && (
+                  <Button
+                    size="small"
+                    startIcon={<Redo fontSize="small" />}
+                    onClick={() => onRedoMessage(msg.id)}
+                    sx={{
+                      color: theme.palette.success.main,
+                      minWidth: "auto",
+                      p: 0.25,
+                      fontSize: "0.7rem",
+                    }}
+                  >
+                    Redo
+                  </Button>
+                )}
+              </Box>
+            )}
+        </Box>
+      ))}
+    </Box>
+  );
+};
+
+// AI Input Component
+const AIInput = ({
+  onSendMessage,
+  isLoading,
+}: {
+  onSendMessage: (message: string) => void;
+  isLoading: boolean;
+}) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const [message, setMessage] = useState("");
+  const [isExpanded, setIsExpanded] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSend = () => {
     if (!message.trim()) return;
-    setShowWelcomeTyping(false);
-    if (!isExpanded) onToggle();
     onSendMessage(message);
     setMessage("");
     setTimeout(() => inputRef.current?.focus(), 100);
-  };
-
-  const handleRetry = (msgId: string | number) => {
-    const msg = chatHistory.find((m) => m.id === msgId);
-    const userMsg =
-      chatHistory[chatHistory.findIndex((m) => m.id === msgId) - 1];
-    if (msg?.canUndo) onUndoMessage(msgId);
-    if (userMsg?.message) onSendMessage(userMsg.message);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -217,333 +295,175 @@ const AIChatComponent = ({
     <Box
       sx={{
         position: "fixed",
-        bottom: isMobile ? 90 : 30,
-        right: isMobile ? 10 : 30,
+        bottom: isMobile ? 80 : 30, // Moved up to account for bottom nav bar on mobile
+        left: isMobile ? 0 : "50%",
+        transform: isMobile ? "none" : "translateX(-50%)",
         zIndex: 1000,
+        width: isMobile ? "100vw" : isExpanded ? 600 : 400, // Full width on mobile
+        px: isMobile ? 0 : 0, // Remove horizontal padding on mobile
         transition: "all 0.3s ease",
       }}
     >
-      <Card
+      <Box
         sx={{
-          width: isExpanded ? (isMobile ? "calc(100vw - 20px)" : 500) : 60,
-          height: isExpanded ? (isMobile ? "50vh" : 500) : 60,
-          borderRadius: isExpanded ? "16px" : "50%",
-          transition: "all 0.3s ease",
-          bgcolor: isDark ? "rgba(0,0,0,0.9)" : "rgba(255,255,255,0.95)",
-          backdropFilter: "blur(10px)",
-          border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`,
+          bgcolor: isDark ? "rgba(0,0,0,0.95)" : "rgba(255,255,255,0.98)",
+          backdropFilter: "blur(20px)",
+          border: isMobile
+            ? "none"
+            : `1px solid ${isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.08)"}`,
+          borderTop: isMobile
+            ? `1px solid ${isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.08)"}`
+            : undefined,
+          borderRadius: isMobile ? 0 : isExpanded ? 3 : 25, // No border radius on mobile for full width
+          p: isMobile ? 1 : isExpanded ? 2 : 1,
+          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+          height: isExpanded ? "auto" : 50,
           overflow: "hidden",
+          boxShadow: isMobile
+            ? "0 -4px 16px rgba(0,0,0,0.1)" // Top shadow for mobile
+            : isDark
+              ? "0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05)"
+              : "0 8px 32px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.05)",
         }}
+        onMouseEnter={() => !isMobile && setIsExpanded(true)}
+        onMouseLeave={() =>
+          !isMobile &&
+          !inputRef.current?.matches(":focus") &&
+          setIsExpanded(false)
+        }
       >
-        {!isExpanded ? (
-          <Box
+        <Box display="flex" gap={1} alignItems="flex-end">
+          <TextField
+            ref={inputRef}
+            disabled={isLoading}
+            size="small"
+            fullWidth
+            multiline={isExpanded}
+            maxRows={isExpanded ? 4 : 1}
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onFocus={() => setIsExpanded(true)}
+            onBlur={() => !isMobile && setIsExpanded(false)}
+            placeholder="Ask AI anything..."
             sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              height: "100%",
+              "& .MuiOutlinedInput-root": {
+                bgcolor: "transparent",
+                fontSize: "0.95rem",
+                "& fieldset": { border: "none" },
+                "& input": {
+                  py: isExpanded ? 1 : 0.75,
+                },
+              },
+            }}
+          />
+          <IconButton
+            disabled={isLoading}
+            onClick={handleSend}
+            sx={{
+              color: accent,
+              bgcolor: isExpanded ? accent + "10" : "transparent",
+              "&:hover": { bgcolor: accent + "20" },
+              transition: "all 0.2s ease",
             }}
           >
-            <IconButton onClick={onToggle} sx={{ color: accent }}>
-              <Chat />
-            </IconButton>
-          </Box>
-        ) : (
-          <Box
-            sx={{
-              height: "100%",
-              display: "flex",
-              flexDirection: "column",
-              p: 1,
-            }}
-          >
-            {/* Header */}
-            <Box
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-              mb={1}
-            >
-              <Box display="flex" alignItems="center" gap={1}>
-                <AICreditsComponent />
-                <Typography variant="body2" sx={{ color: accent }}>
-                  AI Assistant ({chatHistory.length})
-                </Typography>
-              </Box>
-              <IconButton size="small" onClick={onToggle}>
-                <Close fontSize="small" />
-              </IconButton>
-            </Box>
-
-            {/* Jellyfish */}
-            <Box sx={{ height: 40, mb: 1, overflow: "hidden" }}>
-              <RunawayJellyfish
-                die={aiAgent.remainingCredits() == 0}
-                thinking={isLoading}
-                runaway={true}
-              />
-            </Box>
-
-            {/* Chat Area */}
-            <Box
-              ref={chatRef}
-              sx={{
-                flex: 1,
-                overflowY: "auto",
-                mb: 1,
-                bgcolor: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)",
-                borderRadius: "10px",
-                p: 1,
-              }}
-            >
-              {/* Onboarding Typing */}
-              {showTyping && chatHistory.length === 0 && onboardingMessage && (
-                <TypingMessage
-                  message={onboardingMessage}
-                  onComplete={() => setShowTyping(false)}
-                />
-              )}
-
-              {/* Static Onboarding Message */}
-              {!showTyping && chatHistory.length === 0 && onboardingMessage && (
-                <Box
-                  sx={{
-                    bgcolor: accent + "20",
-                    border: `1px solid ${accent}`,
-                    borderRadius: "12px",
-                    p: 1.5,
-                    mb: 1,
-                  }}
-                >
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: accent,
-                      fontSize: "0.7rem",
-                      mb: 0.5,
-                      display: "block",
-                      fontWeight: 600,
-                    }}
-                  >
-                    AI Assistant
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ color: theme.palette.text.primary }}
-                  >
-                    {onboardingMessage}
-                  </Typography>
-                </Box>
-              )}
-
-              {/* Empty State */}
-              {chatHistory.length === 0 &&
-                !showTyping &&
-                !onboardingMessage && (
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: theme.palette.text.secondary,
-                      textAlign: "center",
-                      mt: 2,
-                      fontStyle: "italic",
-                    }}
-                  >
-                    Start a conversation with AI...
-                  </Typography>
-                )}
-
-              {/* Messages */}
-              {chatHistory.map((msg, idx) => (
-                <Box key={`${msg.id}-${idx}`} mb={1}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent:
-                        msg.type === "user" ? "flex-end" : "flex-start",
-                      mb: 0.5,
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        maxWidth: "80%",
-                        bgcolor:
-                          msg.type === "user"
-                            ? isDark
-                              ? "rgba(33, 150, 243, 0.3)"
-                              : "rgba(33, 150, 243, 0.2)"
-                            : isDark
-                              ? "rgba(158, 158, 158, 0.3)"
-                              : "rgba(158, 158, 158, 0.2)",
-                        borderRadius: "12px",
-                        p: 1.5,
-                        border: `1px solid ${msg.type === "user" ? accent : "rgba(158, 158, 158, 0.3)"}`,
-                      }}
-                    >
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          color:
-                            msg.type === "user"
-                              ? accent
-                              : theme.palette.text.secondary,
-                          fontSize: "0.7rem",
-                          mb: 0.5,
-                          display: "block",
-                          fontWeight: 600,
-                        }}
-                      >
-                        {msg.type === "user" ? "You" : "AI Assistant"}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{ color: theme.palette.text.primary }}
-                      >
-                        {msg.message}
-                      </Typography>
-                    </Box>
-                  </Box>
-
-                  {/* Action Buttons */}
-                  {msg.type === "ai" &&
-                    (msg.canUndo || msg.canRedo || msg.canRetry) && (
-                      <Box
-                        display="flex"
-                        gap={0.5}
-                        justifyContent="flex-start"
-                        sx={{ ml: 1 }}
-                      >
-                        {msg.canRetry && (
-                          <Button
-                            size="small"
-                            startIcon={<Refresh fontSize="small" />}
-                            onClick={() => handleRetry(msg.id)}
-                            sx={{
-                              color: accent,
-                              minWidth: "auto",
-                              p: 0.25,
-                              fontSize: "0.7rem",
-                            }}
-                          >
-                            Retry
-                          </Button>
-                        )}
-                        {msg.canUndo && (
-                          <Button
-                            size="small"
-                            startIcon={<Undo fontSize="small" />}
-                            onClick={() => onUndoMessage(msg.id)}
-                            sx={{
-                              color: theme.palette.warning.main,
-                              minWidth: "auto",
-                              p: 0.25,
-                              fontSize: "0.7rem",
-                            }}
-                          >
-                            Undo
-                          </Button>
-                        )}
-                        {msg.canRedo && (
-                          <Button
-                            size="small"
-                            startIcon={<Redo fontSize="small" />}
-                            onClick={() => onRedoMessage(msg.id)}
-                            sx={{
-                              color: theme.palette.success.main,
-                              minWidth: "auto",
-                              p: 0.25,
-                              fontSize: "0.7rem",
-                            }}
-                          >
-                            Redo
-                          </Button>
-                        )}
-                      </Box>
-                    )}
-                </Box>
-              ))}
-            </Box>
-
-            {/* Input */}
-            <Box display="flex" gap={1} alignItems="flex-end">
-              <TextField
-                ref={inputRef}
-                disabled={isLoading}
-                size="small"
-                fullWidth
-                multiline
-                maxRows={3}
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Type a message..."
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "15px",
-                    bgcolor: isDark
-                      ? "rgba(255,255,255,0.05)"
-                      : "rgba(0,0,0,0.03)",
-                  },
-                }}
-              />
-              <IconButton
-                disabled={isLoading}
-                onClick={handleSend}
-                sx={{ color: accent }}
-              >
-                {isLoading ? <CircularProgress size={20} /> : <Send />}
-              </IconButton>
-            </Box>
-          </Box>
-        )}
-      </Card>
+            {isLoading ? <CircularProgress size={20} /> : <Send />}
+          </IconButton>
+        </Box>
+      </Box>
     </Box>
   );
 };
 
 const ChatContainer = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { jobs } = useSelector((state: any) => state.jobState);
   const { calendar } = useSelector((state: any) => state.calendarState);
+  const { aiAgent } = useSelector((state: any) => state.AIState);
   const { processMessage } = useChatHandler();
 
-  const [chatExpanded, setChatExpanded] = useState(false);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [messageCounter, setMessageCounter] = useState(0);
-  const [onboardingMessage, setOnboardingMessage] = useState("");
-  const [showTyping, setShowTyping] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
+  const [isPageReloaded, setIsPageReloaded] = useState(false);
+  const addedOnboardingRef = useRef<Set<string>>(new Set());
 
-  // Onboarding logic
-  const onboardingState = OnboardingManager.getState(
-    jobs.length,
-    calendar.availabilities?.length || 0,
-  );
-
+  // Detect page reload on component mount
   useEffect(() => {
-    if (onboardingState.active) {
-      setChatExpanded(true);
-      setOnboardingMessage(onboardingState.message);
-      setShowTyping(true);
-    } else {
-      setOnboardingMessage("");
-      setShowTyping(false);
+    const navigationEntries = performance.getEntriesByType(
+      "navigation",
+    ) as PerformanceNavigationTiming[];
+    if (navigationEntries.length > 0) {
+      const navigationType = navigationEntries[0].type;
+      setIsPageReloaded(navigationType === "reload");
     }
-  }, [onboardingState.active, onboardingState.message]);
+  }, []);
+
+  // Get onboarding data with navigation and reload status
+  const onboardingData = getOnboardingData(navigate, isPageReloaded);
+
+  // Get active onboarding message
+  const activeOnboarding = onboardingData.find((item) => {
+    const isCompleted = localStorage.getItem(item.key) === "completed";
+    return !isCompleted && item.condition(jobs, calendar);
+  });
+
+  // Add onboarding message to chat history if needed
+  useEffect(() => {
+    if (
+      activeOnboarding &&
+      !isMinimized &&
+      !addedOnboardingRef.current.has(activeOnboarding.id)
+    ) {
+      addedOnboardingRef.current.add(activeOnboarding.id);
+      setChatHistory((prev) => [
+        ...prev,
+        {
+          type: "ai",
+          message: activeOnboarding.text,
+          id: activeOnboarding.id,
+          canUndo: false,
+          canRedo: false,
+          canRetry: false,
+          isTyping: true,
+        },
+      ]);
+
+      // Execute onCondition callback if it exists
+      if (activeOnboarding.onCondition) {
+        activeOnboarding.onCondition();
+      }
+    }
+  }, [activeOnboarding, isMinimized]);
+
+  const isExpanded = chatHistory.length > 0 && !isMinimized;
+
+  const handleClose = () => {
+    setIsMinimized(true);
+  };
+
+  const handleTypingComplete = (messageId: string | number) => {
+    setChatHistory((prev) =>
+      prev.map((msg) =>
+        msg.id === messageId ? { ...msg, isTyping: false } : msg,
+      ),
+    );
+  };
 
   const handleChatSend = async (message: string) => {
     const messageId = messageCounter + 1;
     setMessageCounter(messageId);
 
     // Complete onboarding when user sends first message
-    if (onboardingState.active) {
-      OnboardingManager.complete(onboardingState.step);
-      setOnboardingMessage("");
-      setShowTyping(false);
+    if (activeOnboarding) {
+      localStorage.setItem(activeOnboarding.key, "completed");
     }
 
-    if (!chatExpanded) setChatExpanded(true);
+    setIsMinimized(false);
 
+    // Add user message (no typing effect)
     setChatHistory((prev) => [
       ...prev,
       { type: "user", message, id: messageId + "user" },
@@ -552,6 +472,7 @@ const ChatContainer = () => {
 
     try {
       const result = await processMessage(message, messageId, true);
+      // Add AI message with typing effect
       setChatHistory((prev) => [
         ...prev,
         {
@@ -563,9 +484,11 @@ const ChatContainer = () => {
           canRetry: result.actions?.length > 0,
           action_type: result.action_type,
           actions: result.actions,
+          isTyping: true,
         },
       ]);
     } catch (error: any) {
+      // Add error message with typing effect
       setChatHistory((prev) => [
         ...prev,
         {
@@ -575,6 +498,7 @@ const ChatContainer = () => {
           canUndo: false,
           canRedo: false,
           canRetry: true,
+          isTyping: true,
         },
       ]);
     } finally {
@@ -630,18 +554,112 @@ const ChatContainer = () => {
     );
   };
 
+  const handleRetry = (msgId: string | number) => {
+    const msg = chatHistory.find((m) => m.id === msgId);
+    const userMsg =
+      chatHistory[chatHistory.findIndex((m) => m.id === msgId) - 1];
+    if (msg?.canUndo) handleUndoMessage(msgId);
+    if (userMsg?.message) handleChatSend(userMsg.message);
+  };
+
   return (
-    <AIChatComponent
-      isExpanded={chatExpanded}
-      onToggle={() => setChatExpanded(!chatExpanded)}
-      chatHistory={chatHistory}
-      onSendMessage={handleChatSend}
-      isLoading={isLoading}
-      onUndoMessage={handleUndoMessage}
-      onRedoMessage={handleRedoMessage}
-      onboardingMessage={onboardingMessage}
-      showTyping={showTyping}
-    />
+    <>
+      {/* Chat History - only show when expanded */}
+      {isExpanded && (
+        <Box
+          sx={{
+            position: "fixed",
+            bottom: { xs: 130, sm: 110 }, // Moved up more on mobile for bottom nav
+            left: { xs: 0, sm: "50%" },
+            transform: { xs: "none", sm: "translateX(-50%)" },
+            zIndex: 999,
+            width: { xs: "100vw", sm: 600 }, // Full width on mobile
+            bgcolor: (theme) =>
+              theme.palette.mode === "dark"
+                ? "rgba(0,0,0,0.95)"
+                : "rgba(255,255,255,0.98)",
+            backdropFilter: "blur(20px)",
+            border: (theme) => ({
+              xs: "none",
+              sm: `1px solid ${theme.palette.mode === "dark" ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.08)"}`,
+            }),
+            borderTop: (theme) => ({
+              xs: `1px solid ${theme.palette.mode === "dark" ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.08)"}`,
+              sm: undefined,
+            }),
+            borderRadius: { xs: 0, sm: 2 }, // No border radius on mobile
+            boxShadow: (theme) => ({
+              xs: "0 -4px 16px rgba(0,0,0,0.1)", // Top shadow for mobile
+              sm:
+                theme.palette.mode === "dark"
+                  ? "0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05)"
+                  : "0 8px 32px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.05)",
+            }),
+          }}
+        >
+          {/* Header */}
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            p={{ xs: 1, sm: 2 }} // Reduced padding on mobile
+            pb={1}
+            borderBottom={(theme) =>
+              `1px solid ${theme.palette.mode === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)"}`
+            }
+          >
+            <Box display="flex" alignItems="center" gap={1}>
+              <AICreditsComponent />
+              <Typography
+                variant="body2"
+                sx={{
+                  color: (theme) => theme.palette.primary.main,
+                  fontWeight: 600,
+                }}
+              >
+                AI Assistant ({chatHistory.length})
+              </Typography>
+            </Box>
+            <Box display="flex" alignItems="center" gap={1}>
+              <Box sx={{ height: 30, overflow: "hidden" }}>
+                <RunawayJellyfish
+                  die={aiAgent.remainingCredits() == 0}
+                  thinking={isLoading}
+                  runaway={true}
+                />
+              </Box>
+              <IconButton
+                size="small"
+                onClick={handleClose}
+                sx={{
+                  color: (theme) => theme.palette.text.secondary,
+                  "&:hover": {
+                    bgcolor: (theme) =>
+                      theme.palette.mode === "dark"
+                        ? "rgba(255,255,255,0.1)"
+                        : "rgba(0,0,0,0.05)",
+                  },
+                }}
+              >
+                <Close fontSize="small" />
+              </IconButton>
+            </Box>
+          </Box>
+
+          {/* Chat History */}
+          <ChatHistory
+            chatHistory={chatHistory}
+            onUndoMessage={handleUndoMessage}
+            onRedoMessage={handleRedoMessage}
+            onRetry={handleRetry}
+            onTypingComplete={handleTypingComplete}
+          />
+        </Box>
+      )}
+
+      {/* AI Input */}
+      <AIInput onSendMessage={handleChatSend} isLoading={isLoading} />
+    </>
   );
 };
 

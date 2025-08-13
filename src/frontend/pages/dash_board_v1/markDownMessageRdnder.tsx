@@ -1,16 +1,20 @@
-import React from "react";
 import { Typography, Box } from "@mui/material";
 
-const MarkdownMessage = ({ message, isUser = false }) => {
+interface MarkdownMessageProps {
+  message: string;
+  isUser?: boolean;
+}
+
+const MarkdownMessage = ({ message, isUser = false }: MarkdownMessageProps) => {
   // Simple markdown renderer for common markdown elements
-  const renderMarkdown = (text) => {
+  const renderMarkdown = (text: string): string => {
     if (!text || typeof text !== "string") return "";
 
     // Convert markdown to JSX elements
     let content = text;
 
     // Handle code blocks (```code```)
-    content = content.replace(/```([\s\S]*?)```/g, (match, code) => {
+    content = content.replace(/```([\s\S]*?)```/g, (_match, code) => {
       return `<pre style="background: rgba(255,255,255,0.1); padding: 8px; border-radius: 4px; overflow-x: auto; margin: 8px 0;"><code>${code.trim()}</code></pre>`;
     });
 
