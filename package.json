@@ -103,7 +103,10 @@
     "build-storybook": "storybook build",
     "sonar": "sonar-scanner",
     "prepare": "husky",
-    "sb": "storybook dev -p 6006"
+    "sb": "storybook dev -p 6006",
+    "playwright": "playwright test",
+    "playwright:ui": "playwright test --ui",
+    "playwright:debug": "playwright test --debug"
   },
   "browserslist": {
     "production": [

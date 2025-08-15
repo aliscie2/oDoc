@@ -46,23 +46,19 @@ fn search_matches(skills: &Vec<String>, category: Category) -> Vec<Job> {
         inverted_index::search_for_talent(skills.clone())
     };
     
-    ic_cdk::println!("DEBUG search_matches: found {} IDs from inverted index", ids.len());
     
     let caller_id = ic_cdk::caller().to_string();
     let jobs = Job::get_jobs_by_ids(ids);
-    ic_cdk::println!("DEBUG search_matches: retrieved {} jobs from IDs", jobs.len());
     
     let filtered: Vec<Job> = jobs
         .into_iter()
         .filter(|job| {
             let is_different_user = job.user_id != caller_id;
             let is_active = job.active;
-            ic_cdk::println!("DEBUG search_matches: job {} - different_user: {}, active: {}", job.id, is_different_user, is_active);
             is_different_user && is_active
         })
         .collect();
     
-    ic_cdk::println!("DEBUG search_matches: after filtering: {} jobs", filtered.len());
     filtered
 }
 

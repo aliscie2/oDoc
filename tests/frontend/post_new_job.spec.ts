@@ -54,7 +54,7 @@ test.describe("Job Matching System", () => {
     await page.waitForTimeout(5000);
 
     // Navigate to jobs page
-    await page.goto("http://localhost:5173/jobs");
+    await page.goto("/jobs");
     await page.waitForLoadState("networkidle");
 
     // Should see job brief data with skills
@@ -99,7 +99,7 @@ test.describe("Job Matching System", () => {
     await page2.waitForTimeout(5000);
 
     // Navigate to jobs page to see matches
-    await page2.goto("http://localhost:5173/jobs");
+    await page2.goto("/jobs");
     await page2.waitForLoadState("networkidle");
 
     // Switch to talent view

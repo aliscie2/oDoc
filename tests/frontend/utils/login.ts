@@ -1,7 +1,7 @@
 import { Page } from "@playwright/test";
 
 export const loginAs = async (identityNumber: string, page: Page) => {
-  await page.goto("http://localhost:5173/");
+  await page.goto("/");
   const page1Promise = page.waitForEvent("popup");
   await page
     .getByRole("button", { name: "Internet Identity Login with" })
@@ -20,7 +20,7 @@ export const loginAs = async (identityNumber: string, page: Page) => {
 };
 
 export const registerUser = async (page) => {
-  await page.goto("http://localhost:5173/");
+  await page.goto("/");
   const page1Promise = page.waitForEvent("popup");
   await page
     .getByRole("button", { name: "Internet Identity Login with" })

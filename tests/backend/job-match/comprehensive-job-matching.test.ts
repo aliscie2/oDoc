@@ -1,4 +1,4 @@
-import { JobUpdate, Match } from "$/declarations/backend/backend.did";
+import { GetJobs, Job, JobUpdate, Match } from "$/declarations/backend/backend.did";
 import { createIdentity } from "@dfinity/pic";
 import { registerUser } from "../utils";
 import exp from "constants";
@@ -40,20 +40,53 @@ async function createJobProfile(skills: string[]): Promise<JobUpdate> {
   };
 }
 
-async function updateJobWithMatches(jobId: string, matches: Match[]) {
+async function updateJobWithMatches(
+  jobId: string,
+  matches: Job[],
+  oldMatch: Match[],
+) {
+  const matchObjects1: Match[] = matches.map((talent) => ({
+    user_id: talent.user_id,
+    job_id: talent.id,
+    score: 0.8,
+    date_updated: talent.date_updated,
+    missmatching_skills: [],
+    cover_letter: "",
+    is_connected: false,
+  }));
+
+  // Add to our collection of all saved matches
+  const allSavedMatches = [...oldMatch, ...matchObjects1];
+
   const updateWithMatches: JobUpdate = {
     id: jobId,
     updates: [],
     active: [],
     required_match_score: [],
     category: [],
-    matches: [matches],
+    matches: [allSavedMatches],
   };
   await globalThis.oneHourLater();
   const result = await globalThis.testActor.update_job([updateWithMatches], []);
   if ("Err" in result) {
     throw new Error(`Failed to update job with matches: ${result.Err}`);
   }
+}
+
+
+const JOB_SKILLS = ["icp", "rust"];
+
+async function getInitJobs(jobProfileId: string, lookingFor = { Talent: null }){
+
+  const jobMatches:Job[] = await globalThis.testActor.get_matches(
+    jobProfileId,
+    JOB_SKILLS,
+    lookingFor,
+  );
+  const userJobs: GetJobs = await globalThis.testActor.get_my_jobs();
+  await updateJobWithMatches(jobProfileId, jobMatches,userJobs.jobs[0].matches );
+  return {jobMatches,userJobs}
+
 }
 
 async function makeRandomTalentUpdate(talentId: string) {
@@ -79,7 +112,7 @@ describe("Comprehensive Job Matching System", () => {
   test("should handle complete matching workflow with 30 users", async () => {
     const TALENT_COUNT = 30;
     const SHARED_SKILLS = ["icp", "rust", "typescript"];
-    const JOB_SKILLS = ["icp", "rust"];
+    
     const testId = `test1_${Date.now()}`;
 
     // Step 1: Create 30 users in parallel and register them as talents
@@ -98,7 +131,7 @@ describe("Comprehensive Job Matching System", () => {
     });
 
     // Wait for all users to be created
-    const users = await Promise.all(userPromises);
+    const talentsUsers = await Promise.all(userPromises);
 
     // Step 2: Create job creator and job
     const jobCreator = await createUser(`${testId}_job_creator`);
@@ -116,11 +149,7 @@ describe("Comprehensive Job Matching System", () => {
 
     for (let i = 1; i <= 3; i++) {
       // Get matches
-      const matches = await globalThis.testActor.get_matches(
-        jobProfile.id,
-        JOB_SKILLS,
-        { Talent: null },
-      );
+      let {jobMatches:matches} = await getInitJobs(jobProfile.id);
 
       expect(matches.length).toBe(10);
 
@@ -133,96 +162,31 @@ describe("Comprehensive Job Matching System", () => {
         expect(alreadyExists).toBe(false);
       }
 
-      // Create match objects from the batch
-      const matchObjects: Match[] = matches.map((talent) => ({
-        user_id: talent.user_id,
-        job_id: talent.id,
-        score: 0.8,
-        date_updated: talent.date_updated,
-        missmatching_skills: [],
-        cover_letter: "",
-        is_connected: false,
-      }));
-
-      // Add to our collection of all saved matches
-      allSavedMatches = [...allSavedMatches, ...matchObjects];
-
-      // Update job with all matches (old + new)
-      await updateJobWithMatches(jobProfile.id, allSavedMatches);
-
       // Verify the matches were saved correctly
       const userJobs = await globalThis.testActor.get_my_jobs();
+      
       expect(userJobs.jobs[0].matches.length).toBe(10 * i);
       expect(userJobs.matching_jobs.length).toBe(10 * i);
     }
 
     // Step 4: Verify no more matches available
-    const noMoreMatches = await globalThis.testActor.get_matches(
-      jobProfile.id,
-      JOB_SKILLS,
-      { Talent: null },
-    );
-
+    let {jobMatches:noMoreMatches, userJobs} = await getInitJobs(jobProfile.id);
     expect(noMoreMatches.length).toBe(0);
 
     // Verify the workflow completed successfully
-    expect(allSavedMatches.length).toBe(30);
+    // expect(allSavedMatches.length).toBe(30);
+
+
+    // --------- test get updated talent
+
+    globalThis.testActor.setIdentity(talentsUsers[0].user);
+    await makeRandomTalentUpdate(talentsUsers[0].talentId);
+    globalThis.testActor.setIdentity(jobCreator);
+    let {jobMatches:noMoreMatches2, userJobs:userJobs2} = await getInitJobs(jobProfile.id);
+    expect(noMoreMatches2.length).toBe(1);
+
+
   }, 60000); // 60 second timeout for this comprehensive test
 
-  test("get matches, should get the newlly updated mathces", async () => {
-    // Create talent and job
-    const talent = await createUser("talent");
-    globalThis.testActor.setIdentity(talent);
-    const talentProfile = await createTalentProfile([
-      "icp",
-      "rust",
-      "typescript",
-    ]);
-    await globalThis.testActor.update_job([talentProfile], []);
-
-    const jobCreator = await createUser("job_creator");
-    globalThis.testActor.setIdentity(jobCreator);
-    const jobProfile = await createJobProfile(["icp", "rust"]);
-    await globalThis.testActor.update_job([jobProfile], []);
-
-    // Get matches (any number)
-    const matches = await globalThis.testActor.get_matches(
-      jobProfile.id,
-      ["icp", "rust"],
-      { Talent: null },
-    );
-
-    await updateJobWithMatches(jobProfile.id, {
-      user_id: matches[0].user_id,
-      job_id: matches[0].id,
-      score: 0.8,
-      date_updated: matches[0].date_updated,
-      missmatching_skills: [],
-      cover_letter: "",
-      is_connected: false,
-    });
-    const newMatch = await globalThis.testActor.get_matches(
-      jobProfile.id,
-      ["icp", "rust"],
-      { Talent: null },
-    );
-    expect(newMatch.length).toBe(0)
-
-    // Login as talent and update profile
-    globalThis.testActor.setIdentity(talent);
-    await makeRandomTalentUpdate(talentProfile.id);
-    await globalThis.oneHourLater();
-
-    // Login as job user and get matches - should find the updated talent
-    globalThis.testActor.setIdentity(jobCreator);
-    const updatedMatches = await globalThis.testActor.get_matches(
-      jobProfile.id,
-      ["icp", "rust"],
-      { Talent: null },
-    );
-
-    expect(updatedMatches.some((match) => match.id === talentProfile.id)).toBe(
-      true,
-    );
-  });
+  
 });
