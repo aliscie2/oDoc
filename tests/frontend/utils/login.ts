@@ -45,7 +45,7 @@ export const registerUser = async (page) => {
     .getByRole("textbox", { name: "Bio" })
     .fill(Math.random().toString(36).substring(7));
   await page.getByRole("button", { name: "Complete Registration" }).click();
-  
+
   // Wait for page reload after registration
   await page.waitForLoadState("networkidle");
   await page.waitForTimeout(2000); // Additional wait for app initialization

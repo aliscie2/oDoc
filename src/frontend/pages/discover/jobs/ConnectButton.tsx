@@ -39,7 +39,8 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({
   const handleConnect = async (e: React.MouseEvent) => {
     setConnecting(true);
     e.stopPropagation();
-    if (match?.score <= 0.6) { // Changed to 0-1 scale (0.6 = 60%)
+    if (match?.score <= 0.6) {
+      // Changed to 0-1 scale (0.6 = 60%)
       if (
         !window.confirm(
           "Are you sure you want to connect? This will send an email to them despite the matching score is not that good.",

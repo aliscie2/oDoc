@@ -329,7 +329,10 @@ function inferJobTitles(description: string, skills: string[]) {
   return [...new Set(titles)].slice(0, 3); // Return unique titles, max 3
 }
 
-function assessTrust(currentJob: Job | undefined, updates: Array<{ field: string; values: string[] }>) {
+function assessTrust(
+  currentJob: Job | undefined,
+  updates: Array<{ field: string; values: string[] }>,
+) {
   let score = 0.7; // Changed to 0-1 scale (0.7 = 70%)
   const notes: string[] = [];
 
@@ -380,7 +383,10 @@ function assessTrust(currentJob: Job | undefined, updates: Array<{ field: string
   };
 }
 
-function isProfileComplete(currentJob: Job | undefined, updates: Array<{ field: string; values: string[] }>) {
+function isProfileComplete(
+  currentJob: Job | undefined,
+  updates: Array<{ field: string; values: string[] }>,
+) {
   // Check essential fields
   const hasEmail =
     currentJob?.emails?.length > 0 ||

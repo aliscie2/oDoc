@@ -34,13 +34,17 @@ export const useChatHandler = () => {
       
       User input: ${message}
     `;
-    
+
     let eventRes = [];
 
     if (import.meta.env.VITE_DFX_NETWORK === "local") {
       eventRes = mockCalendarAIResponse(calendar, message.split("//")[1]);
     } else {
-      const calendarRes = await aiAgent.sendMessage(prompt, false, PROMPTS.CALENDAR);
+      const calendarRes = await aiAgent.sendMessage(
+        prompt,
+        false,
+        PROMPTS.CALENDAR,
+      );
       eventRes = textToJson(calendarRes).extractedData;
     }
 
@@ -169,12 +173,17 @@ export const useChatHandler = () => {
           };
         }
       } else {
-        
-        const classifyMessageRes = await aiAgent.sendMessage(`
-        current classifier: ${location.pathname =="/"?"Job":location.pathname}
+        const classifyMessageRes = await aiAgent.sendMessage(
+          `
+        current classifier: ${location.pathname == "/" ? "Job" : location.pathname}
         Message:${compact_message}
-        `, true, PROMPTS.CLASSIFY);
-        console.log({XX: location.pathname =="/"?"Job":location.pathname})
+        `,
+          true,
+          PROMPTS.CLASSIFY,
+        );
+        console.log({
+          XX: location.pathname == "/" ? "Job" : location.pathname,
+        });
         parsed = textToJson(classifyMessageRes).extractedData;
       }
 

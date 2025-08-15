@@ -31,7 +31,6 @@ test.describe("Job Matching System", () => {
     await page.reload();
     await page.waitForLoadState("networkidle");
 
-
     // 4. Get calendar onboarding message
     await expect(
       page.getByText("🗓️ Perfect! Now let's set up your availability"),
@@ -50,9 +49,7 @@ test.describe("Job Matching System", () => {
     // Create job
     await page.waitForTimeout(2000);
     await page.getByPlaceholder("Ask AI anything...").click();
-    await page
-      .getByPlaceholder("Ask AI anything...")
-      .fill("job//as>icp,rust");
+    await page.getByPlaceholder("Ask AI anything...").fill("job//as>icp,rust");
     await page.locator("#submitAIMessage").click();
     await page.waitForTimeout(5000);
 
@@ -82,9 +79,7 @@ test.describe("Job Matching System", () => {
 
     await page.waitForTimeout(2000);
     await page.getByPlaceholder("Ask AI anything...").click();
-    await page
-      .getByPlaceholder("Ask AI anything...")
-      .fill("job//as>icp,rust");
+    await page.getByPlaceholder("Ask AI anything...").fill("job//as>icp,rust");
     await page.locator("#submitAIMessage").click();
     await page.waitForTimeout(5000);
 

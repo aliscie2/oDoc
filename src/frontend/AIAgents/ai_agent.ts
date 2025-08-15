@@ -150,7 +150,11 @@ export class AIAgent {
     return { allowed: true };
   }
 
-  async sendMessage(message: string, quick: boolean, systemPrompt?: string): Promise<string> {
+  async sendMessage(
+    message: string,
+    quick: boolean,
+    systemPrompt?: string,
+  ): Promise<string> {
     const startTime = Date.now();
     console.log(
       `🚀 Starting DeepSeek API request at ${new Date().toISOString()}`,

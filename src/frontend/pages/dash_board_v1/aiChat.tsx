@@ -440,7 +440,7 @@ const AIInput = ({
             }}
           />
           <IconButton
-            id='submitAIMessage'
+            id="submitAIMessage"
             disabled={isLoading || !message.trim()}
             onClick={handleSend}
             size={shouldBeExpanded ? "medium" : "small"}

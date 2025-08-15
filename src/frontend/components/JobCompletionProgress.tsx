@@ -1,13 +1,22 @@
-import React from 'react';
-import { Job } from '$/declarations/backend/backend.did';
-import { Box, LinearProgress, Tooltip, Typography, useTheme } from '@mui/material';
+import React from "react";
+import { Job } from "$/declarations/backend/backend.did";
+import {
+  Box,
+  LinearProgress,
+  Tooltip,
+  Typography,
+  useTheme,
+} from "@mui/material";
 
 interface JobCompletionProgressProps {
   job: Job | null;
   className?: string;
 }
 
-const JobCompletionProgress: React.FC<JobCompletionProgressProps> = ({ job, className }) => {
+const JobCompletionProgress: React.FC<JobCompletionProgressProps> = ({
+  job,
+  className,
+}) => {
   const theme = useTheme();
 
   if (!job) return null;
@@ -19,36 +28,40 @@ const JobCompletionProgress: React.FC<JobCompletionProgressProps> = ({ job, clas
 
     // Critical fields (high weight)
     const criticalFields = [
-      { field: 'description', weight: 25, label: 'Job Description' },
-      { field: 'job_titles', weight: 25, label: 'Job Title' }
+      { field: "description", weight: 25, label: "Job Description" },
+      { field: "job_titles", weight: 25, label: "Job Title" },
     ];
 
     // Important fields (medium weight)
     const importantFields = [
-      { field: 'skills', weight: 15, label: 'Skills' },
-      { field: 'category', weight: 10, label: 'Category' },
-      { field: 'experience', weight: 8, label: 'Experience Requirements' },
-      { field: 'education', weight: 7, label: 'Education Requirements' }
+      { field: "skills", weight: 15, label: "Skills" },
+      { field: "category", weight: 10, label: "Category" },
+      { field: "experience", weight: 8, label: "Experience Requirements" },
+      { field: "education", weight: 7, label: "Education Requirements" },
     ];
 
     // Optional fields (low weight)
     const optionalFields = [
-      { field: 'contacts', weight: 3, label: 'Contact Information' },
-      { field: 'emails', weight: 3, label: 'Email Contacts' },
-      { field: 'links', weight: 2, label: 'Related Links' },
-      { field: 'certifications', weight: 2, label: 'Required Certifications' }
+      { field: "contacts", weight: 3, label: "Contact Information" },
+      { field: "emails", weight: 3, label: "Email Contacts" },
+      { field: "links", weight: 2, label: "Related Links" },
+      { field: "certifications", weight: 2, label: "Required Certifications" },
     ];
 
-    const allFields = [...criticalFields, ...importantFields, ...optionalFields];
+    const allFields = [
+      ...criticalFields,
+      ...importantFields,
+      ...optionalFields,
+    ];
 
     allFields.forEach(({ field, weight, label }) => {
       totalWeight += weight;
       const value = job[field as keyof Job];
-      
+
       let completionRatio = 0;
       let isComplete = false;
 
-      if (field === 'skills' && Array.isArray(value)) {
+      if (field === "skills" && Array.isArray(value)) {
         // Special handling for skills - progressive completion
         const skillsCount = value.length;
         if (skillsCount === 0) {
@@ -59,9 +72,12 @@ const JobCompletionProgress: React.FC<JobCompletionProgressProps> = ({ job, clas
           completionRatio = 1; // 4+ skills = 100%
         }
         isComplete = skillsCount > 0;
-      } else if (field === 'description' && typeof value === 'string') {
+      } else if (field === "description" && typeof value === "string") {
         // Special handling for description - quality-based completion
-        const wordCount = value.trim().split(/\s+/).filter(word => word.length > 0).length;
+        const wordCount = value
+          .trim()
+          .split(/\s+/)
+          .filter((word) => word.length > 0).length;
         if (wordCount === 0) {
           completionRatio = 0;
         } else if (wordCount < 10) {
@@ -74,18 +90,18 @@ const JobCompletionProgress: React.FC<JobCompletionProgressProps> = ({ job, clas
           completionRatio = 1; // Detailed description = 100%
         }
         isComplete = wordCount > 0;
-      } else if (field === 'job_titles' && Array.isArray(value)) {
+      } else if (field === "job_titles" && Array.isArray(value)) {
         // Job titles should have meaningful content
-        const hasGoodTitle = value.some(title => title.trim().length >= 3);
+        const hasGoodTitle = value.some((title) => title.trim().length >= 3);
         completionRatio = hasGoodTitle ? 1 : 0;
         isComplete = hasGoodTitle;
       } else if (Array.isArray(value)) {
         isComplete = value.length > 0;
         completionRatio = isComplete ? 1 : 0;
-      } else if (typeof value === 'object' && value !== null) {
+      } else if (typeof value === "object" && value !== null) {
         isComplete = Object.keys(value).length > 0;
         completionRatio = isComplete ? 1 : 0;
-      } else if (typeof value === 'string') {
+      } else if (typeof value === "string") {
         isComplete = value.trim().length > 0;
         completionRatio = isComplete ? 1 : 0;
       } else {
@@ -94,18 +110,19 @@ const JobCompletionProgress: React.FC<JobCompletionProgressProps> = ({ job, clas
       }
 
       completedWeight += weight * completionRatio;
-      
+
       if (!isComplete) {
         missingFields.push(label);
       }
     });
 
-    const progressPercentage = totalWeight > 0 ? (completedWeight / totalWeight) * 100 : 0;
-    
+    const progressPercentage =
+      totalWeight > 0 ? (completedWeight / totalWeight) * 100 : 0;
+
     return {
       percentage: Math.min(100, Math.max(0, progressPercentage)),
       missingFields,
-      skillsCount: job.skills?.length || 0
+      skillsCount: job.skills?.length || 0,
     };
   };
 
@@ -119,75 +136,92 @@ const JobCompletionProgress: React.FC<JobCompletionProgressProps> = ({ job, clas
 
   const getTooltipContent = () => {
     const lines = [`Completion: ${Math.round(percentage)}%`];
-    
+
     // Check description quality
-    const description = job?.description || '';
-    const wordCount = description.trim().split(/\s+/).filter(word => word.length > 0).length;
+    const description = job?.description || "";
+    const wordCount = description
+      .trim()
+      .split(/\s+/)
+      .filter((word) => word.length > 0).length;
     if (wordCount > 0 && wordCount < 25) {
       lines.push(`📝 Description could be more detailed (${wordCount} words)`);
     }
-    
+
     // Check skills
     if (skillsCount <= 3 && skillsCount > 0) {
       lines.push(`💡 Consider adding more skills (currently ${skillsCount})`);
     }
-    
+
     if (missingFields.length > 0) {
-      lines.push('', 'Missing fields:');
-      missingFields.forEach(field => lines.push(`• ${field}`));
+      lines.push("", "Missing fields:");
+      missingFields.forEach((field) => lines.push(`• ${field}`));
     }
-    
-    return lines.join('\n');
+
+    return lines.join("\n");
   };
 
   // Handle inactive job state
   if (!job.active) {
     return (
-      <Tooltip 
+      <Tooltip
         title="This job is currently inactive and not visible to candidates"
         arrow
         placement="top"
       >
-        <Box className={className} sx={{ 
-          width: '100%', 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: 1,
-          opacity: 0.6,
-          filter: 'grayscale(0.8)'
-        }}>
-          <Typography variant="caption" color="textSecondary" sx={{ minWidth: 'fit-content' }}>
+        <Box
+          className={className}
+          sx={{
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            opacity: 0.6,
+            filter: "grayscale(0.8)",
+          }}
+        >
+          <Typography
+            variant="caption"
+            color="textSecondary"
+            sx={{ minWidth: "fit-content" }}
+          >
             Profile Inactive
           </Typography>
-          <Box sx={{ 
-            flex: 1, 
-            height: 6, 
-            borderRadius: 3, 
-            backgroundColor: theme.palette.grey[300],
-            position: 'relative',
-            overflow: 'hidden'
-          }}>
-            <Box sx={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: `repeating-linear-gradient(
+          <Box
+            sx={{
+              flex: 1,
+              height: 6,
+              borderRadius: 3,
+              backgroundColor: theme.palette.grey[300],
+              position: "relative",
+              overflow: "hidden",
+            }}
+          >
+            <Box
+              sx={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: `repeating-linear-gradient(
                 45deg,
                 ${theme.palette.grey[400]},
                 ${theme.palette.grey[400]} 4px,
                 transparent 4px,
                 transparent 8px
               )`,
-              animation: 'slide 2s linear infinite'
-            }} />
+                animation: "slide 2s linear infinite",
+              }}
+            />
           </Box>
-          <Typography variant="caption" sx={{ 
-            color: theme.palette.text.disabled, 
-            fontWeight: 500,
-            minWidth: 'fit-content'
-          }}>
+          <Typography
+            variant="caption"
+            sx={{
+              color: theme.palette.text.disabled,
+              fontWeight: 500,
+              minWidth: "fit-content",
+            }}
+          >
             Paused
           </Typography>
           <style>
@@ -204,11 +238,11 @@ const JobCompletionProgress: React.FC<JobCompletionProgressProps> = ({ job, clas
   }
 
   return (
-    <Tooltip 
+    <Tooltip
       title={
-        <Typography 
-          component="div" 
-          sx={{ whiteSpace: 'pre-line', fontSize: '0.75rem' }}
+        <Typography
+          component="div"
+          sx={{ whiteSpace: "pre-line", fontSize: "0.75rem" }}
         >
           {getTooltipContent()}
         </Typography>
@@ -216,13 +250,20 @@ const JobCompletionProgress: React.FC<JobCompletionProgressProps> = ({ job, clas
       arrow
       placement="top"
     >
-      <Box className={className} sx={{ 
-        width: '100%', 
-        display: 'flex', 
-        alignItems: 'center', 
-        gap: 1 
-      }}>
-        <Typography variant="caption" color="textSecondary" sx={{ minWidth: 'fit-content' }}>
+      <Box
+        className={className}
+        sx={{
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+        }}
+      >
+        <Typography
+          variant="caption"
+          color="textSecondary"
+          sx={{ minWidth: "fit-content" }}
+        >
           Profile Completion
         </Typography>
         <LinearProgress
@@ -233,17 +274,20 @@ const JobCompletionProgress: React.FC<JobCompletionProgressProps> = ({ job, clas
             height: 6,
             borderRadius: 3,
             backgroundColor: theme.palette.grey[200],
-            '& .MuiLinearProgress-bar': {
+            "& .MuiLinearProgress-bar": {
               backgroundColor: getProgressColor(),
               borderRadius: 3,
             },
           }}
         />
-        <Typography variant="caption" sx={{ 
-          color: getProgressColor(), 
-          fontWeight: 500,
-          minWidth: 'fit-content'
-        }}>
+        <Typography
+          variant="caption"
+          sx={{
+            color: getProgressColor(),
+            fontWeight: 500,
+            minWidth: "fit-content",
+          }}
+        >
           {Math.round(percentage)}%
         </Typography>
       </Box>
