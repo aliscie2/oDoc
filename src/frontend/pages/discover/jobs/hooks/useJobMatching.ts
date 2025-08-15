@@ -32,47 +32,37 @@ export const useJobMatching = (currentJob: Job | null) => {
     return categoryKey === "Job" ? { Talent: null } : { Job: null };
   };
 
-  const processAIMatches = useCallback(
-    (
-      aiMatches: AIMatchResponse[],
-      candidateJobs: Job[],
-      currentJobId: string,
-    ): Match[] => {
-      const jobIds = new Set(candidateJobs.map((j) => j.id));
-      const uniqueMatches = new Map<string, Match>();
-
-      aiMatches.forEach((aiMatch) => {
-        if (
-          aiMatch.candidate_id &&
-          aiMatch.candidate_id !== currentJobId &&
-          jobIds.has(aiMatch.candidate_id)
-        ) {
-          const match: Match = {
-            job_id: aiMatch.candidate_id,
-            score: Math.max(0, Math.min(1, aiMatch.score)),
-            missmatching_skills: aiMatch.missmatching_skills || [],
-            date_updated: Number(Date.now() * 1e6),
-            is_connected: false,
-            user_id: "",
-            cover_letter: aiMatch.cover_letter || "",
-          };
-
-          const existing = uniqueMatches.get(aiMatch.candidate_id);
-          if (!existing || match.score > existing.score) {
-            uniqueMatches.set(aiMatch.candidate_id, match);
-          }
+  
+  
+  const processAIMatches = useCallback((aiMatches: AIMatchResponse[], candidateJobs: Job[], currentJobId: string): Match[] => {
+    const jobIds = new Set(candidateJobs.map(j => j.id));
+    const uniqueMatches = new Map<string, Match>();
+  
+    aiMatches.forEach(aiMatch => {
+      if (aiMatch.candidate_id && jobIds.has(aiMatch.candidate_id)) {
+        const match: Match = {
+          job_id: aiMatch.candidate_id,
+          score: Math.max(0, Math.min(1, aiMatch.score)),
+          missmatching_skills: aiMatch.missmatching_skills || [],
+          date_updated: Number(Date.now() * 1e6),
+          is_connected: false,
+          user_id: "",
+          cover_letter: aiMatch.cover_letter || "",
+        };
+  
+        const existing = uniqueMatches.get(aiMatch.candidate_id);
+        if (!existing || match.score > existing.score) {
+          uniqueMatches.set(aiMatch.candidate_id, match);
         }
-      });
+      }
+    });
+  
+    // Return ALL matches, don't filter by score here
+    // Backend will handle the filtering when displaying to user
+    return Array.from(uniqueMatches.values());
+  }, []);
 
-      const result = Array.from(uniqueMatches.values());
-      console.log(
-        "processAIMatches - result:",
-        result.map((m) => ({ job_id: m.job_id, score: m.score })),
-      );
-      return result;
-    },
-    [],
-  );
+
   const findMatches = useCallback(async () => {
     if (!currentJob || !backendActor || !aiAgent) return;
 

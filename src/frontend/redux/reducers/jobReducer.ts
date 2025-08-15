@@ -34,6 +34,7 @@ type JobAction =
       category?: string;
       required_match_score: number;
     }
+  | { type: "UPDATE_REQUIRED_MATCH_SCORE"; score: number }
   | { type: "UPDATE_MATCHING_JOBS"; matchingJobs: Job[]; matches: Match[] }
   | { type: "UPDATE_MATCHES"; matches: Match[] }
   | { type: "CLEAR_JOB_CHANGES" }
@@ -45,7 +46,7 @@ function generateDummyJob(): Job {
   return {
     id: `${Math.random().toString(36).substring(2, 9)}`,
     active: true,
-    required_match_score: 0.5, // Default to 50% match required (0-1 scale)
+    required_match_score: 0.6, // Default to 50% match required (0-1 scale)
     category: { Job: null } as Category,
     description: "",
     proficiency_level: "",
@@ -375,10 +376,49 @@ export function jobReducer(
         isChanged: true,
       };
 
-    case "IS_PROFILE_COMPELETE":
+    case "UPDATE_REQUIRED_MATCH_SCORE":
+      if (!state.currentJobId) return state;
+
+      const updatedJob = state.jobs.find((j) => j.id === state.currentJobId);
+      if (!updatedJob) return state;
+
+      const updatedJobWithScore = {
+        ...updatedJob,
+        required_match_score: action.score,
+      };
+
+      const existingChange = state.jobChanges.find(
+        (j) => j.id === state.currentJobId,
+      );
+      let updatedJobChange: JobUpdate;
+
+      if (existingChange) {
+        updatedJobChange = {
+          ...existingChange,
+          required_match_score: [action.score],
+        };
+      } else {
+        updatedJobChange = {
+          id: state.currentJobId,
+          active: [],
+          matches: [],
+          updates: [],
+          category: [],
+          required_match_score: [action.score],
+        };
+      }
+
       return {
         ...state,
-        is_profile_complete: true,
+        jobs: state.jobs.map((j) =>
+          j.id === state.currentJobId ? updatedJobWithScore : j,
+        ),
+        jobChanges: existingChange
+          ? state.jobChanges.map((j) =>
+              j.id === state.currentJobId ? updatedJobChange : j,
+            )
+          : [...state.jobChanges, updatedJobChange],
+        isChanged: true,
       };
 
     default:
