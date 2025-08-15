@@ -179,6 +179,7 @@ const JobSelector: React.FC = () => {
       key={job.id}
       value={job.id}
       onClick={() => handleJobSelect(job.id)}
+      data-testid={`job-menu-item-${job.id}`}
       sx={{ py: 1, "&:hover": { bgcolor: theme.palette.action.hover } }}
     >
       <Box sx={{ width: "100%" }}>
@@ -288,6 +289,7 @@ const JobSelector: React.FC = () => {
           open={expanded}
           onOpen={() => setExpanded(true)}
           onClose={() => setExpanded(false)}
+          data-testid="job-selector-dropdown"
           sx={{
             "& .MuiSelect-select": { p: 1, border: "none" },
             "& fieldset": { border: "none" },
@@ -329,6 +331,7 @@ const JobSelector: React.FC = () => {
             value=""
             onClick={() => handleJobSelect(null)}
             disabled={jobs.length >= MAX_JOBS}
+            data-testid="create-new-job-option"
             sx={{
               py: 1,
               borderBottom:

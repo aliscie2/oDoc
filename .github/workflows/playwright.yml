@@ -99,7 +99,7 @@ jobs:
     - name: Get installed Playwright version
       id: playwright-version
       run: |
-        VERSION=$(yarn playwright --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+        VERSION=$(npx playwright --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
         if [ -z "$VERSION" ]; then
           VERSION=$(node -p "require('./node_modules/@playwright/test/package.json').version")
         fi
@@ -114,7 +114,7 @@ jobs:
     
     - name: Install Playwright Browsers
       if: steps.playwright-cache.outputs.cache-hit != 'true'
-      run: yarn playwright install --with-deps
+      run: npx playwright install --with-deps
     
     - name: Deploy canisters for testing
       run: |

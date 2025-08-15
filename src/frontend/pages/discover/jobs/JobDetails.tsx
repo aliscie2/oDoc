@@ -15,6 +15,7 @@ import {
   Grid,
   Button,
   TextField,
+  Tooltip,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -35,6 +36,11 @@ interface JobDetailsProps {
   showEmails?: boolean;
 }
 
+interface MatchScoreComponentProps {
+  job: Job;
+  isOwner: boolean;
+}
+
 const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
   const [expandedSection, setExpandedSection] = React.useState<string | false>(
     "basic",
@@ -44,6 +50,16 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
     match?.cover_letter || "",
   );
   const [saving, setSaving] = React.useState(false);
+  const [localScore, setLocalScore] = React.useState<number>(
+    Math.round((job.required_match_score || 0.6) * 100),
+  );
+
+  const [showTooltip, setShowTooltip] = React.useState<boolean>(false);
+
+  // Sync local state when job prop changes
+  React.useEffect(() => {
+    setLocalScore(Math.round((job.required_match_score || 0.6) * 100));
+  }, [job.required_match_score]);
 
   const { profile } = useSelector((state: any) => state.filesState);
   const { backendActor } = useBackendContext();
@@ -112,7 +128,22 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
   const dispatch = useDispatch();
 
   const handleScoreChange = (newScore: number) => {
-    // dispatch({ type: "UPDATE_FIELDS", required_match_score: newScore });
+    // Show tooltip if user tries to go below 60%
+    if (newScore < 60) {
+      setShowTooltip(true);
+      // Hide tooltip after 2 seconds
+      setTimeout(() => setShowTooltip(false), 2000);
+    } else {
+      setShowTooltip(false);
+    }
+
+    // Ensure minimum of 60
+    const clampedScore = Math.max(60, newScore);
+    setLocalScore(clampedScore);
+
+    // Convert from percentage (0-100) to decimal (0-1) and ensure minimum of 0.6
+    const scoreAsDecimal = Math.max(0.6, clampedScore / 100);
+    dispatch({ type: "UPDATE_REQUIRED_MATCH_SCORE", score: scoreAsDecimal });
   };
 
   const EmailsList = () => (
@@ -459,7 +490,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
             </Typography>
 
             <Grid container spacing={{ xs: 1, sm: 3 }}>
-              {profile?.id === job.user_id && (
+              {!job.user_id||profile?.id === job.user_id ? (
                 <Box
                   sx={{
                     mb: 2,
@@ -467,34 +498,47 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
                     border: "1px solid",
                     borderColor: "divider",
                     borderRadius: 1,
+                    width: "100%",
                   }}
                 >
                   <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
-                    Required Match Score: {job.required_match_score || 0}%
+                    Required Match Score: {localScore}%
                   </Typography>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={job.required_match_score || 0}
-                    onChange={(e) =>
-                      handleScoreChange(parseInt(e.target.value))
-                    }
-                    style={{
-                      width: "100%",
-                      height: "4px",
-                      background: "#e0e0e0",
-                      borderRadius: "2px",
-                      outline: "none",
-                      WebkitAppearance: "none",
-                    }}
-                  />
+                  <Tooltip
+                    title="Minimum match score is 60%. You cannot set it lower than this value."
+                    placement="top"
+                    open={showTooltip}
+                  >
+                    <div style={{ width: "100%" }}>
+                      <input
+                        type="range"
+                        min="60"
+                        max="100"
+                        value={localScore}
+                        onChange={(e) =>
+                          handleScoreChange(parseInt(e.target.value))
+                        }
+                        style={{
+                          width: "100%",
+                          height: "4px",
+                          background: "#e0e0e0",
+                          borderRadius: "2px",
+                          outline: "none",
+                          WebkitAppearance: "none",
+                        }}
+                      />
+                    </div>
+                  </Tooltip>
+                </Box>
+              ):(
+                <Box sx={{ mb: 2, width: "100%" }}>
+                  <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+                    Required Match Score:{" "}
+                    {Math.round((job.required_match_score || 0.6) * 100)}%
+                  </Typography>
                 </Box>
               )}
-              <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
-                Required Match Score: {job.required_match_score || 0}%
-              </Typography>
-              {profile?.id !== job.user_id && <>{job.required_match_score}</>}
+              
               {basicInfoFields.map((key) => {
                 const value = job[key as keyof Job];
                 if (!value) return null;

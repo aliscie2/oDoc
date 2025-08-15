@@ -71,6 +71,7 @@ const JobSearchComponent: React.FC = () => {
 
     return (
       <Card
+        data-testid={`job-match-card-${job.id}`}
         sx={{
           transition: "transform 0.2s ease",
           "&:hover": { transform: "translateY(-1px)" },
@@ -118,6 +119,7 @@ const JobSearchComponent: React.FC = () => {
             <IconButton
               onClick={() => setOpenDialogId(job.id)}
               size="small"
+              data-testid={`job-details-button-${job.id}`}
               sx={{ color: "primary.main" }}
             >
               <Visibility />
@@ -186,7 +188,7 @@ const JobSearchComponent: React.FC = () => {
 
   if (!currentJobId || !currentJob) {
     return (
-      <Box sx={{ textAlign: "center", py: 8 }}>
+      <Box data-testid="no-job-selected" sx={{ textAlign: "center", py: 8 }}>
         <Typography variant="h6" color="text.secondary">
           Select a job to view matches
         </Typography>
@@ -209,7 +211,7 @@ const JobSearchComponent: React.FC = () => {
   return (
     <Box sx={{ py: 2 }}>
       {sortedMatches.length === 0 ? (
-        <Box sx={{ textAlign: "center", py: 8 }}>
+        <Box data-testid="no-matches-found" sx={{ textAlign: "center", py: 8 }}>
           <Warning sx={{ fontSize: 48, color: "text.secondary", mb: 2 }} />
           <Typography variant="h6" color="text.secondary" gutterBottom>
             No matches found
@@ -217,12 +219,13 @@ const JobSearchComponent: React.FC = () => {
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
             Try adjusting your job criteria or check back later
           </Typography>
-          <Button variant="outlined" onClick={findMatches}>
+          <Button variant="outlined" onClick={findMatches} data-testid="refresh-matches-button">
             Refresh Matches
           </Button>
         </Box>
       ) : (
         <Box
+          data-testid="job-matches-list"
           sx={{
             maxHeight: "400px",
             overflowY: "auto",

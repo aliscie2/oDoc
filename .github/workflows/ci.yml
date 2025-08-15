@@ -139,7 +139,7 @@ jobs:
       
       - name: Install Playwright Browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: yarn playwright install --with-deps
+        run: npx playwright install --with-deps
         
       - name: Start frontend server for testing
         run: |

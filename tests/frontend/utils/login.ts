@@ -1,7 +1,5 @@
-import { Page } from "@playwright/test";
-
-export const loginAs = async (identityNumber: string, page: Page) => {
-  await page.goto("/");
+export const loginAs = async (identityNumber: string, page) => {
+  await page.goto("http://localhost:5173/");
   const page1Promise = page.waitForEvent("popup");
   await page
     .getByRole("button", { name: "Internet Identity Login with" })
@@ -20,7 +18,7 @@ export const loginAs = async (identityNumber: string, page: Page) => {
 };
 
 export const registerUser = async (page) => {
-  await page.goto("/");
+  await page.goto("http://localhost:5173/");
   const page1Promise = page.waitForEvent("popup");
   await page
     .getByRole("button", { name: "Internet Identity Login with" })
@@ -45,8 +43,4 @@ export const registerUser = async (page) => {
     .getByRole("textbox", { name: "Bio" })
     .fill(Math.random().toString(36).substring(7));
   await page.getByRole("button", { name: "Complete Registration" }).click();
-
-  // Wait for page reload after registration
-  await page.waitForLoadState("networkidle");
-  await page.waitForTimeout(2000); // Additional wait for app initialization
 };
