@@ -39,49 +39,68 @@ fn get_my_jobs() -> GetJobs {
         matching_jobs,
     }
 }
-
 fn search_matches(skills: &Vec<String>, category: Category) -> Vec<Job> {
-    let mut ids: Vec<String> = Vec::new();
-    if category == Category::Job {
-        ids = inverted_index::search_for_job(skills.clone())
+    let ids = if category == Category::Job {
+        inverted_index::search_for_job(skills.clone())
     } else {
-        ids = inverted_index::search_for_talent(skills.clone())
-    }
+        inverted_index::search_for_talent(skills.clone())
+    };
     
-    // Get jobs and filter by active status and exclude current user
+    ic_cdk::println!("DEBUG search_matches: found {} IDs from inverted index", ids.len());
+    
     let caller_id = ic_cdk::caller().to_string();
-    Job::get_jobs_by_ids(ids)
+    let jobs = Job::get_jobs_by_ids(ids);
+    ic_cdk::println!("DEBUG search_matches: retrieved {} jobs from IDs", jobs.len());
+    
+    let filtered: Vec<Job> = jobs
         .into_iter()
-        .filter(|job| job.user_id != caller_id && job.active)
-        .collect()
+        .filter(|job| {
+            let is_different_user = job.user_id != caller_id;
+            let is_active = job.active;
+            ic_cdk::println!("DEBUG search_matches: job {} - different_user: {}, active: {}", job.id, is_different_user, is_active);
+            is_different_user && is_active
+        })
+        .collect();
+    
+    ic_cdk::println!("DEBUG search_matches: after filtering: {} jobs", filtered.len());
+    filtered
 }
 
 #[query]
 fn get_matches(current_job_id: String, skills: Vec<String>, category: Category) -> Vec<Job> {
-    let curr = Job::get(&current_job_id);
-    let all_matching_jobs = search_matches(&skills, category);
+   ic_cdk::println!("DEBUG get_matches: current_job_id={}, skills={:?}, category={:?}", current_job_id, skills, category);
+   
+   let current_job = Job::get(&current_job_id);
+   let all_matching_jobs = search_matches(&skills, category);
 
-    if curr.is_none() {
-        return filter_and_limit_jobs(all_matching_jobs, &skills, None);
-    }
+   ic_cdk::println!("DEBUG get_matches: found {} matching jobs from search", all_matching_jobs.len());
 
-    let current_job = curr.unwrap();
-    
-    // Filter jobs based on saved matches and update times
-    let filtered_jobs: Vec<Job> = all_matching_jobs
-        .into_iter()
-        .filter(|job| should_include_job(job, &current_job))
-        .collect();
-    filter_and_limit_jobs(filtered_jobs, &skills, Some(&current_job))
+   let filtered_jobs: Vec<Job> = if let Some(ref curr_job) = current_job {
+       ic_cdk::println!("DEBUG get_matches: current job has {} existing matches", curr_job.matches.len());
+       let filtered: Vec<Job> = all_matching_jobs
+           .into_iter()
+           .filter(|job| should_include_job(job, curr_job))
+           .collect();
+       ic_cdk::println!("DEBUG get_matches: after filtering existing matches: {} jobs", filtered.len());
+       filtered
+   } else {
+       ic_cdk::println!("DEBUG get_matches: current job not found, using all matching jobs");
+       all_matching_jobs
+   };
+
+   let final_result = filter_and_limit_jobs(filtered_jobs, &skills, current_job.as_ref());
+   ic_cdk::println!("DEBUG get_matches: final result: {} jobs", final_result.len());
+   final_result
 }
 
+
 fn should_include_job(job: &Job, current_job: &Job) -> bool {
-    // Check if this job was already saved in matches
-    if let Some(saved_match) = current_job.matches.iter().find(|m| m.job_id == job.id) {
-        // If the job was updated after it was saved in matches, include it again
-        job.date_updated > saved_match.date_updated
+    // Check if this job is already in matches
+    if let Some(existing_match) = current_job.matches.iter().find(|m| m.job_id == job.id) {
+        // If the job has been updated since it was last matched, include it again
+        job.date_updated > existing_match.date_updated
     } else {
-        // Not in saved matches, so include it
+        // Job is not in matches, so include it
         true
     }
 }

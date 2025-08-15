@@ -112,6 +112,12 @@ This ensures that saving matches doesn't cause the job to appear as "updated" to
 **Match Operations** (do NOT update date_updated):
 - Saving processed matches with AI-calculated scores
 
+**⚠️ CRITICAL: Complete Match Set Required**
+- Backend replaces all existing matches with provided matches
+- Always include both old matches AND new matches in updates
+- Example: 10 saved + 10 new = send all 20 matches
+- Sending only new matches will overwrite previous ones
+
 ### get_my_jobs()
 **Purpose**: Get user's jobs with filtered matches
 
@@ -155,6 +161,7 @@ This ensures that saving matches doesn't cause the job to appear as "updated" to
    ```
    Frontend processes match with AI → Calculates score: 0.75
    Job Creator calls update_job() with matches: [{score: 0.75, ...}]
+   ⚠️ IMPORTANT: Send complete match set, not just new matches
    ```
 
 4. **State After Saving**:
@@ -172,7 +179,7 @@ This ensures that saving matches doesn't cause the job to appear as "updated" to
    ```
    Job Creator calls get_matches() → Returns updated Talent User profile
    Frontend processes again → New score: 0.85
-   Job Creator saves new match → get_matches() returns empty again
+   Job Creator saves ALL matches (old + new) → get_matches() returns empty again
    ```
 
 ## Troubleshooting
@@ -203,6 +210,25 @@ The system logs detailed information for debugging:
 - Update detection decisions
 - Score validation results
 - Profile timestamp comparisons
+
+## Testing Strategy
+
+### Comprehensive Integration Test
+The system includes a single comprehensive test that covers the complete workflow:
+
+1. **Setup Phase**: Create 20 users with identical skill sets (ICP, Rust, TypeScript)
+2. **Job Creation**: Create one job requiring ICP and Rust skills
+3. **First Batch**: Get 10 matches, process with AI scores, save to backend
+4. **Second Batch**: Get next 10 matches, combine with previous matches, save all
+5. **Verification**: Confirm no more matches available
+6. **Update Detection**: Update one talent profile, verify it appears in new matches
+
+This approach tests:
+- Parallel user creation and registration
+- Match discovery and pagination (10 results per batch)
+- Complete match set handling
+- Update detection and re-matching workflow
+- AI score integration and validation
 
 ## Performance Considerations
 

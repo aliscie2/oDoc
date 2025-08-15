@@ -120,8 +120,8 @@ pub fn search_for_job(keys: Vec<String>) -> Vec<String> {
                 .then_with(|| a.2.cmp(&b.2)) // Earlier position (latest added) first
         });
 
-        // Return top 10 IDs
-        results.into_iter().take(10).map(|(id, _, _)| id).collect()
+        // Return top 50 IDs to allow for pagination
+        results.into_iter().take(50).map(|(id, _, _)| id).collect()
     })
 }
 
@@ -197,7 +197,7 @@ pub fn search_for_talent(keys: Vec<String>) -> Vec<String> {
                 .then_with(|| a.2.cmp(&b.2)) // Earlier position (latest added) first
         });
 
-        // Return top 10 IDs
-        results.into_iter().take(10).map(|(id, _, _)| id).collect()
+        // Return top 50 IDs to allow for pagination
+        results.into_iter().take(50).map(|(id, _, _)| id).collect()
     })
 }
