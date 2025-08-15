@@ -21,7 +21,7 @@ impl Job {
             date_updated: now,
             active: false,
             matches: Vec::new(),
-            required_match_score: 0.0,
+            required_match_score: 0.0, // Default to 0.0 (include all matches)
             category: Category::Job,
             links: Vec::new(),
             trust_score: String::new(),
@@ -55,27 +55,7 @@ impl Job {
     // When catagory is Job then skills are skills you have
     // mismatches are list of skillks required in a job but not found in talent
 
-    pub fn get_matches(skills: Vec<String>, category: Category) -> Vec<Job> {
-        crate::JOBS_MATCH_STORE.with(|store| {
-            let mut matches: Vec<(usize, Job)> = store
-                .borrow()
-                .iter()
-                .filter(|(_, job)| {
-                    job.user_id != caller().to_string() && job.category == category && job.active
-                }) // Added active check
-                .map(|(_, job)| {
-                    let mismatches = job.get_mismatches(skills.clone());
-                    (mismatches.len(), job.clone())
-                })
-                .collect();
 
-            // Sort by mismatch count (ascending)
-            matches.sort_by(|a, b| a.0.cmp(&b.0));
-
-            // Take top 10 and return just the jobs
-            matches.into_iter().map(|(_, job)| job).collect()
-        })
-    }
 
     // fn create_matched_candidate(&self, candidate: &Job, score: f32) -> Job {
     //     let mut matched_candidate = candidate.clone();
@@ -149,7 +129,7 @@ impl Job {
                     updated_job.proficiency_level = String::new();
                     updated_job.contacts = Vec::new();
                     updated_job.active = false;
-                    updated_job.required_match_score = 0.0;
+                    updated_job.required_match_score = 0.0; // Default to 0.0 (include all matches)
                     updated_job.date_updated = ic_cdk::api::time() as f64;
                     updated_job.matches = Vec::new();
                     updated_job.active = false;
@@ -202,21 +182,35 @@ impl Job {
                 None => return Err("Job not found".to_string()),
             };
 
-            job.matches = matches;
+            // Validate all match scores are in 0.0-1.0 range
+            for match_item in &matches {
+                if match_item.score < 0.0 || match_item.score > 1.0 {
+                    return Err("Match score must be between 0.0 and 1.0".to_string());
+                }
+            }
+
+            // All scores are valid, use them directly (no normalization needed)
+            let validated_matches: Vec<Match> = matches;
+
+            job.matches = validated_matches;
+
+            
             store.insert(job_id.clone(), job.clone());
 
+            // Create reciprocal matches
             for match_item in &job.matches {
                 if let Some(mut other_job) = store.get(&match_item.job_id) {
                     let reciprocal_match = Match {
-                        score: match_item.score,
+                        score: match_item.score, // Already normalized
                         job_id: job_id.clone(),
-                        user_id: job.user_id.clone(),
+                        user_id: other_job.user_id.clone(),
                         missmatching_skills: match_item.missmatching_skills.clone(),
                         date_updated: ic_cdk::api::time() as f64,
                         is_connected: match_item.is_connected,
                         cover_letter: match_item.cover_letter.clone(),
                     };
 
+                    // Remove any existing reciprocal match and add the new one
                     other_job.matches.retain(|m| m.job_id != job_id);
                     other_job.matches.push(reciprocal_match);
                     store.insert(match_item.job_id.clone(), other_job);

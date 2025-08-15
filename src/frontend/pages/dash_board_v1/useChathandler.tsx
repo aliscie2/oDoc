@@ -28,7 +28,6 @@ export const useChatHandler = () => {
   const handleCalendarCase = async (message, parsed, isQuick) => {
     const now = Date.now() * 1e6;
     const prompt = `
-      ${PROMPTS.CALENDAR}
       Current time: ${TimeFormatter.formatTime(now)} ${TimeFormatter.formatDate(now)}
       
       Current Calendar: ${CalendarFormatter.formatCalendarForPrompt(calendar)}
@@ -41,7 +40,7 @@ export const useChatHandler = () => {
     if (import.meta.env.VITE_DFX_NETWORK === "local") {
       eventRes = mockCalendarAIResponse(calendar, message.split("//")[1]);
     } else {
-      const calendarRes = await aiAgent.sendMessage(prompt);
+      const calendarRes = await aiAgent.sendMessage(prompt, false, PROMPTS.CALENDAR);
       eventRes = textToJson(calendarRes).extractedData;
     }
 
@@ -173,9 +172,8 @@ export const useChatHandler = () => {
         
         const classifyMessageRes = await aiAgent.sendMessage(`
         current classifier: ${location.pathname =="/"?"Job":location.pathname}
-        ${PROMPTS.CLASSIFY}
         Message:${compact_message}
-        `);
+        `, true, PROMPTS.CLASSIFY);
         console.log({XX: location.pathname =="/"?"Job":location.pathname})
         parsed = textToJson(classifyMessageRes).extractedData;
       }

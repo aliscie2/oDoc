@@ -18,8 +18,6 @@ const JobsPage: React.FC = () => {
   const currentJobRef = useRef<Job | undefined>(undefined);
   const dispatch = useDispatch();
 
-  const [isProfileDone, setIsProfileDone] = useState<boolean>(false);
-
   useEffect(() => {
     currentJobRef.current = jobs.find((job: Job) => job.id === currentJobId);
   }, [currentJobId, jobs]);

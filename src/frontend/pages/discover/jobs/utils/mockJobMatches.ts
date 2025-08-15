@@ -1,81 +1,74 @@
 import { Job, Match } from "$/declarations/backend/backend.did";
 
-interface Candidate {
-  id?: string;
-  user_id?: string;
-  name?: string;
-  skills?: string[];
-  experience_years?: number;
-  education?: string[];
-  certifications?: string[];
-}
-
 interface MockJobMatchResponse {
   matches: Array<Match>;
 }
 
 export function mockJobMatchResponse(
-  potentialMatches: Candidate[],
+  potentialMatches: Job[],
   currentJob: Job,
 ): MockJobMatchResponse {
+  console.log("mockJobMatchResponse - input jobs:", potentialMatches.map(j => ({ id: j.id, title: j.job_titles?.[0] })));
+  
   const matches: Match[] = potentialMatches
-    .map((candidate) => {
-      // Skills match calculation
-      const candidateSkills = new Set(candidate.skills || []);
+    .map((candidateJob) => {
+      const candidateSkills = new Set(candidateJob.skills || []);
       const jobSkills = currentJob.skills || [];
-      const matchingSkills = jobSkills.filter((skill) =>
-        candidateSkills.has(skill),
-      );
-      const skillsScore = (matchingSkills.length / jobSkills.length) * 40;
+      const matchingSkills = jobSkills.filter((skill) => candidateSkills.has(skill));
+      
+      // Skills Assessment (0-6 points)
+      let skillScore = 3.0; // baseline if no skills
+      if (candidateJob.skills && candidateJob.skills.length > 0) {
+        skillScore = (matchingSkills.length / candidateJob.skills.length) * 6;
+      }
+      
+      // Experience Assessment (0-2 points) - baseline 1.0
+      const experienceScore = 1.0;
+      
+      // Education/Certs (0-1.5 points) - baseline 0.75
+      const educationScore = 0.75;
+      
+      // Profile Completeness (0-0.5 points)
+      let completenessScore = 0.25;
+      if (candidateJob.skills?.length > 0 && candidateJob.job_titles?.length > 0) {
+        completenessScore = 0.5;
+      }
+      
+      const totalScore = skillScore + experienceScore + educationScore + completenessScore;
+      const clampedScore = Math.max(0, Math.min(10, totalScore));
 
-      // Experience relevance (assuming candidate has experience_years field)
-      const experienceScore = Math.min(
-        (candidate.experience_years || 0) * 5,
-        20,
-      );
+      const missingSkills = jobSkills.filter((skill) => !candidateSkills.has(skill));
 
-      // Education match (assuming candidate has education field)
-      const hasRelevantDegree =
-        candidate.education?.some((edu) =>
-          currentJob.education?.some((reqEdu) =>
-            edu.toLowerCase().includes(reqEdu.toLowerCase()),
-          ),
-        ) || false;
-      const educationScore = hasRelevantDegree ? 20 : 0;
+      const coverLetter = `## 🎯 Why I'm Interested
 
-      // Certifications match
-      const candidateCerts = new Set(candidate.certifications || []);
-      const jobCerts = currentJob.certifications || [];
-      const matchingCerts = jobCerts.filter((cert) => candidateCerts.has(cert));
-      const certsScore =
-        jobCerts.length > 0 ? (matchingCerts.length / jobCerts.length) * 20 : 0;
+I'm excited about this ${currentJob.job_titles?.[0] || "opportunity"} role!
 
-      const totalScore = Math.min(
-        skillsScore + experienceScore + educationScore + certsScore,
-        10,
-      );
+## 💪 My Strengths
+${matchingSkills.length > 0 ? 
+  `- ${matchingSkills.map(skill => `✅ **${skill}**`).join('\n- ')}` : 
+  '- 🌟 Eager to learn and adapt to new technologies'}
 
-      // Missing skills
-      const missingSkills = jobSkills.filter(
-        (skill) => !candidateSkills.has(skill),
-      );
+${missingSkills.length > 0 ? `## 🚀 Areas to Explore
+- ${missingSkills.map(skill => `📚 **${skill}** - Ready to discuss experience or learning path`).join('\n- ')}` : ''}
 
-      // Generate basic cover letter
-      const coverLetter = `Dear Hiring Manager,
+## 🤝 Let's Connect
+I'd love to discuss how my background aligns with your needs!
 
-I am excited to apply for the ${currentJob.job_titles?.[0] || "position"}. With ${candidate.experience_years || 0} years of experience and skills in ${matchingSkills.slice(0, 3).join(", ")}, I believe I would be a great fit for your team.
-
-Best regards,
-${candidate.name || "Candidate"}`;
+Best regards,  
+Candidate`;
 
       return {
-        candidate_id: candidate.id || candidate.user_id || "",
+        user_id: candidateJob.user_id || "",
+        job_id: candidateJob.id,
         missmatching_skills: missingSkills,
-        score: Math.round(totalScore * 10) / 10,
+        score: clampedScore / 10, // Convert back to 0-1 for your system
         cover_letter: coverLetter,
+        date_updated: Number(Date.now() * 1e6),
+        is_connected: false,
       };
     })
-    .filter((match) => match.score >= (currentJob.required_match_score || 0));
+    .filter((match) => (match.score * 10) >= ((currentJob.required_match_score || 0) * 10));
 
-  return { matches: matches };
+  console.log("mockJobMatchResponse - final matches:", matches.map(m => ({ job_id: m.job_id, score: m.score })));
+  return { matches };
 }

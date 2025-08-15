@@ -28,7 +28,7 @@ export const BUILD_JOB_PROMPT = `You are a job management assistant. Analyze the
 📦 **Response Format**:
 \`\`\`json
 {
-  "required_match_score": 9.0,
+  "required_match_score": 0.9,
   "feedback": "📄 Please include your certificates, education, and experience.\n\n🔧 List your technical skills clearly.",
   "updates": [
     {
@@ -42,12 +42,14 @@ export const BUILD_JOB_PROMPT = `You are a job management assistant. Analyze the
 }
 \`\`\`
 
+**Note**: \`required_match_score\` should be between 0.0 and 1.0 (e.g., 0.9 = 90% match required).
+
 ---
 
 💡 **Example Response 1**:
 \`\`\`json
 {
-  "required_match_score": 6.0,
+  "required_match_score": 0.6,
   "feedback": "🛠️ Please provide a list of your skills.",
   "updates": [
     {
@@ -66,12 +68,12 @@ export const BUILD_JOB_PROMPT = `You are a job management assistant. Analyze the
 💡 **Example Response 2**: (all values are a list, all fields are string)
 \`\`\`json
 {
-  "required_match_score": 7.0,
+  "required_match_score": 0.7,
   "feedback": "🙌 Thank you for the information. We’re building your profile!",
   "updates": [
     {
       "field": "trust_score",
-      "values": ["8.5"]
+      "values": ["0.85"]
     },
     {
       "field": "trust_note",
@@ -108,10 +110,10 @@ export const BUILD_JOB_PROMPT = `You are a job management assistant. Analyze the
   "job_titles": string[],
   "proficiency_level": string,  // "Beginner", "Intermediate", "Advanced"
   "certifications": string[],
-  "required_match_score": number,
+  "required_match_score": number, // 0-1 scale (e.g., 0.7 = 70% match required)
   "skills": string[],
   "trust_note": string,         // Investigator-style notes: inconsistencies, red flags, etc.
-  "trust_score": string,        // "9.0" out of 10, based on overall trustworthiness
+  "trust_score": string,        // "0.9" (0-1 scale), based on overall trustworthiness
   "emails": string[],
   "contacts": string[]          // e.g. ["https://t.me/username", "x.com/username"]
 }

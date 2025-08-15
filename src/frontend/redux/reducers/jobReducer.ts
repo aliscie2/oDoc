@@ -45,7 +45,7 @@ function generateDummyJob(): Job {
   return {
     id: `${Math.random().toString(36).substring(2, 9)}`,
     active: true,
-    required_match_score: 0,
+    required_match_score: 0.5, // Default to 50% match required (0-1 scale)
     category: { Job: null } as Category,
     description: "",
     proficiency_level: "",

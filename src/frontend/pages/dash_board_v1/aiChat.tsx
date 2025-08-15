@@ -6,8 +6,8 @@ import {
   IconButton,
   TextField,
   Typography,
-  useTheme,
   useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -15,9 +15,9 @@ import { useNavigate } from "react-router-dom";
 
 import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
 import AICreditsComponent from "./AICreditsCompnent";
+import MarkdownMessage from "./markDownMessageRdnder";
 import { undoCalendarAction, undoJobAction } from "./reverseAction";
 import { useChatHandler } from "./useChathandler";
-import MarkdownMessage from "./markDownMessageRdnder";
 
 // Types
 interface ChatMessage {
@@ -44,7 +44,7 @@ interface OnboardingItem {
 const ONBOARDING_DATA: OnboardingItem[] = [
   {
     id: "job-search",
-    text: "👋 Welcome! I'm here to help you find the perfect opportunities or connect you with top talent. \n\n**Let's get started:**\n- Are you looking for your next career move? \n- Or are you hiring and need to find the right candidates?\n\nTell me about your goals, preferred roles, skills, or what kind of talent you're seeking. The more details you share, the better I can assist you!",
+    text: "👋 Welcome! I'm here to help you find the perfect opportunities or connect you with matching jobs or talent. \n\n**Let's get started:**\n- Are you looking for your next career move? \n- Or are you hiring and need to find the right candidates?\n\nTell me about your goals, preferred roles, skills, or what kind of talent you're seeking. The more details you share, the better I can assist you!",
     condition: (jobs: any[]) => jobs.length === 0,
     key: "jobOnboardingShown",
   },
@@ -440,6 +440,7 @@ const AIInput = ({
             }}
           />
           <IconButton
+            id='submitAIMessage'
             disabled={isLoading || !message.trim()}
             onClick={handleSend}
             size={shouldBeExpanded ? "medium" : "small"}

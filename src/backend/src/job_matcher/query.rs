@@ -1,4 +1,5 @@
 use ic_cdk_macros::query;
+use ic_cdk::caller;
 
 use crate::job_matcher::inverted_index;
 
@@ -46,7 +47,13 @@ fn search_matches(skills: &Vec<String>, category: Category) -> Vec<Job> {
     } else {
         ids = inverted_index::search_for_talent(skills.clone())
     }
+    
+    // Get jobs and filter by active status and exclude current user
+    let caller_id = ic_cdk::caller().to_string();
     Job::get_jobs_by_ids(ids)
+        .into_iter()
+        .filter(|job| job.user_id != caller_id && job.active)
+        .collect()
 }
 
 #[query]
@@ -59,23 +66,20 @@ fn get_matches(current_job_id: String, skills: Vec<String>, category: Category) 
     }
 
     let current_job = curr.unwrap();
-
-    // Remove already saved matches (existing logic)
-    let unsaved_jobs: Vec<Job> = all_matching_jobs
+    
+    // Filter jobs based on saved matches and update times
+    let filtered_jobs: Vec<Job> = all_matching_jobs
         .into_iter()
         .filter(|job| should_include_job(job, &current_job))
         .collect();
-
-    filter_and_limit_jobs(unsaved_jobs, &skills, Some(&current_job))
+    filter_and_limit_jobs(filtered_jobs, &skills, Some(&current_job))
 }
 
 fn should_include_job(job: &Job, current_job: &Job) -> bool {
     // Check if this job was already saved in matches
     if let Some(saved_match) = current_job.matches.iter().find(|m| m.job_id == job.id) {
-        // Include if either job was updated after we saved the match
-        // OR if current job was updated (which might affect matching criteria)
+        // If the job was updated after it was saved in matches, include it again
         job.date_updated > saved_match.date_updated
-            || current_job.date_updated > saved_match.date_updated
     } else {
         // Not in saved matches, so include it
         true
@@ -130,6 +134,7 @@ fn has_good_skill_overlap(job: &Job, current_skills: &Vec<String>) -> bool {
 }
 
 fn is_match_score_good_enough(saved_match: &Match, job: &Job) -> bool {
+    // Direct comparison since all scores are now validated to be in 0.0-1.0 range
     saved_match.score >= job.required_match_score
 }
 

@@ -85,6 +85,10 @@ fn update_job(updates: Vec<JobUpdate>, ai_credits: Option<f32>) -> Result<(), St
             needs_update = true;
         }
         if let Some(score) = update.required_match_score {
+            // Strict validation: only accept scores in 0.0-1.0 range
+            if score < 0.0 || score > 1.0 {
+                return Err("Required match score must be between 0.0 and 1.0".to_string());
+            }
             job.required_match_score = score;
             needs_update = true;
         }

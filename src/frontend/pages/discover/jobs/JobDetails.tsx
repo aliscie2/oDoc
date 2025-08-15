@@ -25,7 +25,7 @@ import EmailIcon from "@mui/icons-material/Email";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import { Link } from "react-router-dom";
 import { formatRelativeTime } from "@/utils/time";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useBackendContext } from "@/contexts/BackendContext";
 import MarkdownMessage from "@/pages/dash_board_v1/markDownMessageRdnder";
 
@@ -83,6 +83,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
   const basicInfoFields = Object.keys(job).filter(
     (key) =>
       !Array.isArray(job[key as keyof Job]) &&
+      key !== "required_match_score" &&
       key !== "category" &&
       key !== "date_created" &&
       key !== "date_updated" &&
@@ -108,6 +109,12 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
     (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
       setExpandedSection(isExpanded ? panel : false);
     };
+    const dispatch = useDispatch();
+
+
+    const handleScoreChange = (newScore: number) => {
+      // dispatch({ type: "UPDATE_FIELDS", required_match_score: newScore });
+     };
 
   const EmailsList = () => (
     <Card
@@ -451,7 +458,28 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
             >
               Job Details
             </Typography>
+
+
             <Grid container spacing={{ xs: 1, sm: 3 }}>
+
+            {profile?.id === job.user_id && (
+  <Box sx={{ mb: 2, p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+    <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>Required Match Score: {job.required_match_score || 0}%</Typography>
+    <input
+      type="range"
+      min="0"
+      max="100"
+      value={job.required_match_score || 0}
+      onChange={(e) => handleScoreChange(parseInt(e.target.value))}
+      style={{ width: '100%', height: '4px', background: '#e0e0e0', borderRadius: '2px', outline: 'none', WebkitAppearance: 'none' }}
+    />
+  </Box>
+)}
+<Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>Required Match Score: {job.required_match_score || 0}%</Typography>
+{profile?.id !== job.user_id &&<>
+
+{job.required_match_score 
+}</>}
               {basicInfoFields.map((key) => {
                 const value = job[key as keyof Job];
                 if (!value) return null;

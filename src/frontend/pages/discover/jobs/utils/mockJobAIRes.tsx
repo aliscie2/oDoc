@@ -12,9 +12,9 @@ export function mockJobAIResponse(
 
   // Initialize response structure
   const response = {
-    required_match_score: currentJob?.required_match_score || 7.0,
+    required_match_score: currentJob?.required_match_score || 0.7, // 0-1 scale (0.7 = 70%)
     feedback: "",
-    updates: [],
+    updates: [] as Array<{ field: string; values: string[] }>,
     category: category.toLowerCase() == "job" ? "Job" : "Talent",
     done: false,
     isBreakingChanges: false,
@@ -278,7 +278,7 @@ export function mockJobAIResponse(
   return response;
 }
 
-function inferJobTitles(description, skills) {
+function inferJobTitles(description: string, skills: string[]) {
   const titles = [];
   const desc = description.toLowerCase();
 
@@ -322,16 +322,16 @@ function inferJobTitles(description, skills) {
   // Check description for job title keywords
   Object.keys(titlePatterns).forEach((keyword) => {
     if (desc.includes(keyword)) {
-      titles.push(...titlePatterns[keyword]);
+      titles.push(...titlePatterns[keyword as keyof typeof titlePatterns]);
     }
   });
 
   return [...new Set(titles)].slice(0, 3); // Return unique titles, max 3
 }
 
-function assessTrust(currentJob, updates) {
-  let score = 7.0;
-  const notes = [];
+function assessTrust(currentJob: Job | undefined, updates: Array<{ field: string; values: string[] }>) {
+  let score = 0.7; // Changed to 0-1 scale (0.7 = 70%)
+  const notes: string[] = [];
 
   // Check for email presence
   const hasEmail =
@@ -339,7 +339,7 @@ function assessTrust(currentJob, updates) {
     updates.some((u) => u.field === "emails" && u.values.length > 0);
 
   if (!hasEmail) {
-    score -= 1.0;
+    score -= 0.1; // Changed to 0-1 scale
     notes.push("No email provided");
   }
 
@@ -348,7 +348,7 @@ function assessTrust(currentJob, updates) {
     currentJob?.description || updates.some((u) => u.field === "description");
 
   if (!hasDescription) {
-    score -= 0.5;
+    score -= 0.05; // Changed to 0-1 scale
     notes.push("No description provided");
   }
 
@@ -358,7 +358,7 @@ function assessTrust(currentJob, updates) {
     updates.some((u) => u.field === "skills" && u.values.length > 0);
 
   if (!hasSkills) {
-    score -= 1.0;
+    score -= 0.1; // Changed to 0-1 scale
     notes.push("No skills listed");
   }
 
@@ -368,19 +368,19 @@ function assessTrust(currentJob, updates) {
     updates.some((u) => u.field === "contacts" && u.values.length > 0);
 
   if (hasContacts) {
-    score += 0.5;
+    score += 0.05; // Changed to 0-1 scale
     notes.push("Has contact information");
   }
 
   const trustNote = notes.length > 0 ? notes.join(", ") : "Profile looks good";
 
   return {
-    score: Math.max(1.0, Math.min(10.0, score)).toString(),
+    score: Math.max(0.1, Math.min(1.0, score)).toString(), // Changed to 0-1 scale
     note: trustNote,
   };
 }
 
-function isProfileComplete(currentJob, updates) {
+function isProfileComplete(currentJob: Job | undefined, updates: Array<{ field: string; values: string[] }>) {
   // Check essential fields
   const hasEmail =
     currentJob?.emails?.length > 0 ||
@@ -396,7 +396,7 @@ function isProfileComplete(currentJob, updates) {
   return hasEmail && hasSkills && hasDescription;
 }
 
-function analyzeGeneralQuery(query, currentJob) {
+function analyzeGeneralQuery(query: string, currentJob: Job | undefined) {
   const q = query.toLowerCase();
 
   if (q.includes("help") || q.includes("how") || q.includes("what")) {
