@@ -41,6 +41,7 @@ add_balance:
 	dfx canister --network ic balance
 
 topup_cycles:
+	dfx identity use default
 	dfx ledger account-id --network=ic
 	#then send icp to ur address
 	dfx ledger balance --network=ic
@@ -122,6 +123,3 @@ test-e2e:
 dummy_deposit:
 	# replace lqv7v-5z3de-ldfue-z4rrf-u6opp-npwa5-e2us3-fkbx7-yjtwu-gh7x3-yae with the wanted user
 	dfx canister --identity minter call ckusdc_ledger icrc1_transfer '(record {to = record { owner = principal "rhlwg-3ybpc-uxtly-55zob-5cyjy-u5jmz-4zgjk-n7po6-hz5rl-4xeam-fae"; }; amount = 300_000_000; })'
-
-test-by-name:
-	npx vitest run -t "name of test"
