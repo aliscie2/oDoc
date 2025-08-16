@@ -253,7 +253,7 @@ const ChatList = memo(
                     <Avatar
                       src={
                         isOdoc
-                          ? "/public/logo.png"
+                          ? "/logo.png"
                           : convertToBlobLink(otherUser?.photo)
                       }
                     >

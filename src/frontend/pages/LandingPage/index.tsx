@@ -323,7 +323,7 @@ export default function OdocLandingPage() {
       title: "AI Job Matching System",
       icon: (
         <img
-          src={"/public/jobs.png"}
+          src={"/jobs.png"}
           style={{
             transform: "scaleX(-1)",
             width: isMobile ? "150px" : "500px",
@@ -387,7 +387,7 @@ export default function OdocLandingPage() {
       reversed: true,
       icon: (
         <img
-          src={"/public/agreement.png"}
+          src={"/agreement.png"}
           style={{ width: isMobile ? "150px" : "500px", objectFit: "contain" }}
         />
       ),
@@ -454,7 +454,7 @@ export default function OdocLandingPage() {
       title: "Automated Tasks Manager",
       icon: (
         <img
-          src={"/public/all-in-on.png"}
+          src={"/all-in-on.png"}
           style={{
             transform: "scaleX(-1)",
             width: isMobile ? "150px" : "500px",
@@ -522,7 +522,7 @@ export default function OdocLandingPage() {
       reversed: true,
       icon: (
         <img
-          src={"/public/calendar.png"}
+          src={"/calendar.png"}
           style={{
             width: isMobile ? "150px" : "500px",
             objectFit: "contain",
@@ -618,7 +618,7 @@ export default function OdocLandingPage() {
       title: "Team Spaces with AI",
       icon: (
         <img
-          src={"/public/teamspaces.png"}
+          src={"/teamspaces.png"}
           style={{
             transform: "scaleX(-1)",
             width: isMobile ? "150px" : "500px",

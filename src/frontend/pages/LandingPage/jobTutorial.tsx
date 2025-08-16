@@ -93,7 +93,7 @@ const ProductTour = () => {
     { name: "moveCursorToConnect", duration: 1500 },
     { name: "clickConnect", duration: 800 },
     { name: "showConnectSuccess", duration: 2000 },
-    { name: "showFinalPopup", duration: 3000 },
+    { name: "showFinalPopup", duration: 5000 },
     { name: "reset", duration: 1000 },
   ];
 

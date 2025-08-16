@@ -79,7 +79,7 @@ const EcosystemSection = () => {
               }}
             >
               <img
-                src={"/public/jobs.png"}
+                src={"/jobs.png"}
                 alt="ICP Ecosystem Growth"
                 style={{
                   width: "100%",
@@ -223,127 +223,6 @@ const EcosystemSection = () => {
               </Stack>
             </Box>
           </Grid>
-        </Grid>
-      </Container>
-    </Box>
-  );
-};
-
-const HowItWorksSection = () => {
-  const steps = [
-    { name: "Show Chat", duration: 800 },
-    { name: "Expand Chat", duration: 600 },
-    { name: "Type Message 1", duration: 2000 },
-    { name: "Send Message 1", duration: 600 },
-    { name: "Type Message 2", duration: 2000 },
-    { name: "Send Message 2", duration: 600 },
-    { name: "Show Matches", duration: 1000 },
-    { name: "Show Success", duration: 1500 },
-    { name: "Reset", duration: 500 },
-  ];
-
-  return (
-    <Box sx={{ mb: 10 }}>
-      <Container maxWidth="lg">
-        <Typography
-          variant="h3"
-          textAlign="center"
-          sx={{
-            fontWeight: 700,
-            mb: 2,
-            fontSize: { xs: "2rem", md: "2.5rem" },
-            letterSpacing: "-0.01em",
-          }}
-        >
-          How It Works
-        </Typography>
-        <Typography
-          variant="h6"
-          textAlign="center"
-          color="text.secondary"
-          sx={{
-            mb: 6,
-            maxWidth: 600,
-            mx: "auto",
-            fontWeight: 400,
-          }}
-        >
-          Four simple steps to your next career milestone
-        </Typography>
-
-        <Grid container spacing={4}>
-          {steps.map((step, index) => (
-            <Grid item xs={12} sm={6} md={3} key={index}>
-              <Box
-                sx={{
-                  textAlign: "center",
-                  position: "relative",
-                  "&::after":
-                    index < 3
-                      ? {
-                          content: '""',
-                          position: "absolute",
-                          top: 30,
-                          right: -20,
-                          width: 40,
-                          height: 2,
-                          background:
-                            "linear-gradient(90deg, rgba(25,118,210,0.3) 0%, rgba(156,39,176,0.3) 100%)",
-                          display: { xs: "none", md: "block" },
-                        }
-                      : {},
-                }}
-              >
-                <Box
-                  sx={{
-                    width: 80,
-                    height: 80,
-                    borderRadius: 3,
-                    background:
-                      "linear-gradient(135deg, rgba(25,118,210,0.1) 0%, rgba(156,39,176,0.1) 100%)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    mx: "auto",
-                    mb: 3,
-                    color: "primary.main",
-                    transition: "all 0.3s ease",
-                    border: "1px solid transparent",
-                    "&:hover": {
-                      transform: "translateY(-4px)",
-                      boxShadow: "0 12px 40px rgba(25,118,210,0.15)",
-                      background:
-                        "linear-gradient(135deg, rgba(25,118,210,0.15) 0%, rgba(156,39,176,0.15) 100%)",
-                    },
-                  }}
-                >
-                  {step.icon}
-                </Box>
-
-                <Typography
-                  variant="h6"
-                  sx={{
-                    fontWeight: 600,
-                    mb: 1.5,
-                    fontSize: "1.1rem",
-                  }}
-                >
-                  {step.title}
-                </Typography>
-
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{
-                    lineHeight: 1.6,
-                    fontSize: "0.95rem",
-                  }}
-                >
-                  {step.description}
-                </Typography>
-              </Box>
-            </Grid>
-          ))}
         </Grid>
       </Container>
     </Box>
@@ -886,8 +765,6 @@ export default function ICPJobsLandingPage() {
             </Grid>
           </Container>
         </Box>
-
-        <HowItWorksSection />
 
         {/* CTA Section - More Professional */}
         <Box
