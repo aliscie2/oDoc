@@ -55,8 +55,6 @@ impl Job {
     // When catagory is Job then skills are skills you have
     // mismatches are list of skillks required in a job but not found in talent
 
-
-
     // fn create_matched_candidate(&self, candidate: &Job, score: f32) -> Job {
     //     let mut matched_candidate = candidate.clone();
     //     matched_candidate.matches.push(Match {
@@ -194,7 +192,6 @@ impl Job {
 
             job.matches = validated_matches;
 
-            
             store.insert(job_id.clone(), job.clone());
 
             // Create reciprocal matches

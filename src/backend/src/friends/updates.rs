@@ -28,10 +28,8 @@ pub fn send_friend_request(user_principal: String) -> Result<User, String> {
         let mut store = friends_store.borrow_mut();
         let new_friend = Friend {
             id: id1.clone(),
-            sender: User::get(&caller().to_string())
-                .ok_or("Sender user not found".to_string())?,
-            receiver: User::get(&user_principal)
-                .ok_or("Receiver user not found".to_string())?,
+            sender: User::get(&caller().to_string()).ok_or("Sender user not found".to_string())?,
+            receiver: User::get(&user_principal).ok_or("Receiver user not found".to_string())?,
             confirmed: false,
         };
 
@@ -41,8 +39,7 @@ pub fn send_friend_request(user_principal: String) -> Result<User, String> {
         // Notify after successful save
         websocket::notify_friend_request(new_friend);
 
-        User::get(&user_principal)
-            .ok_or("User not found after save".to_string())
+        User::get(&user_principal).ok_or("User not found after save".to_string())
     })
 }
 

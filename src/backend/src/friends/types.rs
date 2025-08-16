@@ -93,24 +93,25 @@ impl Friend {
         });
     }
 
-   pub fn get_list(user: Principal) -> Vec<Friend> {
-    FRIENDS_STORE.with(|friends_store| {
-        let store = friends_store.borrow();
-        store.iter()
-            .filter_map(|(key, value)| {
-                if key.contains(&user.to_text()) {
-                    let mut friend = value.clone();
-                    // Ensure sender and receiver have complete data including photo
-                    friend.sender = User::get(&friend.sender.id).unwrap_or(friend.sender);
-                    friend.receiver = User::get(&friend.receiver.id).unwrap_or(friend.receiver);
-                    Some(friend)
-                } else {
-                    None
-                }
-            })
-            .collect()
-    })
-}
+    pub fn get_list(user: Principal) -> Vec<Friend> {
+        FRIENDS_STORE.with(|friends_store| {
+            let store = friends_store.borrow();
+            store
+                .iter()
+                .filter_map(|(key, value)| {
+                    if key.contains(&user.to_text()) {
+                        let mut friend = value.clone();
+                        // Ensure sender and receiver have complete data including photo
+                        friend.sender = User::get(&friend.sender.id).unwrap_or(friend.sender);
+                        friend.receiver = User::get(&friend.receiver.id).unwrap_or(friend.receiver);
+                        Some(friend)
+                    } else {
+                        None
+                    }
+                })
+                .collect()
+        })
+    }
 
     pub fn pure_save(&self) {
         FRIENDS_STORE.with(|friends_store| {
