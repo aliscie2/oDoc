@@ -271,7 +271,7 @@ const DummyShares: React.FC = () => {
   const handleMakePayment = async (amount: number): Promise<void> => {
     try {
       const newPayments = contractData.promises.map((promise) => ({
-        id: crypto.randomUUID(),
+        id: randomString(),
         status: { None: null },
         date_created: Date.now(),
         date_released: Date.now(),

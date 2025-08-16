@@ -51,98 +51,9 @@ export default defineConfig({
   assetsInclude: ["**/*.md"],
   build: {
     outDir: "build",
-    target: "esnext",
-    minify: "terser",
-    sourcemap: false,
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-        pure_funcs: ['console.log', 'console.info', 'console.debug'],
-      },
-      mangle: {
-        safari10: true,
-      },
+    rollupOptions: { 
+      external: ["@excalidraw/excalidraw"] 
     },
-    rollupOptions: {
-      external: ["@excalidraw/excalidraw"],
-      output: {
-        manualChunks: (id) => {
-          // Heavy AI libraries
-          if (id.includes('@huggingface/transformers')) return 'huggingface';
-          if (id.includes('@xenova/transformers')) return 'xenova';
-          if (id.includes('langchain')) return 'langchain';
-          if (id.includes('@langchain/core')) return 'langchain-core';
-          if (id.includes('@langchain/openai')) return 'langchain-openai';
-          
-          // Charts - split AG Grid components
-          if (id.includes('ag-grid-enterprise')) return 'ag-grid-enterprise';
-          if (id.includes('ag-grid-community')) return 'ag-grid-community';
-          if (id.includes('ag-grid-react')) return 'ag-grid-react';
-          if (id.includes('ag-charts')) return 'ag-charts';
-          
-          // MUI - split by component groups
-          if (id.includes('@mui/material')) return 'mui-material';
-          if (id.includes('@mui/icons-material')) return 'mui-icons';
-          if (id.includes('@mui/lab')) return 'mui-lab';
-          if (id.includes('@mui/x-date-pickers')) return 'mui-pickers';
-          if (id.includes('@emotion')) return 'emotion';
-          
-          // React ecosystem
-          if (id.includes('react-dom')) return 'react-dom';
-          if (id.includes('react') && !id.includes('react-')) return 'react';
-          if (id.includes('react-router')) return 'react-router';
-          if (id.includes('react-redux')) return 'react-redux';
-          
-          // Dfinity - split by functionality
-          if (id.includes('@dfinity/agent')) return 'dfinity-agent';
-          if (id.includes('@dfinity/auth-client')) return 'dfinity-auth';
-          if (id.includes('@dfinity/ledger')) return 'dfinity-ledger';
-          if (id.includes('@dfinity')) return 'dfinity-core';
-          
-          // Editor components
-          if (id.includes('react-ace')) return 'ace-editor';
-          if (id.includes('odoc_editor')) return 'odoc-editor';
-          
-          // Media and UI libraries
-          if (id.includes('framer-motion')) return 'framer-motion';
-          if (id.includes('react-player')) return 'react-player';
-          if (id.includes('flowbite')) return 'flowbite';
-          
-          // Utility libraries
-          if (id.includes('date-fns')) return 'date-utils';
-          if (id.includes('mathjs')) return 'math-utils';
-          if (id.includes('uuid')) return 'uuid';
-          if (id.includes('lodash')) return 'lodash';
-          
-          // Development and testing
-          if (id.includes('@sentry')) return 'sentry';
-          
-          // Remaining node_modules - split by size
-          if (id.includes('node_modules')) {
-            // Large libraries get their own chunks
-            if (id.includes('openai')) return 'openai';
-            if (id.includes('@google/generative-ai')) return 'google-ai';
-            if (id.includes('sanitize-html')) return 'sanitize-html';
-            if (id.includes('compromise')) return 'compromise';
-            if (id.includes('natural')) return 'natural';
-            if (id.includes('mathjs')) return 'mathjs';
-            if (id.includes('jsonrepair')) return 'jsonrepair';
-            
-            // Split vendor into smaller chunks
-            const hash = id.split('node_modules/')[1]?.split('/')[0];
-            if (hash && hash.length > 0) {
-              // Group by first letter to create smaller vendor chunks
-              const firstChar = hash[0].toLowerCase();
-              return `vendor-${firstChar}`;
-            }
-            
-            return 'vendor';
-          }
-        }
-      }
-    },
-    chunkSizeWarningLimit: 500,
   },
   server: {
     host: true,
@@ -207,78 +118,58 @@ export default defineConfig({
     EnvironmentPlugin("all", { prefix: "DFX_" }),
     EnvironmentPlugin({ BACKEND_CANISTER_ID: "" }),
     VitePWA({
-  registerType: "autoUpdate",
-  workbox: {
-    maximumFileSizeToCacheInBytes: 20971520,
-    globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
-    // Don't cache large JS files immediately
-    globIgnores: ["**/index-*.js"],
-    runtimeCaching: [
-      {
-        urlPattern: /^https:\/\/api\./,
-        handler: "NetworkFirst",
-        options: {
-          cacheName: "api-cache",
-          expiration: { maxEntries: 50, maxAgeSeconds: 300 },
-        },
+      registerType: "autoUpdate",
+      workbox: {
+        maximumFileSizeToCacheInBytes: 20971520,
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/api\./,
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "api-cache",
+              expiration: { maxEntries: 50, maxAgeSeconds: 300 },
+            },
+          },
+        ],
       },
-      // Cache images with stale-while-revalidate
-      {
-        urlPattern: /\.(?:png|jpg|jpeg|svg|webp)$/,
-        handler: "CacheFirst",
-        options: {
-          cacheName: "images-cache",
-          expiration: { maxEntries: 100, maxAgeSeconds: 86400 * 30 }, // 30 days
-        },
+      manifest: {
+        name: "odoc",
+        short_name: "odoc",
+        description: "ai job matcher & crypto agreement for freelancers, online work.",
+        theme_color: "#ffffff",
+        background_color: "#ffffff",
+        display: "fullscreen", // Changed from "standalone"
+        scope: "/",
+        start_url: "/",
+        icons: [
+          {
+            src: "icons/manifest-icon-192.maskable.png",
+            sizes: "192x192",
+            type: "image/png",
+            purpose: "any",
+          },
+          {
+            src: "icons/manifest-icon-192.maskable.png",
+            sizes: "192x192",
+            type: "image/png",
+            purpose: "maskable",
+          },
+          {
+            src: "icons/manifest-icon-512.maskable.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "any",
+          },
+          {
+            src: "icons/manifest-icon-512.maskable.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "maskable",
+          },
+        ],
       },
-      // Cache JS chunks on demand
-      {
-        urlPattern: /\.js$/,
-        handler: "StaleWhileRevalidate",
-        options: {
-          cacheName: "js-cache",
-          expiration: { maxEntries: 20, maxAgeSeconds: 86400 * 7 }, // 7 days
-        },
-      },
-    ],
-  },
-  manifest: {
-    name: "odoc",
-    short_name: "odoc",
-    description: "ai job matcher & crypto agreement for freelancers, online work.",
-    theme_color: "#ffffff",
-    background_color: "#ffffff",
-    display: "fullscreen", // Changed from "standalone"
-    scope: "/",
-    start_url: "/",
-    icons: [
-      {
-        src: "icons/manifest-icon-192.maskable.png",
-        sizes: "192x192",
-        type: "image/png",
-        purpose: "any",
-      },
-      {
-        src: "icons/manifest-icon-192.maskable.png",
-        sizes: "192x192",
-        type: "image/png",
-        purpose: "maskable",
-      },
-      {
-        src: "icons/manifest-icon-512.maskable.png",
-        sizes: "512x512",
-        type: "image/png",
-        purpose: "any",
-      },
-      {
-        src: "icons/manifest-icon-512.maskable.png",
-        sizes: "512x512",
-        type: "image/png",
-        purpose: "maskable",
-      },
-    ],
-  },
-}),
+    }),
   ],
   // In your vite.config - add this to optimizeDeps
   optimizeDeps: {
@@ -287,14 +178,6 @@ export default defineConfig({
       "@emotion/styled",
       "@mui/material/Tooltip",
       "@mui/x-data-grid-generator",
-    ],
-    exclude: [
-      // Exclude heavy AI libraries from pre-bundling
-      "@huggingface/transformers",
-      "@xenova/transformers",
-      "langchain",
-      "@langchain/core",
-      "@langchain/openai"
     ],
     force: true,
   },

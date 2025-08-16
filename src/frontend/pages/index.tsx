@@ -1,32 +1,39 @@
 import { Route, Routes, useLocation } from "react-router-dom";
-import React from "react";
-import LandingPage from "./LandingPage";
-import FileContentPage from "./fileContentPage";
-import ShareFilePage from "./ShareFilePage";
-import ProfilePage from "./profile";
-import UserProfile from "./user";
-import ContractsHistory from "./profile/ContractsHistory";
-
+import React, { Suspense } from "react";
+import { CircularProgress, Box } from "@mui/material";
 import { useSelector } from "react-redux";
-
-import OfferPage from "./OfferPage";
-import SubscriptionPlans from "./subscrptions";
-import SNSWhitepaper from "./white_paper/markDownReader";
-import SNSVoting from "./white_paper";
-
-import DummyShares from "./sharesContract";
-import AffiliateDashboard from "./affiliate";
-
-import ContractPage from "./profile/ContractPage";
 import { useNavigate } from "react-router-dom";
-// import Dashboard from "./dash_board_v1";
-import CalendarView from "./dash_board_v1/calindarView/calendar";
-import JobsPage from "./discover/jobs";
-import AchievementPage from "@/components/userBadges";
+
+// Immediate imports for critical components
+import LandingPage from "./LandingPage";
 import ICPJobsLandingPage from "./LandingPage/aiJobMatch";
-import Posts from "./discover/posts";
-import WalletPage from "./walletPage";
-import JobPage from "./jobPage";
+import JobsPage from "./discover/jobs";
+
+// Lazy imports for heavy components
+const FileContentPage = React.lazy(() => import("./fileContentPage"));
+const ShareFilePage = React.lazy(() => import("./ShareFilePage"));
+const ProfilePage = React.lazy(() => import("./profile"));
+const UserProfile = React.lazy(() => import("./user"));
+const ContractsHistory = React.lazy(() => import("./profile/ContractsHistory"));
+const OfferPage = React.lazy(() => import("./OfferPage"));
+const SubscriptionPlans = React.lazy(() => import("./subscrptions"));
+const SNSWhitepaper = React.lazy(() => import("./white_paper/markDownReader"));
+const SNSVoting = React.lazy(() => import("./white_paper"));
+const DummyShares = React.lazy(() => import("./sharesContract"));
+const AffiliateDashboard = React.lazy(() => import("./affiliate"));
+const ContractPage = React.lazy(() => import("./profile/ContractPage"));
+const CalendarView = React.lazy(() => import("./dash_board_v1/calindarView/calendar"));
+const AchievementPage = React.lazy(() => import("@/components/userBadges"));
+const Posts = React.lazy(() => import("./discover/posts"));
+const WalletPage = React.lazy(() => import("./walletPage"));
+const JobPage = React.lazy(() => import("./jobPage"));
+
+// Loading component
+const PageLoader = () => (
+  <Box display="flex" justifyContent="center" alignItems="center" minHeight="50vh">
+    <CircularProgress />
+  </Box>
+);
 
 function Pages() {
   const navigate = useNavigate();
@@ -50,39 +57,41 @@ function Pages() {
   };
 
   return (
-    <Routes>
-      <Route path="/" element={<MainPage />} />
-      <Route path="/about" element={<LandingPage />} />
-      <Route path="/wallet" element={<WalletPage wallet={wallet} />} />
-      <Route
-        path="/profile"
-        element={
-          <ProfilePage
-            friends={friends}
-            profile={profile}
-            history={profile_history}
-          />
-        }
-      />
-      <Route path="/share/*" element={<ShareFilePage />} />
-      <Route path="/user/*" element={<UserProfile />} />
-      {/*<Route path="/chats/*" element={<ChatsPage />} />*/}
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
+        <Route path="/" element={<MainPage />} />
+        <Route path="/about" element={<LandingPage />} />
+        <Route path="/wallet" element={<WalletPage wallet={wallet} />} />
+        <Route
+          path="/profile"
+          element={
+            <ProfilePage
+              friends={friends}
+              profile={profile}
+              history={profile_history}
+            />
+          }
+        />
+        <Route path="/share/*" element={<ShareFilePage />} />
+        <Route path="/user/*" element={<UserProfile />} />
+        {/*<Route path="/chats/*" element={<ChatsPage />} />*/}
 
-      <Route path="/contract*" element={<ContractPage />} />
-      <Route path="/contracts/*" element={<ContractsHistory />} />
-      <Route path="/offer" element={<OfferPage />} />
+        <Route path="/contract*" element={<ContractPage />} />
+        <Route path="/contracts/*" element={<ContractsHistory />} />
+        <Route path="/offer" element={<OfferPage />} />
 
-      <Route path="/subscriptions" element={<SubscriptionPlans />} />
-      <Route path="/white_paper" element={<SNSWhitepaper />} />
-      <Route path="/vote" element={<SNSVoting />} />
-      <Route path="/shares_contract" element={<DummyShares />} />
-      <Route path="/affiliate" element={<AffiliateDashboard />} />
-      <Route path="/*" element={<FileContentPage />} />
-      <Route path="/calendar" element={<CalendarView />} />
-      <Route path="/achievementCard" element={<AchievementPage />} />
-      <Route path="/posts" element={<Posts />} />
-      <Route path="/jobs*" element={<JobPage />} />
-    </Routes>
+        <Route path="/subscriptions" element={<SubscriptionPlans />} />
+        <Route path="/white_paper" element={<SNSWhitepaper />} />
+        <Route path="/vote" element={<SNSVoting />} />
+        <Route path="/shares_contract" element={<DummyShares />} />
+        <Route path="/affiliate" element={<AffiliateDashboard />} />
+        <Route path="/*" element={<FileContentPage />} />
+        <Route path="/calendar" element={<CalendarView />} />
+        <Route path="/achievementCard" element={<AchievementPage />} />
+        <Route path="/posts" element={<Posts />} />
+        <Route path="/jobs*" element={<JobPage />} />
+      </Routes>
+    </Suspense>
   );
 }
 

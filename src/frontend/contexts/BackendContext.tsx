@@ -7,13 +7,7 @@ import React, {
   useState,
 } from "react";
 import { AuthClient } from "@dfinity/auth-client";
-import {
-  Actor,
-  ActorMethod,
-  ActorSubclass,
-  HttpAgent,
-  Identity,
-} from "@dfinity/agent";
+import { Actor, ActorSubclass, HttpAgent, Identity } from "@dfinity/agent";
 import { canisterId, idlFactory } from "../../declarations/backend";
 import { canisterId as IIID } from "../../declarations/internet_identity";
 import { _SERVICE } from "../../declarations/backend/backend.did";
@@ -23,9 +17,7 @@ import getLedgerActor from "./ckudc_ledger_actor";
 interface State {
   principal: string | null;
   identity: Identity | null;
-  backendActor: ActorSubclass<
-    Record<string, ActorMethod<unknown[], unknown>>
-  > | null;
+  backendActor: ActorSubclass<_SERVICE>;
   agent: HttpAgent | null;
   isAuthenticating?: boolean;
   ckUSDCActor?: any;
@@ -103,10 +95,8 @@ const getHost = (): string => {
 async function handleAgent(client: AuthClient) {
   const host = getHost();
 
-  let principal: string;
-
-  const identity = await client.getIdentity();
-  principal = identity.getPrincipal().toString();
+  const identity = client.getIdentity();
+  const principal = identity.getPrincipal().toString();
   try {
     const agent = await createHttpAgent(identity, host);
     const actor = createBackendActor(agent);
@@ -171,9 +161,9 @@ export const BackendProvider: React.FC<BackendProviderProps> = ({
 
       setState((prevState) => ({
         ...prevState,
-        backendActor: actor,
-        agent,
-        principal,
+        backendActor: actor || null,
+        agent: agent || null,
+        principal: principal || null,
         loginMethod: "ethereum",
         isAuthenticating: false,
       }));
@@ -207,10 +197,10 @@ export const BackendProvider: React.FC<BackendProviderProps> = ({
       setState((prevState) => ({
         ...prevState,
         ckUSDCActor,
-        backendActor: actor,
-        agent,
-        principal,
-        identity,
+        backendActor: actor || null,
+        agent: agent || null,
+        principal: principal || null,
+        identity: identity || null,
         // loginMethod: siweIdentity ? 'ethereum' : undefined
       }));
 

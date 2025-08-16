@@ -692,11 +692,11 @@ const ChatContainer = () => {
             </Box>
             <Box display="flex" alignItems="center" gap={0.5}>
               <Box sx={{ height: 24, overflow: "hidden" }}>
-                <RunawayJellyfish
+                {aiAgent&&<RunawayJellyfish
                   die={aiAgent.remainingCredits() == 0}
                   thinking={isLoading}
                   runaway={true}
-                />
+                />}
               </Box>
               <IconButton
                 size="small"

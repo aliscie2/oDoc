@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, Suspense } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import Pages from "./pages";
@@ -22,11 +22,17 @@ import {
 } from "./pages/dash_board_v1/calindarView/serializers";
 
 import { Job } from "$/declarations/backend/backend.did";
-import GoogleCalendarOnboarding from "@/components/userBadges/coonectGoogleCalendar";
 import RunawayJellyfish from "./components/creature/runAeayJellyFish";
-import PWAInstallPopup from "./components/installPWAPopUP";
-import ChatContainer from "./pages/dash_board_v1/aiChat";
 import useSocket from "./websocket/use_socket";
+
+// Lazy load heavy components
+const GoogleCalendarOnboarding = React.lazy(
+  () => import("@/components/userBadges/coonectGoogleCalendar"),
+);
+const PWAInstallPopup = React.lazy(
+  () => import("./components/installPWAPopUP"),
+);
+const ChatContainer = React.lazy(() => import("./pages/dash_board_v1/aiChat"));
 const MainContent = styled(Box)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
@@ -367,12 +373,16 @@ const App: React.FC = () => {
   }
   return (
     <MainContent>
-      <PWAInstallPopup />
-      {/* <PWAInstallPrompt /> */}
-      {/* <SearchPopper /> */}
-      <GoogleCalendarOnboarding />
+      <Suspense fallback={null}>
+        <PWAInstallPopup />
+        <GoogleCalendarOnboarding />
+      </Suspense>
       <TopNavBar />
-      {isRegistered && <ChatContainer />}
+      {isRegistered && (
+        <Suspense fallback={null}>
+          <ChatContainer />
+        </Suspense>
+      )}
       <DndProvider backend={HTML5Backend}>
         <NavBar>
           <PageContainer>

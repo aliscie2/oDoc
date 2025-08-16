@@ -1,4 +1,3 @@
-<!doctype html>
 <html lang="en">
 
 
@@ -47,11 +46,13 @@
       property="og:description"
       content="Enterprise-grade document automation with ICP smart contracts and decentralized identity management."
     />
+    <meta key="og:image" property="og:image" content="/public/icpjobs_thumnail.png"      />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:site_name" content="ODOC" />
 
     <!-- Twitter -->
+    <meta key="twitter:image" property="og:image" content="/public/icpjobs_thumnail.png"      />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:url" content="https://icpjobs.com" />
     <meta name="twitter:title" content="ICPJOBS | AI job match | Crypto Agreements" />
@@ -63,12 +64,12 @@
     <meta name="twitter:creator" content="@odoc_ic" />
 
     <!-- Favicon -->
-    <link rel="icon" href="/icpjobs_logo.png" type="image/x-icon" />
+    <link rel="icon" href="/public/icpjobs_logo.png" type="image/x-icon" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 
     <meta name="theme-color" content="#ffffff" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="apple-touch-icon" href="/pwa-192x192.png" />
+    <link rel="apple-touch-icon" href="/public/pwa-192x192.png" />
 
     <!-- EmailJS -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -137,7 +138,7 @@
         "@type": "Organization",
         "name": "ODOC",
         "url": "https://icpjobs.com",
-        "logo": "/icpjobs_logo.png",
+        "logo": "/public/icpjobs_logo.png",
         "sameAs": ["https://x.com/odoc_ic", "https://www.youtube.com/@odoc_ic"],
         "description": "Secure blockchain-based document management platform leveraging ICP's trustless architecture for immutable records and smart contract automation."
       }
@@ -147,6 +148,17 @@
   <body class="dark">
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
+    <script>
+      // Polyfill for crypto.randomUUID
+      if (!crypto.randomUUID) {
+        crypto.randomUUID = function() {
+          return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+          });
+        };
+      }
+    </script>
     <script type="module" src="/src/frontend/index.tsx"></script>
   </body>
 </html>

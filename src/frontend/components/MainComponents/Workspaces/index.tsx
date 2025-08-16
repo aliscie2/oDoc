@@ -30,6 +30,7 @@ import { useBackendContext } from "../../../contexts/BackendContext";
 import { Principal } from "@dfinity/principal";
 import { getWorkspaceStyles } from "./WorkspaceStyles";
 import type { Workspace, FilesState } from "./WorkspaceTypes";
+import { randomString } from "@/DataProcessing/dataSamples";
 
 // Custom hook for workspace operations
 const useWorkspaceOperations = () => {
@@ -77,7 +78,7 @@ const useWorkspaceOperations = () => {
       try {
         const creator = Principal.fromText(profile.id);
         const newWorkspace = {
-          id: crypto.randomUUID(),
+          id: randomString(),
           name,
           files: [],
           creator,
