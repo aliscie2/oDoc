@@ -11,9 +11,7 @@ import LoginButton from "@/components/MainComponents/topNavBar/loginButton";
 import { Helmet } from "react-helmet-async";
 
 const JobsPage: React.FC = () => {
-  const { currentJobId, jobs } = useSelector(
-    (state: any) => state.jobState,
-  );
+  const { currentJobId, jobs } = useSelector((state: any) => state.jobState);
   const currentJobRef = useRef<Job | undefined>(undefined);
 
   useEffect(() => {

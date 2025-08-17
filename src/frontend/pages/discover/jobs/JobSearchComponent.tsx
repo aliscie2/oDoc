@@ -219,7 +219,11 @@ const JobSearchComponent: React.FC = () => {
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
             Try adjusting your job criteria or check back later
           </Typography>
-          <Button variant="outlined" onClick={findMatches} data-testid="refresh-matches-button">
+          <Button
+            variant="outlined"
+            onClick={findMatches}
+            data-testid="refresh-matches-button"
+          >
             Refresh Matches
           </Button>
         </Box>

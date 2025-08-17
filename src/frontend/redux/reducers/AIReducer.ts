@@ -18,7 +18,8 @@ type Action =
   | { type: "INIT_AI_AGENT"; aiAgent: AIAgent }
   | { type: "ADD_AI_CREDITS"; credits: number; isFree: boolean }
   | { type: "INIT_AI_CREDITS"; credits: number; isFree: boolean }
-  | { type: "RESET_AI_CREDITS"; credits: number };
+  | { type: "RESET_AI_CREDITS"; credits: number }
+  | { type: "UPDATE_AI_CREDITS"; remainingCredits: number };
 
 export function AIReducer(state = initialState, action: Action): any {
   switch (action.type) {
@@ -32,8 +33,7 @@ export function AIReducer(state = initialState, action: Action): any {
       state.aiAgent.addCredits(action.credits, action.isFree);
       return {
         ...state,
-        // aiAgent: ,
-        credits: state.credits + action.credits,
+        credits: state.aiAgent.remainingCredits(),
         isFreeAITire: false,
       };
 
@@ -51,9 +51,15 @@ export function AIReducer(state = initialState, action: Action): any {
       return {
         ...state,
         aiAgent: new AIAgent(action.credits, false),
-        credits: state.credits,
+        credits: action.credits,
         initialCredits: action.credits,
         isFreeAITire: action.isFree,
+      };
+
+    case "UPDATE_AI_CREDITS":
+      return {
+        ...state,
+        credits: action.remainingCredits,
       };
 
     default:

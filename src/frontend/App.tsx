@@ -29,9 +29,6 @@ import useSocket from "./websocket/use_socket";
 const GoogleCalendarOnboarding = React.lazy(
   () => import("@/components/userBadges/coonectGoogleCalendar"),
 );
-const PWAInstallPopup = React.lazy(
-  () => import("./components/installPWAPopUP"),
-);
 const ChatContainer = React.lazy(() => import("./pages/dash_board_v1/aiChat"));
 const MainContent = styled(Box)(({ theme }) => ({
   display: "flex",
@@ -374,7 +371,6 @@ const App: React.FC = () => {
   return (
     <MainContent>
       <Suspense fallback={null}>
-        <PWAInstallPopup />
         <GoogleCalendarOnboarding />
       </Suspense>
       <TopNavBar />

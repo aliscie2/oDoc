@@ -1,4 +1,9 @@
-import { GetJobs, Job, JobUpdate, Match } from "$/declarations/backend/backend.did";
+import {
+  GetJobs,
+  Job,
+  JobUpdate,
+  Match,
+} from "$/declarations/backend/backend.did";
 import { createIdentity } from "@dfinity/pic";
 import { registerUser } from "../utils";
 import exp from "constants";
@@ -73,20 +78,24 @@ async function updateJobWithMatches(
   }
 }
 
-
 const JOB_SKILLS = ["icp", "rust"];
 
-async function getInitJobs(jobProfileId: string, lookingFor = { Talent: null }){
-
-  const jobMatches:Job[] = await globalThis.testActor.get_matches(
+async function getInitJobs(
+  jobProfileId: string,
+  lookingFor = { Talent: null },
+) {
+  const jobMatches: Job[] = await globalThis.testActor.get_matches(
     jobProfileId,
     JOB_SKILLS,
     lookingFor,
   );
   const userJobs: GetJobs = await globalThis.testActor.get_my_jobs();
-  await updateJobWithMatches(jobProfileId, jobMatches,userJobs.jobs[0].matches );
-  return {jobMatches,userJobs}
-
+  await updateJobWithMatches(
+    jobProfileId,
+    jobMatches,
+    userJobs.jobs[0].matches,
+  );
+  return { jobMatches, userJobs };
 }
 
 async function makeRandomTalentUpdate(talentId: string) {
@@ -112,7 +121,7 @@ describe("Comprehensive Job Matching System", () => {
   test("should handle complete matching workflow with 30 users", async () => {
     const TALENT_COUNT = 30;
     const SHARED_SKILLS = ["icp", "rust", "typescript"];
-    
+
     const testId = `test1_${Date.now()}`;
 
     // Step 1: Create 30 users in parallel and register them as talents
@@ -149,7 +158,7 @@ describe("Comprehensive Job Matching System", () => {
 
     for (let i = 1; i <= 3; i++) {
       // Get matches
-      let {jobMatches:matches} = await getInitJobs(jobProfile.id);
+      let { jobMatches: matches } = await getInitJobs(jobProfile.id);
 
       expect(matches.length).toBe(10);
 
@@ -164,29 +173,28 @@ describe("Comprehensive Job Matching System", () => {
 
       // Verify the matches were saved correctly
       const userJobs = await globalThis.testActor.get_my_jobs();
-      
+
       expect(userJobs.jobs[0].matches.length).toBe(10 * i);
       expect(userJobs.matching_jobs.length).toBe(10 * i);
     }
 
     // Step 4: Verify no more matches available
-    let {jobMatches:noMoreMatches, userJobs} = await getInitJobs(jobProfile.id);
+    let { jobMatches: noMoreMatches, userJobs } = await getInitJobs(
+      jobProfile.id,
+    );
     expect(noMoreMatches.length).toBe(0);
 
     // Verify the workflow completed successfully
     // expect(allSavedMatches.length).toBe(30);
-
 
     // --------- test get updated talent
 
     globalThis.testActor.setIdentity(talentsUsers[0].user);
     await makeRandomTalentUpdate(talentsUsers[0].talentId);
     globalThis.testActor.setIdentity(jobCreator);
-    let {jobMatches:noMoreMatches2, userJobs:userJobs2} = await getInitJobs(jobProfile.id);
+    let { jobMatches: noMoreMatches2, userJobs: userJobs2 } = await getInitJobs(
+      jobProfile.id,
+    );
     expect(noMoreMatches2.length).toBe(1);
-
-
   }, 60000); // 60 second timeout for this comprehensive test
-
-  
 });

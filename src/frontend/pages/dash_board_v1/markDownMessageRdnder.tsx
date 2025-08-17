@@ -7,7 +7,7 @@ interface MarkdownMessageProps {
 
 const MarkdownMessage = ({ message, isUser = false }: MarkdownMessageProps) => {
   const theme = useTheme();
-  
+
   // Simple markdown renderer for common markdown elements
   const renderMarkdown = (text: string): string => {
     if (!text || typeof text !== "string") return "";

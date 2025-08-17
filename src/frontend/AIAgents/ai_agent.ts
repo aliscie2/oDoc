@@ -42,11 +42,15 @@ class AIStaticStore {
 export class AIAgent {
   private static MYSTATICS = AIStaticStore.getInstance();
 
-  // Pricing for different tiers
-  private readonly FREE_INPUT_TOKEN_COST = 0.0000375;
-  private readonly FREE_OUTPUT_TOKEN_COST = 0.00015;
-  private readonly PAID_INPUT_TOKEN_COST = 0.000015;
-  private readonly PAID_OUTPUT_TOKEN_COST = 0.0006;
+  // Simplified and much cheaper pricing
+  private readonly FREE_INPUT_TOKEN_COST = 0.000001; // $0.001 per 1K tokens
+  private readonly FREE_OUTPUT_TOKEN_COST = 0.000002; // $0.002 per 1K tokens
+  private readonly PAID_INPUT_TOKEN_COST = 0.0000005; // $0.0005 per 1K tokens
+  private readonly PAID_OUTPUT_TOKEN_COST = 0.000001; // $0.001 per 1K tokens
+
+  // Simple flat rate option - $0.01 per message (much simpler!)
+  private readonly FLAT_RATE_PER_MESSAGE = 0.01;
+  private readonly USE_FLAT_RATE = true; // Toggle between token-based and flat rate
 
   // Context settings - keep only latest 4 messages
   private readonly MAX_CONTEXT_MESSAGES = 4;
@@ -100,6 +104,15 @@ export class AIAgent {
   }
 
   private estimateInputCost(message: string): number {
+    if (AIAgent.MYSTATICS.isFreeTier) {
+      return 0; // Free tier has no cost
+    }
+
+    if (this.USE_FLAT_RATE) {
+      return this.FLAT_RATE_PER_MESSAGE; // Simple $0.01 per message
+    }
+
+    // Fallback to token-based pricing
     const pricing = this.getCurrentPricing();
     const contextMessages = this.getContextMessages();
     const historyText = contextMessages.map((msg) => msg.parts[0]).join(" ");
@@ -129,7 +142,8 @@ export class AIAgent {
   } {
     if (AIAgent.MYSTATICS.isFreeTier) {
       const conversationLength = AIAgent.MYSTATICS.conversationHistory.length;
-      if (conversationLength > 50) {
+      if (conversationLength > 100) {
+        // Increased free tier limit
         return {
           allowed: false,
           reason:
@@ -139,11 +153,12 @@ export class AIAgent {
       return { allowed: true };
     }
 
-    const bufferCost = estimatedCost * 1.2;
-    if (AIAgent.MYSTATICS.credits == 0) {
+    // Simple check - need enough credits for at least one message
+    const minRequired = this.USE_FLAT_RATE ? this.FLAT_RATE_PER_MESSAGE : 0.001;
+    if (AIAgent.MYSTATICS.credits < minRequired) {
       return {
         allowed: false,
-        reason: `Insufficient credits for this request. Available: ${AIAgent.MYSTATICS.credits.toFixed(4)}, Required: ~${bufferCost.toFixed(4)}. Please add more credits to continue.`,
+        reason: `Insufficient credits. Please add more credits to continue. Current balance: $${AIAgent.MYSTATICS.credits.toFixed(4)}, Required: $${minRequired.toFixed(4)}`,
       };
     }
 
@@ -303,17 +318,28 @@ export class AIAgent {
   ): number {
     if (!usageMetadata) return 0;
 
-    const pricing = this.getCurrentPricing();
-    let cost = 0;
-
+    // Update token stats for tracking
     if (usageMetadata.prompt_tokens) {
       AIAgent.MYSTATICS.totalInputTokens += usageMetadata.prompt_tokens;
-      cost += usageMetadata.prompt_tokens * pricing.input;
     }
-
     if (usageMetadata.completion_tokens) {
       AIAgent.MYSTATICS.totalOutputTokens += usageMetadata.completion_tokens;
-      cost += usageMetadata.completion_tokens * pricing.output;
+    }
+
+    let cost = 0;
+
+    if (this.USE_FLAT_RATE) {
+      // Simple flat rate - $0.01 per message
+      cost = this.FLAT_RATE_PER_MESSAGE;
+    } else {
+      // Token-based pricing (fallback)
+      const pricing = this.getCurrentPricing();
+      if (usageMetadata.prompt_tokens) {
+        cost += usageMetadata.prompt_tokens * pricing.input;
+      }
+      if (usageMetadata.completion_tokens) {
+        cost += usageMetadata.completion_tokens * pricing.output;
+      }
     }
 
     AIAgent.MYSTATICS.credits = Math.max(0, AIAgent.MYSTATICS.credits - cost);
@@ -346,6 +372,15 @@ export class AIAgent {
   }
 
   getTotalCost(): number {
+    if (this.USE_FLAT_RATE) {
+      // Count total messages sent (user messages in history)
+      const userMessages = AIAgent.MYSTATICS.conversationHistory.filter(
+        (msg) => msg.role === "user",
+      ).length;
+      return userMessages * this.FLAT_RATE_PER_MESSAGE;
+    }
+
+    // Fallback to token-based calculation
     const pricing = this.getCurrentPricing();
     return (
       AIAgent.MYSTATICS.totalInputTokens * pricing.input +
@@ -374,6 +409,21 @@ export class AIAgent {
     estimatedCost: number;
     tokensToSend: number;
   } {
+    if (AIAgent.MYSTATICS.isFreeTier) {
+      return {
+        estimatedCost: 0,
+        tokensToSend: this.estimateTokenCount(message),
+      };
+    }
+
+    if (this.USE_FLAT_RATE) {
+      return {
+        estimatedCost: this.FLAT_RATE_PER_MESSAGE,
+        tokensToSend: this.estimateTokenCount(message),
+      };
+    }
+
+    // Fallback to token-based calculation
     const contextMessages = this.getContextMessages();
     const contextTokens = contextMessages.reduce(
       (sum: number, msg: AiMessage) =>

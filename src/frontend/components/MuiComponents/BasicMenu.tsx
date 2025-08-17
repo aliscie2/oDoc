@@ -64,14 +64,22 @@ const BasicMenu: React.FC<BasicMenuProps> = ({ options, children }) => {
             return option.content;
           }
           let item = (
-            <MenuItem key={index} onClick={() => handleOptionClick(option)} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <MenuItem
+              key={index}
+              onClick={() => handleOptionClick(option)}
+              sx={{ display: "flex", alignItems: "center", gap: 1 }}
+            >
               {option.icon && option.icon}
               {option.content}
             </MenuItem>
           );
           option.to
             ? (item = (
-                <Link key={index} to={option.to} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <Link
+                  key={index}
+                  to={option.to}
+                  style={{ textDecoration: "none", color: "inherit" }}
+                >
                   {item}
                 </Link>
               ))

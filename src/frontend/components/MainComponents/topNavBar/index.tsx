@@ -254,7 +254,11 @@ export default function TopNavBar() {
       onProfileClick: (e) => setMobileMenuAnchor(e.currentTarget),
       profileMenuOptions: getProfileMenuConfig(isRegistered).map((option) => ({
         ...option,
-        icon: <option.icon sx={{ color: state.theme.palette.text.primary, mr: 1 }} />,
+        icon: (
+          <option.icon
+            sx={{ color: state.theme.palette.text.primary, mr: 1 }}
+          />
+        ),
         onClick: option.action === "logout" ? handleLogout : undefined,
       })),
     }),

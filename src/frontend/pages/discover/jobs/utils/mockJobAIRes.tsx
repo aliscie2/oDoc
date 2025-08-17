@@ -17,7 +17,6 @@ export function mockJobAIResponse(
     updates: [] as Array<{ field: string; values: string[] }>,
     category: category.toLowerCase() == "job" ? "Job" : "Talent",
     done: false,
-    isBreakingChanges: false,
   };
 
   // Handle different command types
@@ -33,7 +32,6 @@ export function mockJobAIResponse(
       });
 
       response.feedback = `Added skills: ${newSkills.join(", ")}. Great! Your skill set is expanding.`;
-      response.isBreakingChanges = true;
 
       // Check if we need additional information
       if (!currentJob?.emails || currentJob.emails.length === 0) {
@@ -53,7 +51,6 @@ export function mockJobAIResponse(
       });
 
       response.feedback = `Updated skills to: ${updateSkills.join(", ")}.`;
-      response.isBreakingChanges = true;
       break;
 
     case "ds": // Remove skills
@@ -73,7 +70,6 @@ export function mockJobAIResponse(
       });
 
       response.feedback = `Removed skills: ${skillsToRemove.join(", ")}`;
-      response.isBreakingChanges = true;
       break;
 
     case "ud": // Update description
@@ -252,7 +248,6 @@ export function mockJobAIResponse(
 
       response.category = newCategory;
       response.feedback = `Category changed to ${newCategory}.`;
-      response.isBreakingChanges = true;
       break;
 
     default:

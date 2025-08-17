@@ -45,6 +45,11 @@ export const useChatHandler = () => {
         false,
         PROMPTS.CALENDAR,
       );
+      // Update credits in Redux after AI call
+      dispatch({
+        type: "UPDATE_AI_CREDITS",
+        remainingCredits: aiAgent.remainingCredits(),
+      });
       eventRes = textToJson(calendarRes).extractedData;
     }
 
@@ -87,6 +92,11 @@ export const useChatHandler = () => {
       );
     } else {
       const jobRes = await aiAgent.sendMessage(prompt, false, PROMPTS.JOB);
+      // Update credits in Redux after AI call
+      dispatch({
+        type: "UPDATE_AI_CREDITS",
+        remainingCredits: aiAgent.remainingCredits(),
+      });
       parsedJob = textToJson(jobRes).extractedData;
     }
 
@@ -181,6 +191,11 @@ export const useChatHandler = () => {
           true,
           PROMPTS.CLASSIFY,
         );
+        // Update credits in Redux after AI call
+        dispatch({
+          type: "UPDATE_AI_CREDITS",
+          remainingCredits: aiAgent.remainingCredits(),
+        });
         console.log({
           XX: location.pathname == "/" ? "Job" : location.pathname,
         });

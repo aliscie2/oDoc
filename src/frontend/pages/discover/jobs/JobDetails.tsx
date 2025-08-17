@@ -244,7 +244,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
             variant="filled"
             sx={{ fontWeight: "bold", px: 2, py: 1, height: "auto" }}
           />
-          {profile?.id === job.user_id ? (
+          {!job.user_id || profile?.id === job.user_id ? (
             <Chip
               label="Created by You"
               color="primary"
@@ -314,16 +314,11 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
                 Description
               </Typography>
             </Stack>
-            <Typography
-              variant="body1"
-              sx={{
-                lineHeight: 1.7,
-                fontSize: { xs: "0.9rem", sm: "1.1rem" },
-                whiteSpace: "pre-wrap",
-              }}
-            >
-              {job.description}
-            </Typography>
+
+            <MarkdownMessage
+              message={job.description || "No deescption provided yet."}
+              isUser={false}
+            />
           </CardContent>
         </Card>
       )}
@@ -490,7 +485,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
             </Typography>
 
             <Grid container spacing={{ xs: 1, sm: 3 }}>
-              {!job.user_id||profile?.id === job.user_id ? (
+              {!job.user_id || profile?.id === job.user_id ? (
                 <Box
                   sx={{
                     mb: 2,
@@ -530,7 +525,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
                     </div>
                   </Tooltip>
                 </Box>
-              ):(
+              ) : (
                 <Box sx={{ mb: 2, width: "100%" }}>
                   <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
                     Required Match Score:{" "}
@@ -538,7 +533,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
                   </Typography>
                 </Box>
               )}
-              
+
               {basicInfoFields.map((key) => {
                 const value = job[key as keyof Job];
                 if (!value) return null;

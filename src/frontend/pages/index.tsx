@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import LandingPage from "./LandingPage";
 import ICPJobsLandingPage from "./LandingPage/aiJobMatch";
 import JobsPage from "./discover/jobs";
+import AffiliateRedirect from "./affiliateRedirect";
 
 // Lazy imports for heavy components
 const FileContentPage = React.lazy(() => import("./fileContentPage"));
@@ -22,7 +23,9 @@ const SNSVoting = React.lazy(() => import("./white_paper"));
 const DummyShares = React.lazy(() => import("./sharesContract"));
 const AffiliateDashboard = React.lazy(() => import("./affiliate"));
 const ContractPage = React.lazy(() => import("./profile/ContractPage"));
-const CalendarView = React.lazy(() => import("./dash_board_v1/calindarView/calendar"));
+const CalendarView = React.lazy(
+  () => import("./dash_board_v1/calindarView/calendar"),
+);
 const AchievementPage = React.lazy(() => import("@/components/userBadges"));
 const Posts = React.lazy(() => import("./discover/posts"));
 const WalletPage = React.lazy(() => import("./walletPage"));
@@ -30,7 +33,12 @@ const JobPage = React.lazy(() => import("./jobPage"));
 
 // Loading component
 const PageLoader = () => (
-  <Box display="flex" justifyContent="center" alignItems="center" minHeight="50vh">
+  <Box
+    display="flex"
+    justifyContent="center"
+    alignItems="center"
+    minHeight="50vh"
+  >
     <CircularProgress />
   </Box>
 );
@@ -90,6 +98,7 @@ function Pages() {
         <Route path="/achievementCard" element={<AchievementPage />} />
         <Route path="/posts" element={<Posts />} />
         <Route path="/jobs*" element={<JobPage />} />
+        <Route path="/f*" element={<AffiliateRedirect />} />
       </Routes>
     </Suspense>
   );

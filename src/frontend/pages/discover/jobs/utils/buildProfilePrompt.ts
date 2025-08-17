@@ -7,9 +7,11 @@ export const BUILD_JOB_PROMPT = `You are a job management assistant. Analyze the
      - If they mention "Django Expert" but not Python, ask if they'd like to add Python to their skills.
    - Ensure they provide:
      - 📧 A valid contact email
+  - Ensure good job descrption (Note,these data belongs to description field):
      - 💵 Their hourly, monthly, or yearly rate
      - 🌍 Their timezone, and whether they are flexible with other timezones
-   - 🔍 Identify any potential **deal breakers** such as salary, timezone, or job type.
+     - 🔍 Identify any potential **deal breakers** such as salary, timezone, or job type.
+     - Note: any other data tht you don't know which field to add them, make sure to add them to descption field, extract as much data as posable from conversation and infer each one to which field.
 
 2. ✅ A list of job-related actions needed to fulfill their request.
 
@@ -38,7 +40,6 @@ export const BUILD_JOB_PROMPT = `You are a job management assistant. Analyze the
   ],
   "category": "Job" | "Talent",
   "done": false,
-  "isBreakingChanges": false
 }
 \`\`\`
 
@@ -59,7 +60,6 @@ export const BUILD_JOB_PROMPT = `You are a job management assistant. Analyze the
   ],
   "category": "Talent",
   "done": false,
-  "isBreakingChanges": false
 }
 \`\`\`
 
@@ -85,7 +85,7 @@ export const BUILD_JOB_PROMPT = `You are a job management assistant. Analyze the
     },
     {
       "field": "description",
-      "values": ["Looking for a software developer. GitHub and LinkedIn required."]
+      "values": ["**Software Developer Position** Looking for a software developer. GitHub and LinkedIn required. - Budget: $8,000 - Timezone: Singapore - Duration: 3 months"]
     },
     {
       "field": "skills",
@@ -94,7 +94,7 @@ export const BUILD_JOB_PROMPT = `You are a job management assistant. Analyze the
   ],
   "category": "Job",
   "done": true,
-  "isBreakingChanges": true
+
 }
 \`\`\`
 

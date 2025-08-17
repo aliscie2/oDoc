@@ -1,105 +1,128 @@
-import { RootState } from "@/redux/reducers";
-import {
-  Box,
-  Card,
-  CardContent,
-  Chip,
-  CircularProgress,
-  Typography,
-} from "@mui/material";
-import { useMemo, useState } from "react";
+import { Box, CircularProgress, Typography, Button } from "@mui/material";
+import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import ConnectButton from "./discover/jobs/ConnectButton";
+import { useSearchParams } from "react-router-dom";
+import { useBackendContext } from "../contexts/BackendContext";
+import { useSnackbar } from "notistack";
 import JobDetails from "./discover/jobs/JobDetails";
+import UserAvatarMenu from "@/components/MainComponents/UserAvatarMenu";
+import sendEmail from "../utils/sendEmail";
 
 const JobPage = () => {
-  const { profile } = useSelector<RootState>((state) => state.filesState);
-  const { isRegistered } = useSelector<RootState>((state) => state.uiState);
+  const [searchParams] = useSearchParams();
+  const { backendActor } = useBackendContext();
+  const { profile } = useSelector((state: any) => state.filesState);
+  const { enqueueSnackbar } = useSnackbar();
+  const [job, setJob] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [connecting, setConnecting] = useState(false);
 
-  const [jobData, setJobData] = useState({
-    job: null,
-    matches: [],
-    loading: true,
-    error: null,
-  });
+  const jobId = searchParams.get("id");
 
-  const canShowMatches = useMemo(() => {
-    if (!isRegistered || !profile || !jobData.job) return false;
+  useEffect(() => {
+    const fetchJob = async () => {
+      if (!jobId) {
+        setError("No job ID provided");
+        setLoading(false);
+        return;
+      }
 
-    const currentJob = Array.isArray(jobData.job)
-      ? jobData.job[0]
-      : jobData.job;
-    return currentJob && currentJob.user_id !== profile.id;
-  }, [isRegistered, profile, jobData.job]);
+      try {
+        const result = await backendActor.get_job(jobId);
+        if (result && result.length > 0) {
+          setJob(result);
+        } else {
+          setError("Job not found");
+        }
+      } catch (err) {
+        setError("Failed to fetch job");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const renderMinimalMatchCard = ({ job, score, missmatching_skills }) => (
-    <Card key={job?.id} sx={{ mb: 1 }}>
-      <CardContent sx={{ p: 1.5, "&:last-child": { pb: 1.5 } }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-          <Chip
-            label={`${score}%`}
-            size="small"
-            color={score >= 70 ? "success" : score >= 30 ? "warning" : "error"}
-            sx={{ minWidth: 45 }}
-          />
-          <Typography variant="body2" sx={{ flex: 1, fontWeight: 500 }}>
-            {job?.job_titles?.[0] || "Untitled"}
-          </Typography>
-        </Box>
+    fetchJob();
+  }, [jobId, backendActor]);
 
-        {missmatching_skills?.length > 0 && (
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-            {missmatching_skills.slice(0, 4).map((skill, i) => (
-              <Chip
-                key={i}
-                label={skill}
-                size="small"
-                variant="outlined"
-                color="error"
-                sx={{ height: 16, fontSize: "0.6rem" }}
-              />
-            ))}
-            {missmatching_skills.length > 4 && (
-              <Chip
-                label={`+${missmatching_skills.length - 4}`}
-                size="small"
-                variant="outlined"
-                sx={{ height: 16, fontSize: "0.6rem" }}
-              />
-            )}
-          </Box>
-        )}
-      </CardContent>
-    </Card>
-  );
+  const handleConnect = async () => {
+    if (!job || !job[0]) return;
 
-  if (jobData.loading) return <CircularProgress />;
-  if (jobData.error)
-    return <Typography color="error">{jobData.error}</Typography>;
-  if (!jobData.job) return <Typography>Job not found</Typography>;
+    setConnecting(true);
+    try {
+      const currentJob = job[0];
+      const res = await backendActor.get_calendar_by_author(currentJob.user_id);
+      const calendar = res[0];
+      const emails = calendar?.googleIds || [];
+      emails.push(...currentJob.emails);
+
+      if (emails.length === 0) {
+        alert(
+          "User did not set their email yet, try to contact them via oDoc.",
+        );
+        return;
+      }
+
+      const category = Object.keys(currentJob.category)[0];
+      const message =
+        category === "Job"
+          ? "We found a new job opportunity for you."
+          : "We found a new talent that may meet your requirements.";
+
+      for (const email of emails) {
+        const isEmailSent = await sendEmail(
+          "oDoc AI job matcher",
+          message,
+          [email],
+          { job: currentJob },
+          "odoc_job_match",
+        );
+
+        if (isEmailSent) {
+          enqueueSnackbar("Email sent successfully!", { variant: "success" });
+          break;
+        }
+      }
+    } catch (error) {
+      enqueueSnackbar("Failed to send email", { variant: "error" });
+    } finally {
+      setConnecting(false);
+    }
+  };
+
+  if (loading) return <CircularProgress />;
+  if (error) return <Typography color="error">{error}</Typography>;
+  if (!job) return <Typography>Job not found</Typography>;
+
+  const currentJob = job[0];
+  const showConnectButton =
+    profile && currentJob && profile.id !== currentJob.user_id;
 
   return (
     <Box sx={{ p: 2 }}>
-      <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
-        {profile && jobData.job && profile.id != jobData.job.user_id && (
-          <ConnectButton
-            jobId={jobData.job[0].id}
-            matchingJob={jobData.job[0]}
-          />
-        )}
-      </Box>
-      {jobData.job[0] && <JobDetails job={jobData.job[0]} />}
-
-      {canShowMatches && jobData.matches.length > 0 && (
-        <Box sx={{ mt: 3 }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            Potential Matches ({jobData.matches.length})
-          </Typography>
-          <Box sx={{ maxHeight: 400, overflowY: "auto" }}>
-            {jobData.matches.map(renderMinimalMatchCard)}
-          </Box>
+      {showConnectButton && (
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: 2,
+            mb: 2,
+          }}
+        >
+          <UserAvatarMenu user_id={currentJob.user_id} />
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleConnect}
+            disabled={connecting}
+            sx={{ minWidth: "100px" }}
+          >
+            {connecting ? <CircularProgress size={24} /> : "Connect"}
+          </Button>
         </Box>
       )}
+      <JobDetails job={currentJob} match={null} />
     </Box>
   );
 };
