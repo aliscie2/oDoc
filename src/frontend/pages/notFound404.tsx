@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Box,
   Container,
@@ -9,6 +8,7 @@ import {
 } from "@mui/material";
 import { Home, ArrowBack } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
 
 export default function NotFound() {
@@ -92,20 +92,6 @@ export default function NotFound() {
             onClick={() => navigate("/")}
           >
             Go Home
-          </Button>
-
-          <Button
-            variant="outlined"
-            size="large"
-            startIcon={<ArrowBack />}
-            sx={{
-              px: 4,
-              py: 1.5,
-              borderRadius: 2,
-            }}
-            onClick={() => navigate(-1)}
-          >
-            Go Back
           </Button>
         </Box>
       </Box>

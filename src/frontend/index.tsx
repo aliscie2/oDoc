@@ -36,8 +36,8 @@ root.render(
               const basePath =
                 import.meta.env.VITE_DFX_NETWORK === "staging" ? "/oDoc/" : "/";
               const imageName = window.location.hostname.includes("icpjobs")
-                ? "icpjobs_thumnail.png"
-                : "odoc_thumnail.png";
+                ? "https://raw.githubusercontent.com/aliscie2/oDoc/refs/heads/dev2/public/icpjobs_thumnail.png"
+                : "https://raw.githubusercontent.com/aliscie2/oDoc/refs/heads/dev2/public/odoc_thumnail.png";
 
               return (
                 <meta

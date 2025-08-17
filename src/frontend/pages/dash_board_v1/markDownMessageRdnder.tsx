@@ -1,4 +1,4 @@
-import { Typography, Box } from "@mui/material";
+import { Typography, Box, useTheme } from "@mui/material";
 
 interface MarkdownMessageProps {
   message: string;
@@ -6,6 +6,8 @@ interface MarkdownMessageProps {
 }
 
 const MarkdownMessage = ({ message, isUser = false }: MarkdownMessageProps) => {
+  const theme = useTheme();
+  
   // Simple markdown renderer for common markdown elements
   const renderMarkdown = (text: string): string => {
     if (!text || typeof text !== "string") return "";
@@ -14,14 +16,15 @@ const MarkdownMessage = ({ message, isUser = false }: MarkdownMessageProps) => {
     let content = text;
 
     // Handle code blocks (```code```)
+    const codeBlockBg = theme.palette.action.hover;
     content = content.replace(/```([\s\S]*?)```/g, (_match, code) => {
-      return `<pre style="background: rgba(255,255,255,0.1); padding: 8px; border-radius: 4px; overflow-x: auto; margin: 8px 0;"><code>${code.trim()}</code></pre>`;
+      return `<pre style="background: ${codeBlockBg}; padding: 8px; border-radius: 4px; overflow-x: auto; margin: 8px 0; border: 1px solid ${theme.palette.divider};"><code>${code.trim()}</code></pre>`;
     });
 
     // Handle inline code (`code`)
     content = content.replace(
       /`([^`]+)`/g,
-      '<code style="background: rgba(255,255,255,0.1); padding: 2px 4px; border-radius: 2px;">$1</code>',
+      `<code style="background: ${codeBlockBg}; padding: 2px 4px; border-radius: 2px; border: 1px solid ${theme.palette.divider};">$1</code>`,
     );
 
     // Handle bold (**text** or __text__)
@@ -68,7 +71,7 @@ const MarkdownMessage = ({ message, isUser = false }: MarkdownMessageProps) => {
     // Handle links [text](url)
     content = content.replace(
       /\[([^\]]+)\]\(([^)]+)\)/g,
-      '<a href="$2" target="_blank" rel="noopener noreferrer" style="color: #00d4ff; text-decoration: none;">$1</a>',
+      `<a href="$2" target="_blank" rel="noopener noreferrer" style="color: ${theme.palette.primary.main}; text-decoration: none;">$1</a>`,
     );
 
     return content;
@@ -87,15 +90,18 @@ const MarkdownMessage = ({ message, isUser = false }: MarkdownMessageProps) => {
         variant="body2"
         sx={{
           fontSize: { xs: "0.75rem", sm: "0.875rem" },
+          color: theme.palette.text.primary,
           "& code": {
             fontFamily: "monospace",
             fontSize: "0.85em",
+            color: theme.palette.text.primary,
           },
           "& pre": {
             fontFamily: "monospace",
             fontSize: "0.8em",
             whiteSpace: "pre-wrap",
             wordBreak: "break-word",
+            color: theme.palette.text.primary,
           },
           "& ul": {
             listStyleType: "disc",
@@ -110,7 +116,8 @@ const MarkdownMessage = ({ message, isUser = false }: MarkdownMessageProps) => {
             textDecoration: "underline",
           },
           "& h1, & h2, & h3": {
-            color: "inherit",
+            color: theme.palette.text.primary,
+            fontWeight: 600,
           },
         }}
         dangerouslySetInnerHTML={{ __html: renderedContent }}

@@ -23,16 +23,47 @@ export default function PWAInstallPopup(): JSX.Element | null {
   useEffect(() => {
     if (localStorage.getItem("pwa-install-dismissed") === "true") return;
 
+    // Check if already installed
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                        (window.navigator as any).standalone === true;
+    if (isStandalone) return;
+
     const handleBeforeInstallPrompt = (e: BeforeInstallPromptEvent) => {
       e.preventDefault();
       setDeferredPrompt(e);
       setShowPopup(true);
     };
 
+    // Listen for the beforeinstallprompt event
+    // This works on:
+    // - Android Chrome/Edge
+    // - iOS Chrome/Edge (iOS 16.4+)
+    // - Desktop Chrome/Edge
     window.addEventListener(
       "beforeinstallprompt",
       handleBeforeInstallPrompt as EventListener,
     );
+
+    // For debugging: log when the event listener is set up
+    if (process.env.NODE_ENV === 'development') {
+      console.log('PWA: beforeinstallprompt listener added');
+      
+      // Check browser support
+      const userAgent = navigator.userAgent.toLowerCase();
+      const isIOS = /iphone|ipad|ipod/.test(userAgent);
+      const isChrome = /chrome/.test(userAgent) && !/edg/.test(userAgent);
+      const isEdge = /edg/.test(userAgent);
+      const isSafari = /safari/.test(userAgent) && !/chrome/.test(userAgent);
+      
+      console.log('PWA Debug:', {
+        isIOS,
+        isChrome,
+        isEdge,
+        isSafari,
+        userAgent: navigator.userAgent
+      });
+    }
+
     return () =>
       window.removeEventListener(
         "beforeinstallprompt",
@@ -43,14 +74,19 @@ export default function PWAInstallPopup(): JSX.Element | null {
   const handleInstall = async (): Promise<void> => {
     if (!deferredPrompt) return;
 
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
+    try {
+      // Trigger the native browser install prompt
+      await deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
 
-    setDeferredPrompt(null);
-    setShowPopup(false);
+      setDeferredPrompt(null);
+      setShowPopup(false);
 
-    if (dontShowAgain || outcome === "accepted") {
-      localStorage.setItem("pwa-install-dismissed", "true");
+      if (dontShowAgain || outcome === "accepted") {
+        localStorage.setItem("pwa-install-dismissed", "true");
+      }
+    } catch (error) {
+      console.error("Install prompt failed:", error);
     }
   };
 
@@ -61,7 +97,8 @@ export default function PWAInstallPopup(): JSX.Element | null {
     setShowPopup(false);
   };
 
-  if (!showPopup) return null;
+  // Only show if we have a native install prompt
+  if (!showPopup || !deferredPrompt) return null;
 
   return (
     <Dialog open={showPopup} onClose={handleClose} maxWidth="xs" fullWidth>
@@ -69,7 +106,7 @@ export default function PWAInstallPopup(): JSX.Element | null {
         <Typography variant="h6" gutterBottom>
           Install App
         </Typography>
-        <Typography variant="body2" color="text.secondary" paragraph>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           Get quick access with offline support
         </Typography>
         <FormControlLabel

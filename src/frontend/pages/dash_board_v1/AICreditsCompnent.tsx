@@ -1,12 +1,25 @@
 import { useBackendContext } from "@/contexts/BackendContext";
-import { Button } from "flowbite-react";
+import {
+  Button,
+  Box,
+  Typography,
+  TextField,
+  Paper,
+  IconButton,
+  CircularProgress,
+  useTheme,
+} from "@mui/material";
+import { Close as CloseIcon } from "@mui/icons-material";
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 
 const AICreditsComponent = () => {
-  const { wallet } = useSelector((state) => state.filesState);
-  const { aiAgent, credits: aiCredits } = useSelector((state) => state.AIState);
+  const theme = useTheme();
+  const { wallet } = useSelector((state: any) => state.filesState);
+  const { aiAgent, credits: aiCredits } = useSelector(
+    (state: any) => state.AIState,
+  );
   const [showBuyPanel, setShowBuyPanel] = useState(false);
   const [buyAmount, setBuyAmount] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -19,8 +32,8 @@ const AICreditsComponent = () => {
   }, [aiAgent, aiCredits]);
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (!event.target.closest(".credits-container")) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!(event.target as Element)?.closest(".credits-container")) {
         setShowBuyPanel(false);
       }
     };
@@ -30,27 +43,27 @@ const AICreditsComponent = () => {
     }
   }, [showBuyPanel]);
 
-  const getColor = (value) =>
+  const getColor = (value: number) =>
     value < 1
-      ? "#ff1744"
+      ? theme.palette.error.main
       : value < 2.5
-        ? "#ff5722"
+        ? theme.palette.warning.dark
         : value < 3
-          ? "#ff9800"
+          ? theme.palette.warning.main
           : value < 4
-            ? "#ffb74d"
-            : "#4caf50";
+            ? theme.palette.warning.light
+            : theme.palette.success.main;
 
   const handleBuyCredits = async () => {
     setIsLoading(true);
     try {
       const res = await backendActor.buy_ai_credits(buyAmount);
-      if (res.Ok) {
+      if ("Ok" in res) {
         await aiAgent.addCredits(buyAmount, true);
         setCredits(aiAgent.remainingCredits());
         dispatch({ type: "ADD_AI_CREDITS", credits: buyAmount, isFree: false });
       } else {
-        alert(res.Err);
+        alert("Err" in res ? res.Err : "Unknown error");
       }
       setShowBuyPanel(false);
     } catch (error) {
@@ -65,17 +78,17 @@ const AICreditsComponent = () => {
   const isIncreasing = credits > 0;
 
   return (
-    <div
+    <Box
       className="credits-container"
-      style={{
+      sx={{
         position: "relative",
         display: "flex",
         alignItems: "center",
-        gap: "8px",
+        gap: 1,
       }}
     >
-      <div
-        style={{
+      <Box
+        sx={{
           position: "relative",
           width: 40,
           height: 40,
@@ -91,7 +104,7 @@ const AICreditsComponent = () => {
             cy="20"
             r="16"
             fill="none"
-            stroke="rgba(255,255,255,0.1)"
+            stroke={theme.palette.divider}
             strokeWidth="3"
           />
           <circle
@@ -112,8 +125,9 @@ const AICreditsComponent = () => {
             }}
           />
         </svg>
-        <span
-          style={{
+        <Typography
+          variant="caption"
+          sx={{
             position: "absolute",
             top: "50%",
             left: "50%",
@@ -124,68 +138,61 @@ const AICreditsComponent = () => {
           }}
         >
           {credits.toFixed(1)}
-        </span>
-      </div>
+        </Typography>
+      </Box>
 
       {showBuyPanel && (
-        <div
-          style={{
+        <Paper
+          elevation={8}
+          sx={{
             position: "absolute",
             top: "100%",
             left: 0,
-            marginTop: "8px",
-            background: "rgba(0,0,0,0.95)",
-            color: "white",
-            padding: "16px",
-            borderRadius: "8px",
-            minWidth: "200px",
-            border: "1px solid rgba(255,255,255,0.1)",
+            mt: 1,
+            p: 2,
+            minWidth: 200,
             zIndex: 1000,
-            boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
+            bgcolor: theme.palette.background.paper,
+            border: `1px solid ${theme.palette.divider}`,
           }}
         >
-          <div
-            style={{
+          <Box
+            sx={{
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              marginBottom: "12px",
+              mb: 1.5,
             }}
           >
-            <div style={{ fontSize: "14px", fontWeight: "600" }}>
+            <Typography variant="body2" fontWeight="600">
               Credits: {credits.toFixed(1)}/5
-            </div>
-            <button
+            </Typography>
+            <IconButton
+              size="small"
               onClick={() => setShowBuyPanel(false)}
-              style={{
-                background: "none",
-                border: "none",
-                color: "#ccc",
-                fontSize: "16px",
-                cursor: "pointer",
-                padding: "0",
-                lineHeight: "1",
-              }}
+              sx={{ color: theme.palette.text.secondary }}
             >
-              ×
-            </button>
-          </div>
-          <div
-            style={{
-              fontSize: "14px",
-              fontWeight: "600",
-              marginBottom: "12px",
-            }}
-          >
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Box>
+
+          <Typography variant="body2" fontWeight="600" sx={{ mb: 1.5 }}>
             Balance: {wallet.balance}$
-          </div>
-          <div style={{ fontSize: "12px", color: "#ccc", marginBottom: "8px" }}>
+          </Typography>
+
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ mb: 1, display: "block" }}
+          >
             Amount (1-5):
-          </div>
-          <input
+          </Typography>
+
+          <TextField
             type="number"
-            min="1"
-            max="5"
+            size="small"
+            fullWidth
+            inputProps={{ min: 1, max: 5 }}
             value={buyAmount}
             disabled={isLoading}
             onChange={(e) =>
@@ -193,41 +200,33 @@ const AICreditsComponent = () => {
                 Math.min(Math.max(parseInt(e.target.value) || 1, 1), 5),
               )
             }
-            style={{
-              width: "100%",
-              padding: "8px",
-              marginBottom: "12px",
-              background: "rgba(255,255,255,0.1)",
-              border: "1px solid rgba(255,255,255,0.3)",
-              borderRadius: "4px",
-              color: "white",
-              fontSize: "14px",
-            }}
+            sx={{ mb: 1.5 }}
           />
+
           {wallet.balance < buyAmount ? (
-            <Link to="/wallet">You need to deposit.</Link>
+            <Typography
+              component={Link}
+              to="/wallet"
+              color="primary"
+              variant="body2"
+              sx={{ textDecoration: "underline" }}
+            >
+              You need to deposit.
+            </Typography>
           ) : (
             <Button
+              variant="contained"
+              fullWidth
               onClick={handleBuyCredits}
               disabled={isLoading || wallet.balance < buyAmount}
-              style={{
-                width: "100%",
-                padding: "10px",
-                background: isLoading ? "#666" : "#00d4ff",
-                border: "none",
-                borderRadius: "4px",
-                color: "white",
-                fontSize: "14px",
-                cursor: isLoading ? "not-allowed" : "pointer",
-                fontWeight: "600",
-              }}
+              startIcon={isLoading ? <CircularProgress size={16} /> : null}
             >
               {isLoading ? "Buying..." : `Buy ${buyAmount} Credits`}
             </Button>
           )}
-        </div>
+        </Paper>
       )}
-    </div>
+    </Box>
   );
 };
 export default AICreditsComponent;

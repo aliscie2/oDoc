@@ -254,11 +254,11 @@ export default function TopNavBar() {
       onProfileClick: (e) => setMobileMenuAnchor(e.currentTarget),
       profileMenuOptions: getProfileMenuConfig(isRegistered).map((option) => ({
         ...option,
-        icon: <option.icon />,
+        icon: <option.icon sx={{ color: state.theme.palette.text.primary, mr: 1 }} />,
         onClick: option.action === "logout" ? handleLogout : undefined,
       })),
     }),
-    [dispatch, navigate, isRegistered],
+    [dispatch, navigate, isRegistered, state.theme],
   );
 
   // Get navigation items based on configuration
@@ -308,6 +308,7 @@ export default function TopNavBar() {
       state.notifications.length,
       state.isDarkMode,
       imageLink,
+      handlers,
     ],
   );
 
@@ -422,7 +423,9 @@ export default function TopNavBar() {
                   if (option.to) navigate(option.to);
                 }}
               >
-                <ListItemIcon>{option.icon}</ListItemIcon>
+                <ListItemIcon sx={{ color: state.theme.palette.text.primary }}>
+                  {option.icon}
+                </ListItemIcon>
                 <ListItemText primary={option.content} />
               </MenuItem>
             ))}

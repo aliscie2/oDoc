@@ -11,7 +11,6 @@ import {
 } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 
 import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
 import AICreditsComponent from "./AICreditsCompnent";
@@ -73,7 +72,7 @@ const usePageReload = () => {
   return isPageReloaded;
 };
 
-const useOnboarding = (jobs: any[], calendar: any, navigate: any) => {
+const useOnboarding = (jobs: any[], calendar: any) => {
   const isPageReloaded = usePageReload();
 
   return ONBOARDING_DATA.find((item) => {
@@ -92,11 +91,16 @@ const useThemeStyles = () => {
   return {
     theme,
     isDark,
-    chatBg: isDark ? "rgba(0,0,0,0.95)" : "rgba(255,255,255,0.98)",
-    borderColor: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.08)",
-    shadowColor: isDark
-      ? "0 8px 32px rgba(0,0,0,0.4)"
-      : "0 8px 32px rgba(0,0,0,0.12)",
+    chatBg: theme.palette.background.paper,
+    borderColor:
+      theme.palette.morphism?.border ||
+      (isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.08)"),
+    shadowColor:
+      theme.palette.morphism?.glass?.shadow ||
+      (isDark ? "0 8px 32px rgba(0,0,0,0.4)" : "0 8px 32px rgba(0,0,0,0.12)"),
+    glassBackground:
+      theme.palette.morphism?.glass?.background ||
+      (isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.4)"),
   };
 };
 
@@ -163,14 +167,15 @@ const MessageBubble = ({
     maxWidth: "85%",
     bgcolor: isUser
       ? theme.palette.primary.main + (isDark ? "40" : "20")
-      : isDark
-        ? "rgba(255,255,255,0.08)"
-        : "rgba(0,0,0,0.04)",
+      : theme.palette.morphism?.glass?.background ||
+        (isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.04)"),
     p: 1,
     borderRadius: isUser ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
     border: isUser
       ? `1px solid ${theme.palette.primary.main}60`
-      : `1px solid ${isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)"}`,
+      : `1px solid ${theme.palette.morphism?.border || (isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)")}`,
+    backdropFilter: !isUser ? "blur(10px)" : undefined,
+    WebkitBackdropFilter: !isUser ? "blur(10px)" : undefined,
   };
 
   return (
@@ -294,10 +299,7 @@ const ChatHistory = ({
         "&::-webkit-scrollbar": { width: "4px" },
         "&::-webkit-scrollbar-track": { bgcolor: "transparent" },
         "&::-webkit-scrollbar-thumb": {
-          bgcolor:
-            theme.palette.mode === "dark"
-              ? "rgba(255,255,255,0.2)"
-              : "rgba(0,0,0,0.2)",
+          bgcolor: theme.palette.text.disabled,
           borderRadius: "2px",
         },
       }}
@@ -369,7 +371,7 @@ const AIInput = ({
     }
   };
 
-  const isDark = theme.palette.mode === "dark";
+  const { chatBg, borderColor, shadowColor } = useThemeStyles();
 
   // Keep expanded if focused, otherwise use hover state
   const shouldBeExpanded = isFocused || isExpanded;
@@ -390,21 +392,16 @@ const AIInput = ({
     >
       <Box
         sx={{
-          bgcolor: isDark ? "rgba(0,0,0,0.95)" : "rgba(255,255,255,0.98)",
+          bgcolor: chatBg,
           backdropFilter: "blur(20px)",
-          border: isMobile
-            ? "none"
-            : `1px solid ${isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.08)"}`,
-          borderTop: isMobile
-            ? `1px solid ${isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.08)"}`
-            : undefined,
+          WebkitBackdropFilter: "blur(20px)",
+          border: isMobile ? "none" : `1px solid ${borderColor}`,
+          borderTop: isMobile ? `1px solid ${borderColor}` : undefined,
           borderRadius: 1,
           p: shouldBeExpanded ? 1 : 0.5,
           boxShadow: isMobile
-            ? "0 -4px 16px rgba(0,0,0,0.1)"
-            : isDark
-              ? "0 8px 32px rgba(0,0,0,0.4)"
-              : "0 8px 32px rgba(0,0,0,0.12)",
+            ? `0 -4px 16px ${theme.palette.action.hover}`
+            : shadowColor,
           transition: "all 0.3s ease-in-out",
           opacity: shouldBeExpanded ? 1 : 0.8,
         }}
@@ -431,10 +428,16 @@ const AIInput = ({
               "& .MuiOutlinedInput-root": {
                 bgcolor: "transparent",
                 fontSize: shouldBeExpanded ? "0.9rem" : "0.8rem",
+                color: theme.palette.text.primary,
                 "& fieldset": { border: "none" },
                 "& input, & textarea": {
                   py: shouldBeExpanded ? 0.75 : 0.4,
                   transition: "all 0.3s ease-in-out",
+                  color: "inherit",
+                },
+                "& input::placeholder, & textarea::placeholder": {
+                  color: theme.palette.text.secondary,
+                  opacity: 1,
                 },
               },
             }}
@@ -464,7 +467,6 @@ const AIInput = ({
 
 const ChatContainer = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const { jobs } = useSelector((state: any) => state.jobState);
   const { calendar } = useSelector((state: any) => state.calendarState);
   const { aiAgent } = useSelector((state: any) => state.AIState);
@@ -477,7 +479,7 @@ const ChatContainer = () => {
   const addedOnboardingRef = useRef<Set<string>>(new Set());
 
   // Get active onboarding message using the custom hook
-  const activeOnboarding = useOnboarding(jobs, calendar, navigate);
+  const activeOnboarding = useOnboarding(jobs, calendar);
 
   // Add onboarding message to chat history if needed
   useEffect(() => {
@@ -643,26 +645,25 @@ const ChatContainer = () => {
             transform: { xs: "none", sm: "translateX(-50%)" },
             zIndex: 999,
             width: { xs: "100vw", sm: 500 },
-            bgcolor: (theme) =>
-              theme.palette.mode === "dark"
-                ? "rgba(0,0,0,0.95)"
-                : "rgba(255,255,255,0.98)",
+            bgcolor: (theme) => theme.palette.background.paper,
             backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
             border: (theme) => ({
               xs: "none",
-              sm: `1px solid ${theme.palette.mode === "dark" ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.08)"}`,
+              sm: `1px solid ${theme.palette.morphism?.border || (theme.palette.mode === "dark" ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.08)")}`,
             }),
             borderTop: (theme) => ({
-              xs: `1px solid ${theme.palette.mode === "dark" ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.08)"}`,
+              xs: `1px solid ${theme.palette.morphism?.border || (theme.palette.mode === "dark" ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.08)")}`,
               sm: undefined,
             }),
             borderRadius: { xs: 0, sm: 0.5 },
             boxShadow: (theme) => ({
-              xs: "0 -4px 16px rgba(0,0,0,0.1)",
+              xs: `0 -4px 16px ${theme.palette.action.hover}`,
               sm:
-                theme.palette.mode === "dark"
+                theme.palette.morphism?.glass?.shadow ||
+                (theme.palette.mode === "dark"
                   ? "0 8px 32px rgba(0,0,0,0.4)"
-                  : "0 8px 32px rgba(0,0,0,0.12)",
+                  : "0 8px 32px rgba(0,0,0,0.12)"),
             }),
           }}
         >
@@ -674,7 +675,7 @@ const ChatContainer = () => {
             px={1.5}
             py={1}
             borderBottom={(theme) =>
-              `1px solid ${theme.palette.mode === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)"}`
+              `1px solid ${theme.palette.morphism?.border || (theme.palette.mode === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)")}`
             }
           >
             <Box display="flex" alignItems="center" gap={1}>
@@ -692,11 +693,13 @@ const ChatContainer = () => {
             </Box>
             <Box display="flex" alignItems="center" gap={0.5}>
               <Box sx={{ height: 24, overflow: "hidden" }}>
-                {aiAgent&&<RunawayJellyfish
-                  die={aiAgent.remainingCredits() == 0}
-                  thinking={isLoading}
-                  runaway={true}
-                />}
+                {aiAgent && (
+                  <RunawayJellyfish
+                    die={aiAgent.remainingCredits() == 0}
+                    thinking={isLoading}
+                    runaway={true}
+                  />
+                )}
               </Box>
               <IconButton
                 size="small"
@@ -705,10 +708,7 @@ const ChatContainer = () => {
                   color: (theme) => theme.palette.text.secondary,
                   p: 0.5,
                   "&:hover": {
-                    bgcolor: (theme) =>
-                      theme.palette.mode === "dark"
-                        ? "rgba(255,255,255,0.1)"
-                        : "rgba(0,0,0,0.05)",
+                    bgcolor: (theme) => theme.palette.action.hover,
                   },
                 }}
               >
