@@ -88,6 +88,8 @@ pub struct Job {
     pub trust_note: String,
     pub emails: Vec<String>,
     pub contacts: Vec<String>,
+    pub profile_completion: f64, // Must be between 0.0 and 1.0
+    pub feedback: String,        // Feedback text from AI or system
 }
 
 impl Job {
@@ -127,6 +129,21 @@ impl Job {
             match_item.score = Match::normalize_score(match_item.score);
         }
     }
+
+    /// Validates and normalizes the profile completion to be between 0.0 and 1.0
+    pub fn normalize_profile_completion(completion: f64) -> f64 {
+        completion.clamp(0.0, 1.0)
+    }
+
+    /// Sets the profile completion with normalization
+    pub fn set_profile_completion(&mut self, completion: f64) {
+        self.profile_completion = Self::normalize_profile_completion(completion);
+    }
+
+    /// Validates that the profile completion is in the correct range (0.0 to 1.0)
+    pub fn is_valid_profile_completion(&self) -> bool {
+        self.profile_completion >= 0.0 && self.profile_completion <= 1.0
+    }
 }
 
 impl Storable for Job {
@@ -135,7 +152,93 @@ impl Storable for Job {
     }
 
     fn from_bytes(bytes: Cow<[u8]>) -> Self {
-        Decode!(bytes.as_ref(), Self).unwrap()
+        Decode!(bytes.as_ref(), Self).unwrap_or_else(|_| {
+            // Try to decode with old format
+            #[derive(CandidType, Deserialize)]
+            struct OldJob {
+                notification_id: String,
+                notification_username: String,
+                id: String,
+                user_id: String,
+                skills: Vec<String>,
+                education: Vec<String>,
+                links: Vec<String>,
+                experience: Vec<String>,
+                certifications: Vec<String>,
+                job_titles: Vec<String>,
+                description: String,
+                proficiency_level: String,
+                date_created: f64,
+                date_updated: f64,
+                active: bool,
+                matches: Vec<Match>,
+                required_match_score: f32,
+                category: Category,
+                trust_score: String,
+                trust_note: String,
+                emails: Vec<String>,
+                contacts: Vec<String>,
+            }
+
+            match Decode!(bytes.as_ref(), OldJob) {
+                Ok(old_job) => Job {
+                    notification_id: old_job.notification_id,
+                    notification_username: old_job.notification_username,
+                    id: old_job.id,
+                    user_id: old_job.user_id,
+                    skills: old_job.skills,
+                    education: old_job.education,
+                    links: old_job.links,
+                    experience: old_job.experience,
+                    certifications: old_job.certifications,
+                    job_titles: old_job.job_titles,
+                    description: old_job.description,
+                    proficiency_level: old_job.proficiency_level,
+                    date_created: old_job.date_created,
+                    date_updated: old_job.date_updated,
+                    active: old_job.active,
+                    matches: old_job.matches,
+                    required_match_score: old_job.required_match_score,
+                    category: old_job.category,
+                    trust_score: old_job.trust_score,
+                    trust_note: old_job.trust_note,
+                    emails: old_job.emails,
+                    contacts: old_job.contacts,
+                    profile_completion: 0.6, // Default value for new field
+                    feedback: "We apologize, we made new updates to the website. The AI will provide better feedback as you talk to it.".to_string(), // Default value for new field
+                },
+                Err(_) => {
+                    // Use default if both formats fail
+                    let new_job = Job {
+                        notification_id: String::new(),
+                        notification_username: String::new(),
+                        id: "NoneID".to_string(),
+                        user_id: "NoneUserID".to_string(),
+                        skills: Vec::new(),
+                        education: Vec::new(),
+                        links: Vec::new(),
+                        experience: Vec::new(),
+                        certifications: Vec::new(),
+                        job_titles: Vec::new(),
+                        description: String::new(),
+                        proficiency_level: String::new(),
+                        date_created: 0.0,
+                        date_updated: 0.0,
+                        active: false,
+                        matches: Vec::new(),
+                        required_match_score: 0.0,
+                        category: Category::Job,
+                        trust_score: String::new(),
+                        trust_note: String::new(),
+                        emails: Vec::new(),
+                        contacts: Vec::new(),
+                        profile_completion: 0.6, // Default value for new field
+                        feedback: "We apologize, we made new updates to the website. The AI will provide better feedback as you talk to it.".to_string(), // Default value for new field
+                    };
+                    new_job
+                }
+            }
+        })
     }
 
     const BOUND: Bound = Bound::Bounded {

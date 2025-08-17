@@ -283,6 +283,7 @@ type InitialData = record {
 type Job = record {
   id : text;
   active : bool;
+  profile_completion : float64;
   date_created : float64;
   contacts : vec text;
   trust_note : text;
@@ -290,6 +291,7 @@ type Job = record {
   notification_username : text;
   description : text;
   emails : vec text;
+  feedback : text;
   trust_score : text;
   user_id : text;
   links : vec text;

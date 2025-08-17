@@ -1,3 +1,6 @@
+use super::types::Rating;
+use candid::Principal;
+
 #[test]
 fn test_calic() {
     let rating: Rating = Rating {

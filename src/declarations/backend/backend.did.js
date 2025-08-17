@@ -406,6 +406,7 @@ export const idlFactory = ({ IDL }) => {
   const Job = IDL.Record({
     'id' : IDL.Text,
     'active' : IDL.Bool,
+    'profile_completion' : IDL.Float64,
     'date_created' : IDL.Float64,
     'contacts' : IDL.Vec(IDL.Text),
     'trust_note' : IDL.Text,
@@ -413,6 +414,7 @@ export const idlFactory = ({ IDL }) => {
     'notification_username' : IDL.Text,
     'description' : IDL.Text,
     'emails' : IDL.Vec(IDL.Text),
+    'feedback' : IDL.Text,
     'trust_score' : IDL.Text,
     'user_id' : IDL.Text,
     'links' : IDL.Vec(IDL.Text),

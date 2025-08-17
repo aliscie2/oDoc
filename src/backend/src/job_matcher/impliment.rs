@@ -28,6 +28,8 @@ impl Job {
             trust_note: String::new(),
             emails: Vec::new(),
             contacts: Vec::new(),
+            profile_completion: 0.0, // Default to 0.0 (incomplete profile)
+            feedback: String::new(), // Default to empty feedback
         }
     }
 
@@ -45,6 +47,12 @@ impl Job {
             "proficiency_level" => self.proficiency_level = data[0].clone(),
             "trust_score" => self.trust_score = data[0].clone(),
             "trust_note" => self.trust_note = data[0].clone(),
+            "feedback" => self.feedback = data[0].clone(),
+            "profile_completion" => {
+                if let Ok(completion) = data[0].parse::<f64>() {
+                    self.profile_completion = completion.clamp(0.0, 1.0);
+                }
+            }
             _ => (),
         }
     }
@@ -131,6 +139,8 @@ impl Job {
                     updated_job.date_updated = ic_cdk::api::time() as f64;
                     updated_job.matches = Vec::new();
                     updated_job.active = false;
+                    updated_job.profile_completion = 0.0; // Reset to incomplete
+                    updated_job.feedback = String::new(); // Clear feedback
                     store.insert(job_id, updated_job);
                     Ok(())
                 }

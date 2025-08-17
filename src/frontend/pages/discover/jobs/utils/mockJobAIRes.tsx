@@ -17,6 +17,7 @@ export function mockJobAIResponse(
     updates: [] as Array<{ field: string; values: string[] }>,
     category: category.toLowerCase() == "job" ? "Job" : "Talent",
     done: false,
+    profile_completion: 0.0,
   };
 
   // Handle different command types
@@ -267,8 +268,10 @@ export function mockJobAIResponse(
     values: [trustAssessment.note],
   });
 
-  // Check if profile is complete
-  response.done = isProfileComplete(currentJob, response.updates);
+  // Check if profile is complete and set profile_completion
+  const isComplete = isProfileComplete(currentJob, response.updates);
+  response.done = isComplete;
+  response.profile_completion = isComplete ? 1.0 : 0.6; // Set completion percentage
 
   return response;
 }

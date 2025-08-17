@@ -310,6 +310,7 @@ export interface InitialData {
 export interface Job {
   'id' : string,
   'active' : boolean,
+  'profile_completion' : number,
   'date_created' : number,
   'contacts' : Array<string>,
   'trust_note' : string,
@@ -317,6 +318,7 @@ export interface Job {
   'notification_username' : string,
   'description' : string,
   'emails' : Array<string>,
+  'feedback' : string,
   'trust_score' : string,
   'user_id' : string,
   'links' : Array<string>,

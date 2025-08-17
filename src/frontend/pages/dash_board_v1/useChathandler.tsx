@@ -100,7 +100,7 @@ export const useChatHandler = () => {
       parsedJob = textToJson(jobRes).extractedData;
     }
 
-    if (parsedJob?.done) {
+    if (parsedJob?.profile_completion === 1) {
       dispatch({ type: "IS_PROFILE_COMPELETE" });
     }
     // Validation logic
@@ -131,6 +131,8 @@ export const useChatHandler = () => {
         updates: parsedJob.updates,
         category: parsedJob.category,
         required_match_score: parsedJob.required_match_score,
+        feedback: parsedJob.feedback,
+        profile_completion: parsedJob.profile_completion,
       });
     }
 

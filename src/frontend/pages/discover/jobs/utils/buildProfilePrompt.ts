@@ -12,12 +12,18 @@ export const BUILD_JOB_PROMPT = `You are a job management assistant. Analyze the
      - 🌍 Their timezone, and whether they are flexible with other timezones
      - 🔍 Identify any potential **deal breakers** such as salary, timezone, or job type.
      - Note: any other data tht you don't know which field to add them, make sure to add them to descption field, extract as much data as posable from conversation and infer each one to which field.
+  - profile_completion:
+    - if skills  = [] -> 0
+    - if user say that is all/I am doin -> 1
+    - if still missing data -> keep it 0.3 to 0.6
+    - If skills, are there and good descption keep it more than 0.6
+    - Keep it comprehsnive score express profile complition
 
 2. ✅ A list of job-related actions needed to fulfill their request.
 
 3. 🧾 Return a **clear and valid JSON** object as output.
 
-4. 💼 Always try to infer the job title. Do **not** leave \`job_titles = []\`.
+4. 💼 Always try to infer the job title. Do **not** leave \`job_titles = []\`., if user did not privde it infer it.
 
 ---
 
@@ -34,12 +40,16 @@ export const BUILD_JOB_PROMPT = `You are a job management assistant. Analyze the
   "feedback": "📄 Please include your certificates, education, and experience.\n\n🔧 List your technical skills clearly.",
   "updates": [
     {
+      "field": "job_titles",
+      "values": ["Backedn developer"]
+    },
+    {
       "field": "skills",
       "values": ["Rust", "Python", "ICP", "Backend"]
     }
   ],
   "category": "Job" | "Talent",
-  "done": false,
+  "profile_completion": 0.4
 }
 \`\`\`
 
@@ -50,6 +60,10 @@ export const BUILD_JOB_PROMPT = `You are a job management assistant. Analyze the
 💡 **Example Response 1**:
 \`\`\`json
 {
+{
+      "field": "job_titles",
+      "values": ["Backedn developer"]
+    },
   "required_match_score": 0.6,
   "feedback": "🛠️ Please provide a list of your skills.",
   "updates": [
@@ -59,7 +73,7 @@ export const BUILD_JOB_PROMPT = `You are a job management assistant. Analyze the
     }
   ],
   "category": "Talent",
-  "done": false,
+  "profile_completion": 0.3
 }
 \`\`\`
 
@@ -70,7 +84,12 @@ export const BUILD_JOB_PROMPT = `You are a job management assistant. Analyze the
 {
   "required_match_score": 0.7,
   "feedback": "🙌 Thank you for the information. We’re building your profile!",
+  "profile_completion": 1,
   "updates": [
+  {
+      "field": "job_titles",
+      "values": ["Backedn developer"]
+    },
     {
       "field": "trust_score",
       "values": ["0.85"]
@@ -92,8 +111,7 @@ export const BUILD_JOB_PROMPT = `You are a job management assistant. Analyze the
       "values": ["ICP", "Polkadot", "Rust"]
     }
   ],
-  "category": "Job",
-  "done": true,
+  "category": "Job"
 
 }
 \`\`\`
@@ -115,7 +133,7 @@ export const BUILD_JOB_PROMPT = `You are a job management assistant. Analyze the
   "trust_note": string,         // Investigator-style notes: inconsistencies, red flags, etc.
   "trust_score": string,        // "0.9" (0-1 scale), based on overall trustworthiness
   "emails": string[],
-  "contacts": string[]          // e.g. ["https://t.me/username", "x.com/username"]
+  "contacts": string[],          // e.g. ["https://t.me/username", "x.com/username"
 }
 \`\`\`
 `;

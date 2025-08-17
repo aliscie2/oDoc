@@ -108,6 +108,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
       key !== "description" &&
       key !== "cover_letter" &&
       key !== "trust_note" &&
+      key !== "feedback" &&
       job[key as keyof Job] !== undefined,
   );
 

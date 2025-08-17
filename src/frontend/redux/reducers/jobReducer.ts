@@ -30,9 +30,13 @@ type JobAction =
   | { type: "DELETE_MATCH"; id: string }
   | {
       type: "UPDATE_FIELDS";
-      updates: Array<[string, Array<string>]>;
+      updates: Array<
+        [string, Array<string>] | { field: string; values: string[] }
+      >;
       category?: string;
       required_match_score: number;
+      feedback?: string;
+      profile_completion?: number;
     }
   | { type: "UPDATE_REQUIRED_MATCH_SCORE"; score: number }
   | { type: "UPDATE_MATCHING_JOBS"; matchingJobs: Job[]; matches: Match[] }
@@ -57,13 +61,26 @@ function generateDummyJob(): Job {
     skills: [],
     links: [],
     matches: [],
+    profile_completion: 0.0,
+    feedback: "",
+    date_created: 0,
+    date_updated: 0,
+    user_id: "",
+    notification_id: "",
+    notification_username: "",
+    trust_score: "",
+    trust_note: "",
+    emails: [],
+    contacts: [],
   };
 }
 
 function applyFieldUpdates(
   job: Job,
-  updates: Array<{ field: string; values: string[] }>,
+  updates: Array<[string, string[]] | { field: string; values: string[] }>,
   category?: string,
+  feedback?: string,
+  profile_completion?: number,
 ): Job {
   const updatedJob = { ...job };
 
@@ -75,35 +92,81 @@ function applyFieldUpdates(
     }
   }
 
-  updates.forEach(({ field, values }) => {
-    const cleanedValues =
-      field === "links"
-        ? values.map((v) => v.replace(/`/g, "").trim())
-        : values;
+  if (feedback !== undefined) {
+    updatedJob.feedback = feedback;
+  }
 
-    const listFields = [
-      "skills",
-      "education",
-      "experience",
-      "certifications",
-      "job_titles",
-      "links",
-      "emails",
-    ];
-    if (listFields.includes(field)) {
-      (updatedJob as any)[field] = cleanedValues;
-    } else if (
-      [
-        "description",
-        "proficiency_level",
-        "trust_score",
-        "trust_note",
-      ].includes(field)
-    ) {
-      (updatedJob as any)[field] =
-        cleanedValues.length > 0 ? cleanedValues[0] : "";
-    }
-  });
+  if (profile_completion !== undefined) {
+    updatedJob.profile_completion = Math.max(
+      0,
+      Math.min(1, profile_completion),
+    );
+  }
+
+  // Ensure updates is an array and handle different formats
+  if (!updates) {
+    return updatedJob; // Return early if no updates
+  }
+
+  if (Array.isArray(updates)) {
+    updates.forEach((update) => {
+      let field: string;
+      let values: string[];
+
+      // Handle both tuple format [field, values] and object format {field, values}
+      if (Array.isArray(update) && update.length >= 2) {
+        [field, values] = update;
+      } else if (
+        typeof update === "object" &&
+        update !== null &&
+        "field" in update &&
+        "values" in update
+      ) {
+        field = (update as any).field;
+        values = (update as any).values;
+      } else {
+        console.warn("Invalid update format:", update);
+        return; // Skip invalid updates
+      }
+
+      if (!field || typeof field !== "string" || !Array.isArray(values)) {
+        console.warn("Invalid update data:", { field, values });
+        return; // Skip invalid updates
+      }
+
+      const cleanedValues =
+        field === "links"
+          ? values.map((v) => v.replace(/`/g, "").trim())
+          : values;
+
+      const listFields = [
+        "skills",
+        "education",
+        "experience",
+        "certifications",
+        "job_titles",
+        "links",
+        "emails",
+        "contacts",
+      ];
+      if (listFields.includes(field)) {
+        (updatedJob as any)[field] = cleanedValues;
+      } else if (
+        [
+          "description",
+          "proficiency_level",
+          "trust_score",
+          "trust_note",
+          "feedback",
+        ].includes(field)
+      ) {
+        (updatedJob as any)[field] =
+          cleanedValues.length > 0 ? cleanedValues[0] : "";
+      }
+    });
+  } else {
+    console.warn("Updates is not an array:", updates);
+  }
 
   return updatedJob;
 }
@@ -145,6 +208,7 @@ export function jobReducer(
             ],
         isChanged: true,
       };
+
     case "UPDATE_FIELDS":
       const category: any = {};
       category[action.category] = null;
@@ -157,15 +221,37 @@ export function jobReducer(
         required_match_score: [action.required_match_score],
       };
 
+      // Convert updates and add feedback if present
+      const formattedUpdates = action.updates.map((update) =>
+        Array.isArray(update)
+          ? { field: update[0], values: update[1] }
+          : update,
+      );
+
+      // Add feedback to updates if provided
+      if (action.feedback !== undefined) {
+        formattedUpdates.push({ field: "feedback", values: [action.feedback] });
+      }
+
+      // Add profile_completion to updates if provided
+      if (action.profile_completion !== undefined) {
+        formattedUpdates.push({
+          field: "profile_completion",
+          values: [action.profile_completion.toString()],
+        });
+      }
+
       if (!state.currentJobId) {
         const newJob = applyFieldUpdates(
           generateDummyJob(),
           action.updates,
           action.category,
+          action.feedback,
+          action.profile_completion,
         );
         jobUpdate.id = newJob.id;
         jobUpdate.active = [true];
-        jobUpdate.updates = action.updates;
+        jobUpdate.updates = formattedUpdates;
         return {
           ...state,
           currentJobId: newJob.id,
@@ -182,8 +268,10 @@ export function jobReducer(
         job2,
         action.updates,
         action.category,
+        action.feedback,
+        action.profile_completion,
       );
-      // let isAlreadyHaseUpdate = state.jobChanges.some(j=>j.id==state.currentJobId);
+
       const oldJobUpdate = state.jobChanges.find(
         (j) => j.id == state.currentJobId,
       );
@@ -191,7 +279,7 @@ export function jobReducer(
 
       if (oldJobUpdate) {
         jobUpdate = { ...oldJobUpdate };
-        jobUpdate.updates = [...jobUpdate.updates, ...action.updates];
+        jobUpdate.updates = [...jobUpdate.updates, ...formattedUpdates];
         return {
           ...state,
           jobs: state.jobs.map((j) =>
@@ -203,9 +291,10 @@ export function jobReducer(
           isChanged: true,
         };
       }
+
       jobUpdate.active = [true];
       updatedJob2.active = true;
-      jobUpdate.updates = action.updates;
+      jobUpdate.updates = formattedUpdates;
       return {
         ...state,
         jobs: state.jobs.map((j) =>
