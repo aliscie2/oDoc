@@ -1,4 +1,4 @@
-name: Backend Tests and Canister Deployment
+name: Full CI/CD Pipeline
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [dev2, main]
 
 env:
-  VITE_DFX_NETWORK: staging
+  VITE_DFX_NETWORK: local
   DFX_VERSION: "0.27.0"
   NODE_VERSION: "24.4.1"
   # Test Environment
@@ -44,9 +44,16 @@ env:
 jobs:
   test-and-deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     permissions:
       contents: read
       actions: read
+
+      : write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.pages-deployment.outputs.page_url }}
 
     steps:
       - name: Checkout
@@ -101,22 +108,91 @@ jobs:
         with:
           targets: wasm32-unknown-unknown
 
-      - name: Run tests
-        run: yarn test
-        env:
-          NODE_ENV: test
-
-      - name: Deploy canisters
+      - name: Deploy canisters and build frontend (early)
         run: |
-          dfx start --background --host 127.0.0.1:4943
+          # Start local replica in background
+          dfx start --background --clean --host 127.0.0.1:4943
+          # Deploy Internet Computer services first
           dfx deploy internet_identity || echo "II deployment failed"
           sh scripts/first_time_run.sh
           sh scripts/deploy_ledger.sh
           sh scripts/set_env.sh
+          # Deploy backend canister
           dfx deploy backend
-          dfx stop
+          # Build frontend with correct base path for GitHub Pages
+          yarn build
+          # For Pages, we want the regular build output, not DFX canister
+          cp -r ./build/ ./pages-build/
+        env:
+          VITE_DFX_NETWORK: staging
 
-      - name: Comment PR with backend status
+      - name: Setup Pages
+        if: github.event_name == 'push'
+        uses: actions/configure-pages@v4
+
+      - name: Upload to Pages
+        if: github.event_name == 'push'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "./pages-build"
+
+      - name: Deploy to GitHub Pages
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/dev2' || github.ref == 'refs/heads/main')
+        id: pages-deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Run unit tests
+        run: yarn test
+        env:
+          NODE_ENV: test
+
+      - name: Get Playwright version
+        id: playwright-version
+        run: |
+          VERSION=$(node -p "require('./node_modules/@playwright/test/package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ steps.playwright-version.outputs.version }}
+
+      - name: Install Playwright Browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps
+
+      - name: Start frontend server for Playwright testing
+        run: |
+          yarn preview --port 4173 --host 0.0.0.0 &
+          # Wait for server to be ready
+          timeout 60 bash -c 'until curl -f http://localhost:4173; do sleep 2; done'
+        env:
+          NODE_ENV: production
+          VITE_DFX_NETWORK: local
+
+      - name: Run Playwright tests
+        run: yarn playwright test
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:4173
+          VITE_DFX_NETWORK: local
+
+      - name: Stop services
+        if: always()
+        run: |
+          dfx stop || true
+          pkill -f "vite preview" || true
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+      - name: Comment PR with deployment status
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v6
         with:
@@ -125,5 +201,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `✅ **Backend tests and canister deployment completed**\n\nAll backend services are ready. Frontend deployment runs separately for faster feedback.`
+              body: `🚀 **Full CI/CD pipeline completed**\n\n✅ Frontend built and ready for Pages deployment\n✅ Unit tests passed\n✅ Playwright E2E tests passed\n✅ All canisters deployed successfully\n\nPages will deploy when merged to dev2 or main.`
             })

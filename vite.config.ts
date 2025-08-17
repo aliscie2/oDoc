@@ -140,8 +140,8 @@ export default defineConfig({
         theme_color: "#ffffff",
         background_color: "#ffffff",
         display: "fullscreen", // Changed from "standalone"
-        scope: "/",
-        start_url: "/",
+        scope: process.env.VITE_DFX_NETWORK === 'staging' ? "/oDoc/" : "/",
+        start_url: process.env.VITE_DFX_NETWORK === 'staging' ? "/oDoc/" : "/",
         icons: [
           {
             src: "icons/manifest-icon-192.maskable.png",
