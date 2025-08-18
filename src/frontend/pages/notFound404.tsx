@@ -6,9 +6,8 @@ import {
   useTheme,
   useMediaQuery,
 } from "@mui/material";
-import { Home, ArrowBack } from "@mui/icons-material";
+import { Home } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
 import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
 
 export default function NotFound() {

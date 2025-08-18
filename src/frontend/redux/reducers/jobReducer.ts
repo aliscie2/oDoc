@@ -11,6 +11,7 @@ export interface JobState {
   jobs: Job[];
   isChanged: boolean;
   matchingJobs: Job[];
+  jobSearchStage: 0 | 1 | 2;
 }
 
 const initialState: JobState = {
@@ -19,13 +20,15 @@ const initialState: JobState = {
   jobs: [],
   isChanged: false,
   matchingJobs: [],
+  jobSearchStage: 0,
 };
 
 type JobAction =
-  | { type: "SET_CURRENT_JOB"; job: Job }
+  | { type: "SET_CURRENT_JOB_ID"; job: Job }
   | { type: "UPDATE_JOB"; update: JobUpdate }
   | { type: "SET_JOBS"; jobs: Job[] }
   | { type: "ADD_JOB"; job: Job }
+  | { type: "IS_LOOKING_NEW_MATCHES"; stage: 0 | 1 | 2 }
   | { type: "DELETE_JOB"; id: string }
   | { type: "DELETE_MATCH"; id: string }
   | {
@@ -176,7 +179,7 @@ export function jobReducer(
   action: JobAction,
 ): JobState {
   switch (action.type) {
-    case "SET_CURRENT_JOB":
+    case "SET_CURRENT_JOB_ID":
       return { ...state, currentJobId: action.job?.id };
     case "TOGGLE_ACTIVE":
       return {
@@ -306,6 +309,9 @@ export function jobReducer(
         ],
         isChanged: true,
       };
+
+    case "IS_LOOKING_NEW_MATCHES":
+      return { ...state, jobSearchStage: action.stage };
 
     case "UPDATE_MATCHING_JOBS":
       //  is newMatches action.matches + state.currentJobId)?.matches if job_id is repeated we replace with match from action.matches

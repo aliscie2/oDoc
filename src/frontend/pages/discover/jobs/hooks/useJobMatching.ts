@@ -74,12 +74,13 @@ export const useJobMatching = (currentJob: Job | null) => {
     setError(null);
 
     try {
+      dispatch({ type: "IS_LOOKING_NEW_MATCHES", stage: 0 });
       const candidateJobs = await backendActor.get_matches(
         currentJob.id,
         (currentJob.skills || []).map((skill) => skill.toLowerCase()),
         getLookingForCategory(currentJob),
       );
-      console.log({ candidateJobs, currentJob });
+      dispatch({ type: "IS_LOOKING_NEW_MATCHES", stage: 1 });
 
       if (!Array.isArray(candidateJobs) || candidateJobs.length === 0) {
         setLoading(false);
@@ -125,7 +126,7 @@ export const useJobMatching = (currentJob: Job | null) => {
           currentJob.id,
         );
       }
-      console.log({ candidateJobs, processedMatches });
+      dispatch({ type: "IS_LOOKING_NEW_MATCHES", stage: 2 });
 
       dispatch({
         type: "UPDATE_MATCHING_JOBS",

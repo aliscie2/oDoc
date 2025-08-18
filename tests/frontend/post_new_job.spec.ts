@@ -2,16 +2,16 @@ import { test, expect } from "@playwright/test";
 import { registerUser } from "./utils/login";
 
 test.describe("Job Matching System", () => {
-  test("should complete onboarding flow: signup → job onboarding → create job → reload → calendar onboarding", async ({
+  test("should complete onboarding flow: signup → welcome onboarding → create job → reload → calendar onboarding", async ({
     page,
   }) => {
-    // 1. Signup and get onboarding message
+    // 1. Signup and get welcome onboarding message (new scenario)
     await registerUser(page);
 
     // Wait for loading to complete before checking onboarding message
     await page.waitForTimeout(3000);
 
-    // Should see job onboarding message
+    // Should see welcome onboarding message (updated for new scenario)
     await expect(
       page.getByText(
         "👋 Welcome! I'm here to help you find the perfect opportunities",
@@ -120,4 +120,34 @@ test.describe("Job Matching System", () => {
 
     await page2.close();
   });
+});
+
+test("should test new onboarding features and localStorage persistence", async ({
+  page,
+}) => {
+  await registerUser(page);
+  await page.waitForTimeout(3000);
+
+  // Should see welcome onboarding message (new feature)
+  await expect(
+    page.getByText(
+      "👋 Welcome! I'm here to help you find the perfect opportunities",
+    ),
+  ).toBeVisible();
+
+  // Send a message to complete onboarding
+  await page.getByPlaceholder("Ask AI anything...").click();
+  await page
+    .getByPlaceholder("Ask AI anything...")
+    .fill("talent//as>icp,rust,ts,typescript");
+  await page.locator("#submitAIMessage").click();
+  await page.waitForTimeout(2000);
+
+  // Reload the page to test localStorage persistence
+  await page.reload();
+  await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(3000);
+
+  // Chat should still be functional after reload
+  await expect(page.getByPlaceholder("Ask AI anything...")).toBeVisible();
 });

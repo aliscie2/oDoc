@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Job } from "$/declarations/backend/backend.did";
 import {
   Box,

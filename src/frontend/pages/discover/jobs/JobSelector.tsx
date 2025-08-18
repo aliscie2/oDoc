@@ -96,7 +96,7 @@ const JobSelector: React.FC = () => {
 
   const handleJobSelect = (jobId: string | null) => {
     const job = jobId ? jobs.find((j: Job) => j.id === jobId) : null;
-    dispatch({ type: "SET_CURRENT_JOB", job });
+    dispatch({ type: "SET_CURRENT_JOB_ID", job });
     setExpanded(false);
   };
 

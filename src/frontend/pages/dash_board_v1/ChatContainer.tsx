@@ -8,17 +8,17 @@ import {
   Typography,
   useMediaQuery,
   useTheme,
+  Theme,
 } from "@mui/material";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
 import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
 import AICreditsComponent from "./AICreditsCompnent";
 import MarkdownMessage from "./markDownMessageRdnder";
 import { undoCalendarAction, undoJobAction } from "./reverseAction";
-import { useChatHandler } from "./useChathandler";
+import { useChatHandler } from "./useChatHandler";
 
-// Types
+// ===== TYPE DEFINITIONS =====
 interface ChatMessage {
   type: "user" | "ai";
   message: string;
@@ -27,64 +27,38 @@ interface ChatMessage {
   canRedo?: boolean;
   canRetry?: boolean;
   action_type?: string;
-  actions?: any[];
+  actions?: unknown[];
   isTyping?: boolean;
 }
 
-interface OnboardingItem {
-  id: string;
-  text: string;
-  condition: (jobs: any[], calendar: any) => boolean;
-  key: string;
-  onCondition?: () => void;
+interface ReduxState {
+  AIState: {
+    aiAgent: {
+      remainingCredits: () => number;
+    };
+  };
+  jobState: {
+    jobs: unknown[];
+    currentJobId: string | null;
+    jobSearchStage: number;
+  };
+  calendarState: {
+    calendar: {
+      availabilities?: unknown[];
+    };
+  };
 }
 
-// Constants
-const ONBOARDING_DATA: OnboardingItem[] = [
-  {
-    id: "job-search",
-    text: "👋 Welcome! I'm here to help you find the perfect opportunities or connect you with matching jobs or talent. \n\n**Let's get started:**\n- Are you looking for your next career move? \n- Or are you hiring and need to find the right candidates?\n\nTell me about your goals, preferred roles, skills, or what kind of talent you're seeking. The more details you share, the better I can assist you!",
-    condition: (jobs: any[]) => jobs.length === 0,
-    key: "jobOnboardingShown",
-  },
-  {
-    id: "calendar-setup",
-    text: "🗓️ Perfect! Now let's set up your availability so potential matches can book interviews with you.\n\n**Share your interview schedule:**\n- What days work best for interviews?\n- What are your preferred hours? (e.g., \"I'm available for interviews Monday-Friday, 9 AM to 6 PM\")\n- Any specific time zones or scheduling preferences?\n\nThis allows employers or candidates to easily book interview slots that work for both of you!",
-    condition: (jobs: any[], calendar: any) =>
-      jobs.length > 0 && (calendar.availabilities?.length || 0) === 0,
-    key: "calendarOnboardingShown",
-  },
-];
+interface ThemeStyles {
+  theme: Theme;
+  isDark: boolean;
+  chatBg: string;
+  borderColor: string;
+  shadowColor: string;
+}
 
-// Custom hooks
-const usePageReload = () => {
-  const [isPageReloaded, setIsPageReloaded] = useState(false);
-
-  useEffect(() => {
-    const navigationEntries = performance.getEntriesByType(
-      "navigation",
-    ) as PerformanceNavigationTiming[];
-    if (navigationEntries.length > 0) {
-      setIsPageReloaded(navigationEntries[0].type === "reload");
-    }
-  }, []);
-
-  return isPageReloaded;
-};
-
-const useOnboarding = (jobs: any[], calendar: any) => {
-  const isPageReloaded = usePageReload();
-
-  return ONBOARDING_DATA.find((item) => {
-    const isCompleted = localStorage.getItem(item.key) === "completed";
-    const shouldShow =
-      item.condition(jobs, calendar) &&
-      (item.id !== "calendar-setup" || isPageReloaded);
-    return !isCompleted && shouldShow;
-  });
-};
-
-const useThemeStyles = () => {
+// ===== CUSTOM HOOKS =====
+const useThemeStyles = (): ThemeStyles => {
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
 
@@ -92,20 +66,14 @@ const useThemeStyles = () => {
     theme,
     isDark,
     chatBg: theme.palette.background.paper,
-    borderColor:
-      theme.palette.morphism?.border ||
-      (isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.08)"),
-    shadowColor:
-      theme.palette.morphism?.glass?.shadow ||
-      (isDark ? "0 8px 32px rgba(0,0,0,0.4)" : "0 8px 32px rgba(0,0,0,0.12)"),
-    glassBackground:
-      theme.palette.morphism?.glass?.background ||
-      (isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.4)"),
+    borderColor: isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.08)",
+    shadowColor: isDark
+      ? "0 8px 32px rgba(0,0,0,0.4)"
+      : "0 8px 32px rgba(0,0,0,0.12)",
   };
 };
 
-// Typing effect hook
-const useTypingEffect = (text: string, onComplete?: () => void) => {
+const useTypingEffect = (text: string, onComplete?: () => void): string => {
   const [displayText, setDisplayText] = useState("");
   const { theme } = useThemeStyles();
 
@@ -114,7 +82,6 @@ const useTypingEffect = (text: string, onComplete?: () => void) => {
 
     const typingSpeed =
       text.length > 200 ? Math.max(10, 30 - (text.length - 200) / 20) : 30;
-
     let currentIndex = 0;
     setDisplayText("");
 
@@ -131,16 +98,12 @@ const useTypingEffect = (text: string, onComplete?: () => void) => {
     return () => clearInterval(timer);
   }, [text, onComplete]);
 
-  const textWithCursor =
-    displayText.length < text.length
-      ? displayText +
-        `<span style="color: ${theme.palette.primary.main}; animation: blink 1s infinite;">|</span><style>@keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }</style>`
-      : displayText;
-
-  return textWithCursor;
+  return displayText.length < text.length
+    ? `${displayText}<span style="color: ${theme.palette.primary.main}; animation: blink 1s infinite;">|</span><style>@keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }</style>`
+    : displayText;
 };
 
-// Typing Markdown Message Component
+// ===== COMPONENTS =====
 const TypingMarkdownMessage = ({
   text,
   onComplete,
@@ -152,7 +115,6 @@ const TypingMarkdownMessage = ({
   return <MarkdownMessage message={textWithCursor} isUser={false} />;
 };
 
-// Message Bubble Component
 const MessageBubble = ({
   msg,
   onTypingComplete,
@@ -166,14 +128,15 @@ const MessageBubble = ({
   const bubbleStyles = {
     maxWidth: "85%",
     bgcolor: isUser
-      ? theme.palette.primary.main + (isDark ? "40" : "20")
-      : theme.palette.morphism?.glass?.background ||
-        (isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.04)"),
+      ? `${theme.palette.primary.main}${isDark ? "40" : "20"}`
+      : isDark
+        ? "rgba(255,255,255,0.08)"
+        : "rgba(0,0,0,0.04)",
     p: 1,
     borderRadius: isUser ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
     border: isUser
       ? `1px solid ${theme.palette.primary.main}60`
-      : `1px solid ${theme.palette.morphism?.border || (isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)")}`,
+      : `1px solid ${isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)"}`,
     backdropFilter: !isUser ? "blur(10px)" : undefined,
     WebkitBackdropFilter: !isUser ? "blur(10px)" : undefined,
   };
@@ -200,7 +163,6 @@ const MessageBubble = ({
   );
 };
 
-// Action Buttons Component - Reusable
 const MessageActions = ({
   msg,
   onUndo,
@@ -214,9 +176,8 @@ const MessageActions = ({
 }) => {
   const theme = useTheme();
 
-  if (msg.type !== "ai" || !(msg.canUndo || msg.canRedo || msg.canRetry)) {
+  if (msg.type !== "ai" || !(msg.canUndo || msg.canRedo || msg.canRetry))
     return null;
-  }
 
   const actions = [
     {
@@ -256,7 +217,7 @@ const MessageActions = ({
             p: "2px 6px",
             fontSize: "0.65rem",
             textTransform: "none",
-            "&:hover": { bgcolor: color + "15" },
+            "&:hover": { bgcolor: `${color}15` },
           }}
         >
           {label}
@@ -266,7 +227,6 @@ const MessageActions = ({
   );
 };
 
-// Chat History Component - Simplified
 const ChatHistory = ({
   chatHistory,
   onUndoMessage,
@@ -319,13 +279,16 @@ const ChatHistory = ({
   );
 };
 
-// AI Input Component - Streamlined
 const AIInput = ({
   onSendMessage,
   isLoading,
+  chatHistory,
+  setIsMinimized,
 }: {
   onSendMessage: (message: string) => void;
   isLoading: boolean;
+  chatHistory: ChatMessage[];
+  setIsMinimized: (minimized: boolean) => void;
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -334,46 +297,30 @@ const AIInput = ({
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleSend = () => {
+  const handleSend = useCallback(() => {
     if (!message.trim()) return;
     onSendMessage(message);
     setMessage("");
     setTimeout(() => inputRef.current?.focus(), 100);
-  };
+  }, [message, onSendMessage]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        handleSend();
+      }
+    },
+    [handleSend],
+  );
 
-  const handleFocus = () => {
+  const handleFocus = useCallback(() => {
     setIsFocused(true);
     setIsExpanded(true);
-  };
-
-  const handleBlur = () => {
-    setIsFocused(false);
-    setIsExpanded(false);
-  };
-
-  const handleMouseEnter = () => {
-    if (!isFocused) {
-      setIsExpanded(true);
-    }
-  };
-
-  const handleMouseLeave = () => {
-    // Only shrink if the input is not focused
-    if (!isFocused) {
-      setIsExpanded(false);
-    }
-  };
+    if (chatHistory.length > 0) setIsMinimized(false);
+  }, [chatHistory.length, setIsMinimized]);
 
   const { chatBg, borderColor, shadowColor } = useThemeStyles();
-
-  // Keep expanded if focused, otherwise use hover state
   const shouldBeExpanded = isFocused || isExpanded;
 
   return (
@@ -387,8 +334,8 @@ const AIInput = ({
         width: isMobile ? "100vw" : shouldBeExpanded ? 500 : 300,
         transition: "width 0.3s ease-in-out",
       }}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      onMouseEnter={() => !isFocused && setIsExpanded(true)}
+      onMouseLeave={() => !isFocused && setIsExpanded(false)}
     >
       <Box
         sx={{
@@ -422,7 +369,10 @@ const AIInput = ({
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
             onFocus={handleFocus}
-            onBlur={handleBlur}
+            onBlur={() => {
+              setIsFocused(false);
+              setIsExpanded(false);
+            }}
             placeholder="Ask AI anything..."
             sx={{
               "& .MuiOutlinedInput-root": {
@@ -443,16 +393,15 @@ const AIInput = ({
             }}
           />
           <IconButton
-            id="submitAIMessage"
             disabled={isLoading || !message.trim()}
             onClick={handleSend}
             size={shouldBeExpanded ? "medium" : "small"}
             sx={{
               color: theme.palette.primary.main,
               bgcolor: message.trim()
-                ? theme.palette.primary.main + "15"
+                ? `${theme.palette.primary.main}15`
                 : "transparent",
-              "&:hover": { bgcolor: theme.palette.primary.main + "25" },
+              "&:hover": { bgcolor: `${theme.palette.primary.main}25` },
               "&:disabled": { color: theme.palette.text.disabled },
               transition: "all 0.3s ease-in-out",
             }}
@@ -465,177 +414,230 @@ const AIInput = ({
   );
 };
 
+// ===== MAIN COMPONENT =====
 const ChatContainer = () => {
   const dispatch = useDispatch();
-  const { jobs } = useSelector((state: any) => state.jobState);
-  const { calendar } = useSelector((state: any) => state.calendarState);
-  const { aiAgent } = useSelector((state: any) => state.AIState);
-  const { processMessage } = useChatHandler();
+  const { aiAgent } = useSelector((state: ReduxState) => state.AIState);
+  const { processMessage, getTriggeredMessages, getMessage } = useChatHandler();
 
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [messageCounter, setMessageCounter] = useState(0);
   const [isMinimized, setIsMinimized] = useState(false);
-  const addedOnboardingRef = useRef<Set<string>>(new Set());
+  const [shownMessageIds, setShownMessageIds] = useState<Set<string>>(
+    new Set(),
+  );
 
-  // Get active onboarding message using the custom hook
-  const activeOnboarding = useOnboarding(jobs, calendar);
+  // Store latest function references to avoid dependency issues
+  const functionsRef = useRef({ getTriggeredMessages, getMessage });
+  functionsRef.current = { getTriggeredMessages, getMessage };
 
-  // Add onboarding message to chat history if needed
-  useEffect(() => {
-    if (
-      activeOnboarding &&
-      !isMinimized &&
-      !addedOnboardingRef.current.has(activeOnboarding.id)
-    ) {
-      addedOnboardingRef.current.add(activeOnboarding.id);
-      setChatHistory((prev) => [
-        ...prev,
-        {
-          type: "ai",
-          message: activeOnboarding.text,
-          id: activeOnboarding.id,
-          canUndo: false,
-          canRedo: false,
-          canRetry: false,
-          isTyping: true,
-        },
-      ]);
-
-      // Execute onCondition callback if it exists
-      if (activeOnboarding.onCondition) {
-        activeOnboarding.onCondition();
-      }
-    }
-  }, [activeOnboarding, isMinimized]);
+  const { jobs, calendar, jobSearchStage, currentJobId } = useSelector(
+    (state: ReduxState) => ({
+      jobs: state.jobState?.jobs || [],
+      calendar: state.calendarState?.calendar || {},
+      jobSearchStage: state.jobState?.jobSearchStage || 0,
+      currentJobId: state.jobState?.currentJobId || null,
+    }),
+  );
 
   const isExpanded = chatHistory.length > 0 && !isMinimized;
 
-  const handleClose = () => {
-    setIsMinimized(true);
-  };
+  // Initialize and handle all triggered messages with proper deduplication
+  useEffect(() => {
+    const { getTriggeredMessages, getMessage } = functionsRef.current;
 
-  const handleTypingComplete = (messageId: string | number) => {
+    const allTriggeredMessages = [
+      ...getTriggeredMessages("immediate"),
+      ...getTriggeredMessages("automatic"),
+      ...getTriggeredMessages("contextual"),
+    ];
+
+    // Use functional update to ensure we have the latest shownMessageIds
+    setShownMessageIds((currentShownIds) => {
+      const newMessages = allTriggeredMessages.filter(
+        (msg) => !currentShownIds.has(msg.id),
+      );
+
+      if (newMessages.length > 0) {
+        const newChatMessages = newMessages.map((messageRule, index) => ({
+          type: "ai" as const,
+          message: getMessage(messageRule.message),
+          id: `${messageRule.id}-${Date.now()}-${index}`, // Unique timestamp-based ID
+          canUndo: messageRule.canUndo,
+          canRedo: false,
+          canRetry: messageRule.canRetry,
+          action_type: messageRule.actionType,
+          actions: [],
+          isTyping: true,
+        }));
+
+        setChatHistory((prev) => [...prev, ...newChatMessages]);
+        setIsMinimized(false);
+
+        // Return updated shownMessageIds
+        const newSet = new Set(currentShownIds);
+        newMessages.forEach((msg) => newSet.add(msg.id));
+        return newSet;
+      }
+
+      // No new messages, return current set unchanged
+      return currentShownIds;
+    });
+  }, [
+    jobs.length,
+    jobSearchStage,
+    currentJobId,
+    calendar.availabilities?.length,
+    // Functions are accessed via ref, no dependency needed
+  ]);
+
+  // Cleanup shown messages
+  useEffect(() => {
+    const allCurrentMessages = [
+      ...getTriggeredMessages("immediate"),
+      ...getTriggeredMessages("automatic"),
+      ...getTriggeredMessages("contextual"),
+    ];
+    const currentMessageIds = new Set(allCurrentMessages.map((m) => m.id));
+
+    setShownMessageIds((prev) => {
+      const filtered = new Set(
+        [...prev].filter((id) => currentMessageIds.has(id)),
+      );
+      return filtered.size !== prev.size ? filtered : prev;
+    });
+  }, [
+    jobs.length,
+    calendar.availabilities?.length,
+    jobSearchStage,
+    currentJobId,
+    getTriggeredMessages,
+  ]);
+
+  const handleTypingComplete = useCallback((messageId: string | number) => {
     setChatHistory((prev) =>
       prev.map((msg) =>
         msg.id === messageId ? { ...msg, isTyping: false } : msg,
       ),
     );
-  };
+  }, []);
 
-  const handleChatSend = async (message: string) => {
-    const messageId = messageCounter + 1;
-    setMessageCounter(messageId);
+  const handleChatSend = useCallback(
+    async (message: string) => {
+      const messageId = Date.now(); // Use timestamp instead
+      setIsMinimized(false);
 
-    // Complete onboarding when user sends first message
-    if (activeOnboarding) {
-      localStorage.setItem(activeOnboarding.key, "completed");
-    }
-
-    setIsMinimized(false);
-
-    // Add user message (no typing effect)
-    setChatHistory((prev) => [
-      ...prev,
-      { type: "user", message, id: messageId + "user" },
-    ]);
-    setIsLoading(true);
-
-    try {
-      const result = await processMessage(message, messageId, true);
-      // Add AI message with typing effect
       setChatHistory((prev) => [
         ...prev,
-        {
-          type: "ai",
-          message: result.feedback,
-          id: messageId,
-          canUndo: result.actions?.length > 0,
-          canRedo: false,
-          canRetry: result.actions?.length > 0,
-          action_type: result.action_type,
-          actions: result.actions,
-          isTyping: true,
-        },
+        { type: "user", message, id: `${messageId}-user` },
       ]);
-    } catch (error: any) {
-      // Add error message with typing effect
-      setChatHistory((prev) => [
-        ...prev,
-        {
-          type: "ai",
-          message: error.message || "An error occurred",
-          id: messageId,
-          canUndo: false,
-          canRedo: false,
-          canRetry: true,
-          isTyping: true,
-        },
-      ]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      setIsLoading(true);
 
-  const handleUndoMessage = (messageId: string | number) => {
-    const message = chatHistory.find((m) => m.id == messageId) as any;
-    if (!message) return;
+      try {
+        const result = await processMessage(message, messageId);
+        setChatHistory((prev) => [
+          ...prev,
+          {
+            type: "ai",
+            message: result.feedback,
+            id: `${messageId}-ai`,
+            canUndo: (result.actions?.length || 0) > 0,
+            canRedo: false,
+            canRetry: (result.actions?.length || 0) > 0,
+            action_type: result.action_type,
+            actions: result.actions,
+            isTyping: true,
+          },
+        ]);
+      } catch (error: any) {
+        setChatHistory((prev) => [
+          ...prev,
+          {
+            type: "ai",
+            message: error.message || "An error occurred",
+            id: `${messageId}-error`,
+            canUndo: false,
+            canRedo: false,
+            canRetry: true,
+            isTyping: true,
+          },
+        ]);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [processMessage], // Remove messageCounter dependency
+  );
 
-    if (message.action_type === "CALENDAR") {
-      undoCalendarAction(message).forEach((action: any) => dispatch(action));
-    } else if (message.action_type === "JOB") {
-      const undoAction = undoJobAction(message);
-      if (undoAction) dispatch(undoAction);
-    }
+  const handleUndoMessage = useCallback(
+    (messageId: string | number) => {
+      const message = chatHistory.find((m) => m.id === messageId) as any;
+      if (!message) return;
 
-    setChatHistory((prev) =>
-      prev.map((msg) =>
-        msg.id === messageId && msg.type === "ai"
-          ? { ...msg, canUndo: false, canRedo: true }
-          : msg,
-      ),
-    );
-  };
+      if (message.action_type === "CALENDAR") {
+        undoCalendarAction(message).forEach((action: any) => dispatch(action));
+      } else if (message.action_type === "JOB") {
+        const undoAction = undoJobAction(message);
+        if (undoAction) dispatch(undoAction);
+      }
 
-  const handleRedoMessage = (messageId: string | number) => {
-    const message = chatHistory.find((m) => m.id == messageId) as any;
-    if (!message) return;
+      setChatHistory((prev) =>
+        prev.map((msg) =>
+          msg.id === messageId && msg.type === "ai"
+            ? { ...msg, canUndo: false, canRedo: true }
+            : msg,
+        ),
+      );
+    },
+    [chatHistory, dispatch],
+  );
 
-    if (message.action_type === "CALENDAR") {
-      message.actions?.forEach((action: any) => dispatch(action));
-    } else if (message.action_type === "JOB") {
-      dispatch({
-        type: "UPDATE_FIELDS",
-        updates: message.actions,
-        category: Object.keys(
-          message.prev_job?.category || message.curr_job?.category || {},
-        )[0],
-        required_match_score:
-          message.prev_job?.required_match_score ||
-          message.curr_job?.required_match_score,
-      });
-    }
+  const handleRedoMessage = useCallback(
+    (messageId: string | number) => {
+      const message = chatHistory.find((m) => m.id === messageId) as any;
+      if (!message) return;
 
-    setChatHistory((prev) =>
-      prev.map((msg) =>
-        msg.id === messageId && msg.type === "ai"
-          ? { ...msg, canUndo: true, canRedo: false }
-          : msg,
-      ),
-    );
-  };
+      if (message.action_type === "CALENDAR") {
+        message.actions?.forEach((action: any) => dispatch(action));
+      } else if (message.action_type === "JOB") {
+        dispatch({
+          type: "UPDATE_FIELDS",
+          updates: message.actions,
+          category: Object.keys(
+            message.prev_job?.category || message.curr_job?.category || {},
+          )[0],
+          required_match_score:
+            message.prev_job?.required_match_score ||
+            message.curr_job?.required_match_score,
+        });
+      }
 
-  const handleRetry = (msgId: string | number) => {
-    const msg = chatHistory.find((m) => m.id === msgId);
-    const userMsg =
-      chatHistory[chatHistory.findIndex((m) => m.id === msgId) - 1];
-    if (msg?.canUndo) handleUndoMessage(msgId);
-    if (userMsg?.message) handleChatSend(userMsg.message);
-  };
+      setChatHistory((prev) =>
+        prev.map((msg) =>
+          msg.id === messageId && msg.type === "ai"
+            ? { ...msg, canUndo: true, canRedo: false }
+            : msg,
+        ),
+      );
+    },
+    [chatHistory, dispatch],
+  );
+
+  const handleRetry = useCallback(
+    (msgId: string | number) => {
+      const msg = chatHistory.find((m) => m.id === msgId);
+      const userMsg =
+        chatHistory[chatHistory.findIndex((m) => m.id === msgId) - 1];
+      if (msg?.canUndo) handleUndoMessage(msgId);
+      if (userMsg?.message) handleChatSend(userMsg.message);
+    },
+    [chatHistory, handleUndoMessage, handleChatSend],
+  );
+
+  const { theme, isDark } = useThemeStyles();
 
   return (
     <>
-      {/* Chat History - only show when expanded */}
       {isExpanded && (
         <Box
           sx={{
@@ -645,45 +647,40 @@ const ChatContainer = () => {
             transform: { xs: "none", sm: "translateX(-50%)" },
             zIndex: 999,
             width: { xs: "100vw", sm: 500 },
-            bgcolor: (theme) => theme.palette.background.paper,
+            bgcolor: theme.palette.background.paper,
             backdropFilter: "blur(20px)",
             WebkitBackdropFilter: "blur(20px)",
-            border: (theme) => ({
+            border: {
               xs: "none",
-              sm: `1px solid ${theme.palette.morphism?.border || (theme.palette.mode === "dark" ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.08)")}`,
-            }),
-            borderTop: (theme) => ({
-              xs: `1px solid ${theme.palette.morphism?.border || (theme.palette.mode === "dark" ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.08)")}`,
+              sm: `1px solid ${isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.08)"}`,
+            },
+            borderTop: {
+              xs: `1px solid ${isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.08)"}`,
               sm: undefined,
-            }),
+            },
             borderRadius: { xs: 0, sm: 0.5 },
-            boxShadow: (theme) => ({
+            boxShadow: {
               xs: `0 -4px 16px ${theme.palette.action.hover}`,
-              sm:
-                theme.palette.morphism?.glass?.shadow ||
-                (theme.palette.mode === "dark"
-                  ? "0 8px 32px rgba(0,0,0,0.4)"
-                  : "0 8px 32px rgba(0,0,0,0.12)"),
-            }),
+              sm: isDark
+                ? "0 8px 32px rgba(0,0,0,0.4)"
+                : "0 8px 32px rgba(0,0,0,0.12)",
+            },
           }}
         >
-          {/* Header - Compact */}
           <Box
             display="flex"
             justifyContent="space-between"
             alignItems="center"
             px={1.5}
             py={1}
-            borderBottom={(theme) =>
-              `1px solid ${theme.palette.morphism?.border || (theme.palette.mode === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)")}`
-            }
+            borderBottom={`1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)"}`}
           >
             <Box display="flex" alignItems="center" gap={1}>
               <AICreditsComponent />
               <Typography
                 variant="body2"
                 sx={{
-                  color: (theme) => theme.palette.primary.main,
+                  color: theme.palette.primary.main,
                   fontWeight: 600,
                   fontSize: "0.8rem",
                 }}
@@ -695,7 +692,7 @@ const ChatContainer = () => {
               <Box sx={{ height: 24, overflow: "hidden" }}>
                 {aiAgent && (
                   <RunawayJellyfish
-                    die={aiAgent.remainingCredits() == 0}
+                    die={aiAgent.remainingCredits() === 0}
                     thinking={isLoading}
                     runaway={true}
                   />
@@ -703,21 +700,17 @@ const ChatContainer = () => {
               </Box>
               <IconButton
                 size="small"
-                onClick={handleClose}
+                onClick={() => setIsMinimized(true)}
                 sx={{
-                  color: (theme) => theme.palette.text.secondary,
+                  color: theme.palette.text.secondary,
                   p: 0.5,
-                  "&:hover": {
-                    bgcolor: (theme) => theme.palette.action.hover,
-                  },
+                  "&:hover": { bgcolor: theme.palette.action.hover },
                 }}
               >
                 <Close fontSize="small" />
               </IconButton>
             </Box>
           </Box>
-
-          {/* Chat History */}
           <ChatHistory
             chatHistory={chatHistory}
             onUndoMessage={handleUndoMessage}
@@ -727,9 +720,12 @@ const ChatContainer = () => {
           />
         </Box>
       )}
-
-      {/* AI Input */}
-      <AIInput onSendMessage={handleChatSend} isLoading={isLoading} />
+      <AIInput
+        onSendMessage={handleChatSend}
+        isLoading={isLoading}
+        chatHistory={chatHistory}
+        setIsMinimized={setIsMinimized}
+      />
     </>
   );
 };

@@ -29,7 +29,9 @@ import useSocket from "./websocket/use_socket";
 const GoogleCalendarOnboarding = React.lazy(
   () => import("@/components/userBadges/coonectGoogleCalendar"),
 );
-const ChatContainer = React.lazy(() => import("./pages/dash_board_v1/aiChat"));
+const ChatContainer = React.lazy(
+  () => import("./pages/dash_board_v1/ChatContainer"),
+);
 const MainContent = styled(Box)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
