@@ -13,11 +13,12 @@ import { canisterId as IIID } from "../../declarations/internet_identity";
 import { _SERVICE } from "../../declarations/backend/backend.did";
 import { useDispatch, useSelector } from "react-redux";
 import getLedgerActor from "./ckudc_ledger_actor";
+import { clearAuthState } from "../utils/clearAuthState";
 
 interface State {
   principal: string | null;
   identity: Identity | null;
-  backendActor: ActorSubclass<_SERVICE>;
+  backendActor: ActorSubclass<_SERVICE> | null;
   agent: HttpAgent | null;
   isAuthenticating?: boolean;
   ckUSDCActor?: any;
@@ -29,6 +30,7 @@ interface BackendContextProps extends State {
   login: () => Promise<void>;
   loginWithEth: () => Promise<void>;
   logout: () => void;
+  clearAuthState: () => Promise<void>;
 }
 
 const BackendContext = createContext<BackendContextProps | undefined>(
@@ -103,6 +105,19 @@ async function handleAgent(client: AuthClient) {
 
     return { actor, agent, principal, identity, client };
   } catch (err) {
+    console.error("Agent creation failed:", err);
+
+    // Clear all auth storage on agent creation failure
+    localStorage.clear();
+    sessionStorage.clear();
+    if (typeof window !== "undefined" && window.indexedDB) {
+      try {
+        indexedDB.deleteDatabase("authClientDB");
+      } catch (e) {
+        console.warn("Could not clear IndexedDB:", e);
+      }
+    }
+
     client.logout({ returnTo: "/" });
   }
   return {};
@@ -178,6 +193,20 @@ export const BackendProvider: React.FC<BackendProviderProps> = ({
 
   const logout = useCallback(() => {
     dispatch({ type: "LOGOUT" });
+
+    // Clear all auth-related storage
+    localStorage.clear();
+    sessionStorage.clear();
+
+    // Clear IndexedDB auth storage
+    if (typeof window !== "undefined" && window.indexedDB) {
+      try {
+        indexedDB.deleteDatabase("authClientDB");
+      } catch (e) {
+        console.warn("Could not clear IndexedDB:", e);
+      }
+    }
+
     authClient?.logout({ returnTo: "/" });
     setState({
       principal: null,
@@ -186,7 +215,7 @@ export const BackendProvider: React.FC<BackendProviderProps> = ({
       agent: null,
       loginMethod: undefined,
     });
-  }, [dispatch, authClient, state.loginMethod]);
+  }, [dispatch, authClient]);
 
   useEffect(() => {
     const initializeAuthClient = async () => {
@@ -221,6 +250,7 @@ export const BackendProvider: React.FC<BackendProviderProps> = ({
     login,
     loginWithEth,
     logout,
+    clearAuthState,
   };
 
   return (

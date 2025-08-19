@@ -54,7 +54,7 @@ const PageContainer = styled(Box)(({ theme }) => ({
 }));
 
 const App: React.FC = () => {
-  const { pathname } = useLocation();
+  console.log("redner");
 
   // In App.tsx
   useEffect(() => {
@@ -77,25 +77,50 @@ const App: React.FC = () => {
   const theme = useTheme();
 
   const checkAuthAndLogout = useCallback(
-    (error) => {
+    (error: any) => {
       const errorString = error?.toString() || "";
-      if (
-        errorString.includes("Invalid signature") &&
-        errorString.includes("EcdsaP256 signature could not be verified")
-      ) {
+
+      // Check for various auth-related errors
+      const authErrors = [
+        "Invalid signature",
+        "EcdsaP256 signature could not be verified",
+        "Invalid delegation",
+        "IcCanisterSignature signature could not be verified",
+        "certificate verification failed",
+        "threshold signature",
+      ];
+
+      const hasAuthError = authErrors.some((errorType) =>
+        errorString.includes(errorType),
+      );
+
+      if (hasAuthError) {
+        console.log("Authentication error detected, clearing auth state...");
+
         // Clear all auth-related storage
         localStorage.clear();
         sessionStorage.clear();
-        indexedDB.deleteDatabase("authClientDB"); // Clear IC auth client storage
+
+        // Clear IndexedDB auth storage
+        if (typeof window !== "undefined" && window.indexedDB) {
+          try {
+            indexedDB.deleteDatabase("authClientDB");
+          } catch (e) {
+            console.warn("Could not clear IndexedDB:", e);
+          }
+        }
+
         logout();
         return true; // Auth failed
       }
       return false;
     },
-    [backendActor, logout],
+    [logout],
   );
 
   const fetchJobs = async () => {
+    if (!backendActor) return;
+
     const res: { jobs: Job[]; matching_jobs: Job[] } =
       await backendActor.get_my_jobs();
     dispatch({
@@ -109,53 +134,122 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const fetchInitialData = async () => {
+      if (!backendActor) return;
+
       try {
         dispatch({ type: "IS_FETCHING", isFetching: true });
 
-        const res = await backendActor.get_initial_data();
+        // Try the original get_initial_data first
+        try {
+          const res = await backendActor.get_initial_data();
 
-        if ("Err" in res && res.Err == "Anonymous user.") {
-          dispatch({ isRegistered: false, type: "IS_REGISTERED" });
-        } else {
-          const workspaces = await backendActor.get_work_spaces();
+          if ("Err" in res && res.Err === "Anonymous user.") {
+            dispatch({ isRegistered: false, type: "IS_REGISTERED" });
+            return;
+          }
+
+          // If successful, get workspaces and profile history
+          const workspaces = await backendActor
+            .get_work_spaces()
+            .catch(() => []);
           dispatch({ isRegistered: true, type: "IS_REGISTERED" });
 
           const getProfileRes = await backendActor.get_user_profile(
             Principal.fromText(res.Ok.Profile.id),
           );
+
           dispatch({
             type: "INIT_FILES_STATE",
-            data: { ...res.Ok, ProfileHistory: getProfileRes.Ok, workspaces },
+            data: {
+              ...res.Ok,
+              ProfileHistory: getProfileRes.Ok || getProfileRes,
+              workspaces,
+            },
           });
+        } catch (initialDataError: any) {
+          // If get_initial_data fails due to payload size, try chunked approach
+          if (
+            initialDataError?.toString().includes("payload size") ||
+            initialDataError?.toString().includes("3145728") ||
+            initialDataError?.toString().includes("3350595")
+          ) {
+            console.log("Payload too large, trying chunked data fetch...");
+
+            // Get profile first to check if user exists
+            const profileRes = await backendActor.get_user_profile(
+              Principal.anonymous(),
+            );
+
+            if (
+              "Err" in profileRes &&
+              profileRes.Err === "User does not exist"
+            ) {
+              dispatch({ isRegistered: false, type: "IS_REGISTERED" });
+              return;
+            }
+
+            dispatch({ isRegistered: true, type: "IS_REGISTERED" });
+
+            // Fetch data in smaller chunks
+            const [workspaces, friends, wallet] = await Promise.all([
+              backendActor.get_work_spaces().catch(() => []),
+              backendActor.get_friends().catch(() => []),
+              backendActor.get_wallet().catch(() => null),
+            ]);
+
+            // Get files in smaller batches
+            const files = await backendActor.get_page_files(1).catch(() => []);
+
+            // Initialize with chunked data
+            dispatch({
+              type: "INIT_FILES_STATE",
+              data: {
+                Profile: profileRes.Ok || profileRes,
+                ProfileHistory: profileRes.Ok || profileRes,
+                Files: files,
+                FilesContents: [], // Load this separately if needed
+                Friends: friends,
+                Contracts: {}, // Load contracts separately if needed
+                Wallet: wallet,
+                workspaces,
+              },
+            });
+          } else {
+            // Re-throw if it's not a payload size error
+            throw initialDataError;
+          }
         }
-      } catch (error) {
-        const isLogedOut = checkAuthAndLogout(error);
-        !isLogedOut &&
+      } catch (error: any) {
+        const isLoggedOut = checkAuthAndLogout(error);
+        if (!isLoggedOut) {
           console.log("Issue fetching initial data from backend: ", error);
+        }
+      } finally {
+        dispatch({
+          type: "IS_FETCHING",
+          isFetching: false,
+        });
       }
-      dispatch({
-        type: "IS_FETCHING",
-        isFetching: false,
-      });
     };
 
     if (isLoggedIn && backendActor && !isFetching) {
       fetchJobs();
       fetchInitialData();
     }
-  }, [backendActor]); // Do not use isLoggedIn here, because it is alreay change backendActor when isLoggedIn chancged.
+  }, [backendActor]);
 
   // after setup
 
   useEffect(() => {
-    if (profile?.id) {
+    if (profile?.id && backendActor) {
       (async () => {
         try {
           if (profile) {
             // get notifications
-            const notificationRes =
-              await backendActor.get_user_notifications(0);
-            const chatsList = await backendActor.get_my_chats(0);
+            const notificationRes = await backendActor.get_user_notifications(
+              BigInt(0),
+            );
+            const chatsList = await backendActor.get_my_chats(BigInt(0));
 
             dispatch({
               type: "UPDATE_NOT_LIST",
@@ -169,23 +263,23 @@ const App: React.FC = () => {
 
             const res = await backendActor.get_my_calendar();
             const aiCredits = await backendActor.get_ai_credits();
-            if (aiCredits.Err == "User does not exist") {
+            if ("Err" in aiCredits && aiCredits.Err == "User does not exist") {
               const _ = await backendActor.drop_free_credits();
               dispatch({
                 type: "INIT_AI_CREDITS",
                 credits: 1,
                 isFree: true,
               });
-            } else if (!aiCredits.Err) {
+            } else if ("Ok" in aiCredits) {
               const isFree = await backendActor.is_ai_free_tier();
               dispatch({
                 type: "INIT_AI_CREDITS",
                 credits: aiCredits.Ok,
-                isFree: isFree.Ok || true,
+                isFree: ("Ok" in isFree && isFree.Ok) || true,
               });
             }
-            res.events = res.events.map((event) => EventTimezone(event));
-            res.availabilities = res.availabilities.map((event) =>
+            res.events = res.events.map((event: any) => EventTimezone(event));
+            res.availabilities = res.availabilities.map((event: any) =>
               AvailabilityTimezone(event),
             );
             dispatch({
@@ -198,13 +292,15 @@ const App: React.FC = () => {
         }
       })();
     }
-  }, [profile]);
+  }, [backendActor]);
 
   useSocket();
 
   // Approve tokens
   const approveTokens = useCallback(
-    async (amount) => {
+    async (amount: any) => {
+      if (!ckUSDCActor) throw new Error("ckUSDCActor not available");
+
       try {
         console.log("Approving tokens:", {
           amount: amount.toString(),
@@ -237,6 +333,8 @@ const App: React.FC = () => {
 
   // Deposit tokens
   const depositTokens = useCallback(async () => {
+    if (!backendActor) throw new Error("backendActor not available");
+
     try {
       console.log("Calling deposit_ckusdt...");
       const result = await backendActor.deposit_ckusdt();
@@ -250,10 +348,13 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const fetchPosts = async () => {
-      try {
-        // setLoading(true);
+      if (!backendActor) return;
 
-        const fetchedPosts = await backendActor?.get_posts(0, 10);
+      try {
+        const fetchedPosts = await backendActor.get_posts(
+          BigInt(0),
+          BigInt(10),
+        );
 
         if (fetchedPosts.length === 0) {
           // setHasMore(false);
@@ -265,19 +366,12 @@ const App: React.FC = () => {
         }
       } catch (error) {
         console.error("Error fetching more posts:", error);
-      } finally {
-        // setLoading(false);
       }
     };
 
-    if (backendActor && posts.length) {
+    if (backendActor && posts.length === 0) {
       fetchPosts();
     }
-    // return () => {
-    //   if (loadingRef.current) {
-    //     observer.unobserve(loadingRef.current);
-    //   }
-    // };
   }, [dispatch, backendActor]);
 
   // Main deposit flow
@@ -329,7 +423,7 @@ const App: React.FC = () => {
             const depositResult = await depositTokens();
 
             // 7. Update UI based on result
-            if (depositResult?.Ok) {
+            if ("Ok" in depositResult) {
               dispatch({ type: "SET_WALLET", wallet: depositResult.Ok });
               closeSnackbar(notificationKey);
               enqueueSnackbar(
@@ -343,29 +437,41 @@ const App: React.FC = () => {
                 { variant: "error" },
               );
             }
-          } catch (operationError) {
+          } catch (operationError: any) {
             closeSnackbar(notificationKey);
-            enqueueSnackbar(`Operation failed: ${operationError.toString()}`, {
-              variant: "error",
-            });
+            enqueueSnackbar(
+              `Operation failed: ${operationError?.toString() || "Unknown error"}`,
+              {
+                variant: "error",
+              },
+            );
           }
-        } catch (error) {
+        } catch (error: any) {
           console.error("Error in deposit flow:", error);
-          enqueueSnackbar(`Error: ${error.toString()}`, { variant: "error" });
+          enqueueSnackbar(`Error: ${error?.toString() || "Unknown error"}`, {
+            variant: "error",
+          });
         }
       })();
     }
-  }, [
-    backendActor,
-    ckUSDCActor,
-    profile,
-    theme.palette.primary.contrastText,
-    dispatch,
-    enqueueSnackbar,
-    closeSnackbar,
-    approveTokens,
-    depositTokens,
-  ]);
+  }, [backendActor, ckUSDCActor, profile?.id]);
+
+  // Add a global function for manual auth clearing (for debugging)
+  useEffect(() => {
+    (window as any).clearAuthState = () => {
+      localStorage.clear();
+      sessionStorage.clear();
+      if (typeof window !== "undefined" && window.indexedDB) {
+        try {
+          indexedDB.deleteDatabase("authClientDB");
+        } catch (e) {
+          console.warn("Could not clear IndexedDB:", e);
+        }
+      }
+      logout();
+      window.location.reload();
+    };
+  }, [logout]);
 
   if (!backendActor) {
     return <RunawayJellyfish thinking={true} scale={2} />;

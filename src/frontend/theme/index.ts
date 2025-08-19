@@ -45,10 +45,10 @@ function createPalette(isDarkMode: boolean) {
       400: "#9DA4AE",
       500: "#6C737F",
       600: "#4D5761",
-      700: "#2F3746",
-      800: "#1C2536",
-      900: "#0F1419",
-      950: "#0A0D11",
+      700: "#3A4150",
+      800: "#2A2D3A",
+      900: "#1A1B23",
+      950: "#151620",
     },
     success: {
       lightest: "#F0FDF9",
@@ -80,14 +80,14 @@ function createPalette(isDarkMode: boolean) {
       },
       background: {
         default:
-          "linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%)",
-        paper: alpha("#1A1D23", 0.85),
-        alternate: alpha("#12151A", 0.9),
+          "linear-gradient(135deg, #1a1b23 0%, #2a2d3a 50%, #323644 100%)",
+        paper: alpha("#2a2d3a", 0.85),
+        alternate: alpha("#242730", 0.9),
         glass:
-          "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)",
-        blur: alpha("#0F1419", 0.6),
+          "linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.08) 100%)",
+        blur: alpha("#1f2128", 0.6),
         gradient:
-          "linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%)",
+          "linear-gradient(135deg, #1a1b23 0%, #2a2d3a 50%, #323644 100%)",
       },
       divider: alpha("#8B5CF6", 0.15),
       error: baseColors.error,
@@ -100,22 +100,22 @@ function createPalette(isDarkMode: boolean) {
       },
       success: baseColors.success,
       text: {
-        primary: alpha("#FFFFFF", 0.95),
-        secondary: alpha("#FFFFFF", 0.65),
-        disabled: alpha("#FFFFFF", 0.4),
-        glass: alpha("#FFFFFF", 0.9),
+        primary: alpha("#FFFFFF", 0.92),
+        secondary: alpha("#FFFFFF", 0.72),
+        disabled: alpha("#FFFFFF", 0.45),
+        glass: alpha("#FFFFFF", 0.88),
       },
       warning: baseColors.warning,
       morphism: {
-        border: "rgba(255,255,255,0.1)",
-        borderHover: "rgba(255,255,255,0.2)",
+        border: "rgba(255,255,255,0.15)",
+        borderHover: "rgba(255,255,255,0.25)",
         borderFocus: alpha("#8B5CF6", 0.4),
-        backdrop: alpha("#000000", 0.4),
+        backdrop: alpha("#000000", 0.35),
         glass: {
           background:
-            "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)",
-          border: "rgba(255,255,255,0.1)",
-          shadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
+            "linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.08) 100%)",
+          border: "rgba(255,255,255,0.15)",
+          shadow: "0 8px 32px rgba(0, 0, 0, 0.25)",
           backdropFilter: "blur(20px)",
         },
         neumorphism: {
@@ -126,14 +126,14 @@ function createPalette(isDarkMode: boolean) {
         },
         card: {
           background:
-            "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)",
+            "linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.08) 100%)",
           backdropFilter: "blur(20px)",
-          border: "1px solid rgba(255,255,255,0.1)",
+          border: "1px solid rgba(255,255,255,0.15)",
           borderRadius: "16px",
           hover: {
             transform: "translateY(-4px)",
-            boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
-            border: "1px solid rgba(255,255,255,0.2)",
+            boxShadow: "0 20px 40px rgba(0,0,0,0.15)",
+            border: "1px solid rgba(255,255,255,0.25)",
           },
         },
       },
@@ -150,14 +150,14 @@ function createPalette(isDarkMode: boolean) {
       },
       background: {
         default:
-          "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%)",
-        paper: alpha("#FFFFFF", 0.8),
-        alternate: alpha("#F5F6F8", 0.8),
+          "linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 50%, #cbd5e1 100%)",
+        paper: alpha("#f8fafc", 0.85),
+        alternate: alpha("#f1f5f9", 0.8),
         glass:
-          "linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.2) 100%)",
-        blur: alpha("#F5F6F8", 0.6),
+          "linear-gradient(135deg, rgba(248,250,252,0.6) 0%, rgba(241,245,249,0.4) 100%)",
+        blur: alpha("#f1f5f9", 0.7),
         gradient:
-          "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%)",
+          "linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 50%, #cbd5e1 100%)",
       },
       divider: alpha("#19738D", 0.25),
       error: baseColors.error,
@@ -170,40 +170,40 @@ function createPalette(isDarkMode: boolean) {
       },
       success: baseColors.success,
       text: {
-        primary: alpha(baseColors.neutral[900], 0.95),
-        secondary: alpha(baseColors.neutral[600], 0.8),
+        primary: alpha(baseColors.neutral[800], 0.9),
+        secondary: alpha(baseColors.neutral[600], 0.75),
         disabled: alpha(baseColors.neutral[900], 0.3),
-        glass: alpha(baseColors.neutral[900], 0.9),
+        glass: alpha(baseColors.neutral[800], 0.85),
       },
       warning: baseColors.warning,
       morphism: {
-        border: "rgba(255,255,255,0.3)",
-        borderHover: "rgba(255,255,255,0.5)",
+        border: "rgba(203,213,225,0.4)",
+        borderHover: "rgba(203,213,225,0.6)",
         borderFocus: alpha("#19738D", 0.5),
-        backdrop: alpha("#FFFFFF", 0.4),
+        backdrop: alpha("#f8fafc", 0.5),
         glass: {
           background:
-            "linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.2) 100%)",
-          border: "rgba(255,255,255,0.3)",
-          shadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+            "linear-gradient(135deg, rgba(248,250,252,0.6) 0%, rgba(241,245,249,0.4) 100%)",
+          border: "rgba(203,213,225,0.4)",
+          shadow: "0 8px 32px rgba(0, 0, 0, 0.08)",
           backdropFilter: "blur(20px)",
         },
         neumorphism: {
-          light: alpha("#FFFFFF", 0.9),
-          dark: alpha("#000000", 0.1),
+          light: alpha("#f8fafc", 0.9),
+          dark: alpha("#000000", 0.08),
           inset:
-            "inset 2px 2px 8px rgba(0,0,0,0.1), inset -2px -2px 8px rgba(255,255,255,0.9)",
+            "inset 2px 2px 8px rgba(0,0,0,0.08), inset -2px -2px 8px rgba(248,250,252,0.9)",
         },
         card: {
           background:
-            "linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.2) 100%)",
+            "linear-gradient(135deg, rgba(248,250,252,0.6) 0%, rgba(241,245,249,0.4) 100%)",
           backdropFilter: "blur(20px)",
-          border: "1px solid rgba(255,255,255,0.3)",
+          border: "1px solid rgba(203,213,225,0.4)",
           borderRadius: "16px",
           hover: {
             transform: "translateY(-4px)",
-            boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
-            border: "1px solid rgba(255,255,255,0.5)",
+            boxShadow: "0 20px 40px rgba(0,0,0,0.08)",
+            border: "1px solid rgba(203,213,225,0.6)",
           },
         },
       },
@@ -213,13 +213,13 @@ function createPalette(isDarkMode: boolean) {
 
 // Enhanced shadows for morphism effect with better differentiation
 const createShadows = (isDarkMode?: boolean) => {
-  const shadowColor = isDarkMode ? "rgba(0, 0, 0, 0.8)" : "rgba(0, 0, 0, 0.15)";
+  const shadowColor = isDarkMode ? "rgba(0, 0, 0, 0.6)" : "rgba(0, 0, 0, 0.08)";
   const highlightColor = isDarkMode
-    ? "rgba(255, 255, 255, 0.08)"
-    : "rgba(255, 255, 255, 0.9)";
+    ? "rgba(255, 255, 255, 0.12)"
+    : "rgba(248, 250, 252, 0.9)";
   const accentShadow = isDarkMode
-    ? "rgba(139, 92, 246, 0.3)"
-    : "rgba(25, 115, 141, 0.3)";
+    ? "rgba(139, 92, 246, 0.25)"
+    : "rgba(25, 115, 141, 0.15)";
 
   return [
     "none",

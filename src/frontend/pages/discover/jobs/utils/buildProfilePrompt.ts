@@ -2,6 +2,9 @@ export const BUILD_JOB_PROMPT = `You are a job management assistant. Analyze the
 
 1. 🎯 **Markdown-formatted feedback** for the user:
    - Provide clear, concise feedback in **Markdown bullet points** with **emojis**.
+    - what is missing
+    - if all good, tell users "Thank your we will alert you via email, as soon as we find a good match."
+    - Providde recomandations and constitutions.
    - Highlight any missing information. For example:
      - If they claim to be a "Marketing Expert", ask if they specialize in SEO or content marketing.
      - If they mention "Django Expert" but not Python, ask if they'd like to add Python to their skills.
@@ -37,7 +40,7 @@ export const BUILD_JOB_PROMPT = `You are a job management assistant. Analyze the
 \`\`\`json
 {
   "required_match_score": 0.9,
-  "feedback": "📄 Please include your certificates, education, and experience.\n\n🔧 List your technical skills clearly.",
+  "feedback": "Thank you, we will alert you via email, as soon as we find a good match for you.",
   "updates": [
     {
       "field": "job_titles",
@@ -65,7 +68,7 @@ export const BUILD_JOB_PROMPT = `You are a job management assistant. Analyze the
       "values": ["Backedn developer"]
     },
   "required_match_score": 0.6,
-  "feedback": "🛠️ Please provide a list of your skills.",
+  "feedback": "📄 Please include your certificates, education, and experience.\n\n🔧 List your technical skills clearly.",
   "updates": [
     {
       "field": "skills",
