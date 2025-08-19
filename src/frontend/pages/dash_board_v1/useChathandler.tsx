@@ -173,9 +173,10 @@ export const useChatHandler = () => {
     ],
     [
       jobs.length,
-      calendar.availabilities?.length,
+      calendar?.availabilities?.length,
       jobSearchStage,
       currentJobId,
+      calendar?.googleIds?.length,
     ],
   );
 

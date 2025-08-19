@@ -10,7 +10,7 @@ import {
   useTheme,
   Theme,
 } from "@mui/material";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
 import AICreditsComponent from "./AICreditsCompnent";
@@ -73,9 +73,23 @@ const useThemeStyles = (): ThemeStyles => {
   };
 };
 
-const useTypingEffect = (text: string, onComplete?: () => void): string => {
+const useTypingEffect = (
+  text: string,
+  onComplete?: () => void,
+  onProgress?: () => void,
+): string => {
   const [displayText, setDisplayText] = useState("");
   const { theme } = useThemeStyles();
+
+  const onCompleteRef = useRef(onComplete);
+  const onProgressRef = useRef(onProgress);
+  onCompleteRef.current = onComplete;
+  onProgressRef.current = onProgress;
+
+  const primaryColor = useMemo(
+    () => theme.palette.primary.main,
+    [theme.palette.primary.main],
+  );
 
   useEffect(() => {
     if (!text) return;
@@ -89,17 +103,18 @@ const useTypingEffect = (text: string, onComplete?: () => void): string => {
       if (currentIndex < text.length) {
         setDisplayText(text.slice(0, currentIndex + 1));
         currentIndex++;
+        onProgressRef.current?.(); // Trigger scroll on each character
       } else {
         clearInterval(timer);
-        onComplete?.();
+        onCompleteRef.current?.();
       }
     }, typingSpeed);
 
     return () => clearInterval(timer);
-  }, [text, onComplete]);
+  }, [text]);
 
   return displayText.length < text.length
-    ? `${displayText}<span style="color: ${theme.palette.primary.main}; animation: blink 1s infinite;">|</span><style>@keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }</style>`
+    ? `${displayText}<span style="color: ${primaryColor}; animation: blink 1s infinite;">|</span><style>@keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }</style>`
     : displayText;
 };
 
@@ -107,23 +122,38 @@ const useTypingEffect = (text: string, onComplete?: () => void): string => {
 const TypingMarkdownMessage = ({
   text,
   onComplete,
+  onProgress,
 }: {
   text: string;
   onComplete?: () => void;
+  onProgress?: () => void;
 }) => {
-  const textWithCursor = useTypingEffect(text, onComplete);
+  const textWithCursor = useTypingEffect(text, onComplete, onProgress);
   return <MarkdownMessage message={textWithCursor} isUser={false} />;
 };
 
 const MessageBubble = ({
   msg,
   onTypingComplete,
+  onTypingProgress,
 }: {
   msg: ChatMessage;
   onTypingComplete: (id: string | number) => void;
+  onTypingProgress?: () => void;
 }) => {
   const { theme, isDark } = useThemeStyles();
   const isUser = msg.type === "user";
+  const [isVisible, setIsVisible] = useState(false);
+
+  // Quick appear animation for user messages
+  useEffect(() => {
+    if (isUser) {
+      const timer = setTimeout(() => setIsVisible(true), 50);
+      return () => clearTimeout(timer);
+    } else {
+      setIsVisible(true);
+    }
+  }, [isUser]);
 
   const bubbleStyles = {
     maxWidth: "85%",
@@ -139,6 +169,13 @@ const MessageBubble = ({
       : `1px solid ${isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)"}`,
     backdropFilter: !isUser ? "blur(10px)" : undefined,
     WebkitBackdropFilter: !isUser ? "blur(10px)" : undefined,
+    opacity: isUser ? (isVisible ? 1 : 0) : 1,
+    transform: isUser
+      ? isVisible
+        ? "translateY(0)"
+        : "translateY(10px)"
+      : "none",
+    transition: isUser ? "all 0.3s ease-out" : "none",
   };
 
   return (
@@ -154,6 +191,7 @@ const MessageBubble = ({
           <TypingMarkdownMessage
             text={msg.message}
             onComplete={() => onTypingComplete(msg.id)}
+            onProgress={onTypingProgress}
           />
         ) : (
           <MarkdownMessage message={msg.message} isUser={isUser} />
@@ -243,11 +281,16 @@ const ChatHistory = ({
   const theme = useTheme();
   const chatRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  const scrollToBottom = useCallback(() => {
     if (chatRef.current) {
       chatRef.current.scrollTop = chatRef.current.scrollHeight;
     }
-  }, [chatHistory]);
+  }, []);
+
+  // Auto-scroll when chat history changes
+  useEffect(() => {
+    scrollToBottom();
+  }, [chatHistory, scrollToBottom]);
 
   return (
     <Box
@@ -266,7 +309,11 @@ const ChatHistory = ({
     >
       {chatHistory.map((msg, idx) => (
         <Box key={`${msg.id}-${idx}`}>
-          <MessageBubble msg={msg} onTypingComplete={onTypingComplete} />
+          <MessageBubble
+            msg={msg}
+            onTypingComplete={onTypingComplete}
+            onTypingProgress={scrollToBottom}
+          />
           <MessageActions
             msg={msg}
             onUndo={onUndoMessage}
@@ -427,7 +474,6 @@ const ChatContainer = () => {
     new Set(),
   );
 
-  // Store latest function references to avoid dependency issues
   const functionsRef = useRef({ getTriggeredMessages, getMessage });
   functionsRef.current = { getTriggeredMessages, getMessage };
 
@@ -442,17 +488,15 @@ const ChatContainer = () => {
 
   const isExpanded = chatHistory.length > 0 && !isMinimized;
 
-  // Initialize and handle all triggered messages with proper deduplication
+  // Handle triggered messages
   useEffect(() => {
     const { getTriggeredMessages, getMessage } = functionsRef.current;
-
     const allTriggeredMessages = [
       ...getTriggeredMessages("immediate"),
       ...getTriggeredMessages("automatic"),
       ...getTriggeredMessages("contextual"),
     ];
 
-    // Use functional update to ensure we have the latest shownMessageIds
     setShownMessageIds((currentShownIds) => {
       const newMessages = allTriggeredMessages.filter(
         (msg) => !currentShownIds.has(msg.id),
@@ -462,7 +506,7 @@ const ChatContainer = () => {
         const newChatMessages = newMessages.map((messageRule, index) => ({
           type: "ai" as const,
           message: getMessage(messageRule.message),
-          id: `${messageRule.id}-${Date.now()}-${index}`, // Unique timestamp-based ID
+          id: `${messageRule.id}-${Date.now()}-${index}`,
           canUndo: messageRule.canUndo,
           canRedo: false,
           canRetry: messageRule.canRetry,
@@ -471,16 +515,19 @@ const ChatContainer = () => {
           isTyping: true,
         }));
 
-        setChatHistory((prev) => [...prev, ...newChatMessages]);
+        setChatHistory((prev) => {
+          const completedPrev = prev.map((msg) =>
+            msg.isTyping ? { ...msg, isTyping: false } : msg,
+          );
+          return [...completedPrev, ...newChatMessages];
+        });
         setIsMinimized(false);
 
-        // Return updated shownMessageIds
         const newSet = new Set(currentShownIds);
         newMessages.forEach((msg) => newSet.add(msg.id));
         return newSet;
       }
 
-      // No new messages, return current set unchanged
       return currentShownIds;
     });
   }, [
@@ -488,30 +535,6 @@ const ChatContainer = () => {
     jobSearchStage,
     currentJobId,
     calendar.availabilities?.length,
-    // Functions are accessed via ref, no dependency needed
-  ]);
-
-  // Cleanup shown messages
-  useEffect(() => {
-    const allCurrentMessages = [
-      ...getTriggeredMessages("immediate"),
-      ...getTriggeredMessages("automatic"),
-      ...getTriggeredMessages("contextual"),
-    ];
-    const currentMessageIds = new Set(allCurrentMessages.map((m) => m.id));
-
-    setShownMessageIds((prev) => {
-      const filtered = new Set(
-        [...prev].filter((id) => currentMessageIds.has(id)),
-      );
-      return filtered.size !== prev.size ? filtered : prev;
-    });
-  }, [
-    jobs.length,
-    calendar.availabilities?.length,
-    jobSearchStage,
-    currentJobId,
-    getTriggeredMessages,
   ]);
 
   const handleTypingComplete = useCallback((messageId: string | number) => {
@@ -524,7 +547,7 @@ const ChatContainer = () => {
 
   const handleChatSend = useCallback(
     async (message: string) => {
-      const messageId = Date.now(); // Use timestamp instead
+      const messageId = Date.now();
       setIsMinimized(false);
 
       setChatHistory((prev) => [
@@ -535,38 +558,48 @@ const ChatContainer = () => {
 
       try {
         const result = await processMessage(message, messageId);
-        setChatHistory((prev) => [
-          ...prev,
-          {
-            type: "ai",
-            message: result.feedback,
-            id: `${messageId}-ai`,
-            canUndo: (result.actions?.length || 0) > 0,
-            canRedo: false,
-            canRetry: (result.actions?.length || 0) > 0,
-            action_type: result.action_type,
-            actions: result.actions,
-            isTyping: true,
-          },
-        ]);
+        setChatHistory((prev) => {
+          const completedPrev = prev.map((msg) =>
+            msg.isTyping ? { ...msg, isTyping: false } : msg,
+          );
+          return [
+            ...completedPrev,
+            {
+              type: "ai",
+              message: result.feedback,
+              id: `${messageId}-ai`,
+              canUndo: (result.actions?.length || 0) > 0,
+              canRedo: false,
+              canRetry: (result.actions?.length || 0) > 0,
+              action_type: result.action_type,
+              actions: result.actions,
+              isTyping: true,
+            },
+          ];
+        });
       } catch (error: any) {
-        setChatHistory((prev) => [
-          ...prev,
-          {
-            type: "ai",
-            message: error.message || "An error occurred",
-            id: `${messageId}-error`,
-            canUndo: false,
-            canRedo: false,
-            canRetry: true,
-            isTyping: true,
-          },
-        ]);
+        setChatHistory((prev) => {
+          const completedPrev = prev.map((msg) =>
+            msg.isTyping ? { ...msg, isTyping: false } : msg,
+          );
+          return [
+            ...completedPrev,
+            {
+              type: "ai",
+              message: error.message || "An error occurred",
+              id: `${messageId}-error`,
+              canUndo: false,
+              canRedo: false,
+              canRetry: true,
+              isTyping: true,
+            },
+          ];
+        });
       } finally {
         setIsLoading(false);
       }
     },
-    [processMessage], // Remove messageCounter dependency
+    [processMessage],
   );
 
   const handleUndoMessage = useCallback(
