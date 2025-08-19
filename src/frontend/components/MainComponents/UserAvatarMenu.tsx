@@ -15,12 +15,13 @@ import {
 } from "@mui/material";
 import ChatWindow from "../../components/Chat/chatWindow";
 import { useNavigate } from "react-router-dom";
-import { Person, Message, Star } from "@mui/icons-material";
+import { Person, Star } from "@mui/icons-material";
+import { Message as MessageIcon } from "@mui/icons-material";
 import CircularProgress from "@mui/material/CircularProgress";
 import { useBackendContext } from "../../contexts/BackendContext";
 import { useSnackbar } from "notistack";
 import { Principal } from "@dfinity/principal";
-import { Rating } from "../../../declarations/backend/backend.did";
+import { Rating, Message } from "../../../declarations/backend/backend.did";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/reducers";
 import { randomString } from "../../DataProcessing/dataSamples";
@@ -60,7 +61,6 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
   const [comment, setComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeChat, setActiveChat] = useState<any>(null);
-  const [chatPosition, setChatPosition] = useState({ x: 0, y: 0 });
   const [isCalled, setCalled] = useState(false);
   const [isLoading, setLoading] = useState(false);
 
@@ -74,7 +74,7 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
         setLoading(true);
         const response = await backendActor.get_user(user_id);
         setLoading(false);
-        if (response.Ok) {
+        if ("Ok" in response) {
           setUser(response.Ok);
         }
         setCalled(true);
@@ -122,23 +122,13 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
     const existingChat = chats.find((chat) =>
       chat.members.some(
         (member) =>
-          member.toString() === user.id || member.__principal__ === user.id,
+          member.toString() === user.id,
       ),
     );
 
     if (!activeChat && existingChat) {
-      const position = {
-        x: window.innerWidth - 350,
-        y: window.innerHeight - 450,
-      };
-      setChatPosition(position);
-
       const filteredMessages = existingChat.messages.filter((message) => {
-        const senderId =
-          message.sender instanceof Principal
-            ? message.sender.toString()
-            : message.sender.__principal__;
-
+        const senderId = message.sender.toString();
         const isCurrentUser = senderId === profile?.id;
         return !isCurrentUser || message.seen_by?.length > 0;
       });
@@ -157,11 +147,6 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
         admins: [user.id],
       };
 
-      const position = {
-        x: window.innerWidth - 350,
-        y: window.innerHeight - 450,
-      };
-      setChatPosition(position);
       setActiveChat(newChat);
     }
 
@@ -191,8 +176,8 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
         [Principal.fromText(user.id)],
         newMessage,
       );
-      if (result?.Ok) {
-        setActiveChat((prev) => {
+      if (result && "Ok" in result) {
+        setActiveChat((prev: any) => {
           if (!prev) return null;
           return {
             ...prev,
@@ -200,7 +185,7 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
           };
         });
         enqueueSnackbar("Message sent successfully", { variant: "success" });
-      } else if (result?.Err) {
+      } else if (result && "Err" in result) {
         throw new Error(result.Err);
       }
     } catch (error) {
@@ -231,15 +216,15 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
 
       const result = await backendActor?.rate_user(userPrincipal, ratingData);
 
-      if (result?.Ok) {
+      if (result && "Ok" in result) {
         enqueueSnackbar("Review submitted successfully", {
           variant: "success",
         });
-      } else if (result?.Err) {
+      } else if (result && "Err" in result) {
         enqueueSnackbar(result.Err, { variant: "error" });
       }
     } catch (error) {
-      enqueueSnackbar("Failed to submit review " + error, { variant: "error" });
+      enqueueSnackbar("Failed to submit review " + (error as Error).message, { variant: "error" });
     } finally {
       setIsSubmitting(false);
       setReviewOpen(false);
@@ -251,7 +236,7 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
   return (
     <>
       <IconButton disabled={user.id === profile?.id} onClick={handleClick}>
-        <Avatar src={getUserPhoto()} alt={user.name} sx={sx}>
+        <Avatar src={getUserPhoto() || undefined} alt={user.name} sx={sx}>
           {user.name?.charAt(0) || "A"}
         </Avatar>
       </IconButton>
@@ -264,7 +249,7 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
         )}
         {!hide.includes("Message") && (
           <MenuItem onClick={handleMessage}>
-            <Message sx={{ mr: 1 }} /> Message
+            <MessageIcon sx={{ mr: 1 }} /> Message
           </MenuItem>
         )}
         {!hide.includes("Review") && (

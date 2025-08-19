@@ -99,6 +99,7 @@ function Pages() {
         <Route path="/posts" element={<Posts />} />
         <Route path="/jobs*" element={<JobPage />} />
         <Route path="/f*" element={<AffiliateRedirect />} />
+
       </Routes>
     </Suspense>
   );
