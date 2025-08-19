@@ -13,7 +13,6 @@ interface JobCompletionProgressProps {
   job: Job | null;
   className?: string;
 }
-
 const JobCompletionProgress: React.FC<JobCompletionProgressProps> = ({
   job,
   className,
@@ -22,7 +21,6 @@ const JobCompletionProgress: React.FC<JobCompletionProgressProps> = ({
 
   if (!job) return null;
 
-  // Use the profile_completion from the backend (0.0 to 1.0)
   const percentage = (job.profile_completion || 0) * 100;
   const feedback = job.feedback || "";
 
@@ -32,7 +30,6 @@ const JobCompletionProgress: React.FC<JobCompletionProgressProps> = ({
     return theme.palette.error.main;
   };
 
-  // Handle inactive job state
   if (!job.active) {
     return (
       <Box className={className}>
@@ -167,6 +164,23 @@ const JobCompletionProgress: React.FC<JobCompletionProgressProps> = ({
         }
         arrow
         placement="top"
+        PopperProps={{
+          modifiers: [
+            {
+              name: 'preventOverflow',
+              options: {
+                boundary: 'viewport',
+                padding: 8,
+              },
+            },
+            {
+              name: 'flip',
+              options: {
+                fallbackPlacements: ['bottom', 'left', 'right'],
+              },
+            },
+          ],
+        }}
       >
         {progressContent}
       </Tooltip>
