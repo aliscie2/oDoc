@@ -33,18 +33,12 @@ root.render(
         <HelmetProvider>
           <Helmet>
             {["twitter:image", "og:image"].map((property: string) => {
-              const basePath =
-                import.meta.env.VITE_DFX_NETWORK === "staging" ? "/oDoc/" : "/";
               const imageName = window.location.hostname.includes("icpjobs")
                 ? "https://raw.githubusercontent.com/aliscie2/oDoc/refs/heads/dev2/public/icpjobs_thumnail.png"
                 : "https://raw.githubusercontent.com/aliscie2/oDoc/refs/heads/dev2/public/odoc_thumnail.png";
 
               return (
-                <meta
-                  key={property}
-                  property={property}
-                  content={`${basePath}${imageName}`}
-                />
+                <meta key={property} property={property} content={imageName} />
               );
             })}
           </Helmet>
