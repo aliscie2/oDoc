@@ -343,7 +343,7 @@ for CANISTER_FILE in "${CANISTER_FILES[@]}"; do
                 fi
                 echo ""
             fi
-        done < <(jq -r 'to_entries[] | "\(.key) \(.value.ic // .value.local // "")"' "$CANISTER_FILE" 2>/dev/null || echo "")
+        done <<< "$(jq -r 'to_entries[] | "\(.key) \(.value.ic // .value.local // "")"' "$CANISTER_FILE" 2>/dev/null || echo "")"
         
         break
     fi
@@ -552,7 +552,7 @@ for IDENTITY in $IDENTITIES; do
                         echo "    Local Network - Not deployed or unreachable"
                     fi
                 fi
-            done < <(jq -r 'to_entries[] | "\(.key) \(.value.ic // .value.local // "")"' "$CANISTER_FILE" 2>/dev/null || echo "")
+            done <<< "$(jq -r 'to_entries[] | "\(.key) \(.value.ic // .value.local // "")"' "$CANISTER_FILE" 2>/dev/null || echo "")"
             
             break  # Use first found canister file
         fi
@@ -620,7 +620,7 @@ for IDENTITY in $IDENTITIES; do
                         fi
                     fi
                 fi
-            done < <(jq -r 'to_entries[] | "\(.key) \(.value.ic // .value.local // "")"' "$canister_file" 2>/dev/null || echo "")
+            done <<< "$(jq -r 'to_entries[] | "\(.key) \(.value.ic // .value.local // "")"' "$canister_file" 2>/dev/null || echo "")"
         fi
     done
     
@@ -650,7 +650,7 @@ for IDENTITY in $IDENTITIES; do
                                 fi
                             fi
                         fi
-                    done < <(jq -r 'to_entries[] | "\(.key) \(.value.ic // .value.local // "")"' "$canister_file" 2>/dev/null || echo "")
+                    done <<< "$(jq -r 'to_entries[] | "\(.key) \(.value.ic // .value.local // "")"' "$canister_file" 2>/dev/null || echo "")"
                 fi
             done
         fi
@@ -688,7 +688,7 @@ for IDENTITY in $IDENTITIES; do
                                         fi
                                     fi
                                 fi
-                            done < <(jq -r 'to_entries[] | "\(.key) \(.value.ic // .value.local // "")"' "$canister_file" 2>/dev/null || echo "")
+                            done <<< "$(jq -r 'to_entries[] | "\(.key) \(.value.ic // .value.local // "")"' "$canister_file" 2>/dev/null || echo "")"
                             
                             break  # Only check first found canister file per project
                         fi
