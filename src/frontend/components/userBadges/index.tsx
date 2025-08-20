@@ -28,7 +28,7 @@ import {
 } from "@mui/icons-material";
 import useProgress, { type BadgeType } from "./useProgress";
 
-import { useGoogleCalendar } from "@/pages/dash_board_v1/calindarView/googleAccounts/useGoogleCalendar";
+import { useGoogleCalendar } from "@/pages/calendar/googleAccounts/useGoogleCalendar";
 import { Link } from "react-router-dom";
 
 // ODOC Reward Tier System

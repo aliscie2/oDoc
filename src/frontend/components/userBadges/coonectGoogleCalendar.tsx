@@ -13,7 +13,7 @@ import {
 } from "@mui/icons-material";
 import { useSelector } from "react-redux";
 
-import { useGoogleCalendar } from "@/pages/dash_board_v1/calindarView/googleAccounts/useGoogleCalendar";
+import { useGoogleCalendar } from "@/pages/calendar/googleAccounts/useGoogleCalendar";
 
 const GoogleCalendarOnboarding = () => {
   const [hasTriedToClose, setHasTriedToClose] = useState(false);

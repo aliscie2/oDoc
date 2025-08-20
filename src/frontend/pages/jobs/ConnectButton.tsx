@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { Button, CircularProgress } from "@mui/material";
 import { useSnackbar } from "notistack";
-import sendEmail from "../../../utils/sendEmail";
 import { useDispatch, useSelector } from "react-redux";
 import { useBackendContext } from "@/contexts/BackendContext";
 import { Calendar, Job, Match } from "$/declarations/backend/backend.did";
 import UserAvatarMenu from "@/components/MainComponents/UserAvatarMenu";
+import sendEmail from "@/utils/sendEmail";
 
 interface ConnectButtonProps {
   jobId: string;

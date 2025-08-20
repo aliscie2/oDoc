@@ -18,7 +18,7 @@ import RegistrationForm from "./components/MainComponents/RegistrationForm";
 import {
   AvailabilityTimezone,
   EventTimezone,
-} from "./pages/dash_board_v1/calindarView/serializers";
+} from "./pages/calendar/serializers";
 
 import RunawayJellyfish from "./components/creature/runAeayJellyFish";
 import useSocket from "./websocket/use_socket";
@@ -28,7 +28,7 @@ const GoogleCalendarOnboarding = React.lazy(
   () => import("@/components/userBadges/coonectGoogleCalendar"),
 );
 const ChatContainer = React.lazy(
-  () => import("./pages/dash_board_v1/ChatContainer"),
+  () => import("./pages/dashboard/ChatContainer"),
 );
 const MainContent = styled(Box)(({ theme }) => ({
   display: "flex",

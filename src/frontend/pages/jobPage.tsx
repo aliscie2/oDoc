@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import { useBackendContext } from "../contexts/BackendContext";
 import { useSnackbar } from "notistack";
-import JobDetails from "./discover/jobs/JobDetails";
+import JobDetails from "./jobs/JobDetails";
 import UserAvatarMenu from "@/components/MainComponents/UserAvatarMenu";
 import sendEmail from "../utils/sendEmail";
 import { convertToBlobLink } from "../DataProcessing/imageToVec";

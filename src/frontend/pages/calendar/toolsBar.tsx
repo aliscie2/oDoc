@@ -12,7 +12,6 @@ import {
 } from "@mui/material";
 import CalendarManagement from "./AvailabilityComonent";
 import React, { useState } from "react";
-import CopyButton from "../../../components/MuiComponents/copyButton";
 import { useSelector } from "react-redux";
 
 import {
@@ -24,6 +23,7 @@ import {
 import TimeZoneSelector from "./timezone";
 import GoogleCalendarIntegration from "./googleAccounts";
 import GmailConnection from "./GmailConnection";
+import CopyButton from "@/components/MuiComponents/copyButton";
 
 const CustomToolbar = ({ onNavigate, onView, label, view, views }) => {
   const { calendar } = useSelector((state) => state.calendarState);

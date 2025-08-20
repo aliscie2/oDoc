@@ -6,8 +6,9 @@ import { useSelector } from "react-redux";
 // Immediate imports for critical components
 import LandingPage from "./LandingPage";
 import ICPJobsLandingPage from "./LandingPage/aiJobMatch";
-import JobsPage from "./discover/jobs";
+import JobsPage from "./jobs";
 import AffiliateRedirect from "./affiliateRedirect";
+import { Posts } from "./posts";
 
 // Lazy imports for heavy components
 const FileContentPage = React.lazy(() => import("./fileContentPage"));
@@ -23,10 +24,10 @@ const DummyShares = React.lazy(() => import("./sharesContract"));
 const AffiliateDashboard = React.lazy(() => import("./affiliate"));
 const ContractPage = React.lazy(() => import("./profile/ContractPage"));
 const CalendarView = React.lazy(
-  () => import("./dash_board_v1/calindarView/calendar"),
+  () => import("./calendar/calendar"),
 );
 const AchievementPage = React.lazy(() => import("@/components/userBadges"));
-const Posts = React.lazy(() => import("./discover/posts"));
+// const Posts = React.lazy(() => import("./posts"));
 const WalletPage = React.lazy(() => import("./walletPage"));
 const JobPage = React.lazy(() => import("./jobPage"));
 

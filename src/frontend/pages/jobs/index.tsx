@@ -4,7 +4,7 @@ import React, { useEffect, useRef } from "react";
 import { Job } from "$/declarations/backend/backend.did";
 import { useSelector } from "react-redux";
 
-import JobSelector from "@/pages/discover/jobs/JobSelector";
+import JobSelector from "./JobSelector";
 import JobSearchComponent from "./JobSearchComponent";
 
 import LoginButton from "@/components/MainComponents/topNavBar/loginButton";

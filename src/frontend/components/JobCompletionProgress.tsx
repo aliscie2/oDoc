@@ -7,7 +7,7 @@ import {
   useTheme,
   Tooltip,
 } from "@mui/material";
-import MarkdownMessage from "../pages/dash_board_v1/markDownMessageRdnder";
+import MarkdownMessage from "../pages/dashboard/markDownMessageRdnder";
 
 interface JobCompletionProgressProps {
   job: Job | null;

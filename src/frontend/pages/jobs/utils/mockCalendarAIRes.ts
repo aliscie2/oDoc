@@ -1,4 +1,4 @@
-import { TimeFormatter } from "@/pages/dash_board_v1/gemeniAi";
+import { TimeFormatter } from "@/pages/dashboard/gemeniAi";
 import { Calendar } from "$/declarations/backend/backend.did";
 
 // Simplified command structure suggestions:

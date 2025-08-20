@@ -1,12 +1,12 @@
 import { useState, useRef, useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
-import { textToJson } from "../discover/jobs/utils/processResponseJobs";
-import PROMPTS from "../discover/jobs/utils/prompts";
+import { textToJson } from "../jobs/utils/processResponseJobs";
+import PROMPTS from "../jobs/utils/prompts";
 import { ActionProcessor, CalendarFormatter, TimeFormatter } from "./gemeniAi";
-import compactMessage from "../discover/jobs/utils/compactMessage";
-import { mockJobAIResponse } from "../discover/jobs/utils/mockJobAIRes";
-import { mockCalendarAIResponse } from "../discover/jobs/utils/mockCalendarAIRes";
+import compactMessage from "../jobs/utils/compactMessage";
+import { mockJobAIResponse } from "../jobs/utils/mockJobAIRes";
+import { mockCalendarAIResponse } from "../jobs/utils/mockCalendarAIRes";
 
 // ===== TYPE DEFINITIONS =====
 export type MessageType = "immediate" | "contextual" | "automatic";
