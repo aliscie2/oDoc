@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 
-// import odocIcon from "@/assets/infograph/odocIcon.png";
 import { odocStrecutre } from "./landingPageData";
 import { useSelector } from "react-redux";
 import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
