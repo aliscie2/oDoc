@@ -1,10 +1,8 @@
-import { MouseEvent } from "react";
 import { useDispatch } from "react-redux";
-import { useSnackbar } from "notistack";
+import { Button } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 import { useBackendContext } from "../../contexts/BackendContext";
-import ConformationMessage from "../MuiComponents/conformationButton";
 
 interface DeleteFileProps {
   item: {
@@ -16,27 +14,27 @@ interface DeleteFileProps {
 const DeleteFile: React.FC<DeleteFileProps> = ({ item }) => {
   const { backendActor } = useBackendContext();
   const dispatch = useDispatch();
-  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
-  const handleDeleteFile = async (e: MouseEvent<HTMLSpanElement>) => {
-    const res = await backendActor.delete_file(item.id);
-    // if (!res[0]){
-    //   return {Err:"File not found"}
-    // }
+  const handleDeleteFile = async () => {
+    if (!window.confirm(`Are you sure you want to delete ${item.name}?`)) {
+      return;
+    }
+
+    await backendActor?.delete_file(item.id);
     dispatch({ type: "REMOVE_FILE", id: item.id });
-    // enqueueSnackbar(`${item.name} is deleted`, { variant: "success" });
     return { Ok: "File Deleted" };
   };
 
   return (
-    <ConformationMessage
-      color={"error"}
-      message={"Yes delete it!"}
-      conformationMessage={`Are you sure you want to delete this File`}
+    <Button
+      color="error"
+      variant="contained"
       onClick={handleDeleteFile}
+      size="small"
+      sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
     >
       <DeleteIcon fontSize="small" /> Delete
-    </ConformationMessage>
+    </Button>
   );
 };
 
