@@ -16,16 +16,16 @@ import { User } from "$/declarations/backend/backend.did";
 const generateThumbnailDataUrl = async (
   title: string,
   description: string,
-  userPhoto?: Uint8Array | number[]
+  userPhoto?: Uint8Array | number[],
 ): Promise<string> => {
   return new Promise((resolve) => {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d')!;
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d")!;
     canvas.width = 1200;
     canvas.height = 630;
 
     const baseImg = new Image();
-    baseImg.crossOrigin = 'anonymous';
+    baseImg.crossOrigin = "anonymous";
     baseImg.onload = () => {
       // Calculate scaling to cover entire canvas while maintaining aspect ratio
       const imgRatio = baseImg.width / baseImg.height;
@@ -47,41 +47,43 @@ const generateThumbnailDataUrl = async (
       ctx.drawImage(baseImg, drawX, drawY, drawWidth, drawHeight);
 
       // Title
-      ctx.fillStyle = '#000000';
-      ctx.font = 'bold 48px Arial';
-      ctx.textAlign = 'center';
-      
-      const titleWords = title.split(' ');
-      let line = '', y = 100;
-      
+      ctx.fillStyle = "#000000";
+      ctx.font = "bold 48px Arial";
+      ctx.textAlign = "center";
+
+      const titleWords = title.split(" ");
+      let line = "",
+        y = 100;
+
       titleWords.forEach((word, i) => {
-        const testLine = line + word + ' ';
+        const testLine = line + word + " ";
         if (ctx.measureText(testLine).width > 1100 && i > 0) {
           ctx.fillText(line.trim(), 600, y);
-          line = word + ' ';
+          line = word + " ";
           y += 60;
         } else line = testLine;
       });
       ctx.fillText(line.trim(), 600, y);
 
       // Description
-      ctx.fillStyle = '#000000';
-      ctx.font = '28px Arial';
-      
-      const descText = description.split(' ').slice(0, 20).join(' ') + 
-        (description.split(' ').length > 20 ? '...' : '');
+      ctx.fillStyle = "#000000";
+      ctx.font = "28px Arial";
+
+      const descText =
+        description.split(" ").slice(0, 20).join(" ") +
+        (description.split(" ").length > 20 ? "..." : "");
       const descLines = [];
-      let currentLine = '';
-      
-      descText.split(' ').forEach(word => {
-        const testLine = currentLine + word + ' ';
+      let currentLine = "";
+
+      descText.split(" ").forEach((word) => {
+        const testLine = currentLine + word + " ";
         if (ctx.measureText(testLine).width > 1100 && currentLine) {
           descLines.push(currentLine.trim());
-          currentLine = word + ' ';
+          currentLine = word + " ";
         } else currentLine = testLine;
       });
       if (currentLine.trim()) descLines.push(currentLine.trim());
-      
+
       descLines.slice(0, 3).forEach((line, i) => {
         ctx.fillText(line, 600, 500 + i * 35);
       });
@@ -89,7 +91,7 @@ const generateThumbnailDataUrl = async (
       // User avatar
       if (userPhoto?.length) {
         const avatarImg = new Image();
-        avatarImg.crossOrigin = 'anonymous';
+        avatarImg.crossOrigin = "anonymous";
         avatarImg.onload = () => {
           ctx.save();
           ctx.beginPath();
@@ -97,32 +99,32 @@ const generateThumbnailDataUrl = async (
           ctx.clip();
           ctx.drawImage(avatarImg, 990, 255, 120, 120);
           ctx.restore();
-          
-          ctx.strokeStyle = '#ffffff';
+
+          ctx.strokeStyle = "#ffffff";
           ctx.lineWidth = 4;
           ctx.beginPath();
           ctx.arc(1050, 315, 60, 0, 2 * Math.PI);
           ctx.stroke();
-          
-          resolve(canvas.toDataURL('image/png'));
+
+          resolve(canvas.toDataURL("image/png"));
         };
-        avatarImg.onerror = () => resolve(canvas.toDataURL('image/png'));
+        avatarImg.onerror = () => resolve(canvas.toDataURL("image/png"));
         avatarImg.src = convertToBlobLink(userPhoto);
-      } else resolve(canvas.toDataURL('image/png'));
+      } else resolve(canvas.toDataURL("image/png"));
     };
-    
+
     baseImg.onerror = () => {
-      ctx.fillStyle = '#1a1a2e';
+      ctx.fillStyle = "#1a1a2e";
       ctx.fillRect(0, 0, 1200, 630);
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 48px Arial';
-      ctx.textAlign = 'center';
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 48px Arial";
+      ctx.textAlign = "center";
       ctx.fillText(title, 600, 200);
-      ctx.font = '28px Arial';
-      ctx.fillText(description.slice(0, 80) + '...', 600, 400);
-      resolve(canvas.toDataURL('image/png'));
+      ctx.font = "28px Arial";
+      ctx.fillText(description.slice(0, 80) + "...", 600, 400);
+      resolve(canvas.toDataURL("image/png"));
     };
-    
+
     baseImg.src = `${window.location.origin}/job-profile-thumnail.png`;
   });
 };
@@ -137,7 +139,7 @@ const JobPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [connecting, setConnecting] = useState(false);
   const [user, setUser] = useState<User | null>(null);
-  const [thumbnailUrl, setThumbnailUrl] = useState<string>('');
+  const [thumbnailUrl, setThumbnailUrl] = useState<string>("");
 
   const jobId = searchParams.get("id");
 
@@ -155,18 +157,20 @@ const JobPage = () => {
         if (result && result.length > 0) {
           setJob(result);
           const currentJob = result[0];
-          setLoading(false)
-          
+          setLoading(false);
+
           if (currentJob.user_id) {
-            const userResponse = await backendActor.get_user(currentJob.user_id);
+            const userResponse = await backendActor.get_user(
+              currentJob.user_id,
+            );
             if ("Ok" in userResponse) {
               setUser(userResponse.Ok);
-              
+
               // Generate thumbnail
               const dataUrl = await generateThumbnailDataUrl(
                 currentJob.title,
                 currentJob.description,
-                userResponse.Ok.photo
+                userResponse.Ok.photo,
               );
               setThumbnailUrl(dataUrl);
             }
@@ -174,7 +178,7 @@ const JobPage = () => {
             // Generate thumbnail without user photo
             const dataUrl = await generateThumbnailDataUrl(
               currentJob.title,
-              currentJob.description
+              currentJob.description,
             );
             setThumbnailUrl(dataUrl);
           }
@@ -203,14 +207,17 @@ const JobPage = () => {
       emails.push(...currentJob.emails);
 
       if (emails.length === 0) {
-        alert("User did not set their email yet, try to contact them via oDoc.");
+        alert(
+          "User did not set their email yet, try to contact them via oDoc.",
+        );
         return;
       }
 
       const category = Object.keys(currentJob.category)[0];
-      const message = category === "Job" 
-        ? "We found a new job opportunity for you."
-        : "We found a new talent that may meet your requirements.";
+      const message =
+        category === "Job"
+          ? "We found a new job opportunity for you."
+          : "We found a new talent that may meet your requirements.";
 
       for (const email of emails) {
         const isEmailSent = await sendEmail(
@@ -238,7 +245,8 @@ const JobPage = () => {
   if (!job) return <Typography>Job not found</Typography>;
 
   const currentJob = job?.[0];
-  const showConnectButton = profile && currentJob && profile.id !== currentJob.user_id;
+  const showConnectButton =
+    profile && currentJob && profile.id !== currentJob.user_id;
 
   return (
     <Box sx={{ p: 2 }}>
@@ -246,15 +254,28 @@ const JobPage = () => {
         <Helmet>
           <meta property="og:image" content={thumbnailUrl} />
           <meta property="og:title" content={currentJob.title} />
-          <meta property="og:description" content={currentJob.description.split(" ").slice(0, 10).join(" ")} />
+          <meta
+            property="og:description"
+            content={currentJob.description.split(" ").slice(0, 10).join(" ")}
+          />
           <meta name="twitter:card" content="summary_large_image" />
           <meta name="twitter:image" content={thumbnailUrl} />
         </Helmet>
       )}
 
       {showConnectButton && (
-        <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 2, mb: 2 }}>
-          <UserAvatarMenu user={user || { id: currentJob.user_id, name: "Unknown User" }} />
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: 2,
+            mb: 2,
+          }}
+        >
+          <UserAvatarMenu
+            user={user || { id: currentJob.user_id, name: "Unknown User" }}
+          />
           <Button
             variant="contained"
             color="primary"
@@ -266,7 +287,7 @@ const JobPage = () => {
           </Button>
         </Box>
       )}
-      
+
       {currentJob && <JobDetails job={currentJob} match={null} />}
     </Box>
   );

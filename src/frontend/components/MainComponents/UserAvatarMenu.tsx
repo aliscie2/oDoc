@@ -120,10 +120,7 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
 
   const handleMessage = () => {
     const existingChat = chats.find((chat) =>
-      chat.members.some(
-        (member) =>
-          member.toString() === user.id,
-      ),
+      chat.members.some((member) => member.toString() === user.id),
     );
 
     if (!activeChat && existingChat) {
@@ -224,7 +221,9 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
         enqueueSnackbar(result.Err, { variant: "error" });
       }
     } catch (error) {
-      enqueueSnackbar("Failed to submit review " + (error as Error).message, { variant: "error" });
+      enqueueSnackbar("Failed to submit review " + (error as Error).message, {
+        variant: "error",
+      });
     } finally {
       setIsSubmitting(false);
       setReviewOpen(false);

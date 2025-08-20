@@ -253,8 +253,6 @@ export class AIAgent {
     }
   }
 
-
-
   private updateUsageStatsAndDeductCredits(
     usageMetadata?: AIUsageMetadata,
   ): number {
@@ -271,7 +269,7 @@ export class AIAgent {
     // Calculate actual cost based on DeepSeek pricing
     const pricing = this.getCurrentPricing();
     let cost = 0;
-    
+
     if (usageMetadata.prompt_tokens) {
       cost += usageMetadata.prompt_tokens * pricing.input;
     }
@@ -322,8 +320,6 @@ export class AIAgent {
     AIAgent.MYSTATICS.totalInputTokens = 0;
     AIAgent.MYSTATICS.totalOutputTokens = 0;
   }
-
-
 
   static resetAllData(): void {
     AIAgent.MYSTATICS.reset();

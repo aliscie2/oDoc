@@ -137,7 +137,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
         score: scoreAsDecimal,
       });
     }, 150),
-    [dispatch]
+    [dispatch],
   );
 
   const handleScoreChange = (newScore: number) => {

@@ -1,8 +1,7 @@
-import { Route, Routes, useLocation } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import React, { Suspense } from "react";
 import { CircularProgress, Box } from "@mui/material";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 
 // Immediate imports for critical components
 import LandingPage from "./LandingPage";
@@ -44,9 +43,6 @@ const PageLoader = () => (
 );
 
 function Pages() {
-  const navigate = useNavigate();
-  const location = useLocation();
-
   const { profile, profile_history, wallet, friends } = useSelector(
     (state: any) => state.filesState,
   );
@@ -77,6 +73,7 @@ function Pages() {
               friends={friends}
               profile={profile}
               history={profile_history}
+              friendButton={null}
             />
           }
         />
@@ -99,7 +96,6 @@ function Pages() {
         <Route path="/posts" element={<Posts />} />
         <Route path="/jobs*" element={<JobPage />} />
         <Route path="/f*" element={<AffiliateRedirect />} />
-
       </Routes>
     </Suspense>
   );

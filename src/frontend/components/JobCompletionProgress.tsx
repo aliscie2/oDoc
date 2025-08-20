@@ -167,16 +167,16 @@ const JobCompletionProgress: React.FC<JobCompletionProgressProps> = ({
         PopperProps={{
           modifiers: [
             {
-              name: 'preventOverflow',
+              name: "preventOverflow",
               options: {
-                boundary: 'viewport',
+                boundary: "viewport",
                 padding: 8,
               },
             },
             {
-              name: 'flip',
+              name: "flip",
               options: {
-                fallbackPlacements: ['bottom', 'left', 'right'],
+                fallbackPlacements: ["bottom", "left", "right"],
               },
             },
           ],

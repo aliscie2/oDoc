@@ -1,10 +1,9 @@
-import React, { useCallback, useEffect, Suspense } from "react";
+import React, { useCallback, useEffect, Suspense, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useLocation } from "react-router-dom";
 import Pages from "./pages";
 
 import { Principal } from "@dfinity/principal";
-import { Box, CircularProgress, styled, useTheme } from "@mui/material";
+import { Box, CircularProgress, styled } from "@mui/material";
 import { useSnackbar } from "notistack";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -21,7 +20,6 @@ import {
   EventTimezone,
 } from "./pages/dash_board_v1/calindarView/serializers";
 
-import { Job } from "$/declarations/backend/backend.did";
 import RunawayJellyfish from "./components/creature/runAeayJellyFish";
 import useSocket from "./websocket/use_socket";
 
@@ -53,267 +51,253 @@ const PageContainer = styled(Box)(({ theme }) => ({
   },
 }));
 
-const App: React.FC = () => {
-  console.log("redner");
-
-  // In App.tsx
-  useEffect(() => {
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker
-        .register("/service-worker.js")
-        .then((registration) => console.log("SW registered", registration))
-        .catch((error) => console.log("SW registration failed", error));
-    }
-  }, []);
-
-  const { isLoggedIn, isRegistered } = useSelector(
-    (state: any) => state.uiState,
-  );
-  const { isFetching } = useSelector((state: RootState) => state.uiState);
+// hooks/useAppInitialization.ts
+const useAppInitialization = () => {
   const dispatch = useDispatch();
-  const { profile, files } = useSelector((state: any) => state.filesState);
   const { logout, backendActor, ckUSDCActor } = useBackendContext();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-  const theme = useTheme();
+
+  const { isLoggedIn, isRegistered, isFetching } = useSelector(
+    (state: RootState) => state.uiState,
+  );
+  const { profile, posts } = useSelector(
+    (state: RootState) => state.filesState,
+  );
+
+  const [initState, setInitState] = useState({
+    serviceWorkerRegistered: false,
+    initialDataFetched: false,
+    userDataFetched: false,
+    postsFetched: false,
+    depositProcessed: false,
+  });
 
   const checkAuthAndLogout = useCallback(
     (error: any) => {
       const errorString = error?.toString() || "";
-
-      // Check for various auth-related errors
       const authErrors = [
         "Invalid signature",
         "EcdsaP256 signature could not be verified",
         "Invalid delegation",
-        "IcCanisterSignature signature could not be verified",
-        "certificate verification failed",
-        "threshold signature",
       ];
 
-      const hasAuthError = authErrors.some((errorType) =>
-        errorString.includes(errorType),
-      );
-
-      if (hasAuthError) {
-        console.log("Authentication error detected, clearing auth state...");
-
-        // Clear all auth-related storage
+      if (authErrors.some((err) => errorString.includes(err))) {
         localStorage.clear();
         sessionStorage.clear();
-
-        // Clear IndexedDB auth storage
-        if (typeof window !== "undefined" && window.indexedDB) {
-          try {
-            indexedDB.deleteDatabase("authClientDB");
-          } catch (e) {
-            console.warn("Could not clear IndexedDB:", e);
-          }
-        }
-
+        try {
+          indexedDB.deleteDatabase("authClientDB");
+        } catch (e) {}
         logout();
-        return true; // Auth failed
+        return true;
       }
       return false;
     },
     [logout],
   );
 
-  const fetchJobs = async () => {
-    if (!backendActor) return;
-
-    const res: { jobs: Job[]; matching_jobs: Job[] } =
-      await backendActor.get_my_jobs();
-    dispatch({
-      type: "INIT_JOBS",
-      jobs: res.jobs,
-      matchingJobs: res.matching_jobs,
-    });
-  };
-
-  const { posts } = useSelector((state: RootState) => state.filesState);
-
+  // Service worker registration
   useEffect(() => {
-    const fetchInitialData = async () => {
-      if (!backendActor) return;
+    if (!initState.serviceWorkerRegistered && "serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("/service-worker.js")
+        .then(() =>
+          setInitState((prev) => ({ ...prev, serviceWorkerRegistered: true })),
+        )
+        .catch(console.error);
+    }
+  }, [initState.serviceWorkerRegistered]);
+
+  // Main initialization
+  useEffect(() => {
+    const initializeApp = async () => {
+      if (
+        !isLoggedIn ||
+        !backendActor ||
+        isFetching ||
+        initState.initialDataFetched
+      )
+        return;
 
       try {
         dispatch({ type: "IS_FETCHING", isFetching: true });
 
-        // Try the original get_initial_data first
-        try {
-          const res = await backendActor.get_initial_data();
+        const [jobsRes, initialRes] = await Promise.allSettled([
+          backendActor.get_my_jobs(),
+          backendActor.get_initial_data(),
+        ]);
 
-          if ("Err" in res && res.Err === "Anonymous user.") {
-            dispatch({ isRegistered: false, type: "IS_REGISTERED" });
-            return;
-          }
+        if (jobsRes.status === "fulfilled") {
+          dispatch({
+            type: "INIT_JOBS",
+            jobs: jobsRes.value.jobs,
+            matchingJobs: jobsRes.value.matching_jobs,
+          });
+        }
 
-          // If successful, get workspaces and profile history
+        if (initialRes.status === "fulfilled" && !("Err" in initialRes.value)) {
           const workspaces = await backendActor
             .get_work_spaces()
             .catch(() => []);
-          dispatch({ isRegistered: true, type: "IS_REGISTERED" });
-
-          const getProfileRes = await backendActor.get_user_profile(
-            Principal.fromText(res.Ok.Profile.id),
+          const profileRes = await backendActor.get_user_profile(
+            Principal.fromText(initialRes.value.Ok.Profile.id),
           );
 
           dispatch({
             type: "INIT_FILES_STATE",
             data: {
-              ...res.Ok,
-              ProfileHistory: getProfileRes.Ok || getProfileRes,
+              ...initialRes.value.Ok,
+              ProfileHistory: profileRes.Ok || profileRes,
               workspaces,
             },
           });
-        } catch (initialDataError: any) {
-          // If get_initial_data fails due to payload size, try chunked approach
-          if (
-            initialDataError?.toString().includes("payload size") ||
-            initialDataError?.toString().includes("3145728") ||
-            initialDataError?.toString().includes("3350595")
-          ) {
-            console.log("Payload too large, trying chunked data fetch...");
+          dispatch({ type: "IS_REGISTERED", isRegistered: true });
+        } else {
+          const [workspaces, friends, wallet, files] = await Promise.allSettled(
+            [
+              backendActor.get_work_spaces(),
+              backendActor.get_friends(),
+              backendActor.get_wallet(),
+              backendActor.get_page_files(1),
+            ],
+          );
 
-            // Get profile first to check if user exists
-            const profileRes = await backendActor.get_user_profile(
-              Principal.anonymous(),
-            );
-
-            if (
-              "Err" in profileRes &&
-              profileRes.Err === "User does not exist"
-            ) {
-              dispatch({ isRegistered: false, type: "IS_REGISTERED" });
-              return;
-            }
-
-            dispatch({ isRegistered: true, type: "IS_REGISTERED" });
-
-            // Fetch data in smaller chunks
-            const [workspaces, friends, wallet] = await Promise.all([
-              backendActor.get_work_spaces().catch(() => []),
-              backendActor.get_friends().catch(() => []),
-              backendActor.get_wallet().catch(() => null),
-            ]);
-
-            // Get files in smaller batches
-            const files = await backendActor.get_page_files(1).catch(() => []);
-
-            // Initialize with chunked data
-            dispatch({
-              type: "INIT_FILES_STATE",
-              data: {
-                Profile: profileRes.Ok || profileRes,
-                ProfileHistory: profileRes.Ok || profileRes,
-                Files: files,
-                FilesContents: [], // Load this separately if needed
-                Friends: friends,
-                Contracts: {}, // Load contracts separately if needed
-                Wallet: wallet,
-                workspaces,
-              },
-            });
-          } else {
-            // Re-throw if it's not a payload size error
-            throw initialDataError;
-          }
+          dispatch({
+            type: "INIT_FILES_STATE",
+            data: {
+              Profile: profile,
+              ProfileHistory: profile,
+              Files: files.status === "fulfilled" ? files.value : [],
+              Friends: friends.status === "fulfilled" ? friends.value : [],
+              Wallet: wallet.status === "fulfilled" ? wallet.value : null,
+              workspaces:
+                workspaces.status === "fulfilled" ? workspaces.value : [],
+              FilesContents: [],
+              Contracts: {},
+            },
+          });
         }
-      } catch (error: any) {
-        const isLoggedOut = checkAuthAndLogout(error);
-        if (!isLoggedOut) {
-          console.log("Issue fetching initial data from backend: ", error);
-        }
+
+        setInitState((prev) => ({ ...prev, initialDataFetched: true }));
+      } catch (error) {
+        if (!checkAuthAndLogout(error)) console.error("Init error:", error);
       } finally {
-        dispatch({
-          type: "IS_FETCHING",
-          isFetching: false,
-        });
+        dispatch({ type: "IS_FETCHING", isFetching: false });
       }
     };
 
-    if (isLoggedIn && backendActor && !isFetching) {
-      fetchJobs();
-      fetchInitialData();
-    }
-  }, [backendActor]);
+    initializeApp();
+  }, [isLoggedIn, backendActor, isFetching, initState.initialDataFetched]);
 
-  // after setup
-
+  // User data fetching
   useEffect(() => {
-    if (profile?.id && backendActor) {
-      (async () => {
-        try {
-          if (profile) {
-            // get notifications
-            const notificationRes = await backendActor.get_user_notifications(
-              BigInt(0),
-            );
-            const chatsList = await backendActor.get_my_chats(BigInt(0));
-
-            dispatch({
-              type: "UPDATE_NOT_LIST",
-              new_list: notificationRes,
-            });
-            dispatch({
-              type: "SET_CHATS",
-              chats: chatsList,
-            });
-            // get calendar
-
-            const res = await backendActor.get_my_calendar();
-            const aiCredits = await backendActor.get_ai_credits();
-            if ("Err" in aiCredits && aiCredits.Err == "User does not exist") {
-              const _ = await backendActor.drop_free_credits();
-              dispatch({
-                type: "INIT_AI_CREDITS",
-                credits: 1,
-                isFree: true,
-              });
-            } else if ("Ok" in aiCredits) {
-              const isFree = await backendActor.is_ai_free_tier();
-              dispatch({
-                type: "INIT_AI_CREDITS",
-                credits: aiCredits.Ok,
-                isFree: ("Ok" in isFree && isFree.Ok) || true,
-              });
-            }
-            res.events = res.events.map((event: any) => EventTimezone(event));
-            res.availabilities = res.availabilities.map((event: any) =>
-              AvailabilityTimezone(event),
-            );
-            dispatch({
-              type: "SET_CALENDAR",
-              calendar: res,
-            });
-          }
-        } catch (error) {
-          console.log("Issue fetching calendar from backend: ", error);
-        }
-      })();
-    }
-  }, [backendActor]);
-
-  useSocket();
-
-  // Approve tokens
-  const approveTokens = useCallback(
-    async (amount: any) => {
-      if (!ckUSDCActor) throw new Error("ckUSDCActor not available");
+    const fetchUserData = async () => {
+      if (!profile?.id || !backendActor || initState.userDataFetched) return;
 
       try {
-        console.log("Approving tokens:", {
-          amount: amount.toString(),
-          spender: canisterId,
-        });
+        const [notifications, chats, calendar, credits] =
+          await Promise.allSettled([
+            backendActor.get_user_notifications(BigInt(0)),
+            backendActor.get_my_chats(BigInt(0)),
+            backendActor.get_my_calendar(),
+            backendActor.get_ai_credits(),
+          ]);
 
-        const approveResult = await ckUSDCActor.icrc2_approve({
-          from_subaccount: [],
-          spender: {
-            owner: Principal.fromText(canisterId),
-            subaccount: [],
+        if (notifications.status === "fulfilled") {
+          dispatch({ type: "UPDATE_NOT_LIST", new_list: notifications.value });
+        }
+        if (chats.status === "fulfilled") {
+          dispatch({ type: "SET_CHATS", chats: chats.value });
+        }
+        if (calendar.status === "fulfilled") {
+          const cal = calendar.value;
+          cal.events = cal.events.map(EventTimezone);
+          cal.availabilities = cal.availabilities.map(AvailabilityTimezone);
+          dispatch({ type: "SET_CALENDAR", calendar: cal });
+        }
+        if (credits.status === "fulfilled") {
+          const creditsValue = credits.value;
+          if (
+            "Err" in creditsValue &&
+            creditsValue.Err === "User does not exist"
+          ) {
+            await backendActor.drop_free_credits();
+            dispatch({ type: "INIT_AI_CREDITS", credits: 1, isFree: true });
+          } else if ("Ok" in creditsValue) {
+            const isFree = await backendActor.is_ai_free_tier();
+            dispatch({
+              type: "INIT_AI_CREDITS",
+              credits: creditsValue.Ok,
+              isFree: ("Ok" in isFree && isFree.Ok) || true,
+            });
+          }
+        }
+
+        setInitState((prev) => ({ ...prev, userDataFetched: true }));
+      } catch (error) {
+        console.error("User data fetch error:", error);
+      }
+    };
+
+    fetchUserData();
+  }, [profile?.id, backendActor, initState.userDataFetched]);
+
+  // Posts fetching
+  useEffect(() => {
+    const fetchPosts = async () => {
+      if (!backendActor || posts.length > 0 || initState.postsFetched) return;
+
+      try {
+        const fetchedPosts = await backendActor.get_posts(
+          BigInt(0),
+          BigInt(10),
+        );
+        if (fetchedPosts.length > 0) {
+          dispatch({ type: "ADD_POSTS", posts: fetchedPosts });
+        }
+        setInitState((prev) => ({ ...prev, postsFetched: true }));
+      } catch (error) {
+        console.error("Posts fetch error:", error);
+      }
+    };
+
+    fetchPosts();
+  }, [backendActor, posts.length, initState.postsFetched]);
+
+  // Token deposit
+  useEffect(() => {
+    const processDeposit = async () => {
+      if (
+        !backendActor ||
+        !ckUSDCActor ||
+        !profile?.id ||
+        initState.depositProcessed
+      )
+        return;
+
+      try {
+        const userBalance = await getckUsdcBalance(ckUSDCActor, profile.id);
+        if (Number(userBalance) <= 0 || Number(userBalance) / 1_000_000 < 1) {
+          if (Number(userBalance) > 0) {
+            enqueueSnackbar("You need at least 1 CKUSDT to deposit", {
+              variant: "error",
+            });
+          }
+          return;
+        }
+
+        const notificationKey = enqueueSnackbar(
+          `Processing deposit of ${Number(userBalance) / 1_000_000} CKUSDT...`,
+          {
+            variant: "info",
+            persist: true,
+            action: () => <CircularProgress size={24} />,
           },
-          amount: amount,
+        );
+
+        await ckUSDCActor.icrc2_approve({
+          from_subaccount: [],
+          spender: { owner: Principal.fromText(canisterId), subaccount: [] },
+          amount: userBalance,
           expected_allowance: [],
           expires_at: [],
           fee: [],
@@ -321,161 +305,55 @@ const App: React.FC = () => {
           created_at_time: [],
         });
 
-        console.log("Approve result:", approveResult);
-        return approveResult;
-      } catch (error) {
-        console.error("Error approving tokens:", error);
-        throw error;
-      }
-    },
-    [ckUSDCActor],
-  );
+        const depositResult = await backendActor.deposit_ckusdt();
+        closeSnackbar(notificationKey);
 
-  // Deposit tokens
-  const depositTokens = useCallback(async () => {
-    if (!backendActor) throw new Error("backendActor not available");
-
-    try {
-      console.log("Calling deposit_ckusdt...");
-      const result = await backendActor.deposit_ckusdt();
-      console.log("Deposit result:", result);
-      return result;
-    } catch (error) {
-      console.error("Error depositing tokens:", error);
-      throw error;
-    }
-  }, [backendActor]);
-
-  useEffect(() => {
-    const fetchPosts = async () => {
-      if (!backendActor) return;
-
-      try {
-        const fetchedPosts = await backendActor.get_posts(
-          BigInt(0),
-          BigInt(10),
-        );
-
-        if (fetchedPosts.length === 0) {
-          // setHasMore(false);
-        } else {
-          dispatch({
-            type: "ADD_POSTS",
-            posts: fetchedPosts,
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching more posts:", error);
-      }
-    };
-
-    if (backendActor && posts.length === 0) {
-      fetchPosts();
-    }
-  }, [dispatch, backendActor]);
-
-  // Main deposit flow
-  useEffect(() => {
-    if (backendActor && ckUSDCActor && profile?.id) {
-      (async () => {
-        try {
-          // 1. Get user balance
-          const userBalance = await getckUsdcBalance(ckUSDCActor, profile.id);
-          // console.log("User balance:", userBalance);
-          // 2. Check if user has balance
-          if (Number(userBalance) <= 0) {
-            // console.log("User has no balance to deposit");
-            return;
-          }
-          if (Number(userBalance) / 1_000_000 < 1) {
-            // snackbar
-            enqueueSnackbar(
-              `You need at least 1 CKUSDT to deposit, otherwise your deposit will be lost in gas fees.`,
-              { variant: "error" },
-            );
-            return;
-          }
-
-          // Show notification
-          const notificationKey = enqueueSnackbar(
-            `Processing deposit of ${Number(userBalance) / 1_000_000} CKUSDT...`,
-            {
-              variant: "info",
-              persist: true,
-              action: () => (
-                <CircularProgress
-                  size={24}
-                  sx={{ color: theme.palette.primary.contrastText }}
-                />
-              ),
-            },
+        if ("Ok" in depositResult) {
+          dispatch({ type: "SET_WALLET", wallet: depositResult.Ok });
+          enqueueSnackbar(
+            `Successfully deposited ${Number(userBalance) / 1_000_000} CKUSDT`,
+            { variant: "success" },
           );
-
-          try {
-            // 4. Approve tokens
-            await approveTokens(userBalance);
-
-            enqueueSnackbar(`Tokens approved successfully`, {
-              variant: "info",
-            });
-
-            // 5. Deposit tokens
-            const depositResult = await depositTokens();
-
-            // 7. Update UI based on result
-            if ("Ok" in depositResult) {
-              dispatch({ type: "SET_WALLET", wallet: depositResult.Ok });
-              closeSnackbar(notificationKey);
-              enqueueSnackbar(
-                `Successfully deposited ${Number(userBalance) / 1_000_000} CKUSDT`,
-                { variant: "success" },
-              );
-            } else {
-              closeSnackbar(notificationKey);
-              enqueueSnackbar(
-                `Deposit failed: ${JSON.stringify(depositResult)}`,
-                { variant: "error" },
-              );
-            }
-          } catch (operationError: any) {
-            closeSnackbar(notificationKey);
-            enqueueSnackbar(
-              `Operation failed: ${operationError?.toString() || "Unknown error"}`,
-              {
-                variant: "error",
-              },
-            );
-          }
-        } catch (error: any) {
-          console.error("Error in deposit flow:", error);
-          enqueueSnackbar(`Error: ${error?.toString() || "Unknown error"}`, {
+        } else {
+          enqueueSnackbar(`Deposit failed: ${JSON.stringify(depositResult)}`, {
             variant: "error",
           });
         }
-      })();
-    }
-  }, [backendActor, ckUSDCActor, profile?.id]);
 
-  // Add a global function for manual auth clearing (for debugging)
+        setInitState((prev) => ({ ...prev, depositProcessed: true }));
+      } catch (error) {
+        enqueueSnackbar(`Deposit error: ${error}`, { variant: "error" });
+      }
+    };
+
+    processDeposit();
+  }, [backendActor, ckUSDCActor, profile?.id, initState.depositProcessed]);
+
+  // Debug function
   useEffect(() => {
     (window as any).clearAuthState = () => {
       localStorage.clear();
       sessionStorage.clear();
-      if (typeof window !== "undefined" && window.indexedDB) {
-        try {
-          indexedDB.deleteDatabase("authClientDB");
-        } catch (e) {
-          console.warn("Could not clear IndexedDB:", e);
-        }
-      }
+      try {
+        indexedDB.deleteDatabase("authClientDB");
+      } catch (e) {}
       logout();
       window.location.reload();
     };
   }, [logout]);
 
-  if (!backendActor) {
-    return <RunawayJellyfish thinking={true} scale={2} />;
-  }
+  return { isInitialized: Object.values(initState).every(Boolean) };
+};
+
+const App: React.FC = () => {
+  const { isRegistered } = useSelector((state: RootState) => state.uiState);
+  const { backendActor } = useBackendContext();
+
+  useAppInitialization();
+  useSocket();
+
+  if (!backendActor) return <RunawayJellyfish thinking={true} scale={2} />;
+
   return (
     <MainContent>
       <Suspense fallback={null}>
@@ -497,5 +375,4 @@ const App: React.FC = () => {
     </MainContent>
   );
 };
-
 export default App;

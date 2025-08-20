@@ -22,7 +22,19 @@ import { formatRelativeTime } from "../../utils/time";
 import EditProfile from "./editeProfile";
 import CopyButton from "../../components/MuiComponents/copyButton";
 import EmailComposer from "./sendEmail";
-const ProfilePage = ({ profile, history, friends, friendButton }) => {
+interface ProfilePageProps {
+  profile: any;
+  history: any;
+  friends: any;
+  friendButton: any;
+}
+
+const ProfilePage: React.FC<ProfilePageProps> = ({
+  profile,
+  history,
+  friends,
+  friendButton,
+}) => {
   const { isDarkMode } = useSelector((state) => state.uiState);
   const currentUser = useSelector((state) => state.filesState.profile);
   const [isEditing, setIsEditing] = useState(false);
@@ -72,7 +84,7 @@ const ProfilePage = ({ profile, history, friends, friendButton }) => {
     },
     data: actionRatingsData,
     background: { fill: isDarkMode ? "#1e1e1e" : "#fefefe" },
-    theme: isDarkMode ? "ag-dark" : "ag-default",
+    theme: (isDarkMode ? "ag-dark" : "ag-default") as any,
     series: [
       {
         type: "line",
@@ -362,7 +374,16 @@ const ProfilePage = ({ profile, history, friends, friendButton }) => {
             <Typography variant="h6" gutterBottom>
               Friends
             </Typography>
-            <Friends currentUser={profile} friends={friends} />
+            <Friends
+              currentUser={profile}
+              friends={friends}
+              onAcceptFriend={() => {}}
+              onRejectFriend={() => {}}
+              onCancelRequest={() => {}}
+              onUnfriend={() => {}}
+              onSendMessage={() => {}}
+              onRateUser={() => {}}
+            />
           </CardContent>
         </Card>
       )}

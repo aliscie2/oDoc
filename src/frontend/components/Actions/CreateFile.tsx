@@ -16,10 +16,13 @@ const CreateFile: React.FC = () => {
     (state: any) => state.filesState,
   );
 
-  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  const { closeSnackbar } = useSnackbar();
 
   const handleCreateFile = async () => {
+    const startTime = performance.now();
+
     const id = randomString();
+
     let workspaces: Array<string> = [];
     if (
       currentWorkspace.id &&
@@ -27,6 +30,7 @@ const CreateFile: React.FC = () => {
     ) {
       workspaces = [currentWorkspace.id];
     }
+
     const new_file: FileNode = {
       id,
       permission: {
@@ -46,12 +50,15 @@ const CreateFile: React.FC = () => {
       type: "ADD_FILE",
       new_file,
     });
+
     dispatch({
       type: "ADD_CONTENT",
       id,
       content: fileContentSample,
     });
+
     closeSnackbar();
+
     // enqueueSnackbar("New file is created!", { variant: "success" });
   };
   let title = "Create a new document";
