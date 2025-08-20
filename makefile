@@ -83,6 +83,7 @@ upgrade-backend:
 
 # call it before each commit please.
 frontend-format:
+	# npx tsc --listFiles --noEmit | grep -E "(error|cannot find)"
 	yarn run lint
 	prettier --write ./src/frontend
 	npx tsc --noUnusedLocals --noUnusedParameters --noEmit --skipLibCheck
