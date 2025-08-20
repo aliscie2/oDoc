@@ -1,4 +1,4 @@
-import { TimeFormatter } from "@/pages/dashboard/gemeniAi";
+import { TimeFormatter } from "@/chatBot/utiles";
 import { Calendar } from "$/declarations/backend/backend.did";
 
 // Simplified command structure suggestions:

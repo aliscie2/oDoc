@@ -7,7 +7,7 @@ import {
   useTheme,
   Tooltip,
 } from "@mui/material";
-import MarkdownMessage from "../pages/dashboard/markDownMessageRdnder";
+import MarkdownMessage from "../chatBot/markDownMessageRdnder";
 
 interface JobCompletionProgressProps {
   job: Job | null;

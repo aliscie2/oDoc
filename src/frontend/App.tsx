@@ -28,7 +28,7 @@ const GoogleCalendarOnboarding = React.lazy(
   () => import("@/components/userBadges/coonectGoogleCalendar"),
 );
 const ChatContainer = React.lazy(
-  () => import("./pages/dashboard/ChatContainer"),
+  () => import("./chatBot/ChatContainer"),
 );
 const MainContent = styled(Box)(({ theme }) => ({
   display: "flex",

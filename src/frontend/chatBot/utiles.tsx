@@ -1,4 +1,4 @@
-import { Calendar } from "../../../declarations/backend/backend.did";
+import { Calendar } from "../../declarations/backend/backend.did";
 
 // Types for the calendar actions
 type CalendarActionType =

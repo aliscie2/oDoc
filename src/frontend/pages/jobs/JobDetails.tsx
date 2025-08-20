@@ -28,7 +28,7 @@ import { Link } from "react-router-dom";
 import { formatRelativeTime } from "@/utils/time";
 import { useDispatch, useSelector } from "react-redux";
 import { useBackendContext } from "@/contexts/BackendContext";
-import MarkdownMessage from "@/pages/dashboard/markDownMessageRdnder";
+import MarkdownMessage from "@/chatBot/markDownMessageRdnder";
 import { debounce } from "lodash";
 
 interface JobDetailsProps {
