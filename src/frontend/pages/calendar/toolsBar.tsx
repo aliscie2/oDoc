@@ -1,29 +1,29 @@
 import {
+  Box,
   Button,
   ButtonGroup,
+  Divider,
   IconButton,
   Menu,
   MenuItem,
   Stack,
   Typography,
   useMediaQuery,
-  Box,
-  Divider,
 } from "@mui/material";
-import CalendarManagement from "./AvailabilityComonent";
-import React, { useState } from "react";
+import { useState } from "react";
 import { useSelector } from "react-redux";
+import CalendarManagement from "./AvailabilityComonent";
 
+import CopyButton from "@/components/MuiComponents/copyButton";
 import {
   MoreVert,
   NavigateBefore,
   NavigateNext,
   Today,
 } from "@mui/icons-material";
-import TimeZoneSelector from "./timezone";
-import GoogleCalendarIntegration from "./googleAccounts";
 import GmailConnection from "./GmailConnection";
-import CopyButton from "@/components/MuiComponents/copyButton";
+import GoogleCalendarIntegration from "./googleAccounts";
+import TimeZoneSelector from "./timezone";
 
 const CustomToolbar = ({ onNavigate, onView, label, view, views }) => {
   const { calendar } = useSelector((state) => state.calendarState);
