@@ -29,6 +29,7 @@ import { formatRelativeTime } from "@/utils/time";
 import { useDispatch, useSelector } from "react-redux";
 import { useBackendContext } from "@/contexts/BackendContext";
 import MarkdownMessage from "@/pages/dash_board_v1/markDownMessageRdnder";
+import { debounce } from "lodash";
 
 interface JobDetailsProps {
   job: Job;
@@ -128,6 +129,17 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
     };
   const dispatch = useDispatch();
 
+  // Debounced dispatch function using lodash
+  const debouncedDispatch = React.useCallback(
+    debounce((scoreAsDecimal: number) => {
+      dispatch({
+        type: "UPDATE_REQUIRED_MATCH_SCORE",
+        score: scoreAsDecimal,
+      });
+    }, 150),
+    [dispatch]
+  );
+
   const handleScoreChange = (newScore: number) => {
     // Show tooltip if user tries to go below 60%
     if (newScore < 60) {
@@ -140,11 +152,11 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
 
     // Ensure minimum of 60
     const clampedScore = Math.max(60, newScore);
-    setLocalScore(clampedScore);
+    setLocalScore(clampedScore); // Update UI immediately for smooth experience
 
     // Convert from percentage (0-100) to decimal (0-1) and ensure minimum of 0.6
     const scoreAsDecimal = Math.max(0.6, clampedScore / 100);
-    dispatch({ type: "UPDATE_REQUIRED_MATCH_SCORE", score: scoreAsDecimal });
+    debouncedDispatch(scoreAsDecimal); // Debounced dispatch
   };
 
   const EmailsList = () => (
