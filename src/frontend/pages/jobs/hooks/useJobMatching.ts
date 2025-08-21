@@ -42,7 +42,6 @@ export const useJobMatching = (currentJob: Job | null) => {
     (
       aiMatches: AIMatchResponse[],
       candidateJobs: Job[],
-      currentJobId: string,
     ): Match[] => {
       const jobIds = new Set(candidateJobs.map((j) => j.id));
       const uniqueMatches = new Map<string, Match>();
@@ -81,7 +80,7 @@ export const useJobMatching = (currentJob: Job | null) => {
     setError(null);
 
     try {
-      console.log("get_matches")
+
       dispatch({ type: "IS_LOOKING_NEW_MATCHES", stage: 0 });
       const candidateJobs = await backendActor.get_matches(
         currentJob.id,
@@ -112,7 +111,6 @@ export const useJobMatching = (currentJob: Job | null) => {
         processedMatches = processAIMatches(
           aiMatchResponses,
           candidateJobs,
-          currentJob.id,
         );
       } else {
         const compressedCandidates = compressJobsForMatching(candidateJobs);
@@ -131,7 +129,6 @@ export const useJobMatching = (currentJob: Job | null) => {
         processedMatches = processAIMatches(
           parsed?.matches || [],
           candidateJobs,
-          currentJob.id,
         );
       }
       dispatch({ type: "IS_LOOKING_NEW_MATCHES", stage: 2 });
@@ -169,8 +166,6 @@ export const useJobMatching = (currentJob: Job | null) => {
     const processedJobIds = processedJobIdsRef.current;
     const currentAiAgent = aiAgentRef.current;
     
-    console.log("useJobMatching effect - currentJob?.id:", currentJob?.id, "aiAgent credits:", currentAiAgent?.remainingCredits(), "already processed:", processedJobIds.has(currentJob?.id || ""), "has matches:", currentJob?.matches?.length || 0)
-    
     if (
       currentJob?.id &&
       currentAiAgent?.remainingCredits() > 0 &&
@@ -180,7 +175,7 @@ export const useJobMatching = (currentJob: Job | null) => {
       processedJobIds.add(currentJob.id);
       findMatches();
     }
-  }, [currentJob?.id, findMatches]);
+  }, [currentJob?.id, currentJob?.matches?.length, findMatches]);
 
   return { loading, error, findMatches };
 };

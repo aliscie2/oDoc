@@ -1,5 +1,5 @@
 import { Job, Match } from "$/declarations/backend/backend.did";
-import { selectCurrentJobId, selectJobs, selectMatchingJobs, selectCurrentJob } from "@/redux/selectors";
+import { selectCurrentJobId, selectMatchingJobs, selectCurrentJob } from "@/redux/selectors";
 import { Visibility, Warning } from "@mui/icons-material";
 import {
   Alert,
@@ -44,10 +44,9 @@ const truncateTitle = (title: string, maxWords = 3): string => {
 
 const JobSearchComponent: React.FC = React.memo(() => {
   const currentJobId = useSelector(selectCurrentJobId);
-  const jobs = useSelector(selectJobs);
   const matchingJobs = useSelector(selectMatchingJobs);
   const currentJob = useSelector(selectCurrentJob);
-  console.log("JobSearchComponent - currentJobId:", currentJobId, "currentJob:", currentJob?.id, "matchingJobs:", matchingJobs?.length)
+
   const [openDialogId, setOpenDialogId] = useState<string | null>(null);
   const { loading, error, findMatches } = useJobMatching(currentJob);
 
@@ -67,7 +66,7 @@ const JobSearchComponent: React.FC = React.memo(() => {
       .sort((a, b) => b.score - a.score);
   }, [currentJob?.matches, matchingJobs, currentJobId]);
 
-  const MatchCard = ({ job, match, score }: ProcessedMatch) => {
+  const MatchCard = React.memo(({ job, match, score }: ProcessedMatch) => {
     const scoreColor = getScoreColor(score);
 
     return (
@@ -166,7 +165,7 @@ const JobSearchComponent: React.FC = React.memo(() => {
         </CardContent>
       </Card>
     );
-  };
+  });
 
   if (loading) {
     return (

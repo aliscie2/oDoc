@@ -13,7 +13,7 @@ import { Typography } from "@mui/material";
 import React from "react";
 import { Helmet } from "react-helmet-async";
 
-function ContractsHistory(props: any) {
+function ContractsHistory() {
   const dispatch = useDispatch();
   const { contracts, profile, all_friends } = useSelector(
     (state: any) => state.filesState,

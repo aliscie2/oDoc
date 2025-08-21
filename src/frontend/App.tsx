@@ -350,19 +350,6 @@ const useAppInitialization = () => {
     dispatch,
   ]);
 
-  // Debug function
-  useEffect(() => {
-    (window as any).clearAuthState = () => {
-      localStorage.clear();
-      sessionStorage.clear();
-      try {
-        indexedDB.deleteDatabase("authClientDB");
-      } catch (e) {}
-      logout();
-      window.location.reload();
-    };
-  }, [logout]);
-
   return { isInitialized: Object.values(initState).every(Boolean) };
 };
 

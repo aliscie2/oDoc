@@ -1,5 +1,5 @@
 import { Route, Routes } from "react-router-dom";
-import React, { Suspense } from "react";
+import React, { Suspense, useMemo } from "react";
 import { CircularProgress, Box } from "@mui/material";
 import { useSelector } from "react-redux";
 import { selectIsLoggedIn } from "@/redux/selectors";
@@ -7,7 +7,6 @@ import { selectIsLoggedIn } from "@/redux/selectors";
 // Immediate imports for critical components
 import LandingPage from "./LandingPage";
 import ICPJobsLandingPage from "./LandingPage/aiJobMatch";
-// import JobsPage from "./jobs";
 import AffiliateRedirect from "./affiliateRedirect";
 import { Posts } from "./posts";
 
@@ -25,11 +24,8 @@ const SNSVoting = React.lazy(() => import("./white_paper"));
 const DummyShares = React.lazy(() => import("./sharesContract"));
 const AffiliateDashboard = React.lazy(() => import("./affiliate"));
 const ContractPage = React.lazy(() => import("./profile/ContractPage"));
-const CalendarView = React.lazy(
-  () => import("./calendar/calendar"),
-);
+const CalendarView = React.lazy(() => import("./calendar/calendar"));
 const AchievementPage = React.lazy(() => import("@/components/userBadges"));
-// const Posts = React.lazy(() => import("./posts"));
 const WalletPage = React.lazy(() => import("./walletPage"));
 const JobPage = React.lazy(() => import("./jobPage"));
 
@@ -51,22 +47,24 @@ const Pages = React.memo(() => {
   );
 
   const isLoggedIn = useSelector(selectIsLoggedIn);
-  const currentDomain = window.location.hostname;
-  const MainPage = () => {
+  
+  const MainPage = useMemo(() => {
+    const currentDomain = window.location.hostname;
+    
     if (isLoggedIn) {
       return <JobsPage />;
     }
-    if (currentDomain == "odoc.app") {
+    if (currentDomain === "odoc.app") {
       return <LandingPage />;
     } else {
       return <ICPJobsLandingPage />;
     }
-  };
-console.log("pages - profile changed:", profile?.id, "isLoggedIn:", isLoggedIn)
+  }, [isLoggedIn]);
+
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
-        <Route path="/" element={<MainPage />} />
+        <Route path="/" element={MainPage} />
         <Route path="/about" element={<LandingPage />} />
         <Route path="/wallet" element={<WalletPage wallet={wallet} />} />
         <Route
