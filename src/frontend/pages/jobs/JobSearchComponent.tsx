@@ -1,5 +1,5 @@
 import { Job, Match } from "$/declarations/backend/backend.did";
-import { RootState } from "@/redux/reducers";
+import { selectCurrentJobId, selectJobs, selectMatchingJobs, selectCurrentJob } from "@/redux/selectors";
 import { Visibility, Warning } from "@mui/icons-material";
 import {
   Alert,
@@ -16,7 +16,7 @@ import {
   IconButton,
   Typography,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useSelector } from "react-redux";
 import ConnectButton from "./ConnectButton";
 import JobDetails from "./JobDetails";
@@ -42,29 +42,30 @@ const truncateTitle = (title: string, maxWords = 3): string => {
   );
 };
 
-const JobSearchComponent: React.FC = () => {
-  const { currentJobId, jobs, matchingJobs } = useSelector(
-    (state: RootState) => state.jobState,
-  );
+const JobSearchComponent: React.FC = React.memo(() => {
+  const currentJobId = useSelector(selectCurrentJobId);
+  const jobs = useSelector(selectJobs);
+  const matchingJobs = useSelector(selectMatchingJobs);
+  const currentJob = useSelector(selectCurrentJob);
+  console.log("JobSearchComponent - currentJobId:", currentJobId, "currentJob:", currentJob?.id, "matchingJobs:", matchingJobs?.length)
   const [openDialogId, setOpenDialogId] = useState<string | null>(null);
-
-  const currentJob = jobs?.find((job: Job) => job.id === currentJobId) || null;
   const { loading, error, findMatches } = useJobMatching(currentJob);
 
-  const sortedMatches: ProcessedMatch[] =
-    currentJob?.matches && matchingJobs
-      ? currentJob.matches
-          .filter((match): match is Match =>
-            Boolean(match?.job_id && match.job_id !== currentJobId),
-          )
-          .map((match) => {
-            const job = matchingJobs.find((j: Job) => j?.id === match.job_id);
-            if (!job) return null;
-            return { job, match, score: Math.round((match.score || 0) * 100) };
-          })
-          .filter((item): item is ProcessedMatch => Boolean(item))
-          .sort((a, b) => b.score - a.score)
-      : [];
+  const sortedMatches: ProcessedMatch[] = useMemo(() => {
+    if (!currentJob?.matches || !matchingJobs) return [];
+    
+    return currentJob.matches
+      .filter((match): match is Match =>
+        Boolean(match?.job_id && match.job_id !== currentJobId),
+      )
+      .map((match) => {
+        const job = matchingJobs.find((j: Job) => j?.id === match.job_id);
+        if (!job) return null;
+        return { job, match, score: Math.round((match.score || 0) * 100) };
+      })
+      .filter((item): item is ProcessedMatch => Boolean(item))
+      .sort((a, b) => b.score - a.score);
+  }, [currentJob?.matches, matchingJobs, currentJobId]);
 
   const MatchCard = ({ job, match, score }: ProcessedMatch) => {
     const scoreColor = getScoreColor(score);
@@ -269,6 +270,8 @@ const JobSearchComponent: React.FC = () => {
       })}
     </Box>
   );
-};
+});
+
+JobSearchComponent.displayName = 'JobSearchComponent';
 
 export default JobSearchComponent;

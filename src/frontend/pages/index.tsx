@@ -2,15 +2,17 @@ import { Route, Routes } from "react-router-dom";
 import React, { Suspense } from "react";
 import { CircularProgress, Box } from "@mui/material";
 import { useSelector } from "react-redux";
+import { selectIsLoggedIn } from "@/redux/selectors";
 
 // Immediate imports for critical components
 import LandingPage from "./LandingPage";
 import ICPJobsLandingPage from "./LandingPage/aiJobMatch";
-import JobsPage from "./jobs";
+// import JobsPage from "./jobs";
 import AffiliateRedirect from "./affiliateRedirect";
 import { Posts } from "./posts";
 
 // Lazy imports for heavy components
+const JobsPage = React.lazy(() => import("./jobs"));
 const FileContentPage = React.lazy(() => import("./fileContentPage"));
 const ShareFilePage = React.lazy(() => import("./ShareFilePage"));
 const ProfilePage = React.lazy(() => import("./profile"));
@@ -43,12 +45,12 @@ const PageLoader = () => (
   </Box>
 );
 
-function Pages() {
+const Pages = React.memo(() => {
   const { profile, profile_history, wallet, friends } = useSelector(
     (state: any) => state.filesState,
   );
 
-  const { isLoggedIn } = useSelector((state: any) => state.uiState);
+  const isLoggedIn = useSelector(selectIsLoggedIn);
   const currentDomain = window.location.hostname;
   const MainPage = () => {
     if (isLoggedIn) {
@@ -60,7 +62,7 @@ function Pages() {
       return <ICPJobsLandingPage />;
     }
   };
-
+console.log("pages - profile changed:", profile?.id, "isLoggedIn:", isLoggedIn)
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
@@ -100,6 +102,8 @@ function Pages() {
       </Routes>
     </Suspense>
   );
-}
+});
+
+Pages.displayName = 'Pages';
 
 export default Pages;

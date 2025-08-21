@@ -19,6 +19,11 @@ function ContractsHistory(props: any) {
     (state: any) => state.filesState,
   );
 
+  // Mark that user has visited contracts page
+  React.useEffect(() => {
+    localStorage.setItem("isVisitedContractsPage", "true");
+  }, []);
+
   const handleClick = () => {
     try {
       if (!profile) {

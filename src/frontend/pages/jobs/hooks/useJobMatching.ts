@@ -1,7 +1,7 @@
 import { Job, Match } from "$/declarations/backend/backend.did";
 import { useBackendContext } from "@/contexts/BackendContext";
 import { RootState } from "@/redux/reducers";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   compressJobForMatching,
@@ -25,7 +25,13 @@ export const useJobMatching = (currentJob: Job | null) => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [processedJobIds] = useState(new Set<string>());
+  const processedJobIdsRef = useRef(new Set<string>());
+  const aiAgentRef = useRef(aiAgent);
+  
+  // Update refs when values change
+  useEffect(() => {
+    aiAgentRef.current = aiAgent;
+  }, [aiAgent]);
 
   const getLookingForCategory = (job: Job) => {
     const categoryKey = Object.keys(job?.category || {})[0];
@@ -68,12 +74,14 @@ export const useJobMatching = (currentJob: Job | null) => {
   );
 
   const findMatches = useCallback(async () => {
-    if (!currentJob || !backendActor || !aiAgent) return;
+    const currentAiAgent = aiAgentRef.current;
+    if (!currentJob || !backendActor || !currentAiAgent) return;
 
     setLoading(true);
     setError(null);
 
     try {
+      console.log("get_matches")
       dispatch({ type: "IS_LOOKING_NEW_MATCHES", stage: 0 });
       const candidateJobs = await backendActor.get_matches(
         currentJob.id,
@@ -111,7 +119,7 @@ export const useJobMatching = (currentJob: Job | null) => {
         const compressedCurrentJob = compressJobForMatching(currentJob);
         const { id: _id, ...jobWithoutId } = compressedCurrentJob;
 
-        const aiResponse = await aiAgent.sendMessage(
+        const aiResponse = await currentAiAgent.sendMessage(
           `candidates: ${JSON.stringify(compressedCandidates)}, Current: ${JSON.stringify(jobWithoutId)}`,
           false,
           JOB_MATCHING_PROMPT,
@@ -155,18 +163,24 @@ export const useJobMatching = (currentJob: Job | null) => {
     } finally {
       setLoading(false);
     }
-  }, [currentJob, backendActor, aiAgent, processAIMatches, dispatch]);
+  }, [currentJob?.id, backendActor, processAIMatches, dispatch]);
 
   useEffect(() => {
+    const processedJobIds = processedJobIdsRef.current;
+    const currentAiAgent = aiAgentRef.current;
+    
+    console.log("useJobMatching effect - currentJob?.id:", currentJob?.id, "aiAgent credits:", currentAiAgent?.remainingCredits(), "already processed:", processedJobIds.has(currentJob?.id || ""), "has matches:", currentJob?.matches?.length || 0)
+    
     if (
       currentJob?.id &&
-      aiAgent?.remainingCredits() > 0 &&
-      !processedJobIds.has(currentJob.id)
+      currentAiAgent?.remainingCredits() > 0 &&
+      !processedJobIds.has(currentJob.id) &&
+      (!currentJob.matches || currentJob.matches.length === 0) // Only run if no matches exist
     ) {
       processedJobIds.add(currentJob.id);
       findMatches();
     }
-  }, [currentJob?.id, aiAgent, findMatches, processedJobIds]);
+  }, [currentJob?.id, findMatches]);
 
   return { loading, error, findMatches };
 };

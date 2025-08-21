@@ -314,45 +314,67 @@ export function jobReducer(
       return { ...state, jobSearchStage: action.stage };
 
     case "UPDATE_MATCHING_JOBS":
-      //  is newMatches action.matches + state.currentJobId)?.matches if job_id is repeated we replace with match from action.matches
-      const newMatches2 =
-        state.jobs
-          .find((j) => j.id === state.currentJobId)
-          ?.matches.filter(
-            (match) => !action.matches.some((m) => m.job_id == match.job_id),
-          ) || [];
+      // Check if we actually need to update anything
+      const currentJob = state.jobs.find((j) => j.id === state.currentJobId);
+      if (!currentJob) return state;
 
-      newMatches2.push(...action.matches);
+      // Check if matches are actually different
+      const existingMatches = currentJob.matches || [];
+      const hasMatchChanges = action.matches.length !== existingMatches.length ||
+        action.matches.some(newMatch => 
+          !existingMatches.some(existing => 
+            existing.job_id === newMatch.job_id && 
+            existing.score === newMatch.score
+          )
+        );
 
-      const newmMtchingJobs = state.matchingJobs.filter(
-        (j) => !action.matchingJobs.some((m) => m.id == j.id),
-      );
-      newmMtchingJobs.push(...action.matchingJobs);
+      // Check if matching jobs are actually different
+      const hasMatchingJobChanges = action.matchingJobs.length !== state.matchingJobs.length ||
+        action.matchingJobs.some(newJob => 
+          !state.matchingJobs.some(existing => existing.id === newJob.id)
+        );
+
+      // If nothing changed, return the same state
+      if (!hasMatchChanges && !hasMatchingJobChanges) {
+        return state;
+      }
+
+      const newMatches2 = hasMatchChanges ? 
+        existingMatches.filter(
+          (match) => !action.matches.some((m) => m.job_id == match.job_id),
+        ).concat(action.matches) : existingMatches;
+
+      const newmMtchingJobs = hasMatchingJobChanges ?
+        state.matchingJobs.filter(
+          (j) => !action.matchingJobs.some((m) => m.id == j.id),
+        ).concat(action.matchingJobs) : state.matchingJobs;
 
       return {
         ...state,
-        jobs: state.jobs.map((j) =>
+        jobs: hasMatchChanges ? state.jobs.map((j) =>
           j.id === state.currentJobId ? { ...j, matches: newMatches2 } : j,
-        ),
+        ) : state.jobs,
         matchingJobs: newmMtchingJobs,
-        jobChanges: state.jobChanges.some((j) => j.id === state.currentJobId)
-          ? state.jobChanges.map((j) =>
-              j.id === state.currentJobId
-                ? { ...j, matches: [newMatches2] }
-                : j,
-            )
-          : [
-              ...state.jobChanges,
-              {
-                id: state.currentJobId,
-                active: [],
-                matches: [newMatches2],
-                updates: [],
-                category: [],
-                required_match_score: [],
-              },
-            ],
-        isChanged: true,
+        jobChanges: hasMatchChanges ? (
+          state.jobChanges.some((j) => j.id === state.currentJobId)
+            ? state.jobChanges.map((j) =>
+                j.id === state.currentJobId
+                  ? { ...j, matches: [newMatches2] }
+                  : j,
+              )
+            : [
+                ...state.jobChanges,
+                {
+                  id: state.currentJobId,
+                  active: [],
+                  matches: [newMatches2],
+                  updates: [],
+                  category: [],
+                  required_match_score: [],
+                },
+              ]
+        ) : state.jobChanges,
+        isChanged: hasMatchChanges ? true : state.isChanged,
       };
 
     case "UPDATE_MATCHES":

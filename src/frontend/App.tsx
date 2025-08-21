@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, Suspense, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import Pages from "./pages";
 
 import { Principal } from "@dfinity/principal";
@@ -12,6 +13,12 @@ import NavBar from "./components/MainComponents/NavBar";
 import TopNavBar from "./components/MainComponents/topNavBar";
 import { useBackendContext } from "./contexts/BackendContext";
 import { RootState } from "./redux/reducers";
+import {
+  selectIsLoggedIn,
+  selectIsRegistered,
+  selectIsFetching,
+  selectProfile,
+} from "./redux/selectors";
 import getckUsdcBalance from "./utils/getBalance";
 
 import RegistrationForm from "./components/MainComponents/RegistrationForm";
@@ -27,9 +34,7 @@ import useSocket from "./websocket/use_socket";
 const GoogleCalendarOnboarding = React.lazy(
   () => import("@/components/userBadges/coonectGoogleCalendar"),
 );
-const ChatContainer = React.lazy(
-  () => import("./chatBot/ChatContainer"),
-);
+const ChatContainer = React.lazy(() => import("./chatBot/ChatContainer"));
 const MainContent = styled(Box)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
@@ -57,12 +62,11 @@ const useAppInitialization = () => {
   const { logout, backendActor, ckUSDCActor } = useBackendContext();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
-  const { isLoggedIn, isRegistered, isFetching } = useSelector(
-    (state: RootState) => state.uiState,
-  );
-  const { profile, posts } = useSelector(
-    (state: RootState) => state.filesState,
-  );
+  const isLoggedIn = useSelector(selectIsLoggedIn);
+  const isRegistered = useSelector(selectIsRegistered);
+  const isFetching = useSelector(selectIsFetching);
+  const profile = useSelector(selectProfile);
+  const { posts } = useSelector((state: RootState) => state.filesState);
 
   const [initState, setInitState] = useState({
     serviceWorkerRegistered: false,
@@ -186,7 +190,15 @@ const useAppInitialization = () => {
     };
 
     initializeApp();
-  }, [isLoggedIn, backendActor, isFetching, initState.initialDataFetched]);
+  }, [
+    isLoggedIn,
+    backendActor,
+    isFetching,
+    initState.initialDataFetched,
+    dispatch,
+    checkAuthAndLogout,
+    profile,
+  ]);
 
   // User data fetching
   useEffect(() => {
@@ -239,7 +251,7 @@ const useAppInitialization = () => {
     };
 
     fetchUserData();
-  }, [profile?.id, backendActor, initState.userDataFetched]);
+  }, [profile?.id, backendActor, initState.userDataFetched, dispatch]);
 
   // Posts fetching
   useEffect(() => {
@@ -261,7 +273,7 @@ const useAppInitialization = () => {
     };
 
     fetchPosts();
-  }, [backendActor, posts.length, initState.postsFetched]);
+  }, [backendActor, posts.length, initState.postsFetched, dispatch]);
 
   // Token deposit
   useEffect(() => {
@@ -282,6 +294,7 @@ const useAppInitialization = () => {
               variant: "error",
             });
           }
+          setInitState((prev) => ({ ...prev, depositProcessed: true }));
           return;
         }
 
@@ -327,7 +340,15 @@ const useAppInitialization = () => {
     };
 
     processDeposit();
-  }, [backendActor, ckUSDCActor, profile?.id, initState.depositProcessed]);
+  }, [
+    backendActor,
+    ckUSDCActor,
+    profile?.id,
+    initState.depositProcessed,
+    enqueueSnackbar,
+    closeSnackbar,
+    dispatch,
+  ]);
 
   // Debug function
   useEffect(() => {
@@ -346,11 +367,23 @@ const useAppInitialization = () => {
 };
 
 const App: React.FC = () => {
-  const { isRegistered } = useSelector((state: RootState) => state.uiState);
+  const isRegistered = useSelector(selectIsRegistered);
   const { backendActor } = useBackendContext();
+  const navigate = useNavigate();
 
   useAppInitialization();
   useSocket();
+
+  // Domain-based navigation logic
+  useEffect(() => {
+    if (
+      isRegistered === true &&
+      window.location.hostname.includes("odoc.app") &&
+      !localStorage.getItem("isVisitedContractsPage")
+    ) {
+      navigate("/contracts");
+    }
+  }, [navigate, isRegistered]);
 
   if (!backendActor) return <RunawayJellyfish thinking={true} scale={2} />;
 

@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from "react";
 
 import { Job } from "$/declarations/backend/backend.did";
 import { useSelector } from "react-redux";
+import { selectCurrentJobId, selectJobs, selectProfile } from "@/redux/selectors";
 
 import JobSelector from "./JobSelector";
 import JobSearchComponent from "./JobSearchComponent";
@@ -10,15 +11,15 @@ import JobSearchComponent from "./JobSearchComponent";
 import LoginButton from "@/components/MainComponents/topNavBar/loginButton";
 import { Helmet } from "react-helmet-async";
 
-const JobsPage: React.FC = () => {
-  const { currentJobId, jobs } = useSelector((state: any) => state.jobState);
+const JobsPage: React.FC = React.memo(() => {
+  const currentJobId = useSelector(selectCurrentJobId);
+  const jobs = useSelector(selectJobs);
+  const profile = useSelector(selectProfile);
   const currentJobRef = useRef<Job | undefined>(undefined);
 
   useEffect(() => {
-    currentJobRef.current = jobs.find((job: Job) => job.id === currentJobId);
+    currentJobRef.current = jobs?.find((job: Job) => job.id === currentJobId);
   }, [currentJobId, jobs]);
-
-  const { profile } = useSelector((state: any) => state.filesState);
 
   if (!profile) {
     return <LoginButton data-testid="jobs-login-button" />;
@@ -60,5 +61,8 @@ const JobsPage: React.FC = () => {
       </Box>
     </Box>
   );
-};
+});
+
+JobsPage.displayName = 'JobsPage';
+
 export default JobsPage;
