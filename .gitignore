@@ -48,3 +48,5 @@ node_modules/
 playwright/.auth
 mykey
 mykey.pub
+
+zerostep.config.json

@@ -37,6 +37,7 @@
     "@testing-library/dom": "^10.4.1",
     "@types/react-dom": "^18.3.0",
     "@types/react-syntax-highlighter": "^15.5.13",
+    "@zerostep/playwright": "^0.1.5",
     "ag-charts-enterprise": "^12.1.1",
     "ag-charts-react": "11.1.1",
     "ag-grid-community": "33.0.2",
@@ -100,6 +101,7 @@
     "playwright": "playwright test",
     "playwright:ui": "playwright test --ui",
     "playwright:debug": "playwright test --debug",
+    "playwright:zerostep": "playwright test tests/frontend/post_new_job_zerostep.spec.ts",
     "analyze": "node scripts/analyze-bundle.js",
     "build:analyze": "npm run build && npm run analyze"
   },
@@ -117,7 +119,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.31.0",
-    "@playwright/test": "^1.54.2",
+    "@playwright/test": "^1.55.0",
     "@testing-library/react": "16.2.0",
     "@types/is-hotkey": "^0.1.10",
     "@types/lodash": "^4",

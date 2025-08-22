@@ -2888,14 +2888,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:^1.54.2":
-  version: 1.54.2
-  resolution: "@playwright/test@npm:1.54.2"
+"@playwright/test@npm:^1.55.0":
+  version: 1.55.0
+  resolution: "@playwright/test@npm:1.55.0"
   dependencies:
-    playwright: "npm:1.54.2"
+    playwright: "npm:1.55.0"
   bin:
     playwright: cli.js
-  checksum: 10c0/a032d9714a91d6dc40405575ca65ec52f95b0ca95974cd0140e2c12b6c39fbe5311239b2d581b289acaa1e227dd871cf5c43a537f32457f6329723e4add6e6f1
+  checksum: 10c0/e68b59cd8271f1b57c0649fc0562ab2d5f6bba8c3653dd7bd52ca1338dc380fde34588d0254e3cd3f0f2b20af04a80dfb080419ceb7475990bb2fc4d8c474984
   languageName: node
   linkType: hard
 
@@ -5976,6 +5976,18 @@ __metadata:
   version: 3.5.18
   resolution: "@vue/shared@npm:3.5.18"
   checksum: 10c0/9764e31bfcd13a2f5369554d0abbfd06e391d72b0065b4cbd36be94ffdd4d845b2d38a37d56b35714c7a2100c512c9b74de2fa1a19ee2e920ecf098d9035518d
+  languageName: node
+  linkType: hard
+
+"@zerostep/playwright@npm:^0.1.5":
+  version: 0.1.5
+  resolution: "@zerostep/playwright@npm:0.1.5"
+  dependencies:
+    uuidv7: "npm:^0.6.3"
+    ws: "npm:^8.14.2"
+  peerDependencies:
+    "@playwright/test": ^1.21.0
+  checksum: 10c0/7f0443bb15a4d2d39971b5f6f6883fa0e943891d088126ab8a59362faf9ceb77dc1f048c3773d58a311bf2f0265aa803dadc69a557c1cb9e6d43c10d5415f610
   languageName: node
   linkType: hard
 
@@ -11831,7 +11843,7 @@ __metadata:
     "@mui/x-date-pickers": "npm:7.27.3"
     "@platejs/core": "npm:^49.2.12"
     "@platejs/table": "npm:^49.1.13"
-    "@playwright/test": "npm:^1.54.2"
+    "@playwright/test": "npm:^1.55.0"
     "@reduxjs/toolkit": "npm:2.6.0"
     "@sentry/react": "npm:^9.38.0"
     "@testing-library/dom": "npm:^10.4.1"
@@ -11851,6 +11863,7 @@ __metadata:
     "@typescript-eslint/parser": "npm:^8.37.0"
     "@vitejs/plugin-react": "npm:^4.7.0"
     "@vitest/ui": "npm:^2.0.5"
+    "@zerostep/playwright": "npm:^0.1.5"
     ag-charts-enterprise: "npm:^12.1.1"
     ag-charts-react: "npm:11.1.1"
     ag-grid-community: "npm:33.0.2"
@@ -12325,27 +12338,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.54.2":
-  version: 1.54.2
-  resolution: "playwright-core@npm:1.54.2"
+"playwright-core@npm:1.55.0":
+  version: 1.55.0
+  resolution: "playwright-core@npm:1.55.0"
   bin:
     playwright-core: cli.js
-  checksum: 10c0/44850e20bf35237c8c3dedf1096c655f8af939dde53c5469f72cae3dd744966858a302419b909a73d7a2093323123e7ebcc0fdd55151b4193afb7812c1fd2c88
+  checksum: 10c0/c39d6aa30e7a4e73965942ca5e13405ae05c9cb49f755a35f04248c864c0b24cf662d9767f1797b3ec48d1cf4e54774dce4a19c16534bd5cfd2aa3da81c9dc3a
   languageName: node
   linkType: hard
 
-"playwright@npm:1.54.2":
-  version: 1.54.2
-  resolution: "playwright@npm:1.54.2"
+"playwright@npm:1.55.0":
+  version: 1.55.0
+  resolution: "playwright@npm:1.55.0"
   dependencies:
     fsevents: "npm:2.3.2"
-    playwright-core: "npm:1.54.2"
+    playwright-core: "npm:1.55.0"
   dependenciesMeta:
     fsevents:
       optional: true
   bin:
     playwright: cli.js
-  checksum: 10c0/6f642fa70179eee5d5bf8a90df2a6147c9638ff926f4f3ad0a0517396b8a3fe00ccebf13377e032a75b3f0b2610ec1562293e0cfc3bde234181c7a50af8af80a
+  checksum: 10c0/51605b7e57a5650e57972c5fdfc09d7a9934cca1cbee5beacca716fa801e25cb5bb7c1663de90c22b300fde884e5545a2b13a0505a93270b660687791c478304
   languageName: node
   linkType: hard
 
@@ -15102,6 +15115,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"uuidv7@npm:^0.6.3":
+  version: 0.6.3
+  resolution: "uuidv7@npm:0.6.3"
+  bin:
+    uuidv7: cli.js
+  checksum: 10c0/156208586741968a099f2ab996b3d855e14faf1fcc2b7f536eda6dcfadf382139ecc0ce93c293f2177f968e0859c4b8276cc05c6aaca36ef5a4caecd8dcafda7
+  languageName: node
+  linkType: hard
+
 "v8-compile-cache-lib@npm:^3.0.1":
   version: 3.0.1
   resolution: "v8-compile-cache-lib@npm:3.0.1"
@@ -15833,7 +15855,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:^8.18.0, ws@npm:^8.2.3":
+"ws@npm:^8.14.2, ws@npm:^8.18.0, ws@npm:^8.2.3":
   version: 8.18.3
   resolution: "ws@npm:8.18.3"
   peerDependencies:
