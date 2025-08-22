@@ -1,12 +1,12 @@
-import React from "react";
 import { Job } from "$/declarations/backend/backend.did";
 import {
   Box,
   LinearProgress,
+  Tooltip,
   Typography,
   useTheme,
-  Tooltip,
 } from "@mui/material";
+import React, { useEffect, useRef, useState } from "react";
 import MarkdownMessage from "../chatBot/markDownMessageRdnder";
 
 interface JobCompletionProgressProps {
@@ -18,6 +18,27 @@ const JobCompletionProgress: React.FC<JobCompletionProgressProps> = ({
   className,
 }) => {
   const theme = useTheme();
+  const [tooltipOpen, setTooltipOpen] = useState(false);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        tooltipRef.current &&
+        !tooltipRef.current.contains(event.target as Node)
+      ) {
+        setTooltipOpen(false);
+      }
+    };
+
+    if (tooltipOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [tooltipOpen]);
 
   if (!job) return null;
 
@@ -156,30 +177,115 @@ const JobCompletionProgress: React.FC<JobCompletionProgressProps> = ({
   if (feedback) {
     return (
       <Tooltip
+        open={tooltipOpen}
+        onOpen={() => setTooltipOpen(true)}
+        onClose={() => setTooltipOpen(false)}
+        disableHoverListener={false}
+        enterDelay={200}
+        leaveDelay={300}
+        enterNextDelay={200}
+        disableFocusListener={false}
+        disableTouchListener={false}
         title={
-          <MarkdownMessage
-            message={feedback || "No feedback."}
-            isUser={false}
-          />
+          <Box
+            ref={tooltipRef}
+            sx={{
+              maxWidth: 400,
+              maxHeight: 300,
+              overflowY: "auto",
+              overflowX: "hidden",
+              padding: 2,
+              "&::-webkit-scrollbar": {
+                width: "6px",
+              },
+              "&::-webkit-scrollbar-track": {
+                background:
+                  theme.palette.mode === "dark"
+                    ? "rgba(255,255,255,0.1)"
+                    : "rgba(0,0,0,0.1)",
+                borderRadius: "3px",
+              },
+              "&::-webkit-scrollbar-thumb": {
+                background:
+                  theme.palette.mode === "dark"
+                    ? "rgba(255,255,255,0.3)"
+                    : "rgba(0,0,0,0.3)",
+                borderRadius: "3px",
+                "&:hover": {
+                  background:
+                    theme.palette.mode === "dark"
+                      ? "rgba(255,255,255,0.5)"
+                      : "rgba(0,0,0,0.5)",
+                },
+              },
+            }}
+          >
+            <MarkdownMessage
+              message={feedback || "No feedback."}
+              isUser={false}
+            />
+          </Box>
         }
         arrow
-        placement="top"
-        PopperProps={{
-          modifiers: [
-            {
-              name: "preventOverflow",
-              options: {
-                boundary: "viewport",
-                padding: 8,
+        placement="bottom"
+        slotProps={{
+          popper: {
+            modifiers: [
+              {
+                name: "preventOverflow",
+                options: {
+                  boundary: "viewport",
+                  padding: 16,
+                  altBoundary: true,
+                },
               },
-            },
-            {
-              name: "flip",
-              options: {
-                fallbackPlacements: ["bottom", "left", "right"],
+              {
+                name: "flip",
+                options: {
+                  fallbackPlacements: [
+                    "bottom",
+                    "left",
+                    "right",
+                    "top-start",
+                    "top-end",
+                    "bottom-start",
+                    "bottom-end",
+                  ],
+                  boundary: "viewport",
+                  padding: 16,
+                },
               },
+              {
+                name: "offset",
+                options: {
+                  offset: [0, 8],
+                },
+              },
+              {
+                name: "computeStyles",
+                options: {
+                  adaptive: true,
+                  roundOffsets: true,
+                },
+              },
+            ],
+          },
+          tooltip: {
+            sx: {
+              maxWidth: "none",
+              backgroundColor: theme.palette.background.paper,
+              color: theme.palette.text.primary,
+              fontSize: "0.875rem",
+              pointerEvents: "auto",
+              border: `1px solid ${theme.palette.divider}`,
             },
-          ],
+            onMouseEnter: (e: React.MouseEvent) => {
+              e.stopPropagation();
+            },
+            onMouseLeave: (e: React.MouseEvent) => {
+              e.stopPropagation();
+            },
+          },
         }}
       >
         {progressContent}
