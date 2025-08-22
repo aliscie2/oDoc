@@ -3,7 +3,11 @@ import React, { useEffect, useRef } from "react";
 
 import { Job } from "$/declarations/backend/backend.did";
 import { useSelector } from "react-redux";
-import { selectCurrentJobId, selectJobs, selectProfile } from "@/redux/selectors";
+import {
+  selectCurrentJobId,
+  selectJobs,
+  selectProfile,
+} from "@/redux/selectors";
 
 import JobSelector from "./JobSelector";
 import JobSearchComponent from "./JobSearchComponent";
@@ -63,6 +67,6 @@ const JobsPage: React.FC = React.memo(() => {
   );
 });
 
-JobsPage.displayName = 'JobsPage';
+JobsPage.displayName = "JobsPage";
 
 export default JobsPage;

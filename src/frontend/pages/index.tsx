@@ -47,10 +47,10 @@ const Pages = React.memo(() => {
   );
 
   const isLoggedIn = useSelector(selectIsLoggedIn);
-  
+
   const MainPage = useMemo(() => {
     const currentDomain = window.location.hostname;
-    
+
     if (isLoggedIn) {
       return <JobsPage />;
     }
@@ -102,6 +102,6 @@ const Pages = React.memo(() => {
   );
 });
 
-Pages.displayName = 'Pages';
+Pages.displayName = "Pages";
 
 export default Pages;

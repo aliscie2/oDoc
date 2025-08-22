@@ -1,23 +1,23 @@
+import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
 import { Close, Redo, Refresh, Send, Undo } from "@mui/icons-material";
+import StopCircleIcon from "@mui/icons-material/StopCircle";
 import {
   Box,
   Button,
-  CircularProgress,
   IconButton,
   TextField,
+  Theme,
   Typography,
   useMediaQuery,
   useTheme,
-  Theme,
 } from "@mui/material";
-import { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
+import { useLocation } from "react-router-dom";
 import AICreditsComponent from "./AICreditsCompnent";
 import MarkdownMessage from "./markDownMessageRdnder";
 import { undoCalendarAction, undoJobAction } from "./reverseAction";
 import { useChatHandler } from "./useChatHandler";
-
 // ===== TYPE DEFINITIONS =====
 interface ChatMessage {
   type: "user" | "ai";
@@ -77,6 +77,7 @@ const useTypingEffect = (
   text: string,
   onComplete?: () => void,
   onProgress?: () => void,
+  isStreaming?: boolean,
 ): string => {
   const [displayText, setDisplayText] = useState("");
   const { theme } = useThemeStyles();
@@ -92,8 +93,19 @@ const useTypingEffect = (
   );
 
   useEffect(() => {
-    if (!text) return;
+    if (!text) {
+      setDisplayText("");
+      return;
+    }
 
+    // If streaming, show text immediately as it comes in
+    if (isStreaming) {
+      setDisplayText(text);
+      onProgressRef.current?.();
+      return;
+    }
+
+    // Traditional typing effect for non-streaming
     const typingSpeed =
       text.length > 200 ? Math.max(10, 30 - (text.length - 200) / 20) : 30;
     let currentIndex = 0;
@@ -111,9 +123,11 @@ const useTypingEffect = (
     }, typingSpeed);
 
     return () => clearInterval(timer);
-  }, [text]);
+  }, [text, isStreaming]);
 
-  return displayText.length < text.length
+  const shouldShowCursor = isStreaming || displayText.length < text.length;
+  
+  return shouldShowCursor
     ? `${displayText}<span style="color: ${primaryColor}; animation: blink 1s infinite;">|</span><style>@keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }</style>`
     : displayText;
 };
@@ -123,12 +137,14 @@ const TypingMarkdownMessage = ({
   text,
   onComplete,
   onProgress,
+  isStreaming,
 }: {
   text: string;
   onComplete?: () => void;
   onProgress?: () => void;
+  isStreaming?: boolean;
 }) => {
-  const textWithCursor = useTypingEffect(text, onComplete, onProgress);
+  const textWithCursor = useTypingEffect(text, onComplete, onProgress, isStreaming);
   return <MarkdownMessage message={textWithCursor} isUser={false} />;
 };
 
@@ -192,6 +208,7 @@ const MessageBubble = ({
             text={msg.message}
             onComplete={() => onTypingComplete(msg.id)}
             onProgress={onTypingProgress}
+            isStreaming={true}
           />
         ) : (
           <MarkdownMessage message={msg.message} isUser={isUser} />
@@ -328,11 +345,13 @@ const ChatHistory = ({
 
 const AIInput = ({
   onSendMessage,
+  onCancelRequest,
   isLoading,
   chatHistory,
   setIsMinimized,
 }: {
   onSendMessage: (message: string) => void;
+  onCancelRequest: () => void;
   isLoading: boolean;
   chatHistory: ChatMessage[];
   setIsMinimized: (minimized: boolean) => void;
@@ -350,6 +369,14 @@ const AIInput = ({
     setMessage("");
     setTimeout(() => inputRef.current?.focus(), 100);
   }, [message, onSendMessage]);
+
+  const handleButtonClick = useCallback(() => {
+    if (isLoading) {
+      onCancelRequest();
+    } else {
+      handleSend();
+    }
+  }, [isLoading, onCancelRequest, handleSend]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -420,7 +447,7 @@ const AIInput = ({
               setIsFocused(false);
               setIsExpanded(false);
             }}
-            placeholder="Ask AI anything..."
+            placeholder={isLoading ? "🤔 AI is thinking..." : "Ask AI anything..."}
             sx={{
               "& .MuiOutlinedInput-root": {
                 bgcolor: "transparent",
@@ -440,20 +467,28 @@ const AIInput = ({
             }}
           />
           <IconButton
-            disabled={isLoading || !message.trim()}
-            onClick={handleSend}
+            disabled={!isLoading && !message.trim()}
+            onClick={handleButtonClick}
             size={shouldBeExpanded ? "medium" : "small"}
             sx={{
-              color: theme.palette.primary.main,
-              bgcolor: message.trim()
-                ? `${theme.palette.primary.main}15`
-                : "transparent",
-              "&:hover": { bgcolor: `${theme.palette.primary.main}25` },
+              color: isLoading
+                ? theme.palette.error.main
+                : theme.palette.primary.main,
+              bgcolor: isLoading
+                ? `${theme.palette.error.main}15`
+                : message.trim()
+                  ? `${theme.palette.primary.main}15`
+                  : "transparent",
+              "&:hover": {
+                bgcolor: isLoading
+                  ? `${theme.palette.error.main}25`
+                  : `${theme.palette.primary.main}25`,
+              },
               "&:disabled": { color: theme.palette.text.disabled },
               transition: "all 0.3s ease-in-out",
             }}
           >
-            {isLoading ? <CircularProgress size={20} /> : <Send />}
+            {isLoading ? <StopCircleIcon /> : <Send />}
           </IconButton>
         </Box>
       </Box>
@@ -464,8 +499,14 @@ const AIInput = ({
 // ===== MAIN COMPONENT =====
 const ChatContainer = () => {
   const dispatch = useDispatch();
+  const location = useLocation();
   const { aiAgent } = useSelector((state: ReduxState) => state.AIState);
   const { processMessage, getTriggeredMessages, getMessage } = useChatHandler();
+
+  // Determine assistant name based on current route
+  const assistantName = location.pathname.includes("/contract")
+    ? "Contract Assistant"
+    : "AI Assistant";
 
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -473,6 +514,8 @@ const ChatContainer = () => {
   const [shownMessageIds, setShownMessageIds] = useState<Set<string>>(
     new Set(),
   );
+  const [abortController, setAbortController] =
+    useState<AbortController | null>(null);
 
   const functionsRef = useRef({ getTriggeredMessages, getMessage });
   functionsRef.current = { getTriggeredMessages, getMessage };
@@ -548,6 +591,8 @@ const ChatContainer = () => {
   const handleChatSend = useCallback(
     async (message: string) => {
       const messageId = Date.now();
+      const controller = new AbortController();
+      setAbortController(controller);
       setIsMinimized(false);
 
       setChatHistory((prev) => [
@@ -556,51 +601,115 @@ const ChatContainer = () => {
       ]);
       setIsLoading(true);
 
+      // Add AI message placeholder for streaming
+      const aiMessageId = `${messageId}-ai`;
+      setChatHistory((prev) => [
+        ...prev,
+        {
+          type: "ai",
+          message: "",
+          id: aiMessageId,
+          canUndo: false,
+          canRedo: false,
+          canRetry: false,
+          action_type: "",
+          actions: [],
+          isTyping: true,
+        },
+      ]);
+
       try {
-        const result = await processMessage(message, messageId);
-        setChatHistory((prev) => {
-          const completedPrev = prev.map((msg) =>
-            msg.isTyping ? { ...msg, isTyping: false } : msg,
-          );
-          return [
-            ...completedPrev,
-            {
-              type: "ai",
-              message: result.feedback,
-              id: `${messageId}-ai`,
-              canUndo: (result.actions?.length || 0) > 0,
-              canRedo: false,
-              canRetry: (result.actions?.length || 0) > 0,
-              action_type: result.action_type,
-              actions: result.actions,
-              isTyping: true,
-            },
-          ];
-        });
+        const result = await processMessage(
+          message,
+          messageId,
+          controller.signal,
+          (chunk: string) => {
+            // Update the AI message with streaming content
+            setChatHistory((prev) =>
+              prev.map((msg) =>
+                msg.id === aiMessageId
+                  ? { ...msg, message: msg.message + chunk }
+                  : msg,
+              ),
+            );
+          },
+        );
+
+        // Check if request was cancelled
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        // Update final message with complete response and actions
+        setChatHistory((prev) =>
+          prev.map((msg) =>
+            msg.id === aiMessageId
+              ? {
+                  ...msg,
+                  message: result.feedback,
+                  canUndo: (result.actions?.length || 0) > 0,
+                  canRetry: (result.actions?.length || 0) > 0,
+                  action_type: result.action_type,
+                  actions: result.actions,
+                  isTyping: false,
+                }
+              : msg,
+          ),
+        );
       } catch (error: any) {
-        setChatHistory((prev) => {
-          const completedPrev = prev.map((msg) =>
-            msg.isTyping ? { ...msg, isTyping: false } : msg,
-          );
-          return [
-            ...completedPrev,
-            {
-              type: "ai",
-              message: error.message || "An error occurred",
-              id: `${messageId}-error`,
-              canUndo: false,
-              canRedo: false,
-              canRetry: true,
-              isTyping: true,
-            },
-          ];
-        });
+        // Don't show error if request was cancelled
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        setChatHistory((prev) =>
+          prev.map((msg) =>
+            msg.id === aiMessageId
+              ? {
+                  ...msg,
+                  message: error.message || "An error occurred",
+                  canUndo: false,
+                  canRedo: false,
+                  canRetry: true,
+                  isTyping: false,
+                }
+              : msg,
+          ),
+        );
       } finally {
         setIsLoading(false);
+        setAbortController(null);
       }
     },
     [processMessage],
   );
+
+  const handleCancelRequest = useCallback(() => {
+    if (abortController) {
+      abortController.abort();
+      setIsLoading(false);
+      setAbortController(null);
+
+      // Add a cancelled message to chat history
+      setChatHistory((prev) => {
+        const completedPrev = prev.map((msg) =>
+          msg.isTyping ? { ...msg, isTyping: false } : msg,
+        );
+        return [
+          ...completedPrev,
+          {
+            type: "ai",
+            message: "Request cancelled",
+            id: `${Date.now()}-cancelled`,
+            canUndo: false,
+            canRedo: false,
+            canRetry: false,
+            isTyping: false,
+          },
+        ];
+      });
+    }
+  }, [abortController]);
 
   const handleUndoMessage = useCallback(
     (messageId: string | number) => {
@@ -718,7 +827,7 @@ const ChatContainer = () => {
                   fontSize: "0.8rem",
                 }}
               >
-                AI Assistant ({chatHistory.length})
+                {assistantName} ({chatHistory.length})
               </Typography>
             </Box>
             <Box display="flex" alignItems="center" gap={0.5}>
@@ -755,6 +864,7 @@ const ChatContainer = () => {
       )}
       <AIInput
         onSendMessage={handleChatSend}
+        onCancelRequest={handleCancelRequest}
         isLoading={isLoading}
         chatHistory={chatHistory}
         setIsMinimized={setIsMinimized}

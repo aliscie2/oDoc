@@ -183,22 +183,14 @@ const useAppInitialization = () => {
 
         setInitState((prev) => ({ ...prev, initialDataFetched: true }));
       } catch (error) {
-        if (!checkAuthAndLogout(error)) console.error("Init error:", error);
+        checkAuthAndLogout(error);
       } finally {
         dispatch({ type: "IS_FETCHING", isFetching: false });
       }
     };
 
     initializeApp();
-  }, [
-    isLoggedIn,
-    backendActor,
-    isFetching,
-    initState.initialDataFetched,
-    dispatch,
-    checkAuthAndLogout,
-    profile,
-  ]);
+  }, [backendActor]);
 
   // User data fetching
   useEffect(() => {

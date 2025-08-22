@@ -1,5 +1,5 @@
-import { createSelector } from '@reduxjs/toolkit';
-import { RootState } from './reducers';
+import { createSelector } from "@reduxjs/toolkit";
+import { RootState } from "./reducers";
 
 // Memoized selectors to prevent unnecessary re-renders
 export const selectJobState = (state: RootState) => state.jobState;
@@ -9,42 +9,42 @@ export const selectUIState = (state: RootState) => state.uiState;
 // Memoized job selectors
 export const selectCurrentJobId = createSelector(
   [selectJobState],
-  (jobState) => jobState.currentJobId
+  (jobState) => jobState.currentJobId,
 );
 
 export const selectJobs = createSelector(
   [selectJobState],
-  (jobState) => jobState.jobs
+  (jobState) => jobState.jobs,
 );
 
 export const selectMatchingJobs = createSelector(
   [selectJobState],
-  (jobState) => jobState.matchingJobs
+  (jobState) => jobState.matchingJobs,
 );
 
 export const selectCurrentJob = createSelector(
   [selectJobs, selectCurrentJobId],
-  (jobs, currentJobId) => jobs?.find((job) => job.id === currentJobId) || null
+  (jobs, currentJobId) => jobs?.find((job) => job.id === currentJobId) || null,
 );
 
 // Memoized profile selector
 export const selectProfile = createSelector(
   [selectFilesState],
-  (filesState) => filesState.profile
+  (filesState) => filesState.profile,
 );
 
 // Memoized UI selectors
 export const selectIsLoggedIn = createSelector(
   [selectUIState],
-  (uiState) => uiState.isLoggedIn
+  (uiState) => uiState.isLoggedIn,
 );
 
 export const selectIsRegistered = createSelector(
   [selectUIState],
-  (uiState) => uiState.isRegistered
+  (uiState) => uiState.isRegistered,
 );
 
 export const selectIsFetching = createSelector(
   [selectUIState],
-  (uiState) => uiState.isFetching
+  (uiState) => uiState.isFetching,
 );

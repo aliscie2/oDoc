@@ -57,7 +57,9 @@ export const useDocsSave = (): UseDocsSaveReturn => {
   const isChanged = !(
     Object.keys(changes.contents).length === 0 &&
     changes.files.length === 0 &&
-    Object.keys(changes.contracts).length === 0 &&
+    (Array.isArray(changes.contracts)
+      ? changes.contracts.length === 0
+      : Object.keys(changes.contracts).length === 0) &&
     changes.files_indexing.length === 0
   );
 
@@ -73,8 +75,14 @@ export const useDocsSave = (): UseDocsSaveReturn => {
 
     try {
       const serializedContent = serializeFileContents(changes.contents);
+
+      // Ensure changes.contracts is an array before processing
+      const contractsArray = Array.isArray(changes.contracts)
+        ? changes.contracts
+        : [];
+
       const processedContracts = await confirmReleasedPayments(
-        changes.contracts,
+        contractsArray,
         enqueueSnackbar,
       );
       const res: any = await backendActor.multi_updates(

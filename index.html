@@ -1,15 +1,12 @@
 <html lang="en">
-
-
   <head>
-
     <!-- PWA iOS Support -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="ICPJOBS">
-    <meta name="apple-touch-fullscreen" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="ICPJOBS" />
+    <meta name="apple-touch-fullscreen" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+
     <meta charset="UTF-8" />
     <meta
       name="viewport"
@@ -17,7 +14,7 @@
     />
 
     <!-- Primary Meta Tags -->
-    
+
     <meta
       name="title"
       content="ICPJOBS - AI job match | icp jobs | Crypto Agreements Platform on ICP | odoc is crypto work tool kit for freelancers and online workers"
@@ -44,7 +41,11 @@
       property="og:description"
       content="Enterprise-grade document automation with ICP smart contracts and decentralized identity management."
     />
-    <meta key="og:image" property="og:image" content="https://raw.githubusercontent.com/aliscie2/oDoc/refs/heads/dev2/public/icpjobs_thumnail.png" />
+    <meta
+      key="og:image"
+      property="og:image"
+      content="https://raw.githubusercontent.com/aliscie2/oDoc/refs/heads/dev2/public/icpjobs_thumnail.png"
+    />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:site_name" content="ODOC" />
@@ -52,12 +53,18 @@
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:url" content="https://icpjobs.com" />
-    <meta name="twitter:title" content="ICPJOBS | AI job match | Crypto Agreements" />
+    <meta
+      name="twitter:title"
+      content="ICPJOBS | AI job match | Crypto Agreements"
+    />
     <meta
       name="twitter:description"
       content="Decentralized workflow automation with ICP-based smart contracts and immutable audit trails."
     />
-    <meta name="twitter:image" content="https://raw.githubusercontent.com/aliscie2/oDoc/refs/heads/dev2/public/icpjobs_thumnail.png" />
+    <meta
+      name="twitter:image"
+      content="https://raw.githubusercontent.com/aliscie2/oDoc/refs/heads/dev2/public/icpjobs_thumnail.png"
+    />
     <meta name="twitter:site" content="@odoc_ic" />
     <meta name="twitter:creator" content="@odoc_ic" />
 
@@ -69,6 +76,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="apple-touch-icon" href="/pwa-192x192.png" />
     <link rel="manifest" href="/manifest.json" />
+
+    <!-- Loading animation styles -->
+    <style>
+      @keyframes bounce {
+        0%, 80%, 100% {
+          transform: scale(0);
+          opacity: 0.5;
+        }
+        40% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+      
+      /* Hide loading screen when app is ready */
+      .app-loaded #loading-screen {
+        display: none !important;
+      }
+    </style>
 
     <!-- EmailJS -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -146,15 +172,71 @@
 
   <body class="dark">
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Loading screen that shows while PWA is loading -->
+      <div id="loading-screen" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #1a1a1a;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      ">
+        <div style="
+          color: #ffffff;
+          font-size: 18px;
+          margin-bottom: 20px;
+          text-align: center;
+        ">
+          Please wait, <span id="domain-name">website</span> is loading
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <div class="loading-dot" style="
+            width: 12px;
+            height: 12px;
+            background: #007bff;
+            border-radius: 50%;
+            animation: bounce 1.4s ease-in-out infinite both;
+          "></div>
+          <div class="loading-dot" style="
+            width: 12px;
+            height: 12px;
+            background: #007bff;
+            border-radius: 50%;
+            animation: bounce 1.4s ease-in-out 0.16s infinite both;
+          "></div>
+          <div class="loading-dot" style="
+            width: 12px;
+            height: 12px;
+            background: #007bff;
+            border-radius: 50%;
+            animation: bounce 1.4s ease-in-out 0.32s infinite both;
+          "></div>
+        </div>
+      </div>
+    </div>
     <script>
+      // Set dynamic domain name in loading message
+      document.getElementById('domain-name').textContent = window.location.hostname;
+    </script>
+    <script></script>
       // Polyfill for crypto.randomUUID
       if (!crypto.randomUUID) {
-        crypto.randomUUID = function() {
-          return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
-          });
+        crypto.randomUUID = function () {
+          return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+            /[xy]/g,
+            function (c) {
+              var r = (Math.random() * 16) | 0,
+                v = c == "x" ? r : (r & 0x3) | 0x8;
+              return v.toString(16);
+            },
+          );
         };
       }
     </script>

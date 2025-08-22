@@ -1,25 +1,25 @@
 // src/components/Shares/PaymentHistory.tsx
-import React from "react";
-import { Box, Button, Stack, Typography } from "@mui/material";
 import {
-  Payment as PaymentIcon,
   Assessment as AssessmentIcon,
+  Payment as PaymentIcon,
 } from "@mui/icons-material";
+import { Box, Button, Stack, Typography } from "@mui/material";
+import React from "react";
 // import AgGridDataGrid from '../../MuiComponents/dataGridSheet';
-import { formatRelativeTime } from "../../utils/time";
+import { useSelector } from "react-redux";
 import {
-  User,
-  CPayment as Payment,
+  Friend,
+  CPayment as Payment
 } from "../../../declarations/backend/backend.did";
 import AgGridDataGrid from "../../components/MuiComponents/dataGridSheet";
-import { useSelector } from "react-redux";
+import { formatRelativeTime } from "../../utils/time";
 
 interface PaymentHistoryProps {
   payments: Payment[];
   canMakePayment: boolean;
   isBeneficiary: boolean;
   remainingShares: number;
-  all_friends: User[];
+  all_friends: Friend[];
   onMakePayment: () => void;
 }
 

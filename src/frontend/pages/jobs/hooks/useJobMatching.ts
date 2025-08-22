@@ -27,7 +27,7 @@ export const useJobMatching = (currentJob: Job | null) => {
   const [error, setError] = useState<string | null>(null);
   const processedJobIdsRef = useRef(new Set<string>());
   const aiAgentRef = useRef(aiAgent);
-  
+
   // Update refs when values change
   useEffect(() => {
     aiAgentRef.current = aiAgent;
@@ -39,10 +39,7 @@ export const useJobMatching = (currentJob: Job | null) => {
   };
 
   const processAIMatches = useCallback(
-    (
-      aiMatches: AIMatchResponse[],
-      candidateJobs: Job[],
-    ): Match[] => {
+    (aiMatches: AIMatchResponse[], candidateJobs: Job[]): Match[] => {
       const jobIds = new Set(candidateJobs.map((j) => j.id));
       const uniqueMatches = new Map<string, Match>();
 
@@ -80,7 +77,6 @@ export const useJobMatching = (currentJob: Job | null) => {
     setError(null);
 
     try {
-
       dispatch({ type: "IS_LOOKING_NEW_MATCHES", stage: 0 });
       const candidateJobs = await backendActor.get_matches(
         currentJob.id,
@@ -108,10 +104,7 @@ export const useJobMatching = (currentJob: Job | null) => {
           }),
         );
 
-        processedMatches = processAIMatches(
-          aiMatchResponses,
-          candidateJobs,
-        );
+        processedMatches = processAIMatches(aiMatchResponses, candidateJobs);
       } else {
         const compressedCandidates = compressJobsForMatching(candidateJobs);
         const compressedCurrentJob = compressJobForMatching(currentJob);
@@ -165,7 +158,7 @@ export const useJobMatching = (currentJob: Job | null) => {
   useEffect(() => {
     const processedJobIds = processedJobIdsRef.current;
     const currentAiAgent = aiAgentRef.current;
-    
+
     if (
       currentJob?.id &&
       currentAiAgent?.remainingCredits() > 0 &&

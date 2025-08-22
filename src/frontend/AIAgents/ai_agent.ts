@@ -125,6 +125,8 @@ export class AIAgent {
     message: string,
     quick: boolean,
     systemPrompt?: string,
+    abortSignal?: AbortSignal,
+    onStream?: (chunk: string) => void,
   ): Promise<string> {
     const startTime = Date.now();
     console.log(
@@ -176,8 +178,9 @@ export class AIAgent {
             messages,
             max_tokens: 4000,
             temperature: 0.7,
-            stream: false,
+            stream: onStream ? true : false,
           }),
+          signal: abortSignal,
         },
       );
 
@@ -188,13 +191,57 @@ export class AIAgent {
         throw new Error(`API request failed with status ${response.status}`);
       }
 
-      const parseStart = Date.now();
-      const data = await response.json();
-      const parseTime = Date.now();
-      console.log(`🔍 JSON parsed in ${parseTime - parseStart}ms`);
+      let assistantMessage = "";
+      let usage: any = {};
 
-      const assistantMessage =
-        data.choices?.[0]?.message?.content?.trim() || "";
+      if (onStream && response.body) {
+        // Handle streaming response
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            
+            const chunk = decoder.decode(value, { stream: true });
+            const lines = chunk.split('\n');
+            
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                const dataStr = line.slice(6);
+                if (dataStr === '[DONE]') continue;
+                
+                try {
+                  const parsed = JSON.parse(dataStr);
+                  const content = parsed.choices?.[0]?.delta?.content;
+                  if (content) {
+                    assistantMessage += content;
+                    onStream(content);
+                  }
+                  // Capture usage data if available
+                  if (parsed.usage) {
+                    usage = parsed.usage;
+                  }
+                } catch (e) {
+                  // Skip invalid JSON chunks
+                }
+              }
+            }
+          }
+        } finally {
+          reader.releaseLock();
+        }
+      } else {
+        // Handle non-streaming response
+        const parseStart = Date.now();
+        const data = await response.json();
+        const parseTime = Date.now();
+        console.log(`🔍 JSON parsed in ${parseTime - parseStart}ms`);
+
+        assistantMessage = data.choices?.[0]?.message?.content?.trim() || "";
+        usage = data.usage || {};
+      }
 
       // Store message in context ONLY if quick=false (not for quick queries like classification)
       if (!quick) {
@@ -216,7 +263,6 @@ export class AIAgent {
         this.cleanupOldMessages();
       }
 
-      const usage = data.usage || {};
       const tokenData = {
         prompt_tokens: usage.prompt_tokens || 0,
         completion_tokens: usage.completion_tokens || 0,
@@ -234,6 +280,13 @@ export class AIAgent {
       return assistantMessage;
     } catch (error) {
       const errorTime = Date.now() - startTime;
+
+      // Handle abort signal
+      if (error instanceof Error && error.name === "AbortError") {
+        console.log(`🛑 DeepSeek API request cancelled after ${errorTime}ms`);
+        throw new Error("Request cancelled");
+      }
+
       console.error(`❌ DeepSeek API error after ${errorTime}ms:`, error);
 
       if (error instanceof Error) {
