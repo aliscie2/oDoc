@@ -1,5 +1,9 @@
 import { Job, Match } from "$/declarations/backend/backend.did";
-import { selectCurrentJobId, selectMatchingJobs, selectCurrentJob } from "@/redux/selectors";
+import {
+  selectCurrentJobId,
+  selectMatchingJobs,
+  selectCurrentJob,
+} from "@/redux/selectors";
 import { Visibility, Warning } from "@mui/icons-material";
 import {
   Alert,
@@ -52,7 +56,7 @@ const JobSearchComponent: React.FC = React.memo(() => {
 
   const sortedMatches: ProcessedMatch[] = useMemo(() => {
     if (!currentJob?.matches || !matchingJobs) return [];
-    
+
     return currentJob.matches
       .filter((match): match is Match =>
         Boolean(match?.job_id && match.job_id !== currentJobId),
@@ -271,6 +275,6 @@ const JobSearchComponent: React.FC = React.memo(() => {
   );
 });
 
-JobSearchComponent.displayName = 'JobSearchComponent';
+JobSearchComponent.displayName = "JobSearchComponent";
 
 export default JobSearchComponent;
