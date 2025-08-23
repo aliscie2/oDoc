@@ -21,152 +21,205 @@ use crate::{CPayment, PaymentStatus, Wallet};
 // }
 #[update]
 fn confirmed_c_payment(promise: CPayment) -> Result<(), String> {
-    if let Some(mut contract) = CustomContract::get_for_user(promise.contract_id, promise.sender) {
-        contract.promises = contract
-            .promises
-            .iter_mut()
-            .map(|payment| {
-                if payment.id == promise.id {
-                    if payment.status == PaymentStatus::Confirmed {
-                        return Err("Already confirmed".to_string());
-                    }
-                    if payment.receiver != caller() {
-                        return Err("Promise not found".to_string());
-                    }
-                    if payment.status != PaymentStatus::None {
-                        return Err("Promise not found".to_string());
-                    }
+    // Try to get contract from both sender and receiver perspectives
+    let mut contract = CustomContract::get_for_user(promise.contract_id.clone(), promise.sender)
+        .or_else(|| CustomContract::get_for_user(promise.contract_id.clone(), promise.receiver))
+        .ok_or_else(|| String::from("Contract not found"))?;
 
-                    payment.status = PaymentStatus::Confirmed;
-                    notify_about_promise(payment.clone(), PaymentAction::Accepted);
-
-                    let mut user_history = UserHistory::get(promise.sender);
-                    user_history.payment_action(payment.clone());
-                    user_history.save();
+    let mut promise_found = false;
+    contract.promises = contract
+        .promises
+        .iter_mut()
+        .map(|payment| {
+            if payment.id == promise.id {
+                promise_found = true;
+                
+                // Only the receiver can confirm a promise
+                if payment.receiver != caller() {
+                    return Err("Only receiver can confirm promise".to_string());
                 }
-                Ok(payment.clone())
-            })
-            .collect::<Result<Vec<_>, String>>()?;
+                
+                // Check if already confirmed
+                if payment.status == PaymentStatus::Confirmed {
+                    return Err("Already confirmed".to_string());
+                }
+                
+                // Prevent confirmation of already released or cancelled promises
+                match payment.status {
+                    PaymentStatus::Released => {
+                        return Err("Cannot confirm already released payment".to_string());
+                    }
+                    PaymentStatus::ConfirmedCancellation => {
+                        return Err("Cannot confirm cancelled promise".to_string());
+                    }
+                    _ => {} // Allow confirmation for other statuses
+                }
 
-        contract.save()?;
-        Ok(())
-    } else {
-        Err("Contract not found".to_string())
+                payment.status = PaymentStatus::Confirmed;
+                notify_about_promise(payment.clone(), PaymentAction::Accepted);
+
+                let mut user_history = UserHistory::get(promise.sender);
+                user_history.payment_action(payment.clone());
+                user_history.save();
+            }
+            Ok(payment.clone())
+        })
+        .collect::<Result<Vec<_>, String>>()?;
+
+    if !promise_found {
+        return Err("Promise not found".to_string());
     }
+
+    contract.save()?;
+    Ok(())
 }
 
 #[update]
 fn confirmed_cancellation(c_payment: CPayment) -> Result<(), String> {
-    if let Some(mut contract) =
-        CustomContract::get_for_user(c_payment.contract_id, c_payment.sender)
-    {
-        contract.promises = contract
-            .promises
-            .iter_mut()
-            .map(|payment| {
-                if payment.id == c_payment.id
-                    && payment.receiver == caller()
-                    && (payment.status != PaymentStatus::Released
-                        || payment.status != PaymentStatus::ConfirmedCancellation)
-                {
-                    payment.status = PaymentStatus::ConfirmedCancellation;
-                    notify_about_promise(payment.clone(), PaymentAction::Cancelled);
-                    // let mut not = Notification::get(payment.id.clone()).unwrap();
-                    // if let NoteContent::CPaymentContract(_, payment_action) = not.content {
-                    //     not.content =
-                    //         NoteContent::CPaymentContract(payment.clone(), payment_action);
-                    //     not.save();
-                    // };
-                    let wallet = Wallet::get(c_payment.sender);
-                    let _ = wallet.remove_dept(payment.id.clone());
+    // Try to get contract from both sender and receiver perspectives
+    let mut contract = CustomContract::get_for_user(c_payment.contract_id.clone(), c_payment.sender)
+        .or_else(|| CustomContract::get_for_user(c_payment.contract_id.clone(), c_payment.receiver))
+        .ok_or_else(|| String::from("Contract not found"))?;
 
-                    let mut user_history = UserHistory::get(c_payment.sender);
-                    user_history.confirm_cancellation(payment.clone());
-                    user_history.save()
+    let mut promise_found = false;
+    contract.promises = contract
+        .promises
+        .iter_mut()
+        .map(|payment| {
+            if payment.id == c_payment.id {
+                promise_found = true;
+                
+                // Only the receiver can confirm cancellation
+                if payment.receiver != caller() {
+                    return Err("Only receiver can confirm cancellation".to_string());
                 }
-                payment.clone()
-            })
-            .collect();
+                
+                // Check valid statuses for cancellation confirmation
+                match payment.status {
+                    PaymentStatus::RequestCancellation => {
+                        payment.status = PaymentStatus::ConfirmedCancellation;
+                        notify_about_promise(payment.clone(), PaymentAction::Cancelled);
+                        
+                        let wallet = Wallet::get(c_payment.sender);
+                        let _ = wallet.remove_dept(payment.id.clone());
 
-        contract.save()?;
-        Ok(())
-    } else {
-        Err("Contract not found".to_string())
+                        let mut user_history = UserHistory::get(c_payment.sender);
+                        user_history.confirm_cancellation(payment.clone());
+                        user_history.save();
+                        
+                        Ok(payment.clone())
+                    }
+                    PaymentStatus::ConfirmedCancellation => {
+                        Err("Cancellation already confirmed".to_string())
+                    }
+                    PaymentStatus::Released => {
+                        Err("Cannot cancel already released payment".to_string())
+                    }
+                    _ => {
+                        Err("Invalid status for cancellation confirmation".to_string())
+                    }
+                }
+            } else {
+                Ok(payment.clone())
+            }
+        })
+        .collect::<Result<Vec<_>, String>>()?;
+
+    if !promise_found {
+        return Err("Promise not found".to_string());
     }
+
+    contract.save()?;
+    Ok(())
 }
 
 #[update]
 fn approve_high_promise(c_payment: CPayment) -> Result<(), String> {
-    if let Some(mut contract) =
-        CustomContract::get_for_user(c_payment.contract_id, c_payment.sender)
-    {
-        contract.promises = contract
-            .promises
-            .iter_mut()
-            .map(|payment| {
-                if payment.id == c_payment.id
-                    && payment.receiver == caller()
-                    && payment.status == PaymentStatus::HighPromise
-                {
-                    payment.status = PaymentStatus::ApproveHighPromise;
-                    notify_about_promise(payment.clone(), PaymentAction::Accepted);
-                    // let mut not = Notification::get(payment.id.clone()).unwrap();
-                    // if let NoteContent::CPaymentContract(_, payment_action) = not.content {
-                    //     not.content =
-                    //         NoteContent::CPaymentContract(payment.clone(), payment_action);
-                    //     not.save();
-                    // };
-                    let wallet = Wallet::get(c_payment.sender);
-                    let _ = wallet.add_dept(payment.amount, payment.id.clone());
-                    // wallet.remove_dept(payment.id.clone());
-                    let mut user_history = UserHistory::get(c_payment.sender);
-                    user_history.payment_action(payment.clone());
-                }
-                payment.clone()
-            })
-            .collect();
+    // Try to get contract from both sender and receiver perspectives
+    let mut contract = CustomContract::get_for_user(c_payment.contract_id.clone(), c_payment.sender)
+        .or_else(|| CustomContract::get_for_user(c_payment.contract_id.clone(), c_payment.receiver))
+        .ok_or_else(|| String::from("Contract not found"))?;
 
-        contract.save()?;
-        Ok(())
-    } else {
-        Err("Contract not found".to_string())
+    let mut promise_found = false;
+    contract.promises = contract
+        .promises
+        .iter_mut()
+        .map(|payment| {
+            if payment.id == c_payment.id {
+                promise_found = true;
+                
+                // Only the receiver can approve high promise
+                if payment.receiver != caller() {
+                    return Err("Only receiver can approve high promise".to_string());
+                }
+                
+                // Only HighPromise status can be approved
+                if payment.status != PaymentStatus::HighPromise {
+                    return Err("Promise is not a high promise".to_string());
+                }
+
+                payment.status = PaymentStatus::ApproveHighPromise;
+                notify_about_promise(payment.clone(), PaymentAction::Accepted);
+                
+                let wallet = Wallet::get(c_payment.sender);
+                let _ = wallet.add_dept(payment.amount, payment.id.clone());
+                
+                let mut user_history = UserHistory::get(c_payment.sender);
+                user_history.payment_action(payment.clone());
+                user_history.save();
+            }
+            Ok(payment.clone())
+        })
+        .collect::<Result<Vec<_>, String>>()?;
+
+    if !promise_found {
+        return Err("Promise not found".to_string());
     }
+
+    contract.save()?;
+    Ok(())
 }
 
 #[update]
 fn object_on_cancel(c_payment: CPayment, reason: String) -> Result<(), String> {
-    if let Some(mut contract) =
-        CustomContract::get_for_user(c_payment.contract_id, c_payment.sender)
-    {
-        contract.promises = contract
-            .promises
-            .iter_mut()
-            .map(|payment| {
-                if payment.id == c_payment.id && payment.receiver == caller() {
-                    payment.status = PaymentStatus::Objected(reason.clone());
-                    notify_about_promise(payment.clone(), PaymentAction::Objected);
-                    // let mut not = Notification::get(payment.id.clone()).unwrap();
-                    // if let NoteContent::CPaymentContract(_, payment_action) = not.content {
-                    //     not.content =
-                    //         NoteContent::CPaymentContract(payment.clone(), payment_action);
-                    //     not.save();
-                    // };
-                    let wallet = Wallet::get(c_payment.sender);
-                    let _ = wallet.add_dept(payment.amount, payment.id.clone());
+    // Try to get contract from both sender and receiver perspectives
+    let mut contract = CustomContract::get_for_user(c_payment.contract_id.clone(), c_payment.sender)
+        .or_else(|| CustomContract::get_for_user(c_payment.contract_id.clone(), c_payment.receiver))
+        .ok_or_else(|| String::from("Contract not found"))?;
 
-                    let mut user_history = UserHistory::get(c_payment.sender);
-                    user_history.payment_action(payment.clone());
-                    user_history.save()
+    let mut promise_found = false;
+    contract.promises = contract
+        .promises
+        .iter_mut()
+        .map(|payment| {
+            if payment.id == c_payment.id {
+                promise_found = true;
+                
+                // Only the receiver can object
+                if payment.receiver != caller() {
+                    return Err("Only receiver can object to promise".to_string());
                 }
-                payment.clone()
-            })
-            .collect();
 
-        contract.save()?;
-        Ok(())
-    } else {
-        Err("Contract not found".to_string())
+                payment.status = PaymentStatus::Objected(reason.clone());
+                notify_about_promise(payment.clone(), PaymentAction::Objected);
+                
+                let wallet = Wallet::get(c_payment.sender);
+                let _ = wallet.add_dept(payment.amount, payment.id.clone());
+
+                let mut user_history = UserHistory::get(c_payment.sender);
+                user_history.payment_action(payment.clone());
+                user_history.save();
+            }
+            Ok(payment.clone())
+        })
+        .collect::<Result<Vec<_>, String>>()?;
+
+    if !promise_found {
+        return Err("Promise not found".to_string());
     }
+
+    contract.save()?;
+    Ok(())
 }
 
 #[update]

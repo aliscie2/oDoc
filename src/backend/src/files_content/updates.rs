@@ -76,6 +76,8 @@ fn multi_updates(
     contracts_updates: Vec<ContractUpdates>,
     files_indexing: Vec<FileIndexing>,
 ) -> Result<String, String> {
+
+    
     let _guard = if !contracts_updates.is_empty() {
         Some(TransferGuard::new().map_err(|e| format!("{:?}", e))?)
     } else {
@@ -85,6 +87,7 @@ fn multi_updates(
     let mut messages = String::new();
 
     for contract_update in contracts_updates {
+        
         let existing_contract = CustomContract::get(&contract_update.id, &caller().to_string())
             .or_else(|| {
                 match Contract::get_contract(caller().to_string(), contract_update.id.clone()) {
@@ -95,7 +98,7 @@ fn multi_updates(
 
         let mut curr_contract = if let Some(existing) = existing_contract {
             existing
-        } else if !contract_update.promises.is_empty() || !contract_update.tables.is_empty() {
+        } else if !contract_update.promises.is_empty() || !contract_update.tables.is_empty() || contract_update.name.is_some() {
             CustomContract {
                 id: contract_update.id.clone(),
                 name: contract_update
@@ -121,32 +124,32 @@ fn multi_updates(
 
         curr_contract.date_updated = ic_cdk::api::time() as f64;
 
-        for promise in contract_update.promises {
+        for promise in contract_update.promises.clone() {
             curr_contract = curr_contract.update_or_create_promise(promise)?;
         }
 
-        for delete_promise in contract_update.delete_promises {
+        for delete_promise in contract_update.delete_promises.clone() {
             curr_contract = curr_contract.delete_promise(delete_promise)?;
         }
 
-        for table_update in contract_update.tables {
+        for table_update in contract_update.tables.clone() {
             curr_contract = curr_contract.update_or_create_table(table_update)?;
         }
 
-        for table_id in contract_update.delete_tables {
+        for table_id in contract_update.delete_tables.clone() {
             curr_contract = curr_contract.delete_table(table_id)?;
         }
 
         if !contract_update.promises_indexes.is_empty() {
-            curr_contract = curr_contract.reorder_promises(contract_update.promises_indexes)?;
+            curr_contract = curr_contract.reorder_promises(contract_update.promises_indexes.clone())?;
         }
 
-        if let Some(name) = contract_update.name {
+        if let Some(name) = contract_update.name.clone() {
             curr_contract = curr_contract.update_name(name)?;
         }
 
         if !contract_update.permissions.is_empty() {
-            curr_contract = curr_contract.update_permissions(contract_update.permissions)?;
+            curr_contract = curr_contract.update_permissions(contract_update.permissions.clone())?;
         }
 
         if let Err(er) = curr_contract.save() {

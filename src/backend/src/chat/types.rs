@@ -30,7 +30,6 @@ pub struct ChatsIdVec {
 
 impl Storable for ChatsIdVec {
     fn to_bytes(&self) -> Cow<[u8]> {
-        println!("ChatsIdVec to_bytes",);
         if let Ok(bytes) = Encode!(self) {
             return Cow::Owned(bytes);
         }
@@ -38,14 +37,9 @@ impl Storable for ChatsIdVec {
     }
 
     fn from_bytes(bytes: Cow<[u8]>) -> Self {
-        println!("ChatsIdVec from_bytes",);
         match Decode!(bytes.as_ref(), Self) {
             Ok(chats) => chats,
-            Err(decode_error) => {
-                println!("❌ DECODE ERROR: {:?}", decode_error);
-                println!("📊 Bytes length: {}", bytes.len());
-                ChatsIdVec { chats: vec![] }
-            }
+            Err(_) => ChatsIdVec { chats: vec![] }
         }
     }
 
@@ -54,7 +48,6 @@ impl Storable for ChatsIdVec {
 
 impl Storable for Chat {
     fn to_bytes(&self) -> Cow<[u8]> {
-        println!("Chat to_bytes",);
         if let Ok(bytes) = Encode!(self) {
             return Cow::Owned(bytes);
         }
@@ -65,8 +58,6 @@ impl Storable for Chat {
         match Decode!(bytes.as_ref(), Self) {
             Ok(chat) => chat,
             Err(_) => {
-                println!("⚠️ Failed to decode as current Chat, attempting migration...");
-
                 // Return a default/empty chat instead of panicking
                 Chat {
                     id: format!("migrated_{}", ic_cdk::api::time()),

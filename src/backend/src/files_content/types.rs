@@ -64,8 +64,7 @@ impl Storable for ContentNodeVec {
     fn from_bytes(bytes: Cow<[u8]>) -> Self {
         match Decode!(bytes.as_ref(), Self) {
             Ok(content) => content,
-            Err(e) => {
-                ic_cdk::println!("Failed to decode ContentNodeVec: {:?}", e);
+            Err(_) => {
                 ContentNodeVec {
                     contents: HashMap::new(),
                 }

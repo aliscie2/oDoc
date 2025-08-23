@@ -238,11 +238,6 @@ fn send_google_calendar_notification(
     // Here you would implement actual email sending logic
     // For example using some email service or SMTP
     // This is just a placeholder implementation
-    ic_cdk::println!(
-        "Would send email to {} with content:\n{}",
-        google_id,
-        html_content
-    );
 
     Ok(())
 }

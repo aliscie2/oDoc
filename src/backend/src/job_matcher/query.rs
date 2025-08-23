@@ -63,46 +63,19 @@ fn search_matches(skills: &Vec<String>, category: Category) -> Vec<Job> {
 
 #[query]
 fn get_matches(current_job_id: String, skills: Vec<String>, category: Category) -> Vec<Job> {
-    ic_cdk::println!(
-        "DEBUG get_matches: current_job_id={}, skills={:?}, category={:?}",
-        current_job_id,
-        skills,
-        category
-    );
-
     let current_job = Job::get(&current_job_id);
     let all_matching_jobs = search_matches(&skills, category);
 
-    ic_cdk::println!(
-        "DEBUG get_matches: found {} matching jobs from search",
-        all_matching_jobs.len()
-    );
-
     let filtered_jobs: Vec<Job> = if let Some(ref curr_job) = current_job {
-        ic_cdk::println!(
-            "DEBUG get_matches: current job has {} existing matches",
-            curr_job.matches.len()
-        );
-        let filtered: Vec<Job> = all_matching_jobs
+        all_matching_jobs
             .into_iter()
             .filter(|job| should_include_job(job, curr_job))
-            .collect();
-        ic_cdk::println!(
-            "DEBUG get_matches: after filtering existing matches: {} jobs",
-            filtered.len()
-        );
-        filtered
+            .collect()
     } else {
-        ic_cdk::println!("DEBUG get_matches: current job not found, using all matching jobs");
         all_matching_jobs
     };
 
-    let final_result = filter_and_limit_jobs(filtered_jobs, &skills, current_job.as_ref());
-    ic_cdk::println!(
-        "DEBUG get_matches: final result: {} jobs",
-        final_result.len()
-    );
-    final_result
+    filter_and_limit_jobs(filtered_jobs, &skills, current_job.as_ref())
 }
 
 fn should_include_job(job: &Job, current_job: &Job) -> bool {

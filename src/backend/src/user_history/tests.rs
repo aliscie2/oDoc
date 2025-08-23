@@ -25,10 +25,6 @@ fn test_calic() {
         total_actions_rate_sum / total_actions_rate.len() as f64
     };
 
-    println!("others_rate: {:?}", others_rate);
-    println!(
-        "total_rate: {:?}",
-        (others_rate * 0.4) + (actions_rate * 0.6)
-    );
+
     // user.save();
 }

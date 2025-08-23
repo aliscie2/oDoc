@@ -49,14 +49,11 @@ fn get_sns_status() -> Result<SNSStatus, String> {
 
 #[query]
 fn get_contract(author: String, contract_id: String) -> Result<StoredContract, String> {
-    // let author: Result<Principal, PrincipalError> = Principal::from_text(author);
-    // if author.is_err() {
-    //     return Err("Invalid principal.".to_string());
-    // };
-    let contract = Contract::get_contract(author, contract_id);
+    let contract = Contract::get_contract(author.clone(), contract_id.clone());
     if let Some(contract) = contract {
         return Ok(contract);
     }
+    
     Err("Invalid principal.".to_string())
 }
 
