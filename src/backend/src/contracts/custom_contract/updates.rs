@@ -33,17 +33,17 @@ fn confirmed_c_payment(promise: CPayment) -> Result<(), String> {
         .map(|payment| {
             if payment.id == promise.id {
                 promise_found = true;
-                
+
                 // Only the receiver can confirm a promise
                 if payment.receiver != caller() {
                     return Err("Only receiver can confirm promise".to_string());
                 }
-                
+
                 // Check if already confirmed
                 if payment.status == PaymentStatus::Confirmed {
                     return Err("Already confirmed".to_string());
                 }
-                
+
                 // Prevent confirmation of already released or cancelled promises
                 match payment.status {
                     PaymentStatus::Released => {
@@ -77,9 +77,12 @@ fn confirmed_c_payment(promise: CPayment) -> Result<(), String> {
 #[update]
 fn confirmed_cancellation(c_payment: CPayment) -> Result<(), String> {
     // Try to get contract from both sender and receiver perspectives
-    let mut contract = CustomContract::get_for_user(c_payment.contract_id.clone(), c_payment.sender)
-        .or_else(|| CustomContract::get_for_user(c_payment.contract_id.clone(), c_payment.receiver))
-        .ok_or_else(|| String::from("Contract not found"))?;
+    let mut contract =
+        CustomContract::get_for_user(c_payment.contract_id.clone(), c_payment.sender)
+            .or_else(|| {
+                CustomContract::get_for_user(c_payment.contract_id.clone(), c_payment.receiver)
+            })
+            .ok_or_else(|| String::from("Contract not found"))?;
 
     let mut promise_found = false;
     contract.promises = contract
@@ -88,25 +91,25 @@ fn confirmed_cancellation(c_payment: CPayment) -> Result<(), String> {
         .map(|payment| {
             if payment.id == c_payment.id {
                 promise_found = true;
-                
+
                 // Only the receiver can confirm cancellation
                 if payment.receiver != caller() {
                     return Err("Only receiver can confirm cancellation".to_string());
                 }
-                
+
                 // Check valid statuses for cancellation confirmation
                 match payment.status {
                     PaymentStatus::RequestCancellation => {
                         payment.status = PaymentStatus::ConfirmedCancellation;
                         notify_about_promise(payment.clone(), PaymentAction::Cancelled);
-                        
+
                         let wallet = Wallet::get(c_payment.sender);
                         let _ = wallet.remove_dept(payment.id.clone());
 
                         let mut user_history = UserHistory::get(c_payment.sender);
                         user_history.confirm_cancellation(payment.clone());
                         user_history.save();
-                        
+
                         Ok(payment.clone())
                     }
                     PaymentStatus::ConfirmedCancellation => {
@@ -115,9 +118,7 @@ fn confirmed_cancellation(c_payment: CPayment) -> Result<(), String> {
                     PaymentStatus::Released => {
                         Err("Cannot cancel already released payment".to_string())
                     }
-                    _ => {
-                        Err("Invalid status for cancellation confirmation".to_string())
-                    }
+                    _ => Err("Invalid status for cancellation confirmation".to_string()),
                 }
             } else {
                 Ok(payment.clone())
@@ -136,9 +137,12 @@ fn confirmed_cancellation(c_payment: CPayment) -> Result<(), String> {
 #[update]
 fn approve_high_promise(c_payment: CPayment) -> Result<(), String> {
     // Try to get contract from both sender and receiver perspectives
-    let mut contract = CustomContract::get_for_user(c_payment.contract_id.clone(), c_payment.sender)
-        .or_else(|| CustomContract::get_for_user(c_payment.contract_id.clone(), c_payment.receiver))
-        .ok_or_else(|| String::from("Contract not found"))?;
+    let mut contract =
+        CustomContract::get_for_user(c_payment.contract_id.clone(), c_payment.sender)
+            .or_else(|| {
+                CustomContract::get_for_user(c_payment.contract_id.clone(), c_payment.receiver)
+            })
+            .ok_or_else(|| String::from("Contract not found"))?;
 
     let mut promise_found = false;
     contract.promises = contract
@@ -147,12 +151,12 @@ fn approve_high_promise(c_payment: CPayment) -> Result<(), String> {
         .map(|payment| {
             if payment.id == c_payment.id {
                 promise_found = true;
-                
+
                 // Only the receiver can approve high promise
                 if payment.receiver != caller() {
                     return Err("Only receiver can approve high promise".to_string());
                 }
-                
+
                 // Only HighPromise status can be approved
                 if payment.status != PaymentStatus::HighPromise {
                     return Err("Promise is not a high promise".to_string());
@@ -160,10 +164,10 @@ fn approve_high_promise(c_payment: CPayment) -> Result<(), String> {
 
                 payment.status = PaymentStatus::ApproveHighPromise;
                 notify_about_promise(payment.clone(), PaymentAction::Accepted);
-                
+
                 let wallet = Wallet::get(c_payment.sender);
                 let _ = wallet.add_dept(payment.amount, payment.id.clone());
-                
+
                 let mut user_history = UserHistory::get(c_payment.sender);
                 user_history.payment_action(payment.clone());
                 user_history.save();
@@ -183,9 +187,12 @@ fn approve_high_promise(c_payment: CPayment) -> Result<(), String> {
 #[update]
 fn object_on_cancel(c_payment: CPayment, reason: String) -> Result<(), String> {
     // Try to get contract from both sender and receiver perspectives
-    let mut contract = CustomContract::get_for_user(c_payment.contract_id.clone(), c_payment.sender)
-        .or_else(|| CustomContract::get_for_user(c_payment.contract_id.clone(), c_payment.receiver))
-        .ok_or_else(|| String::from("Contract not found"))?;
+    let mut contract =
+        CustomContract::get_for_user(c_payment.contract_id.clone(), c_payment.sender)
+            .or_else(|| {
+                CustomContract::get_for_user(c_payment.contract_id.clone(), c_payment.receiver)
+            })
+            .ok_or_else(|| String::from("Contract not found"))?;
 
     let mut promise_found = false;
     contract.promises = contract
@@ -194,7 +201,7 @@ fn object_on_cancel(c_payment: CPayment, reason: String) -> Result<(), String> {
         .map(|payment| {
             if payment.id == c_payment.id {
                 promise_found = true;
-                
+
                 // Only the receiver can object
                 if payment.receiver != caller() {
                     return Err("Only receiver can object to promise".to_string());
@@ -202,7 +209,7 @@ fn object_on_cancel(c_payment: CPayment, reason: String) -> Result<(), String> {
 
                 payment.status = PaymentStatus::Objected(reason.clone());
                 notify_about_promise(payment.clone(), PaymentAction::Objected);
-                
+
                 let wallet = Wallet::get(c_payment.sender);
                 let _ = wallet.add_dept(payment.amount, payment.id.clone());
 

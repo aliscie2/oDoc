@@ -39,7 +39,7 @@ impl Storable for ChatsIdVec {
     fn from_bytes(bytes: Cow<[u8]>) -> Self {
         match Decode!(bytes.as_ref(), Self) {
             Ok(chats) => chats,
-            Err(_) => ChatsIdVec { chats: vec![] }
+            Err(_) => ChatsIdVec { chats: vec![] },
         }
     }
 

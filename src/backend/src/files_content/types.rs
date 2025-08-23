@@ -64,11 +64,9 @@ impl Storable for ContentNodeVec {
     fn from_bytes(bytes: Cow<[u8]>) -> Self {
         match Decode!(bytes.as_ref(), Self) {
             Ok(content) => content,
-            Err(_) => {
-                ContentNodeVec {
-                    contents: HashMap::new(),
-                }
-            }
+            Err(_) => ContentNodeVec {
+                contents: HashMap::new(),
+            },
         }
     }
     const BOUND: Bound = Bound::Unbounded;

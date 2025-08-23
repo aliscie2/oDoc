@@ -872,7 +872,7 @@ impl CustomContract {
         CONTRACTS_STORE.with(|contracts_store| {
             let caller_contracts = contracts_store.borrow();
             let stored_contract_vec = caller_contracts.get(creator)?.stored_contracts.clone();
-            
+
             if let Some(contract) = stored_contract_vec.iter().find(|contract| match contract {
                 StoredContract::CustomContract(contract) => contract.id == *id,
                 _ => false,
@@ -950,24 +950,24 @@ impl CustomContract {
             let mut new_map = StoredContractVec {
                 stored_contracts: vec![StoredContract::CustomContract(self.clone())],
             };
-            
+
             if let Some(caller_contracts_map) = caller_contracts.get(&self.creator) {
                 new_map
                     .stored_contracts
                     .extend(caller_contracts_map.stored_contracts.clone());
             }
-            
+
             // Remove any existing contract with the same ID
             new_map.stored_contracts.retain(|contract| match contract {
                 StoredContract::CustomContract(contract) => contract.id != self.id,
                 _ => true,
             });
-            
+
             // Add the current contract
             new_map
                 .stored_contracts
                 .push(StoredContract::CustomContract(self.clone()));
-            
+
             caller_contracts.insert(self.creator.clone(), new_map);
 
             // if let Some(mut caller_contracts_map) = caller_contracts.get(&self.creator.to_text()) {

@@ -53,7 +53,7 @@ fn get_contract(author: String, contract_id: String) -> Result<StoredContract, S
     if let Some(contract) = contract {
         return Ok(contract);
     }
-    
+
     Err("Invalid principal.".to_string())
 }
 

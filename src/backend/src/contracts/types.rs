@@ -72,30 +72,30 @@ impl Contract {
     pub fn get_contract(author: String, contract_id: String) -> Option<StoredContract> {
         CONTRACTS_STORE.with(|contracts_store| {
             let caller_contracts = contracts_store.borrow();
-            
+
             let stored_contract_vec = match caller_contracts.get(&author) {
                 Some(contracts) => contracts.stored_contracts.clone(),
                 None => return None,
             };
 
-            let contract = stored_contract_vec.into_iter().find(|contract| {
-                match contract {
+            let contract = stored_contract_vec
+                .into_iter()
+                .find(|contract| match contract {
                     StoredContract::CustomContract(c) => c.id == contract_id,
                     _ => false,
-                }
-            });
-            
+                });
+
             let contract = match contract {
                 Some(contract) => contract,
                 None => return None,
             };
-            
+
             if let StoredContract::CustomContract(custom_contract) = contract {
                 return Some(StoredContract::CustomContract(
                     custom_contract.check_view_permission(),
                 ));
             }
-            
+
             Some(contract.clone())
         })
     }

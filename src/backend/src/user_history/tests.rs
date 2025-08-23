@@ -25,6 +25,5 @@ fn test_calic() {
         total_actions_rate_sum / total_actions_rate.len() as f64
     };
 
-
     // user.save();
 }

@@ -76,8 +76,6 @@ fn multi_updates(
     contracts_updates: Vec<ContractUpdates>,
     files_indexing: Vec<FileIndexing>,
 ) -> Result<String, String> {
-
-    
     let _guard = if !contracts_updates.is_empty() {
         Some(TransferGuard::new().map_err(|e| format!("{:?}", e))?)
     } else {
@@ -87,7 +85,6 @@ fn multi_updates(
     let mut messages = String::new();
 
     for contract_update in contracts_updates {
-        
         let existing_contract = CustomContract::get(&contract_update.id, &caller().to_string())
             .or_else(|| {
                 match Contract::get_contract(caller().to_string(), contract_update.id.clone()) {
@@ -98,7 +95,10 @@ fn multi_updates(
 
         let mut curr_contract = if let Some(existing) = existing_contract {
             existing
-        } else if !contract_update.promises.is_empty() || !contract_update.tables.is_empty() || contract_update.name.is_some() {
+        } else if !contract_update.promises.is_empty()
+            || !contract_update.tables.is_empty()
+            || contract_update.name.is_some()
+        {
             CustomContract {
                 id: contract_update.id.clone(),
                 name: contract_update
@@ -141,7 +141,8 @@ fn multi_updates(
         }
 
         if !contract_update.promises_indexes.is_empty() {
-            curr_contract = curr_contract.reorder_promises(contract_update.promises_indexes.clone())?;
+            curr_contract =
+                curr_contract.reorder_promises(contract_update.promises_indexes.clone())?;
         }
 
         if let Some(name) = contract_update.name.clone() {
@@ -149,7 +150,8 @@ fn multi_updates(
         }
 
         if !contract_update.permissions.is_empty() {
-            curr_contract = curr_contract.update_permissions(contract_update.permissions.clone())?;
+            curr_contract =
+                curr_contract.update_permissions(contract_update.permissions.clone())?;
         }
 
         if let Err(er) = curr_contract.save() {
