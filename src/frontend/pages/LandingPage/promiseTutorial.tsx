@@ -200,7 +200,7 @@ const ProgressiveTutorialDesktop = () => {
           transform: currentStep === 5 ? "scale(1.03)" : "scale(1)",
           transition: "all 0.8s ease",
         }}>
-          <Box sx={{ p: 3, background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)", borderBottom: "1px solid", borderColor: "divider" }}>
+          <Box sx={{ p: 3, borderBottom: "1px solid", borderColor: "divider" }}>
             <Typography variant="h6" fontWeight={700} sx={{ color: "primary.main", mb: 2, textAlign: "center" }}>
               My crypto Agreement
             </Typography>

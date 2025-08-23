@@ -64,6 +64,7 @@ const useAppInitialization = () => {
 
   const isLoggedIn = useSelector(selectIsLoggedIn);
   const isRegistered = useSelector(selectIsRegistered);
+
   const isFetching = useSelector(selectIsFetching);
   const profile = useSelector(selectProfile);
   const { posts } = useSelector((state: RootState) => state.filesState);
@@ -130,6 +131,13 @@ const useAppInitialization = () => {
           backendActor.get_initial_data(),
         ]);
 
+        if (isLoggedIn && initialRes.value.Err==='Anonymous user.'){
+          dispatch({ type: "IS_REGISTERED", isRegistered: false });
+          return null
+        } else {
+          dispatch({ type: "IS_REGISTERED", isRegistered: true });
+        }
+
         if (jobsRes.status === "fulfilled") {
           dispatch({
             type: "INIT_JOBS",
@@ -154,7 +162,6 @@ const useAppInitialization = () => {
               workspaces,
             },
           });
-          dispatch({ type: "IS_REGISTERED", isRegistered: true });
         } else {
           const [workspaces, friends, wallet, files] = await Promise.allSettled(
             [
@@ -380,7 +387,7 @@ const App: React.FC = () => {
       <DndProvider backend={HTML5Backend}>
         <NavBar>
           <PageContainer>
-            {isRegistered == false ? <RegistrationForm /> : <Pages />}
+            {isRegistered === false ? <RegistrationForm /> : <Pages />}
           </PageContainer>
         </NavBar>
       </DndProvider>

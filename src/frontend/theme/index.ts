@@ -557,6 +557,16 @@ const createComponents = ({ palette }: { palette: any }) => {
           boxShadow: `0 4px 20px ${alpha(palette.mode === "dark" ? "#000000" : "#000000", 0.2)}`,
         },
       },
+      defaultProps: {
+        TransitionProps: {
+          timeout: {
+            enter: 250,
+            exit: 200,
+          },
+        },
+        enterDelay: 500,
+        leaveDelay: 0,
+      },
     },
     MuiSwitch: {
       styleOverrides: {

@@ -57,14 +57,38 @@ const PAYMENT_STATUSES = {
 };
 
 // Hooks
-const useContractData = (contractId, contracts) =>
-  useMemo(
-    () =>
-      contracts[contractId] || { promises: [], payments: [], contracts: [] },
-    [contractId, contracts],
-  );
+const useContractData = (contractId: string, contracts: any) =>
+  useMemo(() => {
+    const contract = contracts[contractId];
+    if (!contract) {
+      return { 
+        promises: [], 
+        payments: [], 
+        contracts: [],
+        name: "Loading...",
+        id: contractId
+      };
+    }
+    
+    // Ensure all required properties exist with defaults
+    return {
+      ...contract,
+      promises: contract.promises || [],
+      payments: contract.payments || [],
+      contracts: contract.contracts || [],
+      name: contract.name || "Untitled Contract",
+      id: contract.id || contractId,
+      creator: contract.creator,
+      date_created: contract.date_created,
+      date_updated: contract.date_updated,
+      permissions: contract.permissions || [],
+      formulas: contract.formulas || []
+    };
+  }, [contractId, contracts]);
 
-const useDataType = (contractId) => {
+// Removed useContractFromUrl hook - contract fetching moved to ContractPage.tsx
+
+const useDataType = (contractId: string) => {
   const [dataType, setDataType] = useState(
     () =>
       localStorage.getItem(`contract-${contractId}-dataType`) ||
@@ -77,7 +101,7 @@ const useDataType = (contractId) => {
   return [dataType, setDataType];
 };
 
-const useColumnConfig = (profile, all_friends, wallet) =>
+const useColumnConfig = (profile: any, all_friends: any, wallet: any) =>
   useMemo(
     () => ({
       amount: {
@@ -155,7 +179,7 @@ const useColumnConfig = (profile, all_friends, wallet) =>
     [profile, all_friends, wallet],
   );
 
-const useGridData = (currentContract, dataType, columnConfig) =>
+const useGridData = (currentContract: any, dataType: string, columnConfig: any) =>
   useMemo(() => {
     const isTable = !Object.values(DATA_TYPES).slice(0, 2).includes(dataType);
 
@@ -398,15 +422,16 @@ const AgGridContainer = memo(
 );
 
 // Main Component
-const CustomContractViewer = memo(({ contractId }) => {
+const CustomContractViewer = memo<{ contractId: string }>(({ contractId }) => {
   const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
-  const { contracts, profile, all_friends, wallet, backendActor } = useSelector(
+  const { contracts, profile, all_friends, wallet } = useSelector(
     (state) => state.filesState,
   );
   const { isDarkMode } = useSelector((state) => state.uiState);
 
   const currentContract = useContractData(contractId, contracts);
+  console.log({contracts, currentContract})
   const [dataType, setDataType] = useDataType(contractId);
   const columnConfig = useColumnConfig(profile, all_friends, wallet);
   const gridData = useGridData(currentContract, dataType, columnConfig);
@@ -731,14 +756,33 @@ const CustomContractViewer = memo(({ contractId }) => {
     [dataType, currentContract, contractId, dispatch, profile],
   );
 
+  // Contract loading and error handling is now done in ContractPage.tsx
+  
+  // Show loading state if contractId exists but contract is empty or still loading
+  if (contractId && (!currentContract || !currentContract.id || currentContract.name === "Loading...")) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "200px",
+          fontSize: "1.2rem",
+        }}
+      >
+        Loading contract data...
+      </div>
+    );
+  }
+
   if (dataType === DATA_TYPES.AGREEMENT) {
     return (
       <div style={{ height: "auto", width: "100%" }}>
         <AgreementView
           contract={currentContract}
-          profile={profile}
           isDarkMode={isDarkMode}
           onSwitchToTable={() => setDataType(DATA_TYPES.PROMISE)}
+          customContract={{ name: currentContract.name || "Untitled Contract" }}
         />
       </div>
     );
@@ -759,7 +803,6 @@ const CustomContractViewer = memo(({ contractId }) => {
         onTypeChange: setDataType,
         contractData: currentContract,
         onAddTable: handleAddTable,
-
         onSwitchToAgreement: handleSwitchToAgreement,
         onDeleteTable: handleDeleteTable,
       }}

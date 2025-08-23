@@ -40,10 +40,10 @@ class AIStaticStore {
 export class AIAgent {
   private static MYSTATICS = AIStaticStore.getInstance();
 
-  // DeepSeek pricing - extremely cheap, $1 should last 30+ days
-  // DeepSeek actual pricing: ~$0.14 per 1M input tokens, ~$0.28 per 1M output tokens
-  private readonly INPUT_TOKEN_COST = 0.00000014; // $0.14 per 1M tokens
-  private readonly OUTPUT_TOKEN_COST = 0.00000028; // $0.28 per 1M tokens
+  // Google Gemini pricing - very affordable and frontend-friendly
+  // Gemini Flash pricing: Free tier available, then $0.075 per 1M input tokens, $0.30 per 1M output tokens
+  private readonly INPUT_TOKEN_COST = 0.000000075; // $0.075 per 1M tokens
+  private readonly OUTPUT_TOKEN_COST = 0.0000003; // $0.30 per 1M tokens
 
   // Context settings - keep only latest 4 messages
   private readonly MAX_CONTEXT_MESSAGES = 4;
@@ -54,7 +54,7 @@ export class AIAgent {
   }
 
   private getCurrentModel(): string {
-    return "deepseek-chat";
+    return "gemini-1.5-flash";
   }
 
   private getCurrentPricing(): { input: number; output: number } {
@@ -130,7 +130,7 @@ export class AIAgent {
   ): Promise<string> {
     const startTime = Date.now();
     console.log(
-      `🚀 Starting DeepSeek API request at ${new Date().toISOString()}`,
+      `🚀 Starting Google Gemini API request at ${new Date().toISOString()}`,
     );
 
     const estimatedCost = this.estimateInputCost(message);
@@ -143,85 +143,97 @@ export class AIAgent {
 
     try {
       const contextMessages = this.getContextMessages();
-      const messages = [];
-
-      // System prompts are NOT stored in context - only used for this request
+      
+      // Build conversation history for Gemini
+      let conversationText = "";
+      
+      // Add system prompt if provided
       if (systemPrompt) {
-        messages.push({ role: "system", content: systemPrompt });
+        conversationText += `System: ${systemPrompt}\n\n`;
       }
 
-      // Add context messages (latest 4 user/model pairs)
+      // Add context messages
       contextMessages.forEach((msg) => {
-        messages.push({
-          role: msg.role === "user" ? "user" : "assistant",
-          content: msg.parts[0],
-        });
+        const role = msg.role === "user" ? "User" : "Assistant";
+        conversationText += `${role}: ${msg.parts[0]}\n\n`;
       });
 
-      messages.push({ role: "user", content: message });
+      // Add current message
+      conversationText += `User: ${message}\n\nAssistant:`;
 
       const fetchStart = Date.now();
       console.log(
-        `📡 Sending request to DeepSeek API... (${fetchStart - startTime}ms elapsed)`,
+        `📡 Sending request to Google Gemini API... (${fetchStart - startTime}ms elapsed)`,
       );
 
-      const response = await fetch(
-        "https://api.deepseek.com/chat/completions",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${import.meta.env.VITE_DEEPSEEK_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: "deepseek-chat",
-            messages,
-            max_tokens: 4000,
-            temperature: 0.7,
-            stream: onStream ? true : false,
-          }),
-          signal: abortSignal,
+      const apiUrl = onStream 
+        ? `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:streamGenerateContent?key=${import.meta.env.VITE_GEMINI_API_KEY}`
+        : `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${import.meta.env.VITE_GEMINI_API_KEY}`;
+
+      const requestBody = {
+        contents: [{
+          parts: [{ text: conversationText }]
+        }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 4000,
+        }
+      };
+
+      console.log("🔍 Request body:", JSON.stringify(requestBody, null, 2));
+      console.log("🔑 API Key present:", !!import.meta.env.VITE_GEMINI_API_KEY);
+
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify(requestBody),
+        signal: abortSignal,
+      });
 
       const responseTime = Date.now();
       console.log(`📥 Response received in ${responseTime - fetchStart}ms`);
 
       if (!response.ok) {
-        throw new Error(`API request failed with status ${response.status}`);
+        const errorText = await response.text();
+        console.error(`API Error ${response.status}:`, errorText);
+        throw new Error(
+          `API request failed with status ${response.status}: ${errorText}`,
+        );
       }
 
       let assistantMessage = "";
       let usage: any = {};
 
       if (onStream && response.body) {
-        // Handle streaming response
+        // Handle streaming response for Gemini
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
-        
+
         try {
           while (true) {
             const { done, value } = await reader.read();
             if (done) break;
-            
+
             const chunk = decoder.decode(value, { stream: true });
-            const lines = chunk.split('\n');
-            
+            const lines = chunk.split("\n");
+
             for (const line of lines) {
-              if (line.startsWith('data: ')) {
+              if (line.startsWith("data: ")) {
                 const dataStr = line.slice(6);
-                if (dataStr === '[DONE]') continue;
-                
+                if (dataStr === "[DONE]") continue;
+
                 try {
                   const parsed = JSON.parse(dataStr);
-                  const content = parsed.choices?.[0]?.delta?.content;
-                  if (content) {
-                    assistantMessage += content;
-                    onStream(content);
+                  const text = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
+                  if (text) {
+                    assistantMessage += text;
+                    onStream(text);
                   }
                   // Capture usage data if available
-                  if (parsed.usage) {
-                    usage = parsed.usage;
+                  if (parsed.usageMetadata) {
+                    usage = parsed.usageMetadata;
                   }
                 } catch (e) {
                   // Skip invalid JSON chunks
@@ -233,14 +245,14 @@ export class AIAgent {
           reader.releaseLock();
         }
       } else {
-        // Handle non-streaming response
+        // Handle non-streaming response for Gemini
         const parseStart = Date.now();
         const data = await response.json();
         const parseTime = Date.now();
         console.log(`🔍 JSON parsed in ${parseTime - parseStart}ms`);
 
-        assistantMessage = data.choices?.[0]?.message?.content?.trim() || "";
-        usage = data.usage || {};
+        assistantMessage = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
+        usage = data.usageMetadata || {};
       }
 
       // Store message in context ONLY if quick=false (not for quick queries like classification)
@@ -264,17 +276,19 @@ export class AIAgent {
       }
 
       const tokenData = {
-        prompt_tokens: usage.prompt_tokens || 0,
-        completion_tokens: usage.completion_tokens || 0,
+        prompt_tokens: usage.promptTokenCount || 0,
+        completion_tokens: usage.candidatesTokenCount || 0,
       };
 
       this.updateUsageStatsAndDeductCredits(tokenData);
 
       const endTime = Date.now();
       const totalTime = endTime - startTime;
-      console.log(`✅ DeepSeek API call completed in ${totalTime}ms total`);
       console.log(
-        `📊 Tokens: ${usage.prompt_tokens} input, ${usage.completion_tokens} output`,
+        `✅ Google Gemini API call completed in ${totalTime}ms total`,
+      );
+      console.log(
+        `📊 Tokens: ${usage.promptTokenCount} input, ${usage.candidatesTokenCount} output`,
       );
 
       return assistantMessage;
@@ -283,25 +297,25 @@ export class AIAgent {
 
       // Handle abort signal
       if (error instanceof Error && error.name === "AbortError") {
-        console.log(`🛑 DeepSeek API request cancelled after ${errorTime}ms`);
+        console.log(`🛑 Google Gemini API request cancelled after ${errorTime}ms`);
         throw new Error("Request cancelled");
       }
 
-      console.error(`❌ DeepSeek API error after ${errorTime}ms:`, error);
+      console.error(`❌ Google Gemini API error after ${errorTime}ms:`, error);
 
       if (error instanceof Error) {
         if (error.message === "INSUFFICIENT_CREDITS") throw error;
-        if (error.message.includes("401"))
-          this.showAlert("Invalid DeepSeek API key");
+        if (error.message.includes("401") || error.message.includes("403"))
+          this.showAlert("Invalid Google Gemini API key");
         else if (error.message.includes("429"))
           this.showAlert("Rate limit exceeded");
-        else this.showAlert("DeepSeek API request failed - please try again");
+        else this.showAlert("Google Gemini API request failed - please try again");
       }
 
       throw new Error(
         error instanceof Error
           ? error.message
-          : "Failed to get response from DeepSeek",
+          : "Failed to get response from Google Gemini",
       );
     }
   }
@@ -319,7 +333,7 @@ export class AIAgent {
       AIAgent.MYSTATICS.totalOutputTokens += usageMetadata.completion_tokens;
     }
 
-    // Calculate actual cost based on DeepSeek pricing
+    // Calculate actual cost based on Google Gemini pricing
     const pricing = this.getCurrentPricing();
     let cost = 0;
 
