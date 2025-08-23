@@ -40,10 +40,10 @@ class AIStaticStore {
 export class AIAgent {
   private static MYSTATICS = AIStaticStore.getInstance();
 
-  // Google Gemini pricing - very affordable and frontend-friendly
-  // Gemini Flash pricing: Free tier available, then $0.075 per 1M input tokens, $0.30 per 1M output tokens
-  private readonly INPUT_TOKEN_COST = 0.000000075; // $0.075 per 1M tokens
-  private readonly OUTPUT_TOKEN_COST = 0.0000003; // $0.30 per 1M tokens
+  // Google Gemini pricing - premium tier pricing
+  // Gemini Flash pricing: $0.50 per 1M input tokens, $2.00 per 1M output tokens
+  private readonly INPUT_TOKEN_COST = 0.0000005; // $0.50 per 1M tokens
+  private readonly OUTPUT_TOKEN_COST = 0.000002; // $2.00 per 1M tokens
 
   // Context settings - keep only latest 4 messages
   private readonly MAX_CONTEXT_MESSAGES = 4;
@@ -143,10 +143,10 @@ export class AIAgent {
 
     try {
       const contextMessages = this.getContextMessages();
-      
+
       // Build conversation history for Gemini
       let conversationText = "";
-      
+
       // Add system prompt if provided
       if (systemPrompt) {
         conversationText += `System: ${systemPrompt}\n\n`;
@@ -166,18 +166,20 @@ export class AIAgent {
         `📡 Sending request to Google Gemini API... (${fetchStart - startTime}ms elapsed)`,
       );
 
-      const apiUrl = onStream 
+      const apiUrl = onStream
         ? `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:streamGenerateContent?key=${import.meta.env.VITE_GEMINI_API_KEY}`
         : `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${import.meta.env.VITE_GEMINI_API_KEY}`;
 
       const requestBody = {
-        contents: [{
-          parts: [{ text: conversationText }]
-        }],
+        contents: [
+          {
+            parts: [{ text: conversationText }],
+          },
+        ],
         generationConfig: {
           temperature: 0.7,
           maxOutputTokens: 4000,
-        }
+        },
       };
 
       console.log("🔍 Request body:", JSON.stringify(requestBody, null, 2));
@@ -226,7 +228,8 @@ export class AIAgent {
 
                 try {
                   const parsed = JSON.parse(dataStr);
-                  const text = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
+                  const text =
+                    parsed.candidates?.[0]?.content?.parts?.[0]?.text;
                   if (text) {
                     assistantMessage += text;
                     onStream(text);
@@ -251,7 +254,8 @@ export class AIAgent {
         const parseTime = Date.now();
         console.log(`🔍 JSON parsed in ${parseTime - parseStart}ms`);
 
-        assistantMessage = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
+        assistantMessage =
+          data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
         usage = data.usageMetadata || {};
       }
 
@@ -297,7 +301,9 @@ export class AIAgent {
 
       // Handle abort signal
       if (error instanceof Error && error.name === "AbortError") {
-        console.log(`🛑 Google Gemini API request cancelled after ${errorTime}ms`);
+        console.log(
+          `🛑 Google Gemini API request cancelled after ${errorTime}ms`,
+        );
         throw new Error("Request cancelled");
       }
 
@@ -309,7 +315,8 @@ export class AIAgent {
           this.showAlert("Invalid Google Gemini API key");
         else if (error.message.includes("429"))
           this.showAlert("Rate limit exceeded");
-        else this.showAlert("Google Gemini API request failed - please try again");
+        else
+          this.showAlert("Google Gemini API request failed - please try again");
       }
 
       throw new Error(

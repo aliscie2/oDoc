@@ -1,4 +1,7 @@
-import { CPayment, ContractUpdates } from "$/declarations/backend/backend.did.js";
+import {
+  CPayment,
+  ContractUpdates,
+} from "$/declarations/backend/backend.did.js";
 import { createIdentity } from "@dfinity/pic";
 import { deposit, registerUser } from "../utils";
 
@@ -27,7 +30,12 @@ async function createContract() {
   return contractId;
 }
 
-async function createPromise(contractId: string, sender: any, receiver: any, amount: number): Promise<CPayment> {
+async function createPromise(
+  contractId: string,
+  sender: any,
+  receiver: any,
+  amount: number,
+): Promise<CPayment> {
   const promise: CPayment = {
     id: `promise_${Date.now()}_${Math.random()}`,
     contract_id: contractId,
@@ -72,10 +80,15 @@ describe("Promise Actions Tests", () => {
     expect("Ok" in result).toBe(true);
 
     globalThis.testActor.setIdentity(sender);
-    const contract = await globalThis.testActor.get_contract(sender.getPrincipal().toString(), contractId);
-    
+    const contract = await globalThis.testActor.get_contract(
+      sender.getPrincipal().toString(),
+      contractId,
+    );
+
     if ("Ok" in contract && "CustomContract" in contract.Ok) {
-      const updatedPromise = contract.Ok.CustomContract.promises.find(p => p.id === promise.id);
+      const updatedPromise = contract.Ok.CustomContract.promises.find(
+        (p) => p.id === promise.id,
+      );
       expect(updatedPromise?.status).toEqual({ Confirmed: null });
     }
   });
@@ -91,7 +104,7 @@ describe("Promise Actions Tests", () => {
 
     globalThis.testActor.setIdentity(receiver);
     await globalThis.testActor.confirmed_c_payment(promise);
-    
+
     const result = await globalThis.testActor.confirmed_c_payment(promise);
     expect("Err" in result).toBe(true);
     expect(result.Err).toBe("Already confirmed");
@@ -133,12 +146,22 @@ describe("Promise Actions Tests", () => {
       promises: [],
     };
 
-    const result = await globalThis.testActor.multi_updates([], [], [update], []);
+    const result = await globalThis.testActor.multi_updates(
+      [],
+      [],
+      [update],
+      [],
+    );
     expect("Ok" in result).toBe(true);
 
-    const contract = await globalThis.testActor.get_contract(sender.getPrincipal().toString(), contractId);
+    const contract = await globalThis.testActor.get_contract(
+      sender.getPrincipal().toString(),
+      contractId,
+    );
     if ("Ok" in contract && "CustomContract" in contract.Ok) {
-      const deletedPromise = contract.Ok.CustomContract.promises.find(p => p.id === promise.id);
+      const deletedPromise = contract.Ok.CustomContract.promises.find(
+        (p) => p.id === promise.id,
+      );
       expect(deletedPromise).toBeUndefined();
     }
   });

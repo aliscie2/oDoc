@@ -108,6 +108,9 @@ const JobUpdateAnimation = ({ currentJob, jobs }) => {
 
   const currentUpdate = updates[currentIndex];
 
+  // Safety check to prevent undefined access during re-rendering pressure
+  if (!currentUpdate) return null;
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.8, y: -10 }}
@@ -160,8 +163,8 @@ const JobUpdateAnimation = ({ currentJob, jobs }) => {
                 style={{ display: "flex", flexDirection: "column", gap: "6px" }}
               >
                 <AnimatePresence>
-                  {currentUpdate.current.map((item, index) => {
-                    const isNew = currentUpdate.added.includes(item);
+                  {currentUpdate?.current?.map((item, index) => {
+                    const isNew = currentUpdate?.added?.includes(item);
                     return (
                       <motion.div
                         key={item}
@@ -197,7 +200,7 @@ const JobUpdateAnimation = ({ currentJob, jobs }) => {
                     );
                   })}
 
-                  {currentUpdate.removed.map((item, index) => (
+                  {currentUpdate?.removed?.map((item, index) => (
                     <motion.div
                       key={`removing-${item}`}
                       layout
@@ -266,7 +269,7 @@ const JobUpdateAnimation = ({ currentJob, jobs }) => {
                   <span style={{ color: "#22c55e", marginRight: "6px" }}>
                     +
                   </span>
-                  {String(currentUpdate.newValue || "None")}
+                  {String(currentUpdate?.newValue || "None")}
                 </motion.div>
               </div>
             )}

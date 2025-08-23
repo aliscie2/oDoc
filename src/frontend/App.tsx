@@ -130,12 +130,13 @@ const useAppInitialization = () => {
           backendActor.get_my_jobs(),
           backendActor.get_initial_data(),
         ]);
-
-        if (isLoggedIn && initialRes.value.Err==='Anonymous user.'){
+        if (isLoggedIn && initialRes.value?.Err === "Anonymous user.") {
           dispatch({ type: "IS_REGISTERED", isRegistered: false });
-          return null
-        } else {
+          return null;
+        } else if (initialRes.value?.Ok) {
           dispatch({ type: "IS_REGISTERED", isRegistered: true });
+        } else {
+          logout();
         }
 
         if (jobsRes.status === "fulfilled") {

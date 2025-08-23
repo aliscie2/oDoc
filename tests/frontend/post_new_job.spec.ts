@@ -20,15 +20,16 @@ const captureLocalStorage = async (page) => {
     }
     return data;
   });
-  console.log('[DEBUG] LocalStorage:', JSON.stringify(localStorage, null, 2));
+  console.log("[DEBUG] LocalStorage:", JSON.stringify(localStorage, null, 2));
   return localStorage;
 };
 
 test.describe("Job Matching System - Comprehensive ZeroStep Tests", () => {
-  
-  test("Complete Flow: Onboarding + Job Creation + Logout", async ({ page }) => {
+  test("Complete Flow: Onboarding + Job Creation + Logout", async ({
+    page,
+  }) => {
     await debugLog(page, "Starting complete onboarding and job creation flow");
-    
+
     // Navigate to app
     await page.goto("http://localhost:5173");
     await page.waitForLoadState("networkidle");
@@ -37,15 +38,17 @@ test.describe("Job Matching System - Comprehensive ZeroStep Tests", () => {
     // Register new user using existing utility
     await registerUser(page);
     await debugLog(page, "User registration completed");
-    
+
     // Capture initial state
     await captureLocalStorage(page);
 
     // Wait for welcome onboarding message
     await page.waitForTimeout(2000);
     await debugLog(page, "Checking for welcome onboarding message");
-    
-    const welcomeMessage = page.getByText("👋 Welcome! I'm here to help you find the perfect opportunities");
+
+    const welcomeMessage = page.getByText(
+      "👋 Welcome! I'm here to help you find the perfect opportunities",
+    );
     await expect(welcomeMessage).toBeVisible({ timeout: 10000 });
     await debugLog(page, "Welcome onboarding message confirmed");
 
@@ -57,14 +60,14 @@ test.describe("Job Matching System - Comprehensive ZeroStep Tests", () => {
     // Create job using AI with specific skills
     await ai(
       "Find the chat input field with placeholder 'Ask AI anything...' and type exactly 'job//as>icp,rust,typescript' then press Enter to submit the message",
-      { page, test }
+      { page, test },
     );
     await page.waitForTimeout(3000);
     await debugLog(page, "Job creation command sent via AI");
 
     // Capture state after job creation
     const postJobStorage = await captureLocalStorage(page);
-    
+
     // Reload page to test persistence and trigger calendar onboarding
     await page.reload();
     await page.waitForLoadState("networkidle");
@@ -72,9 +75,11 @@ test.describe("Job Matching System - Comprehensive ZeroStep Tests", () => {
     await debugLog(page, "Page reloaded to test persistence");
 
     // Check for calendar onboarding message
-    const calendarMessage = page.getByText("🗓️ Perfect! Now let's set up your availability");
+    const calendarMessage = page.getByText(
+      "🗓️ Perfect! Now let's set up your availability",
+    );
     const scheduleMessage = page.getByText("Share your interview schedule:");
-    
+
     try {
       await expect(calendarMessage).toBeVisible({ timeout: 8000 });
       await expect(scheduleMessage).toBeVisible({ timeout: 5000 });
@@ -85,7 +90,10 @@ test.describe("Job Matching System - Comprehensive ZeroStep Tests", () => {
     }
 
     // Navigate to jobs page to verify job creation
-    await ai("Navigate to the jobs page or find a way to view created jobs", { page, test });
+    await ai("Navigate to the jobs page or find a way to view created jobs", {
+      page,
+      test,
+    });
     await page.waitForLoadState("networkidle");
     await page.waitForTimeout(2000);
     await debugLog(page, "Navigated to jobs page");
@@ -100,7 +108,7 @@ test.describe("Job Matching System - Comprehensive ZeroStep Tests", () => {
       const skillChips = page.locator(".MuiChip-root");
       const chipCount = await skillChips.count();
       console.log(`[DEBUG] Found ${chipCount} skill chips`);
-      
+
       if (chipCount > 0) {
         await expect(skillChips).toHaveCount(3); // icp, rust, typescript
         await debugLog(page, "Skill chips verified");
@@ -110,12 +118,17 @@ test.describe("Job Matching System - Comprehensive ZeroStep Tests", () => {
     }
 
     // Test logout functionality
-    await ai("Find and click the profile avatar on top right, then from dropdown click logout button", { page, test });
+    await ai(
+      "Find and click the profile avatar on top right, then from dropdown click logout button",
+      { page, test },
+    );
     await page.waitForTimeout(2000);
     await debugLog(page, "Logout completed");
 
     // Verify we're back to login state
-    const loginButton = page.getByRole("button", { name: "Internet Identity Login with" });
+    const loginButton = page.getByRole("button", {
+      name: "Internet Identity Login with",
+    });
     await expect(loginButton).toBeVisible({ timeout: 5000 });
     await debugLog(page, "Logout verified - back to login screen");
   });
@@ -132,13 +145,13 @@ test.describe("Job Matching System - Comprehensive ZeroStep Tests", () => {
     // Register job creator
     await registerUser(jobCreatorPage);
     await debugLog(jobCreatorPage, "Job creator registered");
-    
+
     await jobCreatorPage.waitForTimeout(2000);
-    
+
     // Create job with specific skills
     await ai(
       "Find the chat input and type 'job//as>react,nodejs,python' then submit it",
-      { page: jobCreatorPage, test }
+      { page: jobCreatorPage, test },
     );
     await jobCreatorPage.waitForTimeout(3000);
     await debugLog(jobCreatorPage, "Job created by first user");
@@ -154,13 +167,13 @@ test.describe("Job Matching System - Comprehensive ZeroStep Tests", () => {
     // Register talent user
     await registerUser(page);
     await debugLog(page, "Talent user registered");
-    
+
     await page.waitForTimeout(2000);
 
     // Create talent profile with matching skills
     await ai(
       "Find the chat input field and type 'talent//as>react,nodejs,python,javascript' then press Enter to submit",
-      { page, test }
+      { page, test },
     );
     await page.waitForTimeout(3000);
     await debugLog(page, "Talent profile created");
@@ -169,18 +182,27 @@ test.describe("Job Matching System - Comprehensive ZeroStep Tests", () => {
     const talentStorage = await captureLocalStorage(page);
 
     // Navigate to jobs page
-    await ai("Navigate to the jobs page to find job opportunities", { page, test });
+    await ai("Navigate to the jobs page to find job opportunities", {
+      page,
+      test,
+    });
     await page.waitForLoadState("networkidle");
     await page.waitForTimeout(2000);
     await debugLog(page, "Navigated to jobs page as talent");
 
     // Switch to talent view if there's a dropdown
     try {
-      await ai("Look for a dropdown or toggle to switch to 'Talent' view and click it", { page, test });
+      await ai(
+        "Look for a dropdown or toggle to switch to 'Talent' view and click it",
+        { page, test },
+      );
       await page.waitForTimeout(2000);
       await debugLog(page, "Switched to talent view");
     } catch (error) {
-      await debugLog(page, `Talent view switch failed or not needed: ${error.message}`);
+      await debugLog(
+        page,
+        `Talent view switch failed or not needed: ${error.message}`,
+      );
     }
 
     // Verify jobs page container is visible
@@ -193,11 +215,11 @@ test.describe("Job Matching System - Comprehensive ZeroStep Tests", () => {
       // Try alternative selectors
       const alternativeSelectors = [
         '[data-testid="job-brief-data"]',
-        '.job-listing',
-        '.job-card',
-        '.MuiCard-root'
+        ".job-listing",
+        ".job-card",
+        ".MuiCard-root",
       ];
-      
+
       for (const selector of alternativeSelectors) {
         try {
           const element = page.locator(selector);
@@ -212,15 +234,23 @@ test.describe("Job Matching System - Comprehensive ZeroStep Tests", () => {
 
     // Look for job matches or job listings
     try {
-      const jobElements = page.locator('.MuiChip-root, [data-testid="job-brief-data"], .job-card');
+      const jobElements = page.locator(
+        '.MuiChip-root, [data-testid="job-brief-data"], .job-card',
+      );
       const count = await jobElements.count();
       console.log(`[DEBUG] Found ${count} job-related elements`);
-      
+
       if (count > 0) {
-        await debugLog(page, `Successfully found ${count} job matches/listings`);
+        await debugLog(
+          page,
+          `Successfully found ${count} job matches/listings`,
+        );
       }
     } catch (error) {
-      await debugLog(page, `Job matching verification failed: ${error.message}`);
+      await debugLog(
+        page,
+        `Job matching verification failed: ${error.message}`,
+      );
     }
 
     // Test persistence by reloading

@@ -643,7 +643,7 @@ const ContractHeader = memo<{
               owner: contract.creator?.toString() || "",
             })}
           />
-          
+
           {!isOnContractPage && (
             <Tooltip title="Open full view">
               <IconButton
