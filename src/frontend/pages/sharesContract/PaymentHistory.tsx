@@ -9,7 +9,7 @@ import React from "react";
 import { useSelector } from "react-redux";
 import {
   Friend,
-  CPayment as Payment
+  CPayment as Payment,
 } from "../../../declarations/backend/backend.did";
 import AgGridDataGrid from "../../components/MuiComponents/dataGridSheet";
 import { formatRelativeTime } from "../../utils/time";

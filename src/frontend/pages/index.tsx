@@ -83,7 +83,7 @@ const Pages = React.memo(() => {
         {/*<Route path="/chats/*" element={<ChatsPage />} />*/}
 
         <Route path="/contract*" element={<ContractPage />} />
-        <Route path="/contracts/*" element={<ContractsHistory />} />
+        <Route path="/contracts*" element={<ContractsHistory />} />
         <Route path="/offer" element={<OfferPage />} />
 
         <Route path="/subscriptions" element={<SubscriptionPlans />} />

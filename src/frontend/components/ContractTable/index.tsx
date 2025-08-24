@@ -61,15 +61,15 @@ const useContractData = (contractId: string, contracts: any) =>
   useMemo(() => {
     const contract = contracts[contractId];
     if (!contract) {
-      return { 
-        promises: [], 
-        payments: [], 
+      return {
+        promises: [],
+        payments: [],
         contracts: [],
         name: "Loading...",
-        id: contractId
+        id: contractId,
       };
     }
-    
+
     // Ensure all required properties exist with defaults
     return {
       ...contract,
@@ -82,7 +82,7 @@ const useContractData = (contractId: string, contracts: any) =>
       date_created: contract.date_created,
       date_updated: contract.date_updated,
       permissions: contract.permissions || [],
-      formulas: contract.formulas || []
+      formulas: contract.formulas || [],
     };
   }, [contractId, contracts]);
 
@@ -179,7 +179,11 @@ const useColumnConfig = (profile: any, all_friends: any, wallet: any) =>
     [profile, all_friends, wallet],
   );
 
-const useGridData = (currentContract: any, dataType: string, columnConfig: any) =>
+const useGridData = (
+  currentContract: any,
+  dataType: string,
+  columnConfig: any,
+) =>
   useMemo(() => {
     const isTable = !Object.values(DATA_TYPES).slice(0, 2).includes(dataType);
 
@@ -431,7 +435,7 @@ const CustomContractViewer = memo<{ contractId: string }>(({ contractId }) => {
   const { isDarkMode } = useSelector((state) => state.uiState);
 
   const currentContract = useContractData(contractId, contracts);
-  console.log({contracts, currentContract})
+  console.log({ contracts, currentContract });
   const [dataType, setDataType] = useDataType(contractId);
   const columnConfig = useColumnConfig(profile, all_friends, wallet);
   const gridData = useGridData(currentContract, dataType, columnConfig);
@@ -757,9 +761,14 @@ const CustomContractViewer = memo<{ contractId: string }>(({ contractId }) => {
   );
 
   // Contract loading and error handling is now done in ContractPage.tsx
-  
+
   // Show loading state if contractId exists but contract is empty or still loading
-  if (contractId && (!currentContract || !currentContract.id || currentContract.name === "Loading...")) {
+  if (
+    contractId &&
+    (!currentContract ||
+      !currentContract.id ||
+      currentContract.name === "Loading...")
+  ) {
     return (
       <div
         style={{

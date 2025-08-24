@@ -14,11 +14,11 @@ function createPalette(isDarkMode: boolean) {
     },
     primary: isDarkMode
       ? {
-          lightest: "#EDE9FE",
-          light: "#C4B5FD",
-          main: "#8B5CF6",
-          dark: "#6D28D9",
-          darkest: "#4C1D95",
+          lightest: "#E6FFFA",
+          light: "#B2F5EA",
+          main: "#4FD1C7",
+          dark: "#319795",
+          darkest: "#234E52",
           contrastText: "#FFFFFF",
         }
       : {
@@ -89,7 +89,7 @@ function createPalette(isDarkMode: boolean) {
         gradient:
           "linear-gradient(135deg, #1a1b23 0%, #2a2d3a 50%, #323644 100%)",
       },
-      divider: alpha("#8B5CF6", 0.15),
+      divider: alpha("#4FD1C7", 0.15),
       error: baseColors.error,
       info: baseColors.info,
       mode: "dark" as const,
@@ -109,7 +109,7 @@ function createPalette(isDarkMode: boolean) {
       morphism: {
         border: "rgba(255,255,255,0.15)",
         borderHover: "rgba(255,255,255,0.25)",
-        borderFocus: alpha("#8B5CF6", 0.4),
+        borderFocus: alpha("#4FD1C7", 0.4),
         backdrop: alpha("#000000", 0.35),
         glass: {
           background:
@@ -218,7 +218,7 @@ const createShadows = (isDarkMode?: boolean) => {
     ? "rgba(255, 255, 255, 0.12)"
     : "rgba(248, 250, 252, 0.9)";
   const accentShadow = isDarkMode
-    ? "rgba(139, 92, 246, 0.25)"
+    ? "rgba(79, 209, 199, 0.25)"
     : "rgba(25, 115, 141, 0.15)";
 
   return [

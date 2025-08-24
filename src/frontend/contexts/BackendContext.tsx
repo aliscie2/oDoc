@@ -6,8 +6,21 @@ import React, {
   useEffect,
   useState,
 } from "react";
+
+
+import {
+  ActorSubclass,
+  HttpAgentOptions,
+  ActorConfig,
+  Agent,
+  HttpAgent, 
+  Identity,
+  Actor
+} from "@dfinity/agent";
+
+
 import { AuthClient } from "@dfinity/auth-client";
-import { Actor, ActorSubclass, HttpAgent, Identity } from "@dfinity/agent";
+
 import { canisterId, idlFactory } from "../../declarations/backend";
 import { canisterId as IIID } from "../../declarations/internet_identity";
 import { _SERVICE } from "../../declarations/backend/backend.did";
@@ -18,7 +31,7 @@ import { clearAuthState } from "../utils/clearAuthState";
 interface State {
   principal: string | null;
   identity: Identity | null;
-  backendActor: ActorSubclass<_SERVICE> | null;
+  backendActor: ActorSubclass<_SERVICE>;
   agent: HttpAgent | null;
   isAuthenticating?: boolean;
   ckUSDCActor?: any;
@@ -226,7 +239,7 @@ export const BackendProvider: React.FC<BackendProviderProps> = ({
       setState((prevState) => ({
         ...prevState,
         ckUSDCActor,
-        backendActor: actor || null,
+        backendActor: actor,
         agent: agent || null,
         principal: principal || null,
         identity: identity || null,

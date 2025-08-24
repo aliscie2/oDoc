@@ -10,26 +10,28 @@ import {
   useTheme,
 } from "@mui/material";
 import { Close as CloseIcon } from "@mui/icons-material";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 
 const AICreditsComponent = () => {
   const theme = useTheme();
   const { wallet } = useSelector((state: any) => state.filesState);
-  const { aiAgent, credits: aiCredits } = useSelector(
+  const { credits: aiCredits } = useSelector(
     (state: any) => state.AIState,
   );
   const [showBuyPanel, setShowBuyPanel] = useState(false);
   const [buyAmount, setBuyAmount] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [credits, setCredits] = useState(aiAgent.remainingCredits());
+  const [credits, setCredits] = useState(aiCredits);
+  const [popoverPosition, setPopoverPosition] = useState({ bottom: "100%", left: 0, right: "auto" });
+  const containerRef = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch();
   const { backendActor } = useBackendContext();
 
   useEffect(() => {
-    setCredits(aiAgent.remainingCredits());
-  }, [aiAgent, aiCredits]);
+    setCredits(aiCredits);
+  }, [aiCredits]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -40,6 +42,23 @@ const AICreditsComponent = () => {
     if (showBuyPanel) {
       document.addEventListener("click", handleClickOutside);
       return () => document.removeEventListener("click", handleClickOutside);
+    }
+  }, [showBuyPanel]);
+
+  useEffect(() => {
+    if (showBuyPanel && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      const popoverWidth = 200; // minWidth from Paper
+      
+      let newPosition = { bottom: "100%", left: 0, right: "auto" };
+      
+      // Check horizontal overflow
+      if (rect.left + popoverWidth > window.innerWidth) {
+        newPosition.right = 0;
+        newPosition.left = "auto";
+      }
+      
+      setPopoverPosition(newPosition);
     }
   }, [showBuyPanel]);
 
@@ -59,9 +78,8 @@ const AICreditsComponent = () => {
     try {
       const res = await backendActor.buy_ai_credits(buyAmount);
       if ("Ok" in res) {
-        await aiAgent.addCredits(buyAmount, true);
-        setCredits(aiAgent.remainingCredits());
-        dispatch({ type: "ADD_AI_CREDITS", credits: buyAmount, isFree: false });
+        dispatch({ type: "ADD_AI_CREDITS", credits: buyAmount });
+        setCredits(aiCredits + buyAmount);
       } else {
         alert("Err" in res ? res.Err : "Unknown error");
       }
@@ -79,6 +97,7 @@ const AICreditsComponent = () => {
 
   return (
     <Box
+      ref={containerRef}
       className="credits-container"
       sx={{
         position: "relative",
@@ -146,9 +165,8 @@ const AICreditsComponent = () => {
           elevation={8}
           sx={{
             position: "absolute",
-            top: "100%",
-            left: 0,
-            mt: 1,
+            ...popoverPosition,
+            mb: 1,
             p: 2,
             minWidth: 200,
             zIndex: 1000,

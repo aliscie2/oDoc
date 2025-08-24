@@ -1,8 +1,8 @@
-import { useCallback, useState, useRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useSnackbar } from "notistack";
-import { useBackendContext } from "@/contexts/BackendContext";
 import { Job } from "$/declarations/backend/backend.did";
+import { useBackendContext } from "@/contexts/BackendContext";
+import { useSnackbar } from "notistack";
+import { useCallback, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 interface UseJobsSaveReturn {
   isChanged: boolean;
@@ -17,9 +17,8 @@ export const useJobsSave = (): UseJobsSaveReturn => {
   const { enqueueSnackbar } = useSnackbar();
   const { backendActor } = useBackendContext();
   const saveInProgress = useRef(false);
-  const [aiCreditsChangd, setChangedAICredits] = useState(false);
   const { jobChanges, isChanged } = useSelector((state: any) => state.jobState);
-  const { credits, initialCredits, aiAgent } = useSelector(
+  const { credits } = useSelector(
     (state: any) => state.AIState,
   );
 
@@ -40,7 +39,7 @@ export const useJobsSave = (): UseJobsSaveReturn => {
     try {
       console.log({ jobChanges });
       const res = await backendActor.update_job(jobChanges, [
-        aiAgent.remainingCredits(),
+        credits,
       ]);
 
       if (res?.Err) {
@@ -68,20 +67,16 @@ export const useJobsSave = (): UseJobsSaveReturn => {
   const reset = async () => {
     try {
       // Reset job changes
-      const remainingCredits = aiAgent?.remainingCredits();
-
-      if (remainingCredits < initialCredits) {
-        const res = await backendActor.update_job(
+      const updateJobRes = await backendActor.update_job(
           [],
-          [aiAgent.remainingCredits()],
+          [],
         );
 
-        if (res?.Err) {
-          enqueueSnackbar(res.Err, { variant: "error" });
-          throw new Error(res.Err);
-        }
-        dispatch({ type: "RESET_AI_CREDITS", credits: remainingCredits });
+      if (updateJobRes?.Err) {
+        enqueueSnackbar(updateJobRes.Err, { variant: "error" });
+        throw new Error(updateJobRes.Err);
       }
+      dispatch({ type: "RESET_AI_CREDITS", credits });
       dispatch({ type: "CLEAR_JOB_CHANGES" });
 
       const res: { jobs: Job[]; matching_jobs: Job[] } =
