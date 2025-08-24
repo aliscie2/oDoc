@@ -83,7 +83,7 @@ yarn start
 - **Candid** - Type-safe service interfaces
 
 ### AI Integration
-- **Multiple Providers** - Anthropic, Google Gemini, DeepSeek
+- **Multiple Providers** - Anthropic Claude Haiku, DeepSeek
 - **Natural Language Processing** - Voice commands and parsing
 - **Machine Learning** - Smart matching and behavioral analysis
 

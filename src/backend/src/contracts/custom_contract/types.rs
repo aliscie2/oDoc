@@ -566,7 +566,11 @@ impl CustomContract {
                 self.payments.push(released_payment.clone());
 
                 // Notify receiver about payment release
-                self.send_payment_notification(&released_payment, PaymentAction::Released)?;
+                self.send_payment_notification_with_old(
+                    &released_payment,
+                    PaymentAction::Released,
+                    Some(old_payment.clone()),
+                )?;
             }
 
             PaymentStatus::Confirmed => {
@@ -577,7 +581,11 @@ impl CustomContract {
 
                 self.update_promise_in_vector(new_payment.clone());
                 // Notify sender about confirmation
-                self.send_payment_notification(new_payment, PaymentAction::Accepted)?;
+                self.send_payment_notification_with_old(
+                    new_payment,
+                    PaymentAction::Accepted,
+                    Some(old_payment.clone()),
+                )?;
             }
 
             PaymentStatus::ApproveHighPromise => {
@@ -588,7 +596,11 @@ impl CustomContract {
 
                 self.update_promise_in_vector(new_payment.clone());
                 // Notify sender about approval
-                self.send_payment_notification(new_payment, PaymentAction::Accepted)?;
+                self.send_payment_notification_with_old(
+                    new_payment,
+                    PaymentAction::Accepted,
+                    Some(old_payment.clone()),
+                )?;
             }
 
             PaymentStatus::Objected(_) => {
@@ -599,7 +611,11 @@ impl CustomContract {
 
                 self.update_promise_in_vector(new_payment.clone());
                 // Notify sender about objection
-                self.send_payment_notification(new_payment, PaymentAction::Objected)?;
+                self.send_payment_notification_with_old(
+                    new_payment,
+                    PaymentAction::Objected,
+                    Some(old_payment.clone()),
+                )?;
             }
 
             PaymentStatus::RequestCancellation => {
@@ -620,9 +636,10 @@ impl CustomContract {
 
                 self.update_promise_in_vector(new_payment.clone());
                 // Notify receiver about cancellation request
-                self.send_payment_notification(
+                self.send_payment_notification_with_old(
                     new_payment,
                     PaymentAction::RequestCancellation(new_payment.clone()),
+                    Some(old_payment.clone()),
                 )?;
             }
 
@@ -638,7 +655,11 @@ impl CustomContract {
 
                 self.update_promise_in_vector(new_payment.clone());
                 // Notify sender about confirmed cancellation
-                self.send_payment_notification(new_payment, PaymentAction::Cancelled)?;
+                self.send_payment_notification_with_old(
+                    new_payment,
+                    PaymentAction::Cancelled,
+                    Some(old_payment.clone()),
+                )?;
             }
 
             PaymentStatus::HighPromise => {
@@ -649,14 +670,22 @@ impl CustomContract {
 
                 self.update_promise_in_vector(new_payment.clone());
                 // Notify receiver about high promise
-                self.send_payment_notification(new_payment, PaymentAction::Promise)?;
+                self.send_payment_notification_with_old(
+                    new_payment,
+                    PaymentAction::Promise,
+                    Some(old_payment.clone()),
+                )?;
             }
 
             PaymentStatus::None => {
-                // General status update
+                // General status update - only notify if there are actual changes
                 self.update_promise_in_vector(new_payment.clone());
-                // Notify the other party about update
-                self.send_payment_notification(new_payment, PaymentAction::Update)?;
+                // Notify the other party about update with old payment for comparison
+                self.send_payment_notification_with_old(
+                    new_payment,
+                    PaymentAction::Update,
+                    Some(old_payment.clone()),
+                )?;
             }
         }
 
@@ -729,29 +758,30 @@ impl CustomContract {
         payment: &CPayment,
         action: PaymentAction,
     ) -> Result<(), String> {
-        let caller_principal = caller();
+        use crate::contracts::custom_contract::utils::notify_about_promise;
 
-        // Determine notification recipient based on action and caller
-        let recipient = if caller_principal == payment.sender {
-            payment.receiver
-        } else {
-            payment.sender
-        };
-
-        // Create notification with unique ID
-        let notification_id = format!("{}_{}", payment.id, ic_cdk::api::time());
-
-        let notification = Notification::new(
-            notification_id,
-            recipient,
-            NoteContent::CPaymentContract(payment.clone(), action),
-        );
-
-        // Save notification (this also sends via websocket)
-        notification.save();
+        // Use the improved notification system that handles is_seen properly
+        notify_about_promise(payment.clone(), action);
 
         // Record action in user history
-        UserHistory::get(caller_principal).payment_action(payment.clone());
+        UserHistory::get(caller()).payment_action(payment.clone());
+
+        Ok(())
+    }
+
+    fn send_payment_notification_with_old(
+        &self,
+        payment: &CPayment,
+        action: PaymentAction,
+        old_payment: Option<CPayment>,
+    ) -> Result<(), String> {
+        use crate::contracts::custom_contract::utils::notify_about_promise_with_old_payment;
+
+        // Use the improved notification system that compares with old payment
+        notify_about_promise_with_old_payment(payment.clone(), action, old_payment);
+
+        // Record action in user history
+        UserHistory::get(caller()).payment_action(payment.clone());
 
         Ok(())
     }

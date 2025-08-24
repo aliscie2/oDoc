@@ -47,10 +47,6 @@ fn update_job(updates: Vec<JobUpdate>, ai_credits: Option<f32>) -> Result<(), St
         return Err("Permission denied (anonymous)".to_string());
     }
 
-    if let Some(credits) = ai_credits {
-        UserState::set_credits(credits);
-    }
-
     let caller_id = ic_cdk::caller().to_string();
     let current_time = ic_cdk::api::time() as f64;
 

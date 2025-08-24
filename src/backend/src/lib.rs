@@ -43,6 +43,7 @@ mod updates;
 mod wallet;
 // mod timer;
 mod affiliate;
+mod ai_agent;
 mod calendar;
 mod chat;
 mod discover;
@@ -56,6 +57,12 @@ use calendar::*;
 
 use crate::ckusdc_index_types::*;
 use affiliate::*;
+use ai_agent::*;
+use ic_cdk::api::management_canister::http_request::{
+    http_request, CanisterHttpRequestArgument, HttpHeader, HttpMethod, HttpResponse, TransformArgs,
+    TransformContext,
+};
+
 use workspaces::*;
 
 type Memory = VirtualMemory<DefaultMemoryImpl>;

@@ -349,7 +349,6 @@ dependencies = [
  "ic-websocket-cdk",
  "icrc-ledger-types",
  "num",
- "reqwest",
  "serde",
  "serde_bytes",
  "serde_cbor",
