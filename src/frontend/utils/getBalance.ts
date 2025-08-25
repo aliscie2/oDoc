@@ -1,35 +1,22 @@
-/**
- * Utility function to get ckUSDC balance for a user
- */
+import { Principal } from "@dfinity/principal";
 
-interface BalanceRequest {
-  owner: {
-    owner: string;
-    subaccount: [];
-  };
-}
-
-interface CkUSDCActor {
-  icrc1_balance_of: (request: BalanceRequest) => Promise<bigint>;
-}
-
-export default async function getckUsdcBalance(
-  ckUSDCActor: CkUSDCActor,
-  userId: string,
-): Promise<string> {
+const getckUsdcBalance = async (ckUSDCActor, userPrincipal) => {
   try {
-    if (!ckUSDCActor || !userId) {
-      return "0";
-    }
-
-    // Call the balance method on the ckUSDC actor
-    const balance = await ckUSDCActor.icrc1_balance_of({
-      owner: { owner: userId, subaccount: [] },
+    const balanceResult = await ckUSDCActor?.icrc1_balance_of({
+      owner: Principal.fromText(userPrincipal),
+      subaccount: [],
     });
 
-    return balance.toString();
+    // console.log("User token balance:", {
+    //   rawBalance: balanceResult.toString(),
+    //   balance: Number(balanceResult) / 1000000,
+    // });
+
+    return balanceResult;
   } catch (error) {
-    console.error("Failed to get ckUSDC balance:", error);
-    return "0";
+    console.error("Error getting user balance:", error);
+    throw error;
   }
-}
+};
+
+export default getckUsdcBalance;

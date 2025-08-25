@@ -22,6 +22,7 @@ import { formatRelativeTime } from "../../utils/time";
 import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import { CPayment } from "$/declarations/backend/backend.did";
+import { createShortContractUrl } from "../../utils/urlEncoder";
 
 const StyledDetailGrid = styled(Grid)(({ theme }) => ({
   marginBottom: theme.spacing(2),
@@ -46,7 +47,9 @@ const PaymentDialog = ({ payment, onClose }: { payment: CPayment }) => {
   const [objectionReason, setObjectionReason] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { backendActor } = useBackendContext();
-  const { profile, all_friends } = useSelector((state) => state.filesState);
+  const { profile, all_friends, contracts } = useSelector(
+    (state) => state.filesState,
+  );
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
 
@@ -138,7 +141,24 @@ const PaymentDialog = ({ payment, onClose }: { payment: CPayment }) => {
 
   const handleViewContract = () => {
     if (payment.contract_id) {
-      navigate(`/contract?id=${payment.contract_id}`);
+      // Try to find the contract in the store to get the owner
+      const contract = contracts[payment.contract_id];
+      if (contract && contract.creator) {
+        // Use encoded URL with owner information
+        const shortUrl = createShortContractUrl({
+          id: payment.contract_id,
+          owner: contract.creator.toString(),
+        });
+        navigate(shortUrl.replace(window.location.origin, ""));
+      } else {
+        // Fallback to old format if contract not found in store
+        // Use sender as a fallback owner (might need adjustment based on business logic)
+        const shortUrl = createShortContractUrl({
+          id: payment.contract_id,
+          owner: payment.sender.toString(),
+        });
+        navigate(shortUrl.replace(window.location.origin, ""));
+      }
       onClose();
     }
   };

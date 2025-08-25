@@ -32,6 +32,25 @@ export const EventTimezone = (
   },
   toUtc = false,
 ) => {
+  // If we receive string times instead of numeric timestamps,
+  // it means ActionProcessor wasn't called or failed
+  if (
+    typeof event.start_time === "string" ||
+    typeof event.end_time === "string"
+  ) {
+    console.error(
+      "EventTimezone received string times - ActionProcessor may have failed:",
+      {
+        start_time: event.start_time,
+        end_time: event.end_time,
+        event,
+      },
+    );
+    throw new Error(
+      `EventTimezone received invalid time format. Expected numeric timestamps but got strings: start_time=${event.start_time}, end_time=${event.end_time}`,
+    );
+  }
+
   const converter = toUtc ? localToUtc : utcToLocal;
 
   return {

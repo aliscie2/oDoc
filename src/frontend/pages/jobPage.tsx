@@ -24,108 +24,157 @@ const generateThumbnailDataUrl = async (
     canvas.width = 1200;
     canvas.height = 630;
 
-    const baseImg = new Image();
-    baseImg.crossOrigin = "anonymous";
-    baseImg.onload = () => {
-      // Calculate scaling to cover entire canvas while maintaining aspect ratio
-      const imgRatio = baseImg.width / baseImg.height;
-      const canvasRatio = canvas.width / canvas.height;
-      let drawWidth, drawHeight, drawX, drawY;
+    // Create blank white background
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      if (imgRatio > canvasRatio) {
-        drawHeight = canvas.height;
-        drawWidth = drawHeight * imgRatio;
-        drawX = (canvas.width - drawWidth) / 2;
-        drawY = 0;
-      } else {
-        drawWidth = canvas.width;
-        drawHeight = drawWidth / imgRatio;
-        drawX = 0;
-        drawY = (canvas.height - drawHeight) / 2;
-      }
+    // Add subtle border
+    ctx.strokeStyle = "#e0e0e0";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(0, 0, canvas.width, canvas.height);
 
-      ctx.drawImage(baseImg, drawX, drawY, drawWidth, drawHeight);
+    // Avatar section (top left)
+    const avatarX = 80;
+    const avatarY = 80;
+    const avatarRadius = 60;
 
-      // Title
-      ctx.fillStyle = "#000000";
-      ctx.font = "bold 48px Arial";
+    if (userPhoto?.length) {
+      const avatarImg = new Image();
+      avatarImg.crossOrigin = "anonymous";
+      avatarImg.onload = () => {
+        // Draw avatar with circular clip
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(
+          avatarX + avatarRadius,
+          avatarY + avatarRadius,
+          avatarRadius,
+          0,
+          2 * Math.PI,
+        );
+        ctx.clip();
+        ctx.drawImage(
+          avatarImg,
+          avatarX,
+          avatarY,
+          avatarRadius * 2,
+          avatarRadius * 2,
+        );
+        ctx.restore();
+
+        // Avatar border
+        ctx.strokeStyle = "#ddd";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(
+          avatarX + avatarRadius,
+          avatarY + avatarRadius,
+          avatarRadius,
+          0,
+          2 * Math.PI,
+        );
+        ctx.stroke();
+
+        finishThumbnail();
+      };
+      avatarImg.onerror = () => {
+        drawDefaultAvatar();
+        finishThumbnail();
+      };
+      avatarImg.src = convertToBlobLink(userPhoto);
+    } else {
+      drawDefaultAvatar();
+      finishThumbnail();
+    }
+
+    function drawDefaultAvatar() {
+      // Default avatar circle
+      ctx.fillStyle = "#f5f5f5";
+      ctx.beginPath();
+      ctx.arc(
+        avatarX + avatarRadius,
+        avatarY + avatarRadius,
+        avatarRadius,
+        0,
+        2 * Math.PI,
+      );
+      ctx.fill();
+
+      ctx.strokeStyle = "#ddd";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // Default avatar icon (person silhouette)
+      ctx.fillStyle = "#999";
+      ctx.font = "48px Arial";
       ctx.textAlign = "center";
+      ctx.fillText("👤", avatarX + avatarRadius, avatarY + avatarRadius + 15);
+    }
 
+    function finishThumbnail() {
+      // Title (next to avatar)
+      ctx.fillStyle = "#1a1a1a";
+      ctx.font = "bold 42px Arial";
+      ctx.textAlign = "left";
+
+      const titleX = avatarX + avatarRadius * 2 + 40;
+      const titleY = avatarY + 45;
+
+      // Wrap title text
       const titleWords = title.split(" ");
-      let line = "",
-        y = 100;
+      let line = "";
+      let y = titleY;
+      const maxWidth = 800;
 
       titleWords.forEach((word, i) => {
         const testLine = line + word + " ";
-        if (ctx.measureText(testLine).width > 1100 && i > 0) {
-          ctx.fillText(line.trim(), 600, y);
+        if (ctx.measureText(testLine).width > maxWidth && i > 0) {
+          ctx.fillText(line.trim(), titleX, y);
           line = word + " ";
-          y += 60;
-        } else line = testLine;
+          y += 50;
+        } else {
+          line = testLine;
+        }
       });
-      ctx.fillText(line.trim(), 600, y);
+      ctx.fillText(line.trim(), titleX, y);
 
-      // Description
-      ctx.fillStyle = "#000000";
+      // Description (below title)
+      ctx.fillStyle = "#555";
       ctx.font = "28px Arial";
 
+      const descY = y + 60;
       const descText =
-        description.split(" ").slice(0, 20).join(" ") +
-        (description.split(" ").length > 20 ? "..." : "");
+        description.split(" ").slice(0, 25).join(" ") +
+        (description.split(" ").length > 25 ? "..." : "");
+
       const descLines = [];
       let currentLine = "";
+      const descMaxWidth = 1000;
 
       descText.split(" ").forEach((word) => {
         const testLine = currentLine + word + " ";
-        if (ctx.measureText(testLine).width > 1100 && currentLine) {
+        if (ctx.measureText(testLine).width > descMaxWidth && currentLine) {
           descLines.push(currentLine.trim());
           currentLine = word + " ";
-        } else currentLine = testLine;
+        } else {
+          currentLine = testLine;
+        }
       });
       if (currentLine.trim()) descLines.push(currentLine.trim());
 
-      descLines.slice(0, 3).forEach((line, i) => {
-        ctx.fillText(line, 600, 500 + i * 35);
+      // Draw description lines (max 4 lines)
+      descLines.slice(0, 4).forEach((line, i) => {
+        ctx.fillText(line, titleX, descY + i * 35);
       });
 
-      // User avatar
-      if (userPhoto?.length) {
-        const avatarImg = new Image();
-        avatarImg.crossOrigin = "anonymous";
-        avatarImg.onload = () => {
-          ctx.save();
-          ctx.beginPath();
-          ctx.arc(1050, 315, 60, 0, 2 * Math.PI);
-          ctx.clip();
-          ctx.drawImage(avatarImg, 990, 255, 120, 120);
-          ctx.restore();
+      // ICPJOBS.COM branding (bottom right)
+      ctx.fillStyle = "#0066cc";
+      ctx.font = "bold 24px Arial";
+      ctx.textAlign = "right";
+      ctx.fillText("ICPJOBS.COM", canvas.width - 40, canvas.height - 40);
 
-          ctx.strokeStyle = "#ffffff";
-          ctx.lineWidth = 4;
-          ctx.beginPath();
-          ctx.arc(1050, 315, 60, 0, 2 * Math.PI);
-          ctx.stroke();
-
-          resolve(canvas.toDataURL("image/png"));
-        };
-        avatarImg.onerror = () => resolve(canvas.toDataURL("image/png"));
-        avatarImg.src = convertToBlobLink(userPhoto);
-      } else resolve(canvas.toDataURL("image/png"));
-    };
-
-    baseImg.onerror = () => {
-      ctx.fillStyle = "#1a1a2e";
-      ctx.fillRect(0, 0, 1200, 630);
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 48px Arial";
-      ctx.textAlign = "center";
-      ctx.fillText(title, 600, 200);
-      ctx.font = "28px Arial";
-      ctx.fillText(description.slice(0, 80) + "...", 600, 400);
       resolve(canvas.toDataURL("image/png"));
-    };
-
-    baseImg.src = `${window.location.origin}/job-profile-thumnail.png`;
+    }
   });
 };
 

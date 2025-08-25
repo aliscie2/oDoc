@@ -320,18 +320,23 @@ export function jobReducer(
 
       // Check if matches are actually different
       const existingMatches = currentJob.matches || [];
-      const hasMatchChanges = action.matches.length !== existingMatches.length ||
-        action.matches.some(newMatch => 
-          !existingMatches.some(existing => 
-            existing.job_id === newMatch.job_id && 
-            Math.abs(existing.score - newMatch.score) < 0.001 // Use small epsilon for float comparison
-          )
+      const hasMatchChanges =
+        action.matches.length !== existingMatches.length ||
+        action.matches.some(
+          (newMatch) =>
+            !existingMatches.some(
+              (existing) =>
+                existing.job_id === newMatch.job_id &&
+                Math.abs(existing.score - newMatch.score) < 0.001, // Use small epsilon for float comparison
+            ),
         );
 
       // Check if matching jobs are actually different
-      const hasMatchingJobChanges = action.matchingJobs.length !== state.matchingJobs.length ||
-        action.matchingJobs.some(newJob => 
-          !state.matchingJobs.some(existing => existing.id === newJob.id)
+      const hasMatchingJobChanges =
+        action.matchingJobs.length !== state.matchingJobs.length ||
+        action.matchingJobs.some(
+          (newJob) =>
+            !state.matchingJobs.some((existing) => existing.id === newJob.id),
         );
 
       // If nothing changed, return the same state reference
@@ -339,24 +344,30 @@ export function jobReducer(
         return state;
       }
 
-      const newMatches2 = hasMatchChanges ? 
-        existingMatches.filter(
-          (match) => !action.matches.some((m) => m.job_id === match.job_id),
-        ).concat(action.matches) : existingMatches;
+      const newMatches2 = hasMatchChanges
+        ? existingMatches
+            .filter(
+              (match) => !action.matches.some((m) => m.job_id === match.job_id),
+            )
+            .concat(action.matches)
+        : existingMatches;
 
-      const newMatchingJobs = hasMatchingJobChanges ?
-        state.matchingJobs.filter(
-          (j) => !action.matchingJobs.some((m) => m.id === j.id),
-        ).concat(action.matchingJobs) : state.matchingJobs;
+      const newMatchingJobs = hasMatchingJobChanges
+        ? state.matchingJobs
+            .filter((j) => !action.matchingJobs.some((m) => m.id === j.id))
+            .concat(action.matchingJobs)
+        : state.matchingJobs;
 
       return {
         ...state,
-        jobs: hasMatchChanges ? state.jobs.map((j) =>
-          j.id === state.currentJobId ? { ...j, matches: newMatches2 } : j,
-        ) : state.jobs,
+        jobs: hasMatchChanges
+          ? state.jobs.map((j) =>
+              j.id === state.currentJobId ? { ...j, matches: newMatches2 } : j,
+            )
+          : state.jobs,
         matchingJobs: newMatchingJobs,
-        jobChanges: hasMatchChanges ? (
-          state.jobChanges.some((j) => j.id === state.currentJobId)
+        jobChanges: hasMatchChanges
+          ? state.jobChanges.some((j) => j.id === state.currentJobId)
             ? state.jobChanges.map((j) =>
                 j.id === state.currentJobId
                   ? { ...j, matches: [newMatches2] }
@@ -373,7 +384,7 @@ export function jobReducer(
                   required_match_score: [],
                 },
               ]
-        ) : state.jobChanges,
+          : state.jobChanges,
         isChanged: hasMatchChanges ? true : state.isChanged,
       };
 

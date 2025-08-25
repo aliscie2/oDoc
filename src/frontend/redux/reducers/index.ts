@@ -22,10 +22,10 @@ function setupStore(preloadedState?: Partial<RootState>) {
   return configureStore({
     reducer: allStoreReducers,
     preloadedState,
-    // middleware: (getDefaultMiddleware) =>
-    //   getDefaultMiddleware({
-    //     serializableCheck: false,
-    //   }),
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware({
+        serializableCheck: false,
+      }),
   });
 }
 const store = setupStore();

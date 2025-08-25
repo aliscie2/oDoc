@@ -1,35 +1,483 @@
+import React, { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import Button from "@mui/material/Button";
-import CustomContractComponent from "../../components/ContractTable";
-import { custom_contract } from "../../DataProcessing/dataSamples";
-import { CustomContract } from "../../../declarations/backend/backend.did";
-import Box from "@mui/material/Box";
-import Paper from "@mui/material/Paper";
-import Divider from "@mui/material/Divider";
+import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
-import { Typography } from "@mui/material";
-import React from "react";
+import {
+  Badge,
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  CircularProgress,
+  Fade,
+  Grid2 as Grid,
+  Stack,
+  Typography,
+  useTheme,
+} from "@mui/material";
+import {
+  Add as AddIcon,
+  CheckCircle as CheckCircleIcon,
+  Handshake as HandshakeIcon,
+} from "@mui/icons-material";
 import { Helmet } from "react-helmet-async";
 
-function ContractsHistory() {
-  const dispatch = useDispatch();
-  const { contracts, profile, all_friends } = useSelector(
-    (state: any) => state.filesState,
+import { RootState } from "../../redux/reducers";
+import { useBackendContext } from "../../contexts/BackendContext";
+import { custom_contract } from "../../DataProcessing/dataSamples";
+import {
+  CustomContract,
+  User,
+  CPayment,
+  Notification,
+} from "../../../declarations/backend/backend.did";
+import { useContractNotifications } from "./hooks/useContractNotifications";
+import { countUnseenNotificationsForContract } from "../../utils/notificationUtils";
+import { createShortContractUrl } from "../../utils/urlEncoder";
+import { processContractsFromNotifications } from "../../utils/contractNotificationProcessor";
+
+// Personal Summary Component (for contracts shared with user)
+interface PersonalSummaryProps {
+  contract: CustomContract;
+  profile: User;
+}
+
+const PersonalSummary: React.FC<PersonalSummaryProps> = ({
+  contract,
+  profile,
+}) => {
+  const theme = useTheme();
+
+  const promisesForYou =
+    contract.promises?.filter(
+      (promise: CPayment) => promise.receiver.toString() === profile.id,
+    ) || [];
+
+  const paymentsForYou =
+    contract.payments?.filter(
+      (payment: CPayment) => payment.receiver.toString() === profile.id,
+    ) || [];
+
+  const promisesAmount = promisesForYou.reduce(
+    (sum, promise) => sum + promise.amount,
+    0,
+  );
+  const paymentsAmount = paymentsForYou.reduce(
+    (sum, payment) => sum + payment.amount,
+    0,
   );
 
+  if (promisesForYou.length === 0 && paymentsForYou.length === 0) return null;
+
+  return (
+    <Box
+      sx={{
+        mb: 2,
+        p: 1.5,
+        background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+        backdropFilter: "blur(10px)",
+        WebkitBackdropFilter: "blur(10px)",
+        borderRadius: 2,
+        border: "1px solid rgba(255, 255, 255, 0.2)",
+        color: theme.palette.primary.contrastText,
+      }}
+    >
+      <Typography
+        variant="caption"
+        sx={{ fontWeight: 600, mb: 1, display: "block", opacity: 0.9 }}
+      >
+        Personal Summary
+      </Typography>
+
+      <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+        {promisesForYou.length > 0 && (
+          <Chip
+            icon={<HandshakeIcon sx={{ fontSize: 14 }} />}
+            label={`${promisesForYou.length} promises • $${promisesAmount}`}
+            size="small"
+            sx={{
+              background: "rgba(255, 255, 255, 0.1)",
+              backdropFilter: "blur(10px)",
+              WebkitBackdropFilter: "blur(10px)",
+              border: "1px solid rgba(255, 255, 255, 0.2)",
+              color: "white",
+              "& .MuiChip-icon": { color: "white" },
+            }}
+          />
+        )}
+        {paymentsForYou.length > 0 && (
+          <Chip
+            icon={<CheckCircleIcon sx={{ fontSize: 14 }} />}
+            label={`${paymentsForYou.length} received • $${paymentsAmount}`}
+            size="small"
+            sx={{
+              background: "rgba(255, 255, 255, 0.1)",
+              backdropFilter: "blur(10px)",
+              WebkitBackdropFilter: "blur(10px)",
+              border: "1px solid rgba(255, 255, 255, 0.2)",
+              color: "white",
+              "& .MuiChip-icon": { color: "white" },
+            }}
+          />
+        )}
+      </Stack>
+    </Box>
+  );
+};
+
+// Contract Card Component
+interface ContractCardProps {
+  contract: CustomContract & { _unseenCount?: number; _source?: string };
+  profile: User;
+  allFriends: any[];
+  notifications: Notification[];
+}
+
+const ContractCard: React.FC<ContractCardProps> = ({
+  contract: initialContract,
+  profile,
+  allFriends,
+  notifications,
+}) => {
+  console.log(`🎴 ContractCard rendering for ${initialContract.id}:`, {
+    contractId: initialContract.id,
+    source: initialContract._source,
+    unseenCount: initialContract._unseenCount,
+    creator: initialContract.creator,
+    profileId: profile?.id,
+  });
+
+  const [contract, setContract] = React.useState<CustomContract | null>(
+    initialContract,
+  );
+  const [isExpanded, setIsExpanded] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
+  const navigate = useNavigate();
+  const { backendActor } = useBackendContext();
+  const dispatch = useDispatch();
+  const theme = useTheme();
+
+  // Load contract details if not owned by user
+  useEffect(() => {
+    const loadContract = async () => {
+      if (profile?.id !== contract?.creator && backendActor) {
+        setLoading(true);
+        try {
+          const result = await backendActor.get_contract(
+            initialContract.creator,
+            initialContract.id,
+          );
+          console.log({ result });
+          if ("Ok" in result && "CustomContract" in result.Ok) {
+            const loadedContract = result.Ok.CustomContract;
+            setContract(loadedContract);
+            dispatch({ type: "ADD_CONTRACT", contract: loadedContract });
+          }
+        } catch (error) {
+          console.error("Error loading contract:", error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadContract();
+  }, [
+    initialContract.creator,
+    initialContract.id,
+    backendActor,
+    dispatch,
+    profile?.id,
+    contract?.creator,
+  ]);
+
+  if (!contract) return null;
+
+  const promisesCount = contract.promises?.length || 0;
+  const promisesAmount =
+    contract.promises?.reduce(
+      (sum: number, promise: CPayment) => sum + promise.amount,
+      0,
+    ) || 0;
+  const paymentsCount = contract.payments?.length || 0;
+  const paymentsAmount =
+    contract.payments?.reduce(
+      (sum: number, payment: CPayment) => sum + payment.amount,
+      0,
+    ) || 0;
+
+  // Use processed unseen count or fallback to calculation
+  const processedCount = initialContract._unseenCount;
+  let unseenCount = 0;
+
+  if (processedCount !== undefined) {
+    console.log(
+      `🔢 Using processed unseen count for ${initialContract.id}: ${processedCount}`,
+    );
+    unseenCount = processedCount;
+  } else {
+    // Fallback to old method
+    if (contract?.promises && notifications) {
+      unseenCount = countUnseenNotificationsForContract(
+        contract.promises,
+        notifications,
+      );
+      console.log(
+        `🔢 Using fallback unseen count for ${initialContract.id}: ${unseenCount}`,
+      );
+    }
+  }
+
+  const handleClick = () => {
+    navigate(
+      createShortContractUrl({
+        id: contract.id,
+        owner: contract.creator?.toString() || "",
+      }).replace(window.location.origin, ""),
+    );
+  };
+
+  return (
+    <Fade in timeout={300}>
+      <Box sx={{ position: "relative" }}>
+        {/* Notification Badge */}
+        {unseenCount > 0 && (
+          <Box
+            sx={{
+              position: "absolute",
+              top: -8,
+              right: -8,
+              zIndex: 10,
+              background: "linear-gradient(135deg, #ff4444, #cc0000)",
+              color: "white",
+              borderRadius: "50%",
+              width: 24,
+              height: 24,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "0.75rem",
+              fontWeight: 700,
+              boxShadow: "0 2px 8px rgba(255, 68, 68, 0.4)",
+              border: "2px solid white",
+            }}
+          >
+            {unseenCount > 9 ? "9+" : unseenCount}
+          </Box>
+        )}
+
+        <Card
+          sx={{
+            cursor: "pointer",
+            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            transform: isExpanded ? "translateY(-4px)" : "translateY(0)",
+            position: "relative",
+            overflow: "hidden",
+            width: "100%",
+            background: "rgba(255, 255, 255, 0.1)",
+            backdropFilter: "blur(10px)",
+            WebkitBackdropFilter: "blur(10px)",
+            border:
+              unseenCount > 0
+                ? "2px solid #ff4444"
+                : "1px solid rgba(255, 255, 255, 0.2)",
+            borderRadius: 2,
+            boxShadow:
+              unseenCount > 0 ? "0 0 20px rgba(255, 68, 68, 0.3)" : "none",
+            "&:hover": {
+              transform: "translateY(-6px)",
+              boxShadow:
+                unseenCount > 0
+                  ? "0 8px 25px rgba(255, 68, 68, 0.4)"
+                  : "0 8px 25px rgba(0, 0, 0, 0.15)",
+            },
+          }}
+          onClick={handleClick}
+          onMouseEnter={() => setIsExpanded(true)}
+          onMouseLeave={() => setIsExpanded(false)}
+        >
+          <CardContent sx={{ p: 3 }}>
+            {/* Personal Summary for shared contracts */}
+            {profile?.id !== contract.creator && (
+              <PersonalSummary contract={contract} profile={profile} />
+            )}
+
+            {/* Contract Header */}
+            <Box sx={{ mb: 3 }}>
+              <Typography
+                variant="h6"
+                component="div"
+                sx={{
+                  fontWeight: 600,
+                  color: "text.primary",
+                  mb: 1,
+                }}
+              >
+                {contract.name || `Contract ${contract.id.slice(0, 8)}...`}
+              </Typography>
+
+              <Chip
+                label={
+                  profile?.id === contract.creator
+                    ? "Created by you"
+                    : allFriends.find((f) => f.id === initialContract.creator)
+                        ?.name || "Shared with you"
+                }
+                size="small"
+                variant="filled"
+                sx={{
+                  background:
+                    profile?.id === contract.creator
+                      ? `linear-gradient(135deg, ${theme.palette.primary.light}, ${theme.palette.primary.main})`
+                      : `linear-gradient(135deg, ${theme.palette.info.light}, ${theme.palette.info.main})`,
+                  color: "white",
+                  fontWeight: 500,
+                  fontSize: "0.7rem",
+                }}
+              />
+            </Box>
+
+            {/* Contract Stats */}
+            <Stack spacing={2}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  p: 1.5,
+                  background: "rgba(255, 255, 255, 0.1)",
+                  backdropFilter: "blur(10px)",
+                  WebkitBackdropFilter: "blur(10px)",
+                  borderRadius: 2,
+                  border: "1px solid rgba(255, 255, 255, 0.2)",
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <HandshakeIcon sx={{ fontSize: 18, color: "primary.main" }} />
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    fontWeight={500}
+                  >
+                    Promises
+                  </Typography>
+                </Box>
+                <Box sx={{ textAlign: "right" }}>
+                  <Typography
+                    variant="body2"
+                    fontWeight={600}
+                    color="text.primary"
+                  >
+                    {promisesCount}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    ${promisesAmount}
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  p: 1.5,
+                  background: "rgba(255, 255, 255, 0.1)",
+                  backdropFilter: "blur(10px)",
+                  WebkitBackdropFilter: "blur(10px)",
+                  borderRadius: 2,
+                  border: "1px solid rgba(255, 255, 255, 0.2)",
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <CheckCircleIcon
+                    sx={{ fontSize: 18, color: "success.main" }}
+                  />
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    fontWeight={500}
+                  >
+                    Payments
+                  </Typography>
+                </Box>
+                <Box sx={{ textAlign: "right" }}>
+                  <Typography
+                    variant="body2"
+                    fontWeight={600}
+                    color="text.primary"
+                  >
+                    {paymentsCount}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    ${paymentsAmount}
+                  </Typography>
+                </Box>
+              </Box>
+            </Stack>
+
+            {/* Loading Overlay */}
+            {loading && (
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: "rgba(255, 255, 255, 0.1)",
+                  backdropFilter: "blur(20px)",
+                  WebkitBackdropFilter: "blur(20px)",
+                }}
+              >
+                <CircularProgress size={24} sx={{ color: "primary.main" }} />
+              </Box>
+            )}
+          </CardContent>
+        </Card>
+      </Box>
+    </Fade>
+  );
+};
+
+// Main ContractsHistory Component
+const ContractsHistory: React.FC = () => {
+  const dispatch = useDispatch();
+  const { contracts, profile, all_friends } = useSelector(
+    (state: RootState) => state.filesState,
+  );
+  const { notifications } = useSelector(
+    (state: RootState) => state.notificationState,
+  );
+  console.log("🔔 Raw notifications:", { notifications });
+  const { contractNotificationMap } = useContractNotifications();
+
+  console.log(
+    "ContractsHistory rendered with",
+    Object.keys(contracts).length,
+    "contracts",
+  );
+
+  // Process contracts from notifications with debugging
+  console.log("🚀 Processing contracts from notifications...");
+  const { allContracts: processedContracts, debug: processingDebug } =
+    processContractsFromNotifications(notifications, contracts);
+  console.log("📊 Contract processing debug info:", processingDebug);
+
   // Mark that user has visited contracts page
-  React.useEffect(() => {
+  useEffect(() => {
     localStorage.setItem("isVisitedContractsPage", "true");
   }, []);
 
-  const handleClick = () => {
+  const handleCreateContract = () => {
     try {
       if (!profile) {
         throw new Error("Profile is not defined");
       }
-
       const newContract = {
         ...custom_contract,
         id: uuidv4(),
@@ -39,64 +487,150 @@ function ContractsHistory() {
       dispatch({ type: "ADD_CONTRACT", contract: newContract });
     } catch (error) {
       console.error("Error creating new contract:", error);
-      //we can display error for user with snack bar here
     }
   };
+
   if (!profile) {
-    return <div>please login to see this page</div>;
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "50vh",
+          background: "rgba(255, 255, 255, 0.1)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          borderRadius: 3,
+          border: "1px solid rgba(255, 255, 255, 0.2)",
+          m: 2,
+        }}
+      >
+        <Typography variant="h6" color="text.secondary">
+          Please login to see this page
+        </Typography>
+      </Box>
+    );
   }
 
+  // Convert processed contracts to list with unseen counts
+  const contractsList = Array.from(processedContracts.values())
+    .map(({ contract, unseenCount, source }) => ({
+      ...contract,
+      _unseenCount: unseenCount,
+      _source: source,
+    }))
+    .sort((a, b) => b.date_created - a.date_created);
+
+  console.log("📋 Final contracts list:", {
+    total: contractsList.length,
+    owned: contractsList.filter((c) => c._source === "owned").length,
+    fromNotifications: contractsList.filter((c) => c._source === "notification")
+      .length,
+    withUnseenNotifications: contractsList.filter((c) => c._unseenCount > 0)
+      .length,
+  });
+
   return (
-    <Box>
+    <Box sx={{ maxWidth: 1200, mx: "auto", px: { xs: 2, sm: 3 } }}>
       <Helmet>
         <title>Agreements</title>
-        <link rel="icon" type="image/png" href={"/agreement.png"} />
+        <link rel="icon" type="image/png" href="/agreement.png" />
       </Helmet>
 
-      <Button onClick={handleClick} variant="contained" color="primary">
-        Create New Contract
-      </Button>
-      <Divider />
-      <List dense>
-        {/* <ListItem>
-          <NotificationPromises />
-        </ListItem> */}
+      {/* Debug Panel - Temporarily removed to avoid hooks issue */}
 
-        <Typography
-          variant="h6"
+      {/* Header */}
+      <Box sx={{ mb: 4, mt: { xs: 8, sm: 4 }, pt: { xs: 2, sm: 0 } }}>
+        <Box
           sx={{
-            // color: theme.palette.text.primary,
-            fontWeight: "large",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 3,
+            p: 3,
+            background: "rgba(255, 255, 255, 0.1)",
+            backdropFilter: "blur(10px)",
+            WebkitBackdropFilter: "blur(10px)",
+            border: "1px solid rgba(255, 255, 255, 0.2)",
+            borderRadius: 3,
+            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
           }}
         >
-          List of all your contracts.
-        </Typography>
-        {Object.values(contracts).map((contract: CustomContract | any) => {
-          if (contract) {
-            return (
-              <ListItem key={contract.id}>
-                <Paper
-                  elevation={3}
-                  sx={{
-                    width: "100%",
-                    "&:hover": {
-                      boxShadow: 6,
-                    },
-                  }}
-                >
-                  <CustomContractComponent
-                    profile={profile}
-                    all_friends={all_friends}
-                    contractId={contract.id}
-                  />
-                </Paper>
-              </ListItem>
-            );
-          }
-        })}
-      </List>
+          <Box>
+            <Typography
+              variant="h4"
+              component="h1"
+              sx={{ fontWeight: 700, mb: 0.5, color: "text.primary" }}
+            >
+              Agreements
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {contractsList.length} contract
+              {contractsList.length !== 1 ? "s" : ""} total
+            </Typography>
+          </Box>
+
+          <Button
+            onClick={handleCreateContract}
+            variant="contained"
+            startIcon={<AddIcon />}
+            sx={{ fontWeight: 600, px: 3, py: 1.5 }}
+          >
+            New Contract
+          </Button>
+        </Box>
+      </Box>
+
+      {/* Contracts Grid */}
+      {contractsList.length === 0 ? (
+        <Box
+          sx={{
+            textAlign: "center",
+            py: 8,
+            background: "rgba(255, 255, 255, 0.1)",
+            backdropFilter: "blur(10px)",
+            WebkitBackdropFilter: "blur(10px)",
+            borderRadius: 3,
+            border: "2px dashed rgba(255, 255, 255, 0.2)",
+          }}
+        >
+          <HandshakeIcon
+            sx={{ fontSize: 48, color: "text.secondary", mb: 2, opacity: 0.5 }}
+          />
+          <Typography
+            variant="h6"
+            sx={{ mb: 1, fontWeight: 600, color: "text.primary" }}
+          >
+            No contracts yet
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            Create your first contract to get started with agreements
+          </Typography>
+          <Button
+            onClick={handleCreateContract}
+            variant="outlined"
+            startIcon={<AddIcon />}
+          >
+            Create Contract
+          </Button>
+        </Box>
+      ) : (
+        <Grid container spacing={3}>
+          {contractsList.map((contract) => (
+            <Grid key={contract.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
+              <ContractCard
+                contract={contract}
+                profile={profile}
+                allFriends={all_friends}
+                notifications={notifications}
+              />
+            </Grid>
+          ))}
+        </Grid>
+      )}
     </Box>
   );
-}
+};
 
 export default ContractsHistory;

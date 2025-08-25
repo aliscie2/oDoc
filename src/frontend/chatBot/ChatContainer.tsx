@@ -16,8 +16,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import AICreditsComponent from "./AICreditsCompnent";
 import MarkdownMessage from "./markDownMessageRdnder";
-import { undoCalendarAction, undoJobAction } from "./reverseAction";
+import { useUndoRedo } from "./undoRedoSystem";
 import { useChatHandler } from "./useChatHandler";
+
 // ===== TYPE DEFINITIONS =====
 interface ChatMessage {
   type: "user" | "ai";
@@ -29,13 +30,12 @@ interface ChatMessage {
   action_type?: string;
   actions?: unknown[];
   isTyping?: boolean;
+  snapshotId?: string;
 }
 
 interface ReduxState {
   AIState: {
-    aiAgent: {
-      remainingCredits: () => number;
-    };
+    credits: number;
   };
   jobState: {
     jobs: unknown[];
@@ -126,7 +126,7 @@ const useTypingEffect = (
   }, [text, isStreaming]);
 
   const shouldShowCursor = isStreaming || displayText.length < text.length;
-  
+
   return shouldShowCursor
     ? `${displayText}<span style="color: ${primaryColor}; animation: blink 1s infinite;">|</span><style>@keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }</style>`
     : displayText;
@@ -144,7 +144,12 @@ const TypingMarkdownMessage = ({
   onProgress?: () => void;
   isStreaming?: boolean;
 }) => {
-  const textWithCursor = useTypingEffect(text, onComplete, onProgress, isStreaming);
+  const textWithCursor = useTypingEffect(
+    text,
+    onComplete,
+    onProgress,
+    isStreaming,
+  );
   return <MarkdownMessage message={textWithCursor} isUser={false} />;
 };
 
@@ -447,7 +452,9 @@ const AIInput = ({
               setIsFocused(false);
               setIsExpanded(false);
             }}
-            placeholder={isLoading ? "🤔 AI is thinking..." : "Ask AI anything..."}
+            placeholder={
+              isLoading ? "🤔 AI is thinking..." : "Ask AI anything..."
+            }
             sx={{
               "& .MuiOutlinedInput-root": {
                 bgcolor: "transparent",
@@ -500,13 +507,16 @@ const AIInput = ({
 const ChatContainer = () => {
   const dispatch = useDispatch();
   const location = useLocation();
-  const { aiAgent } = useSelector((state: ReduxState) => state.AIState);
+  const { credits } = useSelector((state: ReduxState) => state.AIState);
   const { processMessage, getTriggeredMessages, getMessage } = useChatHandler();
+  const { createSnapshot, undo, redo, getState } = useUndoRedo(dispatch);
 
   // Determine assistant name based on current route
-  const assistantName = location.pathname.includes("/contract")
-    ? "Contract Assistant"
-    : "AI Assistant";
+  const assistantName =
+    location.pathname.includes("/contract") ||
+    location.pathname.startsWith("/c")
+      ? "Contract Assistant"
+      : "AI Assistant";
 
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -623,21 +633,23 @@ const ChatContainer = () => {
           message,
           messageId,
           controller.signal,
-          (chunk: string) => {
-            // Update the AI message with streaming content
-            setChatHistory((prev) =>
-              prev.map((msg) =>
-                msg.id === aiMessageId
-                  ? { ...msg, message: msg.message + chunk }
-                  : msg,
-              ),
-            );
-          },
         );
 
         // Check if request was cancelled
         if (controller.signal.aborted) {
           return;
+        }
+
+        // Create snapshot for undo/redo if there are actions
+        let snapshotId: string | undefined;
+        if (result.actions?.length > 0) {
+          const snapshot = createSnapshot(
+            aiMessageId,
+            result.action_type,
+            result.actions,
+            result, // Pass the full result which includes prev_job, etc.
+          );
+          snapshotId = snapshot.id;
         }
 
         // Update final message with complete response and actions
@@ -647,11 +659,12 @@ const ChatContainer = () => {
               ? {
                   ...msg,
                   message: result.feedback,
-                  canUndo: (result.actions?.length || 0) > 0,
+                  canUndo: Boolean(snapshotId),
                   canRetry: (result.actions?.length || 0) > 0,
                   action_type: result.action_type,
                   actions: result.actions,
                   isTyping: false,
+                  snapshotId,
                 }
               : msg,
           ),
@@ -713,56 +726,48 @@ const ChatContainer = () => {
 
   const handleUndoMessage = useCallback(
     (messageId: string | number) => {
-      const message = chatHistory.find((m) => m.id === messageId) as any;
-      if (!message) return;
+      const message = chatHistory.find((m) => m.id === messageId);
 
-      if (message.action_type === "CALENDAR") {
-        undoCalendarAction(message).forEach((action: any) => dispatch(action));
-      } else if (message.action_type === "JOB") {
-        const undoAction = undoJobAction(message);
-        if (undoAction) dispatch(undoAction);
+      if (!message?.snapshotId) {
+        return;
       }
 
-      setChatHistory((prev) =>
-        prev.map((msg) =>
-          msg.id === messageId && msg.type === "ai"
-            ? { ...msg, canUndo: false, canRedo: true }
-            : msg,
-        ),
-      );
+      const success = undo(message.snapshotId);
+
+      if (success) {
+        setChatHistory((prev) =>
+          prev.map((msg) =>
+            msg.id === messageId && msg.type === "ai"
+              ? { ...msg, canUndo: false, canRedo: true }
+              : msg,
+          ),
+        );
+      }
     },
-    [chatHistory, dispatch],
+    [chatHistory, undo],
   );
 
   const handleRedoMessage = useCallback(
     (messageId: string | number) => {
-      const message = chatHistory.find((m) => m.id === messageId) as any;
-      if (!message) return;
+      const message = chatHistory.find((m) => m.id === messageId);
 
-      if (message.action_type === "CALENDAR") {
-        message.actions?.forEach((action: any) => dispatch(action));
-      } else if (message.action_type === "JOB") {
-        dispatch({
-          type: "UPDATE_FIELDS",
-          updates: message.actions,
-          category: Object.keys(
-            message.prev_job?.category || message.curr_job?.category || {},
-          )[0],
-          required_match_score:
-            message.prev_job?.required_match_score ||
-            message.curr_job?.required_match_score,
-        });
+      if (!message?.snapshotId) {
+        return;
       }
 
-      setChatHistory((prev) =>
-        prev.map((msg) =>
-          msg.id === messageId && msg.type === "ai"
-            ? { ...msg, canUndo: true, canRedo: false }
-            : msg,
-        ),
-      );
+      const success = redo(message.snapshotId);
+
+      if (success) {
+        setChatHistory((prev) =>
+          prev.map((msg) =>
+            msg.id === messageId && msg.type === "ai"
+              ? { ...msg, canUndo: true, canRedo: false }
+              : msg,
+          ),
+        );
+      }
     },
-    [chatHistory, dispatch],
+    [chatHistory, redo],
   );
 
   const handleRetry = useCallback(
@@ -832,13 +837,11 @@ const ChatContainer = () => {
             </Box>
             <Box display="flex" alignItems="center" gap={0.5}>
               <Box sx={{ height: 24, overflow: "hidden" }}>
-                {aiAgent && (
-                  <RunawayJellyfish
-                    die={aiAgent.remainingCredits() === 0}
-                    thinking={isLoading}
-                    runaway={true}
-                  />
-                )}
+                <RunawayJellyfish
+                  die={credits === 0}
+                  thinking={isLoading}
+                  runaway={true}
+                />
               </Box>
               <IconButton
                 size="small"

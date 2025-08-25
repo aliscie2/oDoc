@@ -20,18 +20,12 @@ interface AIMatchResponse {
 
 export const useJobMatching = (currentJob: Job | null) => {
   const { backendActor } = useBackendContext();
-  const { aiAgent } = useSelector((state: RootState) => state.AIState);
+  const { credits } = useSelector((state: RootState) => state.AIState);
   const dispatch = useDispatch();
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const processedJobIdsRef = useRef(new Set<string>());
-  const aiAgentRef = useRef(aiAgent);
-
-  // Update refs when values change
-  useEffect(() => {
-    aiAgentRef.current = aiAgent;
-  }, [aiAgent]);
 
   const getLookingForCategory = (job: Job) => {
     const categoryKey = Object.keys(job?.category || {})[0];
@@ -70,8 +64,7 @@ export const useJobMatching = (currentJob: Job | null) => {
   );
 
   const findMatches = useCallback(async () => {
-    const currentAiAgent = aiAgentRef.current;
-    if (!currentJob || !backendActor || !currentAiAgent) return;
+    if (!currentJob || !backendActor || credits <= 0) return;
 
     setLoading(true);
     setError(null);
@@ -110,15 +103,26 @@ export const useJobMatching = (currentJob: Job | null) => {
         const compressedCurrentJob = compressJobForMatching(currentJob);
         const { id: _id, ...jobWithoutId } = compressedCurrentJob;
 
-        const aiResponse = await currentAiAgent.sendMessage(
+        const aiResponse = await backendActor.ask_ai(
           `candidates: ${JSON.stringify(compressedCandidates)}, Current: ${JSON.stringify(jobWithoutId)}`,
-          false,
           JOB_MATCHING_PROMPT,
+          false // quick parameter
         );
 
-        if (!aiResponse) throw new Error("AI returned no response");
+        if (!aiResponse || 'Err' in aiResponse) {
+          throw new Error(aiResponse && 'Err' in aiResponse ? aiResponse.Err : "AI returned no response");
+        }
 
-        const parsed = textToJson(aiResponse)?.extractedData;
+        const responseText = aiResponse.Ok.response;
+        const remainingCredits = aiResponse.Ok.remaining_credits;
+        
+        // Update credits after AI call
+        dispatch({
+          type: "UPDATE_AI_CREDITS",
+          remainingCredits,
+        });
+
+        const parsed = textToJson(responseText)?.extractedData;
         processedMatches = processAIMatches(
           parsed?.matches || [],
           candidateJobs,
@@ -136,14 +140,14 @@ export const useJobMatching = (currentJob: Job | null) => {
         const jobUpdate = {
           id: currentJob.id,
           updates: [],
-          active: [],
+          active: [] as [] | [boolean],
           required_match_score: [],
           category: [],
           matches: [processedMatches],
         };
 
         const saveResult = await backendActor.update_job([jobUpdate], []);
-        if (saveResult?.Err) {
+        if (saveResult && 'Err' in saveResult) {
           console.error("Failed to auto-save matches:", saveResult.Err);
         }
       }
@@ -153,22 +157,21 @@ export const useJobMatching = (currentJob: Job | null) => {
     } finally {
       setLoading(false);
     }
-  }, [currentJob?.id, backendActor, processAIMatches, dispatch]);
+  }, [currentJob?.id, backendActor, processAIMatches, dispatch, credits]);
 
   useEffect(() => {
     const processedJobIds = processedJobIdsRef.current;
-    const currentAiAgent = aiAgentRef.current;
 
     if (
       currentJob?.id &&
-      currentAiAgent?.remainingCredits() > 0 &&
+      credits > 0 &&
       !processedJobIds.has(currentJob.id) &&
       (!currentJob.matches || currentJob.matches.length === 0) // Only run if no matches exist
     ) {
       processedJobIds.add(currentJob.id);
       findMatches();
     }
-  }, [currentJob?.id, currentJob?.matches?.length, findMatches]);
+  }, [currentJob?.id, currentJob?.matches?.length, credits, findMatches]);
 
   return { loading, error, findMatches };
 };

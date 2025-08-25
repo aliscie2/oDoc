@@ -185,15 +185,50 @@ export function filesReducer(
       const { contract } = action;
       const id = contract.id;
       const stored_custom: StoredContract = { CustomContract: action.contract };
+
+      // Ensure changes.contracts is an array
+      const contractsArray = Array.isArray(state.changes.contracts)
+        ? state.changes.contracts
+        : [];
+
+      // Check if contract already exists in changes
+      const existingIndex = contractsArray.findIndex((c) => c.id === id);
+      const newContractUpdate = {
+        id: id,
+        permissions: [],
+        promises_indexes: [],
+        name: [],
+        delete_tables: [],
+        tables: [],
+        delete_promises: [],
+        promises: [],
+      };
+
+      const updatedContracts =
+        existingIndex >= 0
+          ? contractsArray
+          : [...contractsArray, newContractUpdate];
+
       return {
         ...state,
         changes: {
           ...state.changes,
-          contracts: {
-            ...state.changes.contracts,
-            [id]: { ...stored_custom },
-          },
+          contracts: updatedContracts,
         },
+        contracts: {
+          ...state.contracts,
+          [id]: contract,
+        },
+      };
+    }
+
+    case "SET_CONTRACT": {
+      const { contract } = action;
+      const id = contract.id;
+
+      // Only update state, don't add to changes (no backend save needed)
+      return {
+        ...state,
         contracts: {
           ...state.contracts,
           [id]: contract,
@@ -1393,10 +1428,41 @@ export function filesReducer(
     }
     case "ADD_PROMISE": {
       const { contract_id, promise, insertIndex } = action;
-      const currentContract = state.contracts[contract_id];
+      console.log("ADD_PROMISE Debug:");
+      console.log("- Contract ID:", contract_id);
+      console.log("- Promise:", JSON.stringify(promise, null, 2));
+      console.log("- Insert Index:", insertIndex);
+      console.log("- Available Contracts:", Object.keys(state.contracts));
+      console.log("- Contract Exists:", !!state.contracts[contract_id]);
+      
+      let currentContract = state.contracts[contract_id];
+      
+      // If contract doesn't exist, create a default one
+      if (!currentContract) {
+        console.log("ADD_PROMISE: Creating default contract for ID:", contract_id);
+        currentContract = {
+          id: contract_id,
+          name: "Default Contract",
+          owner: promise.sender,
+          permissions: [],
+          promises: [],
+          promises_indexes: [],
+          contracts: [],
+          date_created: Date.now() * 1000000, // Convert to nanoseconds
+        };
+        
+        // Add the new contract to state
+        state = {
+          ...state,
+          contracts: {
+            ...state.contracts,
+            [contract_id]: currentContract
+          }
+        };
+      }
 
       // Handle promises array
-      const currentPromises = [...currentContract.promises];
+      const currentPromises = [...(currentContract.promises || [])];
       if (insertIndex !== undefined && insertIndex < currentPromises.length) {
         currentPromises.splice(insertIndex, 0, promise);
       } else {
@@ -1457,6 +1523,10 @@ export function filesReducer(
         };
         updatedChangesContracts = [...contractsArray, newContractUpdate];
       }
+
+      console.log("ADD_PROMISE Final State:");
+      console.log("- Updated Contract:", JSON.stringify(updatedContracts[contract_id], null, 2));
+      console.log("- Total Promises in Contract:", updatedContracts[contract_id]?.promises?.length || 0);
 
       return {
         ...state,
@@ -1798,9 +1868,21 @@ export function filesReducer(
     case "REMOVE_CONTRACT":
       delete state.contracts[action.id];
       state.changes.delete_contracts.push(action.id);
-      delete state.changes.contracts[action.id];
+
+      // Ensure changes.contracts is an array and remove the contract
+      const contractsArray = Array.isArray(state.changes.contracts)
+        ? state.changes.contracts
+        : [];
+      const filteredContracts = contractsArray.filter(
+        (c) => c.contract_id !== action.id,
+      );
+
       return {
         ...state,
+        changes: {
+          ...state.changes,
+          contracts: filteredContracts,
+        },
       };
 
     default:

@@ -52,6 +52,7 @@ export type FilesActions =
   | { type: "UPDATE_FILE_TITLE"; id: string; title: string }
   | { type: "UPDATE_FILE_WORKSPACES"; id: string; workspaces: string[] }
   | { type: "ADD_CONTRACT"; contract: StoredContract }
+  | { type: "SET_CONTRACT"; contract: StoredContract }
   | { type: "UPDATE_CONTRACT"; contract: StoredContract }
   | { type: "CONTENT_CHANGES"; id: string; changes: any }
   | { type: "CONTRACT_CHANGES"; changes: StoredContract }
