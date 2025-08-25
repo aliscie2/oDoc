@@ -1,9 +1,9 @@
-import React, { useEffect, useMemo } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { v4 as uuidv4 } from "uuid";
 import {
-  Badge,
+  Add as AddIcon,
+  CheckCircle as CheckCircleIcon,
+  Handshake as HandshakeIcon,
+} from "@mui/icons-material";
+import {
   Box,
   Button,
   Card,
@@ -16,30 +16,23 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
-import {
-  Add as AddIcon,
-  CheckCircle as CheckCircleIcon,
-  Handshake as HandshakeIcon,
-} from "@mui/icons-material";
+import React, { useEffect } from "react";
 import { Helmet } from "react-helmet-async";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
-import { RootState } from "../../redux/reducers";
-import { useBackendContext } from "../../contexts/BackendContext";
-import { custom_contract } from "../../DataProcessing/dataSamples";
 import {
-  CustomContract,
-  User,
   CPayment,
-  Notification,
+  User,
 } from "../../../declarations/backend/backend.did";
-import { useContractNotifications } from "./hooks/useContractNotifications";
-import { countUnseenNotificationsForContract } from "../../utils/notificationUtils";
+import { custom_contract, randomString } from "../../DataProcessing/dataSamples";
+import { ContractWithNotifications, useContractsNotifications } from "../../hooks/useContractsNotifications";
+import { RootState } from "../../redux/reducers";
 import { createShortContractUrl } from "../../utils/urlEncoder";
-import { processContractsFromNotifications } from "../../utils/contractNotificationProcessor";
 
 // Personal Summary Component (for contracts shared with user)
 interface PersonalSummaryProps {
-  contract: CustomContract;
+  contract: ContractWithNotifications;
   profile: User;
 }
 
@@ -128,69 +121,27 @@ const PersonalSummary: React.FC<PersonalSummaryProps> = ({
 
 // Contract Card Component
 interface ContractCardProps {
-  contract: CustomContract & { _unseenCount?: number; _source?: string };
+  contract: ContractWithNotifications;
   profile: User;
   allFriends: any[];
-  notifications: Notification[];
 }
 
 const ContractCard: React.FC<ContractCardProps> = ({
-  contract: initialContract,
+  contract,
   profile,
   allFriends,
-  notifications,
 }) => {
-  console.log(`🎴 ContractCard rendering for ${initialContract.id}:`, {
-    contractId: initialContract.id,
-    source: initialContract._source,
-    unseenCount: initialContract._unseenCount,
-    creator: initialContract.creator,
+  console.log(`🎴 ContractCard rendering for ${contract.id}:`, {
+    contractId: contract.id,
+    source: contract._source,
+    unseenCount: contract._unseenCount,
+    creator: contract.creator,
     profileId: profile?.id,
   });
 
-  const [contract, setContract] = React.useState<CustomContract | null>(
-    initialContract,
-  );
   const [isExpanded, setIsExpanded] = React.useState(false);
-  const [loading, setLoading] = React.useState(false);
   const navigate = useNavigate();
-  const { backendActor } = useBackendContext();
-  const dispatch = useDispatch();
   const theme = useTheme();
-
-  // Load contract details if not owned by user
-  useEffect(() => {
-    const loadContract = async () => {
-      if (profile?.id !== contract?.creator && backendActor) {
-        setLoading(true);
-        try {
-          const result = await backendActor.get_contract(
-            initialContract.creator,
-            initialContract.id,
-          );
-          console.log({ result });
-          if ("Ok" in result && "CustomContract" in result.Ok) {
-            const loadedContract = result.Ok.CustomContract;
-            setContract(loadedContract);
-            dispatch({ type: "ADD_CONTRACT", contract: loadedContract });
-          }
-        } catch (error) {
-          console.error("Error loading contract:", error);
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-
-    loadContract();
-  }, [
-    initialContract.creator,
-    initialContract.id,
-    backendActor,
-    dispatch,
-    profile?.id,
-    contract?.creator,
-  ]);
 
   if (!contract) return null;
 
@@ -207,27 +158,8 @@ const ContractCard: React.FC<ContractCardProps> = ({
       0,
     ) || 0;
 
-  // Use processed unseen count or fallback to calculation
-  const processedCount = initialContract._unseenCount;
-  let unseenCount = 0;
-
-  if (processedCount !== undefined) {
-    console.log(
-      `🔢 Using processed unseen count for ${initialContract.id}: ${processedCount}`,
-    );
-    unseenCount = processedCount;
-  } else {
-    // Fallback to old method
-    if (contract?.promises && notifications) {
-      unseenCount = countUnseenNotificationsForContract(
-        contract.promises,
-        notifications,
-      );
-      console.log(
-        `🔢 Using fallback unseen count for ${initialContract.id}: ${unseenCount}`,
-      );
-    }
-  }
+  // Use the unseen count from the hook
+  const unseenCount = contract._unseenCount;
 
   const handleClick = () => {
     navigate(
@@ -321,7 +253,7 @@ const ContractCard: React.FC<ContractCardProps> = ({
                 label={
                   profile?.id === contract.creator
                     ? "Created by you"
-                    : allFriends.find((f) => f.id === initialContract.creator)
+                    : allFriends.find((f) => f.id === contract.creator)
                         ?.name || "Shared with you"
                 }
                 size="small"
@@ -417,26 +349,7 @@ const ContractCard: React.FC<ContractCardProps> = ({
               </Box>
             </Stack>
 
-            {/* Loading Overlay */}
-            {loading && (
-              <Box
-                sx={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  background: "rgba(255, 255, 255, 0.1)",
-                  backdropFilter: "blur(20px)",
-                  WebkitBackdropFilter: "blur(20px)",
-                }}
-              >
-                <CircularProgress size={24} sx={{ color: "primary.main" }} />
-              </Box>
-            )}
+
           </CardContent>
         </Card>
       </Box>
@@ -447,26 +360,19 @@ const ContractCard: React.FC<ContractCardProps> = ({
 // Main ContractsHistory Component
 const ContractsHistory: React.FC = () => {
   const dispatch = useDispatch();
-  const { contracts, profile, all_friends } = useSelector(
+  const { profile, all_friends } = useSelector(
     (state: RootState) => state.filesState,
   );
-  const { notifications } = useSelector(
-    (state: RootState) => state.notificationState,
-  );
-  console.log("🔔 Raw notifications:", { notifications });
-  const { contractNotificationMap } = useContractNotifications();
+  
+  // Use the centralized contracts notifications hook
+  const { contracts: contractsList, loading, error, totalUnseenCount } = useContractsNotifications();
 
   console.log(
     "ContractsHistory rendered with",
-    Object.keys(contracts).length,
-    "contracts",
+    contractsList.length,
+    "contracts, total unseen:",
+    totalUnseenCount
   );
-
-  // Process contracts from notifications with debugging
-  console.log("🚀 Processing contracts from notifications...");
-  const { allContracts: processedContracts, debug: processingDebug } =
-    processContractsFromNotifications(notifications, contracts);
-  console.log("📊 Contract processing debug info:", processingDebug);
 
   // Mark that user has visited contracts page
   useEffect(() => {
@@ -480,7 +386,7 @@ const ContractsHistory: React.FC = () => {
       }
       const newContract = {
         ...custom_contract,
-        id: uuidv4(),
+        id: randomString(),
         creator: profile.id,
         date_created: Date.now() * 1e6,
       };
@@ -513,23 +419,10 @@ const ContractsHistory: React.FC = () => {
     );
   }
 
-  // Convert processed contracts to list with unseen counts
-  const contractsList = Array.from(processedContracts.values())
-    .map(({ contract, unseenCount, source }) => ({
-      ...contract,
-      _unseenCount: unseenCount,
-      _source: source,
-    }))
-    .sort((a, b) => b.date_created - a.date_created);
-
-  console.log("📋 Final contracts list:", {
-    total: contractsList.length,
-    owned: contractsList.filter((c) => c._source === "owned").length,
-    fromNotifications: contractsList.filter((c) => c._source === "notification")
-      .length,
-    withUnseenNotifications: contractsList.filter((c) => c._unseenCount > 0)
-      .length,
-  });
+  // Show error if any
+  if (error) {
+    console.error("ContractsHistory error:", error);
+  }
 
   return (
     <Box sx={{ maxWidth: 1200, mx: "auto", px: { xs: 2, sm: 3 } }}>
@@ -538,7 +431,19 @@ const ContractsHistory: React.FC = () => {
         <link rel="icon" type="image/png" href="/agreement.png" />
       </Helmet>
 
-      {/* Debug Panel - Temporarily removed to avoid hooks issue */}
+      {/* Loading indicator */}
+      {loading && (
+        <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
+          <CircularProgress size={24} />
+        </Box>
+      )}
+
+      {/* Error display */}
+      {error && (
+        <Box sx={{ mb: 2, p: 2, bgcolor: "error.light", borderRadius: 1 }}>
+          <Typography color="error">Error loading contracts: {error}</Typography>
+        </Box>
+      )}
 
       {/* Header */}
       <Box sx={{ mb: 4, mt: { xs: 8, sm: 4 }, pt: { xs: 2, sm: 0 } }}>
@@ -623,7 +528,6 @@ const ContractsHistory: React.FC = () => {
                 contract={contract}
                 profile={profile}
                 allFriends={all_friends}
-                notifications={notifications}
               />
             </Grid>
           ))}
