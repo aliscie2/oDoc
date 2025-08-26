@@ -35,7 +35,7 @@ import {
   Close as CloseIcon,
 } from "@mui/icons-material";
 import { Z_INDEX_BANNER } from "../../constants/zIndex";
-import { backendActor, ckUSDCActor, logout } from "../../utils/backendUtils";
+import { backendActor, ckUSDCActor } from "../../utils/backendUtils";
 import { canisterId } from "../../../declarations/backend";
 import getckUsdcBalance from "../../utils/getBalance";
 import StatsDisplay from "./StatsDisplay";

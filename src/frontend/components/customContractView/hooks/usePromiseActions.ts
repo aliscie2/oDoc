@@ -2,8 +2,8 @@ import { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
 import { Principal } from "@dfinity/principal";
-import { CPayment, Friend } from "$/declarations/backend/backend.did";
-import { backendActor, ckUSDCActor, logout } from "../../../utils/backendUtils";
+import { CPayment } from "$/declarations/backend/backend.did";
+import { backendActor } from "../../../utils/backendUtils";
 
 interface AppState {
   filesState: {

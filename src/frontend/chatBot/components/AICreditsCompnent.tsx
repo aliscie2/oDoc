@@ -50,7 +50,7 @@ const AICreditsComponent = () => {
       const rect = containerRef.current.getBoundingClientRect();
       const popoverWidth = 200; // minWidth from Paper
       
-      let newPosition = { bottom: "100%", left: 0, right: "auto" };
+      const newPosition = { bottom: "100%", left: 0, right: "auto" };
       
       // Check horizontal overflow
       if (rect.left + popoverWidth > window.innerWidth) {

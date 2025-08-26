@@ -9,7 +9,7 @@ import {
   Input,
 } from "@mui/material";
 import { useSnackbar } from "notistack";
-import { backendActor, ckUSDCActor, logout } from "@/utils/backendUtils";
+import { backendActor } from "@/utils/backendUtils";
 import { RegisterUser } from "$/declarations/backend/backend.did";
 import { useDispatch } from "react-redux";
 import compressImage from "@/DataProcessing/compressImage";

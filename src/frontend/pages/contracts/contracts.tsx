@@ -131,13 +131,6 @@ const ContractCard: React.FC<ContractCardProps> = ({
   profile,
   allFriends,
 }) => {
-  console.log(`🎴 ContractCard rendering for ${contract.id}:`, {
-    contractId: contract.id,
-    source: contract._source,
-    unseenCount: contract._unseenCount,
-    creator: contract.creator,
-    profileId: profile?.id,
-  });
 
   const [isExpanded, setIsExpanded] = React.useState(false);
   const navigate = useNavigate();

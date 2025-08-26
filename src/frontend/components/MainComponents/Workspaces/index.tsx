@@ -26,7 +26,7 @@ import {
 } from "@mui/icons-material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useDispatch, useSelector } from "react-redux";
-import { backendActor, ckUSDCActor, logout } from "../../../utils/backendUtils";
+import { backendActor } from "../../../utils/backendUtils";
 import { Principal } from "@dfinity/principal";
 import { getWorkspaceStyles } from "./WorkspaceStyles";
 import type { Workspace, FilesState } from "./WorkspaceTypes";

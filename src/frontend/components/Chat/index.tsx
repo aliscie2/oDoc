@@ -29,7 +29,7 @@ import {
   ExpandMore as ExpandMoreIcon,
 } from "@mui/icons-material";
 import ChatWindow from "./chatWindow";
-import { backendActor, ckUSDCActor, logout } from "../../utils/backendUtils";
+import { backendActor } from "../../utils/backendUtils";
 import { useDispatch, useSelector } from "react-redux";
 
 import { Chat } from "../../../declarations/backend/backend.did";

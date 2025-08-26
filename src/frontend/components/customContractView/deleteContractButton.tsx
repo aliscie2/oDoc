@@ -1,4 +1,4 @@
-import { backendActor, ckUSDCActor, logout } from "@/utils/backendUtils";
+import { backendActor } from "@/utils/backendUtils";
 import { Button, CircularProgress } from "@mui/material";
 
 import { useState } from "react";

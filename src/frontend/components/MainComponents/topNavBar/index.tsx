@@ -46,7 +46,7 @@ import WorkspaceManager from "../Workspaces";
 import LoginButton from "./loginButton";
 import EnhancedUserAvatar from "./EnhancedUserAvatar";
 
-import { backendActor, ckUSDCActor, logout } from "@/utils/backendUtils";
+import { logout } from "@/utils/backendUtils";
 import { convertToBlobLink } from "@/DataProcessing/imageToVec";
 import getStyles from "./styles";
 

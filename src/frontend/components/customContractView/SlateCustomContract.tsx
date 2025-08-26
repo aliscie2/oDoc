@@ -4,7 +4,7 @@ import {
   CustomContract,
   StoredContract,
 } from "../../../declarations/backend/backend.did";
-import { backendActor, ckUSDCActor, logout } from "../../utils/backendUtils";
+import { backendActor } from "../../utils/backendUtils";
 
 import CustomContractComponent from "./index";
 import { Typography } from "@mui/material";

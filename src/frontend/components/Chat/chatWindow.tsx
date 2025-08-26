@@ -23,7 +23,7 @@ import {
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { backendActor, ckUSDCActor, logout } from "../../utils/backendUtils";
+import { backendActor } from "../../utils/backendUtils";
 import formatTimestamp from "../../utils/time";
 import { AdminsSelect, MembersSelect, WorkspaceSelect } from "./index";
 

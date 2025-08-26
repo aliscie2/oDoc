@@ -1,7 +1,6 @@
 import React, { useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Box, CircularProgress, Typography, useTheme } from "@mui/material";
-import { backendActor } from "../../utils/backendUtils";
 import { RootState } from "../../redux/reducers";
 
 const POSTS_PER_PAGE = 20;

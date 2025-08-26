@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { serlizeEeventToGooggleEvent } from "./eventConverter";
 import { useDispatch, useSelector } from "react-redux";
-import { backendActor, ckUSDCActor, logout } from "@/utils/backendUtils";
+import { backendActor } from "@/utils/backendUtils";
 const accessToken = "";
 
 export const useGoogleCalendar = () => {

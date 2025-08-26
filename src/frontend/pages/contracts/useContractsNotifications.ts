@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { backendActor, ckUSDCActor, logout } from "@/utils/backendUtils";
+import { backendActor } from "@/utils/backendUtils";
 import { RootState } from "@/redux/reducers";
 
 import {

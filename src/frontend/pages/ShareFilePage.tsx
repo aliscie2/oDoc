@@ -8,7 +8,7 @@ import {
   SlateNode,
 } from "../DataProcessing/deserlize/deserializeContents";
 import EditorComponent from "../components/EditorComponent";
-import { backendActor, ckUSDCActor, logout } from "../utils/backendUtils";
+import { backendActor } from "../utils/backendUtils";
 import { CircularProgress, Input, Typography } from "@mui/material";
 import { Link } from "react-router-dom";
 

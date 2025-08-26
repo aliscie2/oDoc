@@ -2,7 +2,7 @@ import CustomContractViewer from "@/components/customContractView";
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useDispatch, useSelector } from "react-redux";
-import { backendActor, ckUSDCActor, logout } from "@/utils/backendUtils";
+import { backendActor } from "@/utils/backendUtils";
 import { parseContractUrlParams } from "@/utils/urlEncoder";
 
 function ContractPage() {

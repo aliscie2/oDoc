@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import { useSnackbar } from "notistack";
-import { backendActor, ckUSDCActor, logout } from "../../utils/backendUtils";
+import { backendActor } from "../../utils/backendUtils";
 import { RegisterUser } from "../../../declarations/backend/backend.did";
 import compressImage from "@/DataProcessing/compressImage";
 import { useLocation } from "react-router-dom";

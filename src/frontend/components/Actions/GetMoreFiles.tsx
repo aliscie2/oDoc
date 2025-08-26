@@ -4,7 +4,7 @@ import { Button, Tooltip } from "@mui/material";
 
 import { ContentNode } from "../../../declarations/backend/backend.did";
 import { useSnackbar } from "notistack";
-import { backendActor, ckUSDCActor, logout } from "../../utils/backendUtils";
+import { backendActor } from "../../utils/backendUtils";
 
 const GetMoreFiles: React.FC = () => {
   // Using direct backendActor import

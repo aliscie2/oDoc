@@ -1,7 +1,6 @@
 import {
   CPayment,
   CustomContract,
-  User,
 } from "$/declarations/backend/backend.did";
 import { RootState } from "@/redux/reducers";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
@@ -49,7 +48,7 @@ import UserAvatarMenu from "../MainComponents/UserAvatarMenu";
 import CopyButton from "../MuiComponents/copyButton";
 import DeleteContractButton from "./deleteContractButton";
 import { getStatusOptions } from "./utils";
-import { backendActor, ckUSDCActor, logout } from "../../utils/backendUtils";
+import { backendActor } from "../../utils/backendUtils";
 import { useAgreementView } from "./hooks/useAgreementView";
 import { usePromiseActions } from "./hooks/usePromiseActions";
 import { useUserData } from "./hooks/useUserData";

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button, CircularProgress } from "@mui/material";
 import { useSnackbar } from "notistack";
 import { useDispatch, useSelector } from "react-redux";
-import { backendActor, ckUSDCActor, logout } from "@/utils/backendUtils";
+import { backendActor } from "@/utils/backendUtils";
 import { Calendar, Job, Match } from "$/declarations/backend/backend.did";
 import UserAvatarMenu from "@/components/MainComponents/UserAvatarMenu";
 import sendEmail from "@/utils/sendEmail";

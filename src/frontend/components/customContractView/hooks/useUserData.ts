@@ -1,6 +1,6 @@
 import { useSelector } from "react-redux";
 import { Principal } from "@dfinity/principal";
-import { Friend, User } from "$/declarations/backend/backend.did";
+import { User } from "$/declarations/backend/backend.did";
 
 interface AppState {
   filesState: {

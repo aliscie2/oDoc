@@ -1,7 +1,7 @@
 import ProfilePage from "./profile";
 // MessageMenuItem.tsx
 import React, { useEffect, useState } from "react";
-import { backendActor, ckUSDCActor, logout } from "../utils/backendUtils";
+import { backendActor } from "../utils/backendUtils";
 import { useSearchParams } from "react-router-dom";
 import { Principal } from "@dfinity/principal";
 import FriendshipButton from "../components/FriendshipButton";

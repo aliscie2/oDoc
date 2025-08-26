@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { backendActor, ckUSDCActor, logout } from "../../utils/backendUtils";
+import { backendActor } from "../../utils/backendUtils";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import {

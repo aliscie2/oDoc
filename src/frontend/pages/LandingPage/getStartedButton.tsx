@@ -10,7 +10,6 @@ import {
 } from "@mui/material";
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
-import { login } from "../../utils/backendUtils";
 import { ClickAwayListener } from "@mui/base";
 import { Z_INDEX_SIDE_NAVBAR } from "../../constants/zIndex";
 import LoginButton from "@/components/MainComponents/topNavBar/loginButton";

@@ -54,7 +54,7 @@ import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
 import LOGOSVG, { SECRUTYSVG } from "@/components/creature/logoSVG";
 import getckUsdcBalance from "@/utils/getBalance";
 import { canisterId } from "$/declarations/backend";
-import { backendActor, ckUSDCActor, logout } from "@/utils/backendUtils";
+import { backendActor, ckUSDCActor } from "@/utils/backendUtils";
 import { Helmet } from "react-helmet-async";
 import ProgressiveTutorialMobile from "./promiseTutorial";
 

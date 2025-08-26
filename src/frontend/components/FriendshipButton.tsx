@@ -1,6 +1,6 @@
 import React from "react";
 import { useSnackbar } from "notistack";
-import { backendActor, ckUSDCActor, logout } from "../utils/backendUtils";
+import { backendActor } from "../utils/backendUtils";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 

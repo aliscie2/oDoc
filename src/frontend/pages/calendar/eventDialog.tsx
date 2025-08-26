@@ -21,7 +21,7 @@ import { RootState } from "../../../redux/reducers";
 import GoogleCalendarButton from "./addEventToGoogleCalenar";
 import { Link } from "react-router-dom";
 import { useGoogleCalendar } from "./googleAccounts/useGoogleCalendar";
-import { backendActor, ckUSDCActor, logout } from "@/utils/backendUtils";
+import { backendActor } from "@/utils/backendUtils";
 import { Job } from "$/declarations/backend/backend.did";
 
 // Job interface based on your Rust struct

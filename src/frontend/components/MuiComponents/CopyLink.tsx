@@ -12,7 +12,7 @@ import {
 import ShareIcon from "@mui/icons-material/Share";
 import { useDispatch, useSelector } from "react-redux";
 import { Principal } from "@dfinity/principal";
-import { backendActor, ckUSDCActor, logout } from "../../utils/backendUtils";
+import { backendActor } from "../../utils/backendUtils";
 import { useSnackbar } from "notistack";
 import { Check, Copy } from "lucide-react";
 

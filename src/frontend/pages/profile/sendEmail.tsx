@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import sanitizeHtml from "sanitize-html";
 import sendEmail from "../../utils/sendEmail";
-import { backendActor, ckUSDCActor, logout } from "@/utils/backendUtils";
+import { backendActor } from "@/utils/backendUtils";
 
 const EmailComposer = () => {
   // Using direct backendActor import

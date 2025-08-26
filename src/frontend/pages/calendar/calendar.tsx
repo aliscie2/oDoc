@@ -12,7 +12,7 @@ import EventDialog from "./eventDialog";
 import CustomToolbar from "./toolsBar";
 import useCalendarStyles from "./style";
 import { useCalendarLogic } from "./calendarLogic";
-import { backendActor, ckUSDCActor, logout } from "@/utils/backendUtils";
+import { backendActor } from "@/utils/backendUtils";
 import { useDispatch } from "react-redux";
 import { useGoogleCalendar } from "./googleAccounts/useGoogleCalendar";
 import { Helmet } from "react-helmet-async";

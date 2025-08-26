@@ -1,5 +1,5 @@
 import { Job } from "$/declarations/backend/backend.did";
-import { backendActor, ckUSDCActor, logout } from "@/utils/backendUtils";
+import { backendActor } from "@/utils/backendUtils";
 import { Add, Delete, Share, Visibility } from "@mui/icons-material";
 import {
   Box,
