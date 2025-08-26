@@ -49,7 +49,7 @@ import UserAvatarMenu from "../MainComponents/UserAvatarMenu";
 import CopyButton from "../MuiComponents/copyButton";
 import DeleteContractButton from "./deleteContractButton";
 import { getStatusOptions } from "./utils";
-import { useBackendContext } from "../../contexts/BackendContext";
+import { backendActor, ckUSDCActor, logout } from "../../utils/backendUtils";
 import { useAgreementView } from "./hooks/useAgreementView";
 import { usePromiseActions } from "./hooks/usePromiseActions";
 import { useUserData } from "./hooks/useUserData";
@@ -190,7 +190,7 @@ const PromiseCardHeader = memo<{
     const { notifications } = useSelector(
       (state: AppState) => state.notificationState,
     );
-    const { backendActor } = useBackendContext();
+    // Using direct backendActor import
     const dispatch = useDispatch();
 
     const statusConfig = getStatusConfig(promise.status);

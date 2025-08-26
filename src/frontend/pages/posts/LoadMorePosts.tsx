@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Box, CircularProgress, Typography, useTheme } from "@mui/material";
-import { useBackendContext } from "../../contexts/BackendContext";
+import { backendActor } from "../../utils/backendUtils";
 import { RootState } from "../../redux/reducers";
 
 const POSTS_PER_PAGE = 20;
@@ -13,7 +13,7 @@ const LoadMorePosts = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
   const { posts } = useSelector((state: RootState) => state.filesState);
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
 
   return (
     <Box

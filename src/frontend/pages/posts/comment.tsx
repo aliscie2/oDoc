@@ -20,7 +20,7 @@ import { formatRelativeTime } from "../../utils/time";
 import EditorComponent from "../../components/EditorComponent";
 import { deserializeContentTree } from "../../DataProcessing/deserlize/deserializeContents";
 import UserAvatarMenu from "../../components/MainComponents/UserAvatarMenu";
-import { useBackendContext } from "../../contexts/BackendContext";
+import { backendActor } from "../../utils/backendUtils";
 import serializeFileContents from "../../DataProcessing/serialize/serializeFileContents";
 import { Post, PostUser } from "../../../declarations/backend/backend.did";
 import CommentForm from "./CommentForm";
@@ -72,7 +72,7 @@ const Comment: React.FC<ICommentProps> = ({ post, onUpdate }) => {
   const [voteLoading, setVoteLoading] = useState(false);
   const [isChanged, setChanged] = useState(false);
   const { profile } = useSelector((state: any) => state.filesState);
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
   const { enqueueSnackbar } = useSnackbar();
   const contentTree = useRef([]);
   const dispatch = useDispatch();

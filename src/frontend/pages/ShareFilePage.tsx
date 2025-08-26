@@ -8,7 +8,7 @@ import {
   SlateNode,
 } from "../DataProcessing/deserlize/deserializeContents";
 import EditorComponent from "../components/EditorComponent";
-import { useBackendContext } from "../contexts/BackendContext";
+import { backendActor, ckUSDCActor, logout } from "../utils/backendUtils";
 import { CircularProgress, Input, Typography } from "@mui/material";
 import { Link } from "react-router-dom";
 
@@ -33,7 +33,7 @@ function ShareFilePage(props: any) {
   const dispatch = useDispatch();
 
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
 
   useEffect(() => {
     if (!file) {

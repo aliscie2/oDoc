@@ -23,7 +23,7 @@ import {
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { useBackendContext } from "../../contexts/BackendContext";
+import { backendActor, ckUSDCActor, logout } from "../../utils/backendUtils";
 import formatTimestamp from "../../utils/time";
 import { AdminsSelect, MembersSelect, WorkspaceSelect } from "./index";
 
@@ -626,7 +626,7 @@ const ChatWindow = memo(({ chat, onClose, onSendMessage, onUpdateChat }) => {
   const { workspaces, all_friends, profile } = useSelector(
     (state) => state.filesState,
   );
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
   const dispatch = useDispatch();
 
   const messagesEndRef = useRef(null);

@@ -6,7 +6,7 @@ import { Post } from "../../../declarations/backend/backend.did";
 import { useDispatch, useSelector } from "react-redux";
 import { randomString } from "../../DataProcessing/dataSamples";
 import serializeFileContents from "../../DataProcessing/serialize/serializeFileContents";
-import { useBackendContext } from "../../contexts/BackendContext";
+import { backendActor } from "../../utils/backendUtils";
 import { useSnackbar } from "notistack";
 
 interface CreatePostProps {
@@ -15,7 +15,7 @@ interface CreatePostProps {
 
 const CreatePost: React.FC<CreatePostProps> = () => {
   const { profile } = useSelector((state: any) => state.filesState);
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
   const [loading, setLoading] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
   const postContent = useRef([]);

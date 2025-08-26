@@ -21,12 +21,12 @@ import { RootState } from "../../../redux/reducers";
 import GoogleCalendarButton from "./addEventToGoogleCalenar";
 import { Link } from "react-router-dom";
 import { useGoogleCalendar } from "./googleAccounts/useGoogleCalendar";
-import { useBackendContext } from "@/contexts/BackendContext";
+import { backendActor, ckUSDCActor, logout } from "@/utils/backendUtils";
 import { Job } from "$/declarations/backend/backend.did";
 
 // Job interface based on your Rust struct
 const EventDialog = ({ open, onClose, slotInfo, selectedEvent = null }) => {
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
   const { profile } = useSelector((state: any) => state.filesState);
   const { calendar } = useSelector((state: RootState) => state.calendarState);
   const calendarOwnerId = calendar?.owner;

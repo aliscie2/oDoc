@@ -9,7 +9,7 @@ import {
   Input,
 } from "@mui/material";
 import { useSnackbar } from "notistack";
-import { useBackendContext } from "@/contexts/BackendContext";
+import { backendActor, ckUSDCActor, logout } from "@/utils/backendUtils";
 import { RegisterUser } from "$/declarations/backend/backend.did";
 import { useDispatch } from "react-redux";
 import compressImage from "@/DataProcessing/compressImage";
@@ -21,7 +21,7 @@ const EditProfile = ({ setIsEditing, profile, onCancel = false }) => {
   const [photoPreview, setPhotoPreview] = useState(null);
   const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
 
   const [formValues, setFormValues] = useState({
     name: "",

@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import sanitizeHtml from "sanitize-html";
 import sendEmail from "../../utils/sendEmail";
-import { useBackendContext } from "@/contexts/BackendContext";
+import { backendActor, ckUSDCActor, logout } from "@/utils/backendUtils";
 
 const EmailComposer = () => {
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [htmlContent, setHtmlContent] = useState("");
   const [subject, setSubject] = useState("");

@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
-import { useBackendContext } from "../../contexts/BackendContext";
+import { login } from "../../utils/backendUtils";
 import { ClickAwayListener } from "@mui/base";
 import { Z_INDEX_SIDE_NAVBAR } from "../../constants/zIndex";
 import LoginButton from "@/components/MainComponents/topNavBar/loginButton";
@@ -43,7 +43,7 @@ function GetStartedButton() {
   const { all_friends, profile, wallet, inited } = useSelector(
     (state: any) => state.filesState,
   );
-  const { login } = useBackendContext();
+  // Using direct login import
   const { isLoggedIn } = useSelector((state: any) => state.uiState);
   const [showTooltip, setShowTooltip] = useState(false);
 

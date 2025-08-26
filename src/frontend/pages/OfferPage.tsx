@@ -7,7 +7,7 @@ import {
 } from "@mui/material/styles";
 import { Box, Card, CardContent, Button } from "@mui/material";
 import { Sparkles, Wallet, Crown, Timer, Shield, Rocket } from "lucide-react";
-import { useBackendContext } from "@/contexts/BackendContext";
+import { login } from "@/utils/backendUtils";
 
 // Keyframe Animations
 const float = keyframes`
@@ -301,7 +301,7 @@ const features = [
 ];
 
 const LandingPage = () => {
-  const { login } = useBackendContext();
+  // Using direct login import
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {

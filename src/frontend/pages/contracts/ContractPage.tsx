@@ -2,7 +2,7 @@ import CustomContractViewer from "@/components/customContractView";
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useDispatch, useSelector } from "react-redux";
-import { useBackendContext } from "@/contexts/BackendContext";
+import { backendActor, ckUSDCActor, logout } from "@/utils/backendUtils";
 import { parseContractUrlParams } from "@/utils/urlEncoder";
 
 function ContractPage() {
@@ -13,7 +13,7 @@ function ContractPage() {
   const owner = contractParams?.owner;
 
   const { contracts, profile } = useSelector((state: any) => state.filesState);
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

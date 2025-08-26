@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useBackendContext } from "../../contexts/BackendContext";
+import { backendActor, ckUSDCActor, logout } from "../../utils/backendUtils";
 import { Link } from "react-router-dom";
 import {
   Badge,
@@ -40,7 +40,7 @@ const NotificationsButton = () => {
   }, [notifications.length]);
 
   const open = Boolean(anchorEl);
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
   const dispatch = useDispatch();
 
   const handleClick = (event) => {

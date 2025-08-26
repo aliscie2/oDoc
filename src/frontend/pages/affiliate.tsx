@@ -25,7 +25,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { ContentCopy, Star, Info, MonetizationOn } from "@mui/icons-material";
-import { useBackendContext } from "../contexts/BackendContext";
+import { backendActor } from "../utils/backendUtils";
 import { useSelector } from "react-redux";
 
 // Separate components for better organization
@@ -177,7 +177,7 @@ const AffiliateDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [copySuccess, setCopySuccess] = useState(false);
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
   const { profile } = useSelector((state: any) => state.filesState);
 
   useEffect(() => {

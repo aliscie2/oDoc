@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
-import { useBackendContext } from "@/contexts/BackendContext";
+import { backendActor } from "@/utils/backendUtils";
 import { RootState } from "@/redux/reducers";
 import { CalendarActions } from "$/declarations/backend/backend.did";
 import {
@@ -20,7 +20,7 @@ export const useCalendarSave = (): UseCalendarSaveReturn => {
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
 
   const { calendarChanged, calendar, calendar_actions } = useSelector(
     (state: RootState) => state.calendarState,

@@ -27,7 +27,7 @@ import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import { Link } from "react-router-dom";
 import { formatRelativeTime } from "@/utils/time";
 import { useDispatch, useSelector } from "react-redux";
-import { useBackendContext } from "@/contexts/BackendContext";
+import { backendActor } from "@/utils/backendUtils";
 import MarkdownMessage from "@/chatBot/markDownMessageRdnder";
 import { debounce } from "lodash";
 
@@ -63,7 +63,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
   }, [job.required_match_score]);
 
   const { profile } = useSelector((state: any) => state.filesState);
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
   const canEdit = Object.keys(job.category)[0] !== "Talent";
 
   const handleSaveCoverLetter = async () => {

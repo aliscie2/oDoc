@@ -29,7 +29,7 @@ import {
   ExpandMore as ExpandMoreIcon,
 } from "@mui/icons-material";
 import ChatWindow from "./chatWindow";
-import { useBackendContext } from "../../contexts/BackendContext";
+import { backendActor, ckUSDCActor, logout } from "../../utils/backendUtils";
 import { useDispatch, useSelector } from "react-redux";
 
 import { Chat } from "../../../declarations/backend/backend.did";
@@ -343,7 +343,7 @@ const ChatNotifications = () => {
   const { profile, currentWorkspace, all_friends, workspaces } = useSelector(
     (state) => state.filesState,
   );
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
 
   const [openChats, setOpenChats] = useState(new Map());
   const [anchorEl, setAnchorEl] = useState(null);

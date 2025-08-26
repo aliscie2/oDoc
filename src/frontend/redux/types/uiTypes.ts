@@ -35,19 +35,19 @@ export type Action =
   | { type: "IS_FETCHING"; isFetching: boolean };
 
 // State Interface
-interface InitialState {
+export interface State {
   isFetching: boolean;
-  isRegistered: boolean;
+  isRegistered: boolean | null;
   count: number;
   isNavOpen: boolean;
   searchTool: boolean;
   isDarkMode: boolean;
   searchValue: string;
-  isLoggedIn: boolean;
+  isLoggedIn: boolean | null;
 }
 
 // Initial State
-export const initialState: InitialState = {
+export const initialState: State = {
   isRegistered: null,
   count: 0,
   isNavOpen: false,

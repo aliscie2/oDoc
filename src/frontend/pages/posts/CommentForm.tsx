@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { Box, Button } from "@mui/material";
-import { useBackendContext } from "../../contexts/BackendContext";
+import { backendActor } from "../../utils/backendUtils";
 import { useDispatch, useSelector } from "react-redux";
 import { Post } from "../../../declarations/backend/backend.did";
 import { deserializeContentTree } from "../../DataProcessing/deserlize/deserializeContents";
@@ -25,7 +25,7 @@ const CommentForm: React.FC<CommentFormProps> = ({
   const { profile } = useSelector((state: any) => state.filesState);
   const dispatch = useDispatch();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
   const contentTree = useRef([]);
   const [isChanged, setChanged] = useState(false);
   const [editorKey, setEditorKey] = useState(

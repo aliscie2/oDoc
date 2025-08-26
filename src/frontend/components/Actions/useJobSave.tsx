@@ -1,5 +1,5 @@
 import { Job } from "$/declarations/backend/backend.did";
-import { useBackendContext } from "@/contexts/BackendContext";
+import { backendActor, ckUSDCActor, logout } from "@/utils/backendUtils";
 import { useSnackbar } from "notistack";
 import { useCallback, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -15,7 +15,7 @@ export const useJobsSave = (): UseJobsSaveReturn => {
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
   const saveInProgress = useRef(false);
   const { jobChanges, isChanged } = useSelector((state: any) => state.jobState);
   const { credits } = useSelector(

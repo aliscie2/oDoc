@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button, CircularProgress } from "@mui/material";
 import { useSnackbar } from "notistack";
 import { useDispatch, useSelector } from "react-redux";
-import { useBackendContext } from "@/contexts/BackendContext";
+import { backendActor, ckUSDCActor, logout } from "@/utils/backendUtils";
 import { Calendar, Job, Match } from "$/declarations/backend/backend.did";
 import UserAvatarMenu from "@/components/MainComponents/UserAvatarMenu";
 import sendEmail from "@/utils/sendEmail";
@@ -17,7 +17,7 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({
   matchingJob,
 }) => {
   const { calendar } = useSelector((state: any) => state.calendarState);
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
 
   const { currentJobId, jobs } = useSelector((state: any) => state.jobState);
   const currentJob: Job = jobs?.find((job: any) => job.id === currentJobId);

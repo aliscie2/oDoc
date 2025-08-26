@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
 import { Principal } from "@dfinity/principal";
 import { CPayment, Friend } from "$/declarations/backend/backend.did";
-import { useBackendContext } from "../../../contexts/BackendContext";
+import { backendActor, ckUSDCActor, logout } from "../../../utils/backendUtils";
 
 interface AppState {
   filesState: {
@@ -20,7 +20,7 @@ export const usePromiseActions = (
 ) => {
   const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
   const { all_friends, wallet, profile } = useSelector(
     (state: AppState) => state.filesState,
   );

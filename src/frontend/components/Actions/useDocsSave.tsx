@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
-import { useBackendContext } from "@/contexts/BackendContext";
+import { backendActor } from "@/utils/backendUtils";
 
 import serializeFileContents from "@/DataProcessing/serialize/serializeFileContents";
 import { ContractUpdates } from "$/declarations/backend/backend.did";
@@ -50,7 +50,7 @@ export const useDocsSave = (): UseDocsSaveReturn => {
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
 
   const changes = useSelector((state: any) => state.filesState.changes);
 

@@ -12,13 +12,13 @@ import EventDialog from "./eventDialog";
 import CustomToolbar from "./toolsBar";
 import useCalendarStyles from "./style";
 import { useCalendarLogic } from "./calendarLogic";
-import { useBackendContext } from "@/contexts/BackendContext";
+import { backendActor, ckUSDCActor, logout } from "@/utils/backendUtils";
 import { useDispatch } from "react-redux";
 import { useGoogleCalendar } from "./googleAccounts/useGoogleCalendar";
 import { Helmet } from "react-helmet-async";
 
 const CalendarView = () => {
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
   const dispatch = useDispatch();
   const { connectCal } = useGoogleCalendar();
 

@@ -1,4 +1,4 @@
-import { useBackendContext } from "@/contexts/BackendContext";
+import { backendActor } from "@/utils/backendUtils";
 import {
   Button,
   Box,
@@ -27,7 +27,7 @@ const AICreditsComponent = () => {
   const [popoverPosition, setPopoverPosition] = useState({ bottom: "100%", left: 0, right: "auto" });
   const containerRef = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch();
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
 
   useEffect(() => {
     setCredits(aiCredits);

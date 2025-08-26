@@ -31,7 +31,7 @@ import ConnectWithoutContactIcon from "@mui/icons-material/ConnectWithoutContact
 import YouTubeIcon from "@mui/icons-material/YouTube";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import GitHubIcon from "@mui/icons-material/GitHub";
-import { useBackendContext } from "@/contexts/BackendContext";
+import { backendActor, ckUSDCActor, logout } from "@/utils/backendUtils";
 import { useSelector } from "react-redux";
 import { Helmet } from "react-helmet-async";
 import JobTutorialComponent from "./jobTutorial";
@@ -415,7 +415,7 @@ const PageFooter = () => {
 const StatsSection = () => {
   const [stats, setStats] = useState({ users: 0, jobs: 0, talents: 0 });
   const [isVisible, setIsVisible] = useState(false);
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
   const statsRef = useRef(null);
 
   useEffect(() => {

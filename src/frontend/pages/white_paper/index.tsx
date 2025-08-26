@@ -35,7 +35,7 @@ import {
   Close as CloseIcon,
 } from "@mui/icons-material";
 import { Z_INDEX_BANNER } from "../../constants/zIndex";
-import { useBackendContext } from "../../contexts/BackendContext";
+import { backendActor, ckUSDCActor, logout } from "../../utils/backendUtils";
 import { canisterId } from "../../../declarations/backend";
 import getckUsdcBalance from "../../utils/getBalance";
 import StatsDisplay from "./StatsDisplay";
@@ -301,7 +301,7 @@ const ProposalCard = ({ proposal }: { proposal: Proposal }) => {
 
 const SNSVoting: React.FC = () => {
   const theme = useTheme();
-  const { backendActor, ckUSDCActor } = useBackendContext();
+  // Using direct backendActor and ckUSDCActor imports
   const [tabValue, setTabValue] = useState(0);
   const [openNewProposal, setOpenNewProposal] = useState(false);
   const [proposalType, setProposalType] = useState("feature");

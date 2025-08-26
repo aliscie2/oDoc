@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { useBackendContext } from "../../contexts/BackendContext";
+import { backendActor, ckUSDCActor, logout } from "../../utils/backendUtils";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import {
@@ -46,7 +46,7 @@ const PaymentDialog = ({ payment, onClose }: { payment: CPayment }) => {
   const [selectedAction, setSelectedAction] = useState("");
   const [objectionReason, setObjectionReason] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
   const { profile, all_friends, contracts } = useSelector(
     (state) => state.filesState,
   );

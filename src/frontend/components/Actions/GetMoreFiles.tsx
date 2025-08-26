@@ -4,10 +4,10 @@ import { Button, Tooltip } from "@mui/material";
 
 import { ContentNode } from "../../../declarations/backend/backend.did";
 import { useSnackbar } from "notistack";
-import { useBackendContext } from "../../contexts/BackendContext";
+import { backendActor, ckUSDCActor, logout } from "../../utils/backendUtils";
 
 const GetMoreFiles: React.FC = () => {
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
   const dispatch = useDispatch();
   const { profile, currentWorkspace } = useSelector(
     (state: any) => state.filesState,

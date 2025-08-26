@@ -1,4 +1,4 @@
-import { useBackendContext } from "@/contexts/BackendContext";
+import { backendActor, ckUSDCActor, logout } from "@/utils/backendUtils";
 import { Principal } from "@dfinity/principal";
 import {
   AccountBalanceWallet,
@@ -683,7 +683,7 @@ const WalletPage: React.FC<{ wallet?: Wallet }> = ({
   const [withdrawAddress, setWithdrawAddress] = useState<string>("");
   const [openDialog, setOpenDialog] = useState<DialogType>("");
 
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
   const { all_friends, profile } = useSelector(
     (state: ReduxState) => state.filesState,
   );

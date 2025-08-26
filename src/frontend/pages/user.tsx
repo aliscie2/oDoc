@@ -1,7 +1,7 @@
 import ProfilePage from "./profile";
 // MessageMenuItem.tsx
 import React, { useEffect, useState } from "react";
-import { useBackendContext } from "../contexts/BackendContext";
+import { backendActor, ckUSDCActor, logout } from "../utils/backendUtils";
 import { useSearchParams } from "react-router-dom";
 import { Principal } from "@dfinity/principal";
 import FriendshipButton from "../components/FriendshipButton";
@@ -10,7 +10,7 @@ import { Typography } from "@mui/material";
 
 function UserProfile() {
   const [searchParams] = useSearchParams();
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
   const [user, setUser] = useState(null);
   const [profileHistory, setProfileHistory] = useState(null);
   const [isLoading, setIsLoading] = useState(true);

@@ -11,7 +11,6 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { canisterId } from "../declarations/backend";
 import NavBar from "./components/MainComponents/NavBar";
 import TopNavBar from "./components/MainComponents/topNavBar";
-import { useBackendContext } from "./contexts/BackendContext";
 import { RootState } from "./redux/reducers";
 import {
   selectIsLoggedIn,
@@ -20,6 +19,8 @@ import {
   selectProfile,
 } from "./redux/selectors";
 import getckUsdcBalance from "./utils/getBalance";
+import { backendActor, ckUSDCActor } from "./utils/backendUtils";
+import { useAuth } from "./hooks/useAuth";
 
 import RegistrationForm from "./components/MainComponents/RegistrationForm";
 import {
@@ -59,8 +60,8 @@ const PageContainer = styled(Box)(({ theme }) => ({
 // hooks/useAppInitialization.ts
 const useAppInitialization = () => {
   const dispatch = useDispatch();
-  const { logout, backendActor, ckUSDCActor } = useBackendContext();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  const { logout, checkAuthStatus } = useAuth();
 
   const isLoggedIn = useSelector(selectIsLoggedIn);
   const isRegistered = useSelector(selectIsRegistered);
@@ -112,16 +113,26 @@ const useAppInitialization = () => {
     }
   }, [initState.serviceWorkerRegistered]);
 
+  // Authentication check on app start
+  useEffect(() => {
+    checkAuthStatus();
+  }, [checkAuthStatus]);
+
+  // Reset initialization when user logs in to trigger data refetch
+  useEffect(() => {
+    if (isLoggedIn) {
+      setInitState(prev => ({
+        ...prev,
+        initialDataFetched: false,
+        userDataFetched: false,
+      }));
+    }
+  }, [isLoggedIn]);
+
   // Main initialization
   useEffect(() => {
     const initializeApp = async () => {
-      if (
-        !isLoggedIn ||
-        !backendActor ||
-        isFetching ||
-        initState.initialDataFetched
-      )
-        return;
+      if (!isLoggedIn || isFetching || initState.initialDataFetched) return;
 
       try {
         dispatch({ type: "IS_FETCHING", isFetching: true });
@@ -130,10 +141,15 @@ const useAppInitialization = () => {
           backendActor.get_my_jobs(),
           backendActor.get_initial_data(),
         ]);
-        if (isLoggedIn && initialRes.value?.Err === "Anonymous user.") {
+        console.log({ initialRes });
+        if (
+          initialRes.status === "fulfilled" &&
+          isLoggedIn &&
+          initialRes.value?.Err === "Anonymous user."
+        ) {
           dispatch({ type: "IS_REGISTERED", isRegistered: false });
           return null;
-        } else if (initialRes.value?.Ok) {
+        } else if (initialRes.status === "fulfilled" && initialRes.value?.Ok) {
           dispatch({ type: "IS_REGISTERED", isRegistered: true });
         } else {
           logout();
@@ -198,12 +214,12 @@ const useAppInitialization = () => {
     };
 
     initializeApp();
-  }, [backendActor]);
+  }, [isLoggedIn, isFetching, initState.initialDataFetched, dispatch, logout]);
 
   // User data fetching
   useEffect(() => {
     const fetchUserData = async () => {
-      if (!profile?.id || !backendActor || initState.userDataFetched) return;
+      if (!profile?.id || initState.userDataFetched) return;
 
       try {
         const [notifications, chats, calendar, credits] =
@@ -251,12 +267,12 @@ const useAppInitialization = () => {
     };
 
     fetchUserData();
-  }, [profile?.id, backendActor, initState.userDataFetched, dispatch]);
+  }, [profile?.id, initState.userDataFetched, dispatch]);
 
   // Posts fetching
   useEffect(() => {
     const fetchPosts = async () => {
-      if (!backendActor || posts.length > 0 || initState.postsFetched) return;
+      if (posts.length > 0 || initState.postsFetched) return;
 
       try {
         const fetchedPosts = await backendActor.get_posts(
@@ -273,20 +289,16 @@ const useAppInitialization = () => {
     };
 
     fetchPosts();
-  }, [backendActor, posts.length, initState.postsFetched, dispatch]);
+  }, [posts.length, initState.postsFetched, dispatch]);
 
   // Token deposit
   useEffect(() => {
     const processDeposit = async () => {
-      if (
-        !backendActor ||
-        !ckUSDCActor ||
-        !profile?.id ||
-        initState.depositProcessed
-      )
-        return;
+      if (!profile?.id || initState.depositProcessed) return;
 
       try {
+        if (!ckUSDCActor) return;
+
         const userBalance = await getckUsdcBalance(ckUSDCActor, profile.id);
         if (Number(userBalance) <= 0 || Number(userBalance) / 1_000_000 < 1) {
           if (Number(userBalance) > 0) {
@@ -341,8 +353,6 @@ const useAppInitialization = () => {
 
     processDeposit();
   }, [
-    backendActor,
-    ckUSDCActor,
     profile?.id,
     initState.depositProcessed,
     enqueueSnackbar,
@@ -355,11 +365,16 @@ const useAppInitialization = () => {
 
 const App: React.FC = () => {
   const isRegistered = useSelector(selectIsRegistered);
-  const { backendActor } = useBackendContext();
   const navigate = useNavigate();
+  const [backendReady, setBackendReady] = useState(false);
 
   useAppInitialization();
   useSocket();
+
+  // Check backend readiness
+  useEffect(() => {
+    setBackendReady(!!backendActor);
+  }, []);
 
   // Domain-based navigation logic
   useEffect(() => {
@@ -372,7 +387,7 @@ const App: React.FC = () => {
     }
   }, [navigate, isRegistered]);
 
-  if (!backendActor) return <RunawayJellyfish thinking={true} scale={2} />;
+  if (!backendReady) return <RunawayJellyfish thinking={true} scale={2} />;
 
   return (
     <MainContent>

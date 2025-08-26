@@ -28,7 +28,7 @@ import { formatRelativeTime } from "../../utils/time";
 import EditorComponent from "../../components/EditorComponent";
 import { deserializeContentTree } from "../../DataProcessing/deserlize/deserializeContents";
 import UserAvatarMenu from "../../components/MainComponents/UserAvatarMenu";
-import { useBackendContext } from "../../contexts/BackendContext";
+import { backendActor } from "../../utils/backendUtils";
 import serializeFileContents from "../../DataProcessing/serialize/serializeFileContents";
 import { Post, PostUser } from "../../../declarations/backend/backend.did";
 import CommentList from "./CommentList";
@@ -106,7 +106,7 @@ const ViewPostComponent: React.FC<ViewPostComponentProps> = ({
   handleDeletePost,
 }) => {
   const theme = useTheme();
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
   const { enqueueSnackbar } = useSnackbar();
   const { profile } = useSelector((state: RootState) => state.filesState);
   const [showComments, setShowComments] = React.useState(false);

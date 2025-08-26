@@ -4,13 +4,13 @@ import {
   CustomContract,
   StoredContract,
 } from "../../../declarations/backend/backend.did";
-import { useBackendContext } from "../../contexts/BackendContext";
+import { backendActor, ckUSDCActor, logout } from "../../utils/backendUtils";
 
 import CustomContractComponent from "./index";
 import { Typography } from "@mui/material";
 
 export default function SlateCustomContract(props: any) {
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
   const { id } = props.element;
 
   const { contracts, profile, all_friends, current_file } = useSelector(

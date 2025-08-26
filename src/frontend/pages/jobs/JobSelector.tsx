@@ -1,5 +1,5 @@
 import { Job } from "$/declarations/backend/backend.did";
-import { useBackendContext } from "@/contexts/BackendContext";
+import { backendActor, ckUSDCActor, logout } from "@/utils/backendUtils";
 import { Add, Delete, Share, Visibility } from "@mui/icons-material";
 import {
   Box,
@@ -37,7 +37,7 @@ const JobSelector: React.FC = () => {
 
   const theme = useTheme();
   const currentJob = jobs.find((job: Job) => job.id === currentJobId);
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
 
   const JOB_FIELDS = [
     "description",

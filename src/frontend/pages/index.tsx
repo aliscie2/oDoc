@@ -8,7 +8,6 @@ import { selectIsLoggedIn } from "@/redux/selectors";
 import LandingPage from "./LandingPage";
 import ICPJobsLandingPage from "./LandingPage/aiJobMatch";
 import AffiliateRedirect from "./affiliateRedirect";
-import { Posts } from "./posts";
 
 // Lazy imports for heavy components
 const JobsPage = React.lazy(() => import("./jobs"));
@@ -28,6 +27,7 @@ const CalendarView = React.lazy(() => import("./calendar/calendar"));
 const AchievementPage = React.lazy(() => import("@/components/userBadges"));
 const WalletPage = React.lazy(() => import("./walletPage"));
 const JobPage = React.lazy(() => import("./jobPage"));
+const Posts = React.lazy(() => import("./posts/posts"));
 
 // Loading component
 const PageLoader = () => (

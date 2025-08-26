@@ -1,4 +1,4 @@
-import { useBackendContext } from "@/contexts/BackendContext";
+import { backendActor, ckUSDCActor, logout } from "@/utils/backendUtils";
 import { Button, CircularProgress } from "@mui/material";
 
 import { useState } from "react";
@@ -7,7 +7,7 @@ import { useDispatch } from "react-redux";
 function DeleteContractButton({ contractId }: { contractId: string }) {
   const [isDeleting, setDeleting] = useState(false);
   const dispatch = useDispatch();
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
 
   const handleDelete = async () => {
     if (

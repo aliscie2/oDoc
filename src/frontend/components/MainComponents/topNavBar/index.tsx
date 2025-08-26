@@ -46,7 +46,7 @@ import WorkspaceManager from "../Workspaces";
 import LoginButton from "./loginButton";
 import EnhancedUserAvatar from "./EnhancedUserAvatar";
 
-import { useBackendContext } from "@/contexts/BackendContext";
+import { backendActor, ckUSDCActor, logout } from "@/utils/backendUtils";
 import { convertToBlobLink } from "@/DataProcessing/imageToVec";
 import getStyles from "./styles";
 
@@ -220,7 +220,7 @@ export default function TopNavBar() {
   );
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { logout } = useBackendContext();
+  // Using direct logout import
   const state = useNavigationState();
   const showMobileMenu = useMobileScrollBehavior(state.isMobile);
 

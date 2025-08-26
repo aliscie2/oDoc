@@ -2,7 +2,7 @@ import { Box, CircularProgress, Typography, Button } from "@mui/material";
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
-import { useBackendContext } from "../contexts/BackendContext";
+import { backendActor } from "../utils/backendUtils";
 import { useSnackbar } from "notistack";
 import JobDetails from "./jobs/JobDetails";
 import UserAvatarMenu from "@/components/MainComponents/UserAvatarMenu";
@@ -180,7 +180,7 @@ const generateThumbnailDataUrl = async (
 
 const JobPage = () => {
   const [searchParams] = useSearchParams();
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
   const { enqueueSnackbar } = useSnackbar();
   const { profile } = useSelector((state: RootState) => state.filesState);
   const [job, setJob] = useState<any>(null);

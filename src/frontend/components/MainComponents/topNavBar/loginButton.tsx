@@ -1,8 +1,8 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import { Button, LinearProgress } from "@mui/material";
-import { RootState } from "../../../redux/reducers";
-import { useBackendContext } from "../../../contexts/BackendContext";
+import { RootState } from "@/redux/reducers";
+import { useAuth } from "@/hooks/useAuth";
 import DfnIcon from "@/assets/dfn.svg";
 
 interface LoginButtonProps {
@@ -14,7 +14,7 @@ const LoginButton: React.FC<LoginButtonProps> = ({
   isMobile = false,
   sx = {},
 }) => {
-  const { login } = useBackendContext();
+  const { login } = useAuth();
   const { isFetching } = useSelector((state: RootState) => state.uiState);
 
   if (isFetching) {

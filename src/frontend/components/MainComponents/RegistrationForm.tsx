@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import { useSnackbar } from "notistack";
-import { useBackendContext } from "../../contexts/BackendContext";
+import { backendActor, ckUSDCActor, logout } from "../../utils/backendUtils";
 import { RegisterUser } from "../../../declarations/backend/backend.did";
 import compressImage from "@/DataProcessing/compressImage";
 import { useLocation } from "react-router-dom";
@@ -42,7 +42,7 @@ interface FormValues {
 
 const RegistrationForm: React.FC = () => {
   const { enqueueSnackbar } = useSnackbar();
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
 
   const [formValues, setFormValues] = useState<FormValues>({
     username: "",

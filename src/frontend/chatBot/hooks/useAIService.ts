@@ -1,10 +1,10 @@
 import { useMemo } from "react";
 import { useDispatch } from "react-redux";
-import { useBackendContext } from "@/contexts/BackendContext";
+import { backendActor, ckUSDCActor, logout } from "@/utils/backendUtils";
 import { AIService } from "../services/AIService";
 
 export const useAIService = () => {
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
   const dispatch = useDispatch();
 
   const aiService = useMemo(

@@ -3,7 +3,7 @@ import { Button, CircularProgress } from "@mui/material";
 import { useDispatch } from "react-redux";
 
 import { useState } from "react";
-import { useBackendContext } from "../../contexts/BackendContext";
+import { backendActor } from "../../utils/backendUtils";
 
 interface DeleteFileProps {
   item: {
@@ -14,7 +14,7 @@ interface DeleteFileProps {
 
 const DeleteFile: React.FC<DeleteFileProps> = ({ item }) => {
   const [isLoading, setLoding] = useState(false);
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
   const dispatch = useDispatch();
 
   const handleDeleteFile = async () => {

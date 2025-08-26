@@ -18,7 +18,7 @@ import { useNavigate } from "react-router-dom";
 import { Person, Star } from "@mui/icons-material";
 import { Message as MessageIcon } from "@mui/icons-material";
 import CircularProgress from "@mui/material/CircularProgress";
-import { useBackendContext } from "../../contexts/BackendContext";
+import { backendActor, ckUSDCActor, logout } from "../../utils/backendUtils";
 import { useSnackbar } from "notistack";
 import { Principal } from "@dfinity/principal";
 import { Rating, Message } from "../../../declarations/backend/backend.did";
@@ -46,7 +46,7 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
   hide = [],
   user_id,
 }) => {
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const { chats } = useSelector((state: RootState) => state.chatsState);

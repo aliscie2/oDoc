@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { serlizeEeventToGooggleEvent } from "./eventConverter";
 import { useDispatch, useSelector } from "react-redux";
-import { useBackendContext } from "@/contexts/BackendContext";
+import { backendActor, ckUSDCActor, logout } from "@/utils/backendUtils";
 const accessToken = "";
 
 export const useGoogleCalendar = () => {
   const { profile } = useSelector((state) => state.filesState);
   const { calendar } = useSelector((state) => state.calendarState);
   const { currentJobId, jobs } = useSelector((state) => state.jobState);
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
   const dispatch = useDispatch();
 
   const [isConnected, setIsConnected] = useState(false);

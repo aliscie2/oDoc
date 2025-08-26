@@ -1,6 +1,6 @@
 import React from "react";
 import { useSnackbar } from "notistack";
-import { useBackendContext } from "../contexts/BackendContext";
+import { backendActor, ckUSDCActor, logout } from "../utils/backendUtils";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 
@@ -14,7 +14,7 @@ const FriendshipButton: React.FC<FriendshipButtonProps> = ({ user }) => {
   const { Anonymous, profile, friends } = useSelector(
     (state: any) => state.filesState,
   );
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
   const [isLoading, setIsLoading] = useState(false);
 
   const [localFriends, setLocalFriends] = useState(friends);

@@ -1,5 +1,5 @@
 import { Job, Match } from "$/declarations/backend/backend.did";
-import { useBackendContext } from "@/contexts/BackendContext";
+import { backendActor } from "@/utils/backendUtils";
 import { RootState } from "@/redux/reducers";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -19,7 +19,7 @@ interface AIMatchResponse {
 }
 
 export const useJobMatching = (currentJob: Job | null) => {
-  const { backendActor } = useBackendContext();
+  // Using direct backendActor import
   const { credits } = useSelector((state: RootState) => state.AIState);
   const dispatch = useDispatch();
 
