@@ -59,8 +59,7 @@ use crate::ckusdc_index_types::*;
 use affiliate::*;
 use ai_agent::*;
 use ic_cdk::api::management_canister::http_request::{
-    http_request, CanisterHttpRequestArgument, HttpHeader, HttpMethod, HttpResponse, TransformArgs,
-    TransformContext,
+    HttpResponse, TransformArgs,
 };
 
 use workspaces::*;

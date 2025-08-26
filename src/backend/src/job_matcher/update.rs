@@ -1,4 +1,4 @@
-use crate::{current_user_state::UserState, job_matcher::inverted_index};
+use crate::job_matcher::inverted_index;
 
 use super::pallet::{Category, Job, Match};
 use candid::{CandidType, Deserialize, Principal};
@@ -82,7 +82,7 @@ fn update_job(updates: Vec<JobUpdate>, ai_credits: Option<f32>) -> Result<(), St
         }
         if let Some(score) = update.required_match_score {
             // Strict validation: only accept scores in 0.0-1.0 range
-            if score < 0.0 || score > 1.0 {
+            if !(0.0..=1.0).contains(&score) {
                 return Err("Required match score must be between 0.0 and 1.0".to_string());
             }
             job.required_match_score = score;

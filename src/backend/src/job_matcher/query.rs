@@ -1,4 +1,3 @@
-use ic_cdk::caller;
 use ic_cdk_macros::query;
 
 use crate::job_matcher::inverted_index;

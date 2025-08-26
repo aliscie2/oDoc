@@ -1,5 +1,3 @@
-use super::types::Rating;
-use candid::Principal;
 
 #[test]
 fn test_calic() {
@@ -13,8 +11,8 @@ fn test_calic() {
     let total_rate: Vec<Rating> = vec![rating.clone(), rating.clone()];
     let total_actions_rate: Vec<Rating> = vec![];
 
-    let total_rate_sum: f64 = total_rate.iter().map(|r| r.rating as f64).sum();
-    let total_actions_rate_sum: f64 = total_actions_rate.iter().map(|r| r.rating as f64).sum();
+    let total_rate_sum: f64 = total_rate.iter().map(|r| r.rating).sum();
+    let total_actions_rate_sum: f64 = total_actions_rate.iter().map(|r| r.rating).sum();
 
     let others_rate = total_rate_sum / total_rate.len() as f64;
 

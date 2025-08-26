@@ -209,7 +209,8 @@ impl Storable for Job {
                 },
                 Err(_) => {
                     // Use default if both formats fail
-                    let new_job = Job {
+                    
+                    Job {
                         notification_id: String::new(),
                         notification_username: String::new(),
                         id: "NoneID".to_string(),
@@ -234,8 +235,7 @@ impl Storable for Job {
                         contacts: Vec::new(),
                         profile_completion: 0.6, // Default value for new field
                         feedback: "We apologize, we made new updates to the website. The AI will provide better feedback as you talk to it.".to_string(), // Default value for new field
-                    };
-                    new_job
+                    }
                 }
             }
         })

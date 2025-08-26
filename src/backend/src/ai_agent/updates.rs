@@ -1,8 +1,6 @@
-use crate::affiliate::{Affiliate, ReferredUser};
 use crate::current_user_state::UserState;
 use ic_cdk_macros::*;
 // Import user history related types and traits
-use crate::user_history::UserHistory;
 use ic_cdk::api::management_canister::http_request::{
     http_request, CanisterHttpRequestArgument, HttpHeader, HttpMethod, HttpResponse, TransformArgs,
     TransformContext,
@@ -10,7 +8,7 @@ use ic_cdk::api::management_canister::http_request::{
 use serde::Serialize;
 use serde_json::json;
 
-use candid::{CandidType, Deserialize, Principal};
+use candid::{CandidType, Deserialize};
 
 #[derive(PartialOrd, PartialEq, Clone, Debug, Default, Serialize, CandidType, Deserialize)]
 pub struct AiResponse {
@@ -116,7 +114,7 @@ pub async fn ask_ai(
     let response_text = response_json
         .get("content")
         .and_then(|content| content.as_array())
-        .and_then(|arr| arr.get(0))
+        .and_then(|arr| arr.first())
         .and_then(|first_content| first_content.get("text"))
         .and_then(|text| text.as_str())
         .unwrap_or("No response from AI")

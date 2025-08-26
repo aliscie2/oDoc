@@ -1,5 +1,5 @@
 use candid::{encode_one, CandidType};
-use ic_cdk::{api::time, caller, print, println};
+use ic_cdk::{api::time, caller, print};
 use ic_websocket_cdk::{
     send, ClientPrincipal, OnCloseCallbackArgs, OnMessageCallbackArgs, OnOpenCallbackArgs,
 };
