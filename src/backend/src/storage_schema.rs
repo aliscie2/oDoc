@@ -48,12 +48,11 @@ impl Storable for User {
                     description: old_user.description,
                     photo: old_user.photo,
                 },
-                Err(_) => {
-                    let mut new_user = User::default();
-                    new_user.name = "NoneName".to_string();
-                    new_user.id = "NoneID".to_string();
-                    new_user
-                } // Use default if both formats fail
+                Err(_) => User {
+                    name: "NoneName".to_string(),
+                    id: "NoneID".to_string(),
+                    ..Default::default()
+                }, // Use default if both formats fail
             }
         })
     }

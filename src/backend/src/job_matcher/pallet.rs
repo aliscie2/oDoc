@@ -17,6 +17,7 @@ pub struct Match {
 
 impl Match {
     /// Validates and normalizes the match score to be between 0.0 and 1.0
+    #[allow(dead_code)]
     pub fn normalize_score(score: f32) -> f32 {
         if score < 0.0 {
             0.0
@@ -32,6 +33,7 @@ impl Match {
     }
 
     /// Creates a new Match with normalized score
+    #[allow(dead_code)]
     pub fn new(
         score: f32,
         job_id: String,
@@ -53,6 +55,7 @@ impl Match {
     }
 
     /// Validates that the score is in the correct range (0.0 to 1.0)
+    #[allow(dead_code)]
     pub fn is_valid_score(&self) -> bool {
         self.score >= 0.0 && self.score <= 1.0
     }
@@ -90,60 +93,6 @@ pub struct Job {
     pub contacts: Vec<String>,
     pub profile_completion: f64, // Must be between 0.0 and 1.0
     pub feedback: String,        // Feedback text from AI or system
-}
-
-impl Job {
-    /// Validates and normalizes the required match score to be between 0.0 and 1.0
-    pub fn normalize_required_match_score(score: f32) -> f32 {
-        if score < 0.0 {
-            0.0
-        } else if score <= 1.0 {
-            score // Already in 0-1 range
-        } else if score <= 10.0 {
-            score / 10.0 // Convert from 0-10 to 0-1
-        } else if score <= 100.0 {
-            score / 100.0 // Convert from 0-100 to 0-1
-        } else {
-            1.0 // Cap at 1.0 for any value above 100
-        }
-    }
-
-    /// Sets the required match score with normalization
-    pub fn set_required_match_score(&mut self, score: f32) {
-        self.required_match_score = Self::normalize_required_match_score(score);
-    }
-
-    /// Validates that the required match score is in the correct range (0.0 to 1.0)
-    pub fn is_valid_required_match_score(&self) -> bool {
-        self.required_match_score >= 0.0 && self.required_match_score <= 1.0
-    }
-
-    /// Validates all match scores in the job
-    pub fn validate_match_scores(&self) -> bool {
-        self.matches.iter().all(|m| m.is_valid_score())
-    }
-
-    /// Normalizes all existing match scores to 0-1 range
-    pub fn normalize_all_match_scores(&mut self) {
-        for match_item in &mut self.matches {
-            match_item.score = Match::normalize_score(match_item.score);
-        }
-    }
-
-    /// Validates and normalizes the profile completion to be between 0.0 and 1.0
-    pub fn normalize_profile_completion(completion: f64) -> f64 {
-        completion.clamp(0.0, 1.0)
-    }
-
-    /// Sets the profile completion with normalization
-    pub fn set_profile_completion(&mut self, completion: f64) {
-        self.profile_completion = Self::normalize_profile_completion(completion);
-    }
-
-    /// Validates that the profile completion is in the correct range (0.0 to 1.0)
-    pub fn is_valid_profile_completion(&self) -> bool {
-        self.profile_completion >= 0.0 && self.profile_completion <= 1.0
-    }
 }
 
 impl Storable for Job {
@@ -209,7 +158,6 @@ impl Storable for Job {
                 },
                 Err(_) => {
                     // Use default if both formats fail
-                    
                     Job {
                         notification_id: String::new(),
                         notification_username: String::new(),

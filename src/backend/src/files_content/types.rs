@@ -28,8 +28,8 @@ pub struct OldContentNode {
     pub language: String,
     pub indent: u64,
     pub data: Option<ContentData>,
-    pub listStyleType: String,
-    pub listStart: u64,
+    pub list_style_type: String,
+    pub list_start: u64,
     #[serde(default)]
     pub children: Vec<ContentId>,
 }
@@ -45,8 +45,8 @@ pub struct ContentNode {
     pub language: String,
     pub indent: u64,
     pub data: Option<ContentData>,
-    pub listStyleType: String,
-    pub listStart: u64,
+    pub list_style_type: String,
+    pub list_start: u64,
     #[serde(default)]
     pub children: Vec<ContentId>,
 }

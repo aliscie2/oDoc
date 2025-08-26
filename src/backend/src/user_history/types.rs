@@ -14,7 +14,7 @@ use std::borrow::Cow;
 // }
 
 #[derive(PartialOrd, PartialEq, Clone, Debug, CandidType, Deserialize)]
-enum ActionType {
+pub(crate) enum ActionType {
     Payment(CPayment),
     // Share(SharePayment),
 }
@@ -205,7 +205,7 @@ impl UserHistory {
             );
         }
 
-        if let Some(rating) = self.get_your_rating() {
+        if let Some(_rating) = self.get_your_rating() {
             self.rates_by_others.retain(|r| r.user_id != caller());
             // return Err("You already rated this user short ago. Please, wait 5 minutes before you can relate them.".to_string());
             // let diff = time_diff(rating.date.clone(), ic_cdk::api::time());

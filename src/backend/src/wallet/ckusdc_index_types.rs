@@ -25,7 +25,7 @@ pub enum IndexArg {
 pub type BlockIndex = candid::Nat;
 pub type SubAccount = serde_bytes::ByteBuf;
 #[derive(CandidType, Deserialize)]
-pub struct Index_Account {
+pub struct IndexAccount {
     pub owner: Principal,
     pub subaccount: Option<SubAccount>,
 }
@@ -34,22 +34,22 @@ pub struct Index_Account {
 pub struct GetAccountTransactionsArgs {
     pub max_results: candid::Nat,
     pub start: Option<BlockIndex>,
-    pub account: Index_Account,
+    pub account: IndexAccount,
 }
 
 pub type Tokens = candid::Nat;
 #[derive(CandidType, Deserialize)]
 pub struct Burn {
-    pub from: Index_Account,
+    pub from: IndexAccount,
     pub memo: Option<serde_bytes::ByteBuf>,
     pub created_at_time: Option<u64>,
     pub amount: candid::Nat,
-    pub spender: Option<Index_Account>,
+    pub spender: Option<IndexAccount>,
 }
 
 #[derive(CandidType, Deserialize)]
 pub struct Mint {
-    pub to: Index_Account,
+    pub to: IndexAccount,
     pub memo: Option<serde_bytes::ByteBuf>,
     pub created_at_time: Option<u64>,
     pub amount: candid::Nat,
@@ -58,24 +58,24 @@ pub struct Mint {
 #[derive(CandidType, Deserialize)]
 pub struct Approve {
     pub fee: Option<candid::Nat>,
-    pub from: Index_Account,
+    pub from: IndexAccount,
     pub memo: Option<serde_bytes::ByteBuf>,
     pub created_at_time: Option<u64>,
     pub amount: candid::Nat,
     pub expected_allowance: Option<candid::Nat>,
     pub expires_at: Option<u64>,
-    pub spender: Index_Account,
+    pub spender: IndexAccount,
 }
 
 #[derive(CandidType, Deserialize)]
 pub struct Transfer {
-    pub to: Index_Account,
+    pub to: IndexAccount,
     pub fee: Option<candid::Nat>,
-    pub from: Index_Account,
+    pub from: IndexAccount,
     pub memo: Option<serde_bytes::ByteBuf>,
     pub created_at_time: Option<u64>,
     pub amount: candid::Nat,
-    pub spender: Option<Index_Account>,
+    pub spender: Option<IndexAccount>,
 }
 
 #[derive(CandidType, Deserialize)]
@@ -139,7 +139,7 @@ pub struct GetBlocksResponse {
 
 #[derive(CandidType, Deserialize)]
 pub struct FeeCollectorRanges {
-    pub ranges: Vec<(Index_Account, Vec<(BlockIndex, BlockIndex)>)>,
+    pub ranges: Vec<(IndexAccount, Vec<(BlockIndex, BlockIndex)>)>,
 }
 
 #[derive(CandidType, Deserialize)]
@@ -167,7 +167,7 @@ impl Service {
     pub async fn get_fee_collectors_ranges(&self) -> Result<(FeeCollectorRanges,)> {
         ic_cdk::call(self.0, "get_fee_collectors_ranges", ()).await
     }
-    pub async fn icrc_1_balance_of(&self, arg0: Index_Account) -> Result<(Tokens,)> {
+    pub async fn icrc_1_balance_of(&self, arg0: IndexAccount) -> Result<(Tokens,)> {
         ic_cdk::call(self.0, "icrc1_balance_of", (arg0,)).await
     }
     pub async fn ledger_id(&self) -> Result<(Principal,)> {

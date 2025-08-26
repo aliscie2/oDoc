@@ -19,7 +19,7 @@ test("should signup new user successfully and receive initial balance", async ()
   expect("Ok" in initialData).toBe(true);
 
   if ("Ok" in initialData) {
-    expect(initialData.Ok.Wallet.balance).toBe(299);
+    expect(initialData.Ok.wallet.balance).toBe(299);
   }
 });
 
@@ -34,7 +34,7 @@ test("should withdraw successfully and update balance", async () => {
 
   let initData = await globalThis.testActor.get_initial_data();
   expect("Ok" in initData).toBe(true);
-  const initialBalance = initData.Ok.Wallet.balance;
+  const initialBalance = initData.Ok.wallet.balance;
   expect(initialBalance).toBe(299);
   const withdraw = await globalThis.testActor.withdraw_ckusdt(
     BigInt(299),
@@ -44,7 +44,7 @@ test("should withdraw successfully and update balance", async () => {
 
   initData = await globalThis.testActor.get_initial_data();
   expect("Ok" in initData).toBe(true);
-  const finalBalance = initData.Ok.Wallet.balance;
+  const finalBalance = initData.Ok.wallet.balance;
 
   expect(finalBalance).toBe(0);
 });

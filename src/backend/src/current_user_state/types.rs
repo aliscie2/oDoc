@@ -76,15 +76,6 @@ impl UserState {
         });
     }
 
-    // Helper method to get current user's full state
-    pub fn get_current_user_state() -> UserState {
-        let current_user = caller().to_string();
-        crate::CURRENT_USER_STATE_STORE.with(|store| {
-            let states = store.borrow();
-            states.get(&current_user).unwrap_or_default()
-        })
-    }
-
     // Helper method to get credits for current user
     pub fn get_credits() -> f32 {
         let current_user = caller().to_string();
@@ -98,6 +89,7 @@ impl UserState {
     }
 
     // Helper method to update subscription
+    #[allow(dead_code)]
     pub fn set_subscription(subscription: Subscprtion) {
         let current_user = caller().to_string();
         crate::CURRENT_USER_STATE_STORE.with(|store| {

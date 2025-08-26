@@ -68,8 +68,8 @@ impl Storable for Post {
                             language: old_node.language,
                             indent: old_node.indent,
                             data: old_node.data,
-                            listStyleType: old_node.listStyleType,
-                            listStart: old_node.listStart,
+                            list_style_type: old_node.list_style_type,
+                            list_start: old_node.list_start,
                             children: old_node.children,
                         })
                         .collect(),

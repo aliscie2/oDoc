@@ -33,16 +33,16 @@ fn delete_from_search(id: String) {
     }
 }
 
-fn add_to_search(skills: &Vec<String>, job_id: &String, category: &Category) {
+fn add_to_search(skills: &[String], job_id: &str, category: &Category) {
     if *category == Category::Job {
-        inverted_index::add_new_job(skills.clone(), job_id.clone())
+        inverted_index::add_new_job(skills.to_owned(), job_id.to_owned())
     } else {
-        inverted_index::add_new_talent(skills.clone(), job_id.clone())
+        inverted_index::add_new_talent(skills.to_owned(), job_id.to_owned())
     }
 }
 
 #[update]
-fn update_job(updates: Vec<JobUpdate>, ai_credits: Option<f32>) -> Result<(), String> {
+fn update_job(updates: Vec<JobUpdate>, _ai_credits: Option<f32>) -> Result<(), String> {
     if ic_cdk::caller().to_string() == Principal::anonymous().to_string() {
         return Err("Permission denied (anonymous)".to_string());
     }

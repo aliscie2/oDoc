@@ -38,11 +38,11 @@ fn get_my_jobs() -> GetJobs {
         matching_jobs,
     }
 }
-fn search_matches(skills: &Vec<String>, category: Category) -> Vec<Job> {
+fn search_matches(skills: &[String], category: Category) -> Vec<Job> {
     let ids = if category == Category::Job {
-        inverted_index::search_for_job(skills.clone())
+        inverted_index::search_for_job(skills.to_owned())
     } else {
-        inverted_index::search_for_talent(skills.clone())
+        inverted_index::search_for_talent(skills.to_owned())
     };
 
     let caller_id = ic_cdk::caller().to_string();
@@ -90,8 +90,8 @@ fn should_include_job(job: &Job, current_job: &Job) -> bool {
 
 fn filter_and_limit_jobs(
     jobs: Vec<Job>,
-    current_skills: &Vec<String>,
-    current_job: Option<&Job>,
+    current_skills: &[String],
+    _current_job: Option<&Job>,
 ) -> Vec<Job> {
     let mut filtered_jobs: Vec<Job> = jobs
         .into_iter()
@@ -114,7 +114,7 @@ fn is_job_recent(job: &Job) -> bool {
     job.date_updated > fifty_days_ago
 }
 
-fn has_good_skill_overlap(job: &Job, current_skills: &Vec<String>) -> bool {
+fn has_good_skill_overlap(job: &Job, current_skills: &[String]) -> bool {
     // Count how many skills match
     let matching_skills = job
         .skills

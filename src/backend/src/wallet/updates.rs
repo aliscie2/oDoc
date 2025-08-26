@@ -50,7 +50,7 @@ async fn check_external_transactions(max_results: Nat) -> Result<GetTransactions
     let args = GetAccountTransactionsArgs {
         max_results,
         start: None,
-        account: Index_Account {
+        account: IndexAccount {
             owner: caller(),
             subaccount: None,
         },

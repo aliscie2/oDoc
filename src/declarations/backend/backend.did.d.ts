@@ -41,13 +41,13 @@ export interface AppMessage {
 }
 export interface Approve {
   'fee' : [] | [bigint],
-  'from' : Index_Account,
+  'from' : IndexAccount,
   'memo' : [] | [Uint8Array | number[]],
   'created_at_time' : [] | [bigint],
   'amount' : bigint,
   'expected_allowance' : [] | [bigint],
   'expires_at' : [] | [bigint],
-  'spender' : Index_Account,
+  'spender' : IndexAccount,
 }
 export interface AssistantMessage {
   'content' : [] | [string],
@@ -61,11 +61,11 @@ export interface Availability {
   'time_slots' : Array<TimeSlot>,
 }
 export interface Burn {
-  'from' : Index_Account,
+  'from' : IndexAccount,
   'memo' : [] | [Uint8Array | number[]],
   'created_at_time' : [] | [bigint],
   'amount' : bigint,
-  'spender' : [] | [Index_Account],
+  'spender' : [] | [IndexAccount],
 }
 export interface CCell { 'id' : string, 'field' : string, 'value' : string }
 export interface CColumn {
@@ -102,9 +102,9 @@ export interface CRow { 'id' : string, 'cells' : Array<CCell> }
 export interface Calendar {
   'id' : string,
   'owner' : string,
-  'googleIds' : Array<string>,
   'events' : Array<Event>,
   'availabilities' : Array<Availability>,
+  'google_ids' : Array<string>,
 }
 export interface CalendarActions {
   'delete_availabilities' : Array<string>,
@@ -172,11 +172,11 @@ export interface ContentNode {
   'text' : string,
   'children' : Array<string>,
   'language' : string,
+  'list_style_type' : string,
   'indent' : bigint,
-  'listStart' : bigint,
+  'list_start' : bigint,
   'formats' : Array<string>,
   'parent' : [] | [string],
-  'listStyleType' : string,
 }
 export type Contract = { 'SharesContract' : string };
 export interface ContractNotification {
@@ -243,9 +243,9 @@ export type ExchangeType = { 'Withdraw' : null } |
   { 'Deposit' : null } |
   { 'LocalSend' : null } |
   { 'LocalReceive' : null };
-export type Execute = { 'TransferNft' : null } |
-  { 'TransferToken' : null } |
-  { 'TransferUsdt' : CPayment };
+export type Execute = { 'Nft' : null } |
+  { 'Usdt' : CPayment } |
+  { 'Token' : null };
 export interface FEChat {
   'id' : string,
   'creator' : UserFE,
@@ -304,17 +304,17 @@ export interface HttpResponse {
   'body' : Uint8Array | number[],
   'headers' : Array<ToolCallArgument>,
 }
-export interface Index_Account {
+export interface IndexAccount {
   'owner' : Principal,
   'subaccount' : [] | [Uint8Array | number[]],
 }
 export interface InitialData {
-  'FilesContents' : [] | [Array<[string, Array<ContentNode>]>],
-  'Contracts' : Array<[string, StoredContract]>,
-  'Files' : Array<FileNode>,
-  'Friends' : Array<Friend>,
-  'Profile' : User,
-  'Wallet' : Wallet,
+  'files' : Array<FileNode>,
+  'contracts' : Array<[string, StoredContract]>,
+  'files_contents' : [] | [Array<[string, Array<ContentNode>]>],
+  'wallet' : Wallet,
+  'friends' : Array<Friend>,
+  'profile' : User,
 }
 export interface Job {
   'id' : string,
@@ -376,7 +376,7 @@ export interface Message {
   'chat_id' : string,
 }
 export interface Mint {
-  'to' : Index_Account,
+  'to' : IndexAccount,
   'memo' : [] | [Uint8Array | number[]],
   'created_at_time' : [] | [bigint],
   'amount' : bigint,
@@ -586,13 +586,13 @@ export interface TransactionWithId {
   'transaction' : Transaction,
 }
 export interface Transfer {
-  'to' : Index_Account,
+  'to' : IndexAccount,
   'fee' : [] | [bigint],
-  'from' : Index_Account,
+  'from' : IndexAccount,
   'memo' : [] | [Uint8Array | number[]],
   'created_at_time' : [] | [bigint],
   'amount' : bigint,
-  'spender' : [] | [Index_Account],
+  'spender' : [] | [IndexAccount],
 }
 export interface TransformArgs {
   'context' : Uint8Array | number[],

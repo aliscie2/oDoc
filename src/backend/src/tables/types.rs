@@ -62,9 +62,9 @@ pub enum ContractPermissionType {
 #[derive(PartialEq, PartialOrd, Clone, Debug, CandidType, Serialize, Deserialize)]
 pub enum Execute {
     // TransferToken(TransferToken)
-    TransferToken,
-    TransferUsdt(CPayment),
-    TransferNft,
+    Token,
+    Usdt(CPayment),
+    Nft,
 }
 
 #[derive(PartialEq, PartialOrd, Clone, Debug, CandidType, Serialize, Deserialize)]

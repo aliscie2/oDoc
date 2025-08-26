@@ -79,41 +79,41 @@ export const idlFactory = ({ IDL }) => {
     'assistant' : AssistantMessage,
     'system' : IDL.Record({ 'content' : IDL.Text }),
   });
-  const Index_Account = IDL.Record({
+  const IndexAccount = IDL.Record({
     'owner' : IDL.Principal,
     'subaccount' : IDL.Opt(IDL.Vec(IDL.Nat8)),
   });
   const Burn = IDL.Record({
-    'from' : Index_Account,
+    'from' : IndexAccount,
     'memo' : IDL.Opt(IDL.Vec(IDL.Nat8)),
     'created_at_time' : IDL.Opt(IDL.Nat64),
     'amount' : IDL.Nat,
-    'spender' : IDL.Opt(Index_Account),
+    'spender' : IDL.Opt(IndexAccount),
   });
   const Mint = IDL.Record({
-    'to' : Index_Account,
+    'to' : IndexAccount,
     'memo' : IDL.Opt(IDL.Vec(IDL.Nat8)),
     'created_at_time' : IDL.Opt(IDL.Nat64),
     'amount' : IDL.Nat,
   });
   const Approve = IDL.Record({
     'fee' : IDL.Opt(IDL.Nat),
-    'from' : Index_Account,
+    'from' : IndexAccount,
     'memo' : IDL.Opt(IDL.Vec(IDL.Nat8)),
     'created_at_time' : IDL.Opt(IDL.Nat64),
     'amount' : IDL.Nat,
     'expected_allowance' : IDL.Opt(IDL.Nat),
     'expires_at' : IDL.Opt(IDL.Nat64),
-    'spender' : Index_Account,
+    'spender' : IndexAccount,
   });
   const Transfer = IDL.Record({
-    'to' : Index_Account,
+    'to' : IndexAccount,
     'fee' : IDL.Opt(IDL.Nat),
-    'from' : Index_Account,
+    'from' : IndexAccount,
     'memo' : IDL.Opt(IDL.Vec(IDL.Nat8)),
     'created_at_time' : IDL.Opt(IDL.Nat64),
     'amount' : IDL.Nat,
-    'spender' : IDL.Opt(Index_Account),
+    'spender' : IDL.Opt(IndexAccount),
   });
   const Transaction = IDL.Record({
     'burn' : IDL.Opt(Burn),
@@ -233,9 +233,9 @@ export const idlFactory = ({ IDL }) => {
     'AnyOneEdite' : IDL.Null,
   });
   const Execute = IDL.Variant({
-    'TransferNft' : IDL.Null,
-    'TransferToken' : IDL.Null,
-    'TransferUsdt' : CPayment,
+    'Nft' : IDL.Null,
+    'Usdt' : CPayment,
+    'Token' : IDL.Null,
   });
   const Formula = IDL.Record({ 'column_id' : IDL.Text, 'execute' : Execute });
   const Column = IDL.Record({
@@ -265,11 +265,11 @@ export const idlFactory = ({ IDL }) => {
     'text' : IDL.Text,
     'children' : IDL.Vec(IDL.Text),
     'language' : IDL.Text,
+    'list_style_type' : IDL.Text,
     'indent' : IDL.Nat64,
-    'listStart' : IDL.Nat64,
+    'list_start' : IDL.Nat64,
     'formats' : IDL.Vec(IDL.Text),
     'parent' : IDL.Opt(IDL.Text),
-    'listStyleType' : IDL.Text,
   });
   const RecurrenceFrequency = IDL.Variant({
     'Weekly' : IDL.Null,
@@ -318,9 +318,9 @@ export const idlFactory = ({ IDL }) => {
   const Calendar = IDL.Record({
     'id' : IDL.Text,
     'owner' : IDL.Text,
-    'googleIds' : IDL.Vec(IDL.Text),
     'events' : IDL.Vec(Event),
     'availabilities' : IDL.Vec(Availability),
+    'google_ids' : IDL.Vec(IDL.Text),
   });
   const ContractPermissionType = IDL.Variant({
     'Add' : IDL.Principal,
@@ -388,14 +388,14 @@ export const idlFactory = ({ IDL }) => {
     'receiver' : User,
   });
   const InitialData = IDL.Record({
-    'FilesContents' : IDL.Opt(
+    'files' : IDL.Vec(FileNode),
+    'contracts' : IDL.Vec(IDL.Tuple(IDL.Text, StoredContract)),
+    'files_contents' : IDL.Opt(
       IDL.Vec(IDL.Tuple(IDL.Text, IDL.Vec(ContentNode)))
     ),
-    'Contracts' : IDL.Vec(IDL.Tuple(IDL.Text, StoredContract)),
-    'Files' : IDL.Vec(FileNode),
-    'Friends' : IDL.Vec(Friend),
-    'Profile' : User,
-    'Wallet' : Wallet,
+    'wallet' : Wallet,
+    'friends' : IDL.Vec(Friend),
+    'profile' : User,
   });
   const Result_11 = IDL.Variant({ 'Ok' : InitialData, 'Err' : IDL.Text });
   const Match = IDL.Record({

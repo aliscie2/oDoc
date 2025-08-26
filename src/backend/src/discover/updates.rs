@@ -49,7 +49,7 @@ fn save_post(mut post: Post) -> Result<(), String> {
             let diff = time_diff(ic_cdk::api::time(), posts.last().unwrap().date_created);
 
             if diff < Duration::from_secs(one_day) {
-                let hours = &one_day - diff.as_secs();
+                let hours = one_day - diff.as_secs();
                 let remainder = (one_day - diff.as_secs()) % 3600;
                 let msg = format!(
                     "please wait {} hours and {} minutes",

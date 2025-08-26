@@ -58,9 +58,7 @@ use calendar::*;
 use crate::ckusdc_index_types::*;
 use affiliate::*;
 use ai_agent::*;
-use ic_cdk::api::management_canister::http_request::{
-    HttpResponse, TransformArgs,
-};
+use ic_cdk::api::management_canister::http_request::{HttpResponse, TransformArgs};
 
 use workspaces::*;
 
@@ -273,11 +271,6 @@ mod tests {
     fn test_one() {
         // println!("test_one {}", caller().to_string());
     }
-}
-
-fn backend_wasm() -> Vec<u8> {
-    let wasm_path = std::env::var_os("backend_WASM").expect("Missing counter wasm file");
-    std::fs::read(wasm_path).unwrap()
 }
 
 ic_cdk_macros::export_candid!();

@@ -74,7 +74,7 @@ impl Affiliate {
     }
 
     // Register a new affiliate
-    pub fn register_affiliate(id: String) -> Self {
+    pub fn register_affiliate(_id: String) -> Self {
         //  TODO use ID later
         let caller_id = caller().to_text();
 
@@ -159,14 +159,4 @@ impl Affiliate {
         self.save();
     }
     // Add a new referral with trust calculation
-
-    // Calculate total earnings
-    pub fn total_earnings(&self) -> f64 {
-        self.earnings.iter().map(|payment| payment.amount).sum()
-    }
-
-    // Get number of referrals
-    pub fn referral_count(&self) -> usize {
-        self.users.len()
-    }
 }

@@ -164,24 +164,6 @@ impl Job {
             }
         })
     }
-
-    pub fn get_mismatches(&self, skills: Vec<String>) -> Vec<String> {
-        match self.category {
-            Category::Job => self
-                .skills
-                .iter()
-                .filter(|skill| !skills.contains(skill))
-                .cloned()
-                .collect(),
-
-            Category::Talent => skills
-                .iter()
-                .filter(|skill| !self.skills.contains(skill))
-                .cloned()
-                .collect(),
-        }
-    }
-
     pub fn update_matches(job_id: String, matches: Vec<Match>) -> Result<(), String> {
         crate::JOBS_MATCH_STORE.with(|store| {
             let mut store = store.borrow_mut();

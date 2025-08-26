@@ -36,65 +36,6 @@ impl Calendar {
         Ok(())
     }
 
-    fn check_event_conflicts(&self, new_event: &Event) -> Result<(), String> {
-        let has_conflict = self
-            .events
-            .iter()
-            .filter(|e| e.id != new_event.id)
-            .any(|e| new_event.start_time < e.end_time && new_event.end_time > e.start_time);
-
-        if has_conflict {
-            return Err(format!(
-                "Event '{}' conflicts with an existing event",
-                new_event.title
-            ));
-        }
-        Ok(())
-    }
-
-    fn check_blocked_time_overlap(&self, new_event: &Event) -> Result<(), String> {
-        let overlaps_blocked = self
-            .availabilities
-            .iter()
-            .filter(|a| a.is_blocked)
-            .any(|a| self.time_overlaps_availability(new_event.start_time, new_event.end_time, a));
-
-        if overlaps_blocked {
-            return Err(format!(
-                "Event '{}' overlaps with a blocked time period",
-                new_event.title
-            ));
-        }
-        Ok(())
-    }
-
-    fn time_overlaps_availability(
-        &self,
-        start_time: f64,
-        end_time: f64,
-        availability: &Availability,
-    ) -> bool {
-        match &availability.schedule_type {
-            ScheduleType::DateRange {
-                start_date,
-                end_date,
-            } => start_time < *end_date && end_time > *start_date,
-            ScheduleType::WeeklyRecurring { days, valid_until } => {
-                let event_day = Self::get_day_of_week(start_time);
-                days.contains(&event_day)
-                    && match valid_until {
-                        Some(until) => start_time <= *until,
-                        None => true,
-                    }
-            }
-            ScheduleType::SpecificDates(dates) => dates.iter().any(|date| {
-                let day_start = Self::start_of_day(*date);
-                let day_end = day_start + Self::NANOS_PER_DAY;
-                start_time < day_end && end_time > day_start
-            }),
-        }
-    }
-
     fn check_event_permissions_and_availability(
         &self,
         new_event: &Event,
@@ -214,7 +155,7 @@ fn send_google_calendar_notification(
         return Ok(());
     };
 
-    let html_content = format!(
+    let _html_content = format!(
         r#"<html>
         <body>
             <p>Calendar {calendar_id} has been modified by {caller_id}.</p>
@@ -275,7 +216,7 @@ fn update_calendar(calendar_id: String, actions: CalendarActions) -> Result<Cale
     match calendar.save() {
         Ok(_) => {
             // Send email notification if there's a Google Calendar ID
-            if let Some(google_id) = calendar.googleIds.first() {
+            if let Some(google_id) = calendar.google_ids.first() {
                 if !actions.events.is_empty() || !actions.delete_events.is_empty() {
                     send_google_calendar_notification(
                         &calendar_id,
@@ -309,10 +250,10 @@ fn add_google_calendar_id(calendar_id: String, ids: Vec<String>) -> Result<Strin
 
     // Add new IDs, skipping duplicates
     for id in ids {
-        if calendar.googleIds.contains(&id) {
+        if calendar.google_ids.contains(&id) {
             continue;
         }
-        calendar.googleIds.push(id);
+        calendar.google_ids.push(id);
     }
 
     calendar.save()?;

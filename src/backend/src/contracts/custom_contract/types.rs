@@ -29,7 +29,7 @@ pub struct CColumn {
 }
 
 #[derive(Eq, PartialOrd, PartialEq, Clone, Debug, CandidType, Deserialize, Serialize)]
-pub(crate) struct CCell {
+pub struct CCell {
     pub value: String,
     pub field: String,
     pub id: String,
@@ -105,11 +105,11 @@ pub struct CPayment {
     // Note if conformed == true the the promos should be protected and updatable.
 }
 
-impl CPayment {
-    pub fn default() -> Self {
+impl Default for CPayment {
+    fn default() -> Self {
         Self {
             contract_id: ContractId::default(),
-            id: "".to_string(),
+            id: String::new(),
             amount: 0.0,
             sender: Principal::anonymous(),
             receiver: Principal::anonymous(),
@@ -119,6 +119,13 @@ impl CPayment {
             cells: vec![],
         }
     }
+}
+
+impl CPayment {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
     pub fn pay(mut self) -> Result<Self, String> {
         let mut sender_wallet = Wallet::get(self.sender);
         if self.amount > sender_wallet.balance {
@@ -252,10 +259,10 @@ impl CustomContract {
         let mut remaining_iter = remaining_promises.into_iter();
 
         // Fill empty positions with remaining promises
-        for i in 0..reordered_promises.len() {
-            if reordered_promises[i].is_none() {
+        for item in &mut reordered_promises {
+            if item.is_none() {
                 if let Some(promise) = remaining_iter.next() {
-                    reordered_promises[i] = Some(promise);
+                    *item = Some(promise);
                 }
             }
         }
@@ -406,10 +413,10 @@ impl CustomContract {
             let mut remaining_iter = remaining_columns.into_iter();
 
             // Fill empty positions with remaining columns
-            for i in 0..reordered_columns.len() {
-                if reordered_columns[i].is_none() {
+            for item in &mut reordered_columns {
+                if item.is_none() {
                     if let Some(column) = remaining_iter.next() {
-                        reordered_columns[i] = Some(column);
+                        *item = Some(column);
                     }
                 }
             }
@@ -470,10 +477,10 @@ impl CustomContract {
             let mut remaining_iter = remaining_rows.into_iter();
 
             // Fill empty positions with remaining rows
-            for i in 0..reordered_rows.len() {
-                if reordered_rows[i].is_none() {
+            for item in &mut reordered_rows {
+                if item.is_none() {
                     if let Some(row) = remaining_iter.next() {
-                        reordered_rows[i] = Some(row);
+                        *item = Some(row);
                     }
                 }
             }
@@ -903,17 +910,14 @@ impl CustomContract {
             let caller_contracts = contracts_store.borrow();
             let stored_contract_vec = caller_contracts.get(creator)?.stored_contracts.clone();
 
-            if let Some(contract) = stored_contract_vec.iter().find(|contract| match contract {
-                StoredContract::CustomContract(contract) => contract.id == *id,
-                _ => false,
-            }) {
-                match contract {
-                    StoredContract::CustomContract(contract) => Some(contract.clone()),
-                    _ => None,
+            stored_contract_vec.iter().find_map(|contract| {
+                let StoredContract::CustomContract(contract) = contract;
+                if contract.id == *id {
+                    Some(contract.clone())
+                } else {
+                    None
                 }
-            } else {
-                None
-            }
+            })
         })
     }
 
@@ -965,9 +969,9 @@ impl CustomContract {
                     .extend(caller_contracts_map.stored_contracts.clone());
             }
             // new_map.stored_contracts.push(StoredContract::CustomContract(self.clone()));
-            new_map.stored_contracts.retain(|contract| match contract {
-                StoredContract::CustomContract(contract) => contract.id != self.id,
-                _ => true,
+            new_map.stored_contracts.retain(|contract| {
+                let StoredContract::CustomContract(contract) = contract;
+                contract.id != self.id
             });
             caller_contracts.insert(self.creator, new_map);
         });
@@ -988,9 +992,9 @@ impl CustomContract {
             }
 
             // Remove any existing contract with the same ID
-            new_map.stored_contracts.retain(|contract| match contract {
-                StoredContract::CustomContract(contract) => contract.id != self.id,
-                _ => true,
+            new_map.stored_contracts.retain(|contract| {
+                let StoredContract::CustomContract(contract) = contract;
+                contract.id != self.id
             });
 
             // Add the current contract

@@ -34,13 +34,13 @@ type AppMessage = record {
 };
 type Approve = record {
   fee : opt nat;
-  from : Index_Account;
+  from : IndexAccount;
   memo : opt blob;
   created_at_time : opt nat64;
   amount : nat;
   expected_allowance : opt nat;
   expires_at : opt nat64;
-  spender : Index_Account;
+  spender : IndexAccount;
 };
 type AssistantMessage = record {
   content : opt text;
@@ -54,11 +54,11 @@ type Availability = record {
   time_slots : vec TimeSlot;
 };
 type Burn = record {
-  from : Index_Account;
+  from : IndexAccount;
   memo : opt blob;
   created_at_time : opt nat64;
   amount : nat;
-  spender : opt Index_Account;
+  spender : opt IndexAccount;
 };
 type CCell = record { id : text; field : text; value : text };
 type CColumn = record {
@@ -95,9 +95,9 @@ type CRow = record { id : text; cells : vec CCell };
 type Calendar = record {
   id : text;
   owner : text;
-  googleIds : vec text;
   events : vec Event;
   availabilities : vec Availability;
+  google_ids : vec text;
 };
 type CalendarActions = record {
   delete_availabilities : vec text;
@@ -159,11 +159,11 @@ type ContentNode = record {
   "text" : text;
   children : vec text;
   language : text;
+  list_style_type : text;
   indent : nat64;
-  listStart : nat64;
+  list_start : nat64;
   formats : vec text;
   parent : opt text;
-  listStyleType : text;
 };
 type Contract = variant { SharesContract : text };
 type ContractNotification = record { contract_type : text; contract_id : text };
@@ -228,7 +228,7 @@ type Exchange = record {
   amount : float64;
 };
 type ExchangeType = variant { Withdraw; Deposit; LocalSend; LocalReceive };
-type Execute = variant { TransferNft; TransferToken; TransferUsdt : CPayment };
+type Execute = variant { Nft; Usdt : CPayment; Token };
 type FEChat = record {
   id : text;
   creator : UserFE;
@@ -277,14 +277,14 @@ type HttpResponse = record {
   body : blob;
   headers : vec ToolCallArgument;
 };
-type Index_Account = record { owner : principal; subaccount : opt blob };
+type IndexAccount = record { owner : principal; subaccount : opt blob };
 type InitialData = record {
-  FilesContents : opt vec record { text; vec ContentNode };
-  Contracts : vec record { text; StoredContract };
-  Files : vec FileNode;
-  Friends : vec Friend;
-  Profile : User;
-  Wallet : Wallet;
+  files : vec FileNode;
+  contracts : vec record { text; StoredContract };
+  files_contents : opt vec record { text; vec ContentNode };
+  wallet : Wallet;
+  friends : vec Friend;
+  profile : User;
 };
 type Job = record {
   id : text;
@@ -340,7 +340,7 @@ type Message = record {
   chat_id : text;
 };
 type Mint = record {
-  to : Index_Account;
+  to : IndexAccount;
   memo : opt blob;
   created_at_time : opt nat64;
   amount : nat;
@@ -523,13 +523,13 @@ type Transaction = record {
 };
 type TransactionWithId = record { id : nat; transaction : Transaction };
 type Transfer = record {
-  to : Index_Account;
+  to : IndexAccount;
   fee : opt nat;
-  from : Index_Account;
+  from : IndexAccount;
   memo : opt blob;
   created_at_time : opt nat64;
   amount : nat;
-  spender : opt Index_Account;
+  spender : opt IndexAccount;
 };
 type TransformArgs = record { context : blob; response : HttpResponse };
 type Update = record { field : text; values : vec text };

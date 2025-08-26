@@ -57,12 +57,11 @@ impl Contract {
             let caller_contracts = contracts_store.borrow();
             if let Some(contracts) = caller_contracts.get(&caller().to_string()) {
                 for contract in contracts.stored_contracts.iter() {
-                    if let StoredContract::CustomContract(custom_contract) = contract {
-                        contract_map.insert(
-                            custom_contract.id.clone(),
-                            StoredContract::CustomContract(custom_contract.check_view_permission()),
-                        );
-                    }
+                    let StoredContract::CustomContract(custom_contract) = contract;
+                    contract_map.insert(
+                        custom_contract.id.clone(),
+                        StoredContract::CustomContract(custom_contract.check_view_permission()),
+                    );
                 }
             }
         });
@@ -78,25 +77,20 @@ impl Contract {
                 None => return None,
             };
 
-            let contract = stored_contract_vec
-                .into_iter()
-                .find(|contract| match contract {
-                    StoredContract::CustomContract(c) => c.id == contract_id,
-                    _ => false,
-                });
+            let contract = stored_contract_vec.into_iter().find(|contract| {
+                let StoredContract::CustomContract(c) = contract;
+                c.id == contract_id
+            });
 
             let contract = match contract {
                 Some(contract) => contract,
                 None => return None,
             };
 
-            if let StoredContract::CustomContract(custom_contract) = contract {
-                return Some(StoredContract::CustomContract(
-                    custom_contract.check_view_permission(),
-                ));
-            }
-
-            Some(contract.clone())
+            let StoredContract::CustomContract(custom_contract) = contract;
+            Some(StoredContract::CustomContract(
+                custom_contract.check_view_permission(),
+            ))
         })
     }
 }

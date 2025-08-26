@@ -380,15 +380,6 @@ impl FileNode {
         })
     }
 
-    fn delete_children_recursive(file_id: &FileId, files: &mut Vec<FileNode>) {
-        if let Some(pos) = files.iter().position(|f| &f.id == file_id) {
-            let file = files.remove(pos);
-            for child_id in file.children {
-                FileNode::delete_children_recursive(&child_id, files);
-            }
-        }
-    }
-
     pub fn move_file(file_id: FileId, new_parent: Option<FileId>) -> Option<()> {
         USER_FILES.with(|files_store| {
             let principal_id = ic_cdk::api::caller();
