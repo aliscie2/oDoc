@@ -4,7 +4,7 @@ import { randomString } from "../../DataProcessing/dataSamples";
 
 export function createNewPromis(
   sender: Principal,
-  contract_id?: string,
+  contract_id: string,
 ): CPayment {
   const status = { None: null };
   return {
@@ -21,15 +21,15 @@ export function createNewPromis(
 }
 
 export const transformPromisesDataAndColumns = (
-  promises,
-  existingColumnDefs,
-  isPromise,
-  handleCustomCellChange,
+  promises: any[],
+  existingColumnDefs: any[],
+  isPromise: boolean,
+  handleCustomCellChange: any,
 ) => {
   // Transform rows and collect unique cell fields
   const uniqueFields = new Set();
 
-  const rows = promises.map((promise) => {
+  const rows = promises.map((promise: any) => {
     // Start with base fields
     const row = {
       id: promise.id,
@@ -42,8 +42,8 @@ export const transformPromisesDataAndColumns = (
     };
 
     // Add cell values and collect unique fields
-    promise.cells.forEach((cell) => {
-      row[cell.field] = cell.value;
+    promise.cells.forEach((cell: any) => {
+      (row as any)[cell.field] = cell.value;
       uniqueFields.add(cell.field);
     });
 
@@ -52,8 +52,8 @@ export const transformPromisesDataAndColumns = (
 
   // Add new columns for cell fields that don't exist in base columns
   const extraColumns = Array.from(uniqueFields)
-    .filter((field) => !existingColumnDefs.some((col) => col.field === field))
-    .map((field) => ({
+    .filter((field) => !existingColumnDefs.some((col: any) => col.field === field))
+    .map((field: any) => ({
       field,
       headerName:
         field.charAt(0).toUpperCase() + field.slice(1).replace(/_/g, " "),
@@ -69,7 +69,7 @@ export const transformPromisesDataAndColumns = (
   };
 };
 
-export const NotificationPromiesContextMenu = (params) => {
+export const NotificationPromiesContextMenu = (_params: any) => {
   return [
     { name: "claim all promises" },
     { name: "claim selected promises" },
@@ -84,6 +84,7 @@ export const getStatusOptions = (payment: CPayment, profileId: string) => {
   }
 
   const isSender = profileId === payment.sender.toString();
+  const isReceiver = profileId === payment.receiver.toString();
   const currentStatus = Object.keys(payment.status)[0];
 
   if (isSender) {
@@ -94,7 +95,7 @@ export const getStatusOptions = (payment: CPayment, profileId: string) => {
       default:
         return ["None", "Released", "HighPromise"];
     }
-  } else {
+  } else if (isReceiver) {
     switch (currentStatus) {
       case "HighPromise":
         return ["Objected", "ApproveHighPromise"];
@@ -103,5 +104,8 @@ export const getStatusOptions = (payment: CPayment, profileId: string) => {
       default:
         return ["Objected", "Confirmed"];
     }
+  } else {
+    // If user is neither sender nor receiver, they can't change status
+    return [];
   }
 };

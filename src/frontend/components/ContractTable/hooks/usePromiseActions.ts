@@ -3,56 +3,107 @@ import { useDispatch, useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
 import { Principal } from "@dfinity/principal";
 import { CPayment, Friend } from "$/declarations/backend/backend.did";
+import { useBackendContext } from "../../../contexts/BackendContext";
 
 interface AppState {
   filesState: {
-    all_friends: Friend[];
+    all_friends: any[]; // Array of User objects extracted from Friends
     wallet: { balance: number };
+    profile: { id: string; name: string };
   };
 }
 
-export const usePromiseActions = (promise: CPayment, isEditable: boolean) => {
+export const usePromiseActions = (
+  promise: CPayment,
+  isEditable: boolean,
+  canEditStatus?: boolean,
+) => {
   const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
-  const { all_friends, wallet } = useSelector(
+  const { backendActor } = useBackendContext();
+  const { all_friends, wallet, profile } = useSelector(
     (state: AppState) => state.filesState,
   );
+
+  // Use canEditStatus if provided, otherwise fall back to isEditable
+  const statusEditable =
+    canEditStatus !== undefined ? canEditStatus : isEditable;
 
   const updatePromise = useCallback(
     (updates: Partial<CPayment>) => {
       if (!isEditable) return;
-
-      const updatedPromise = { ...promise, ...updates };
-
       dispatch({
         type: "UPDATE_PROMISE",
         contract_id: promise.contract_id,
-        promise: updatedPromise,
+        promise: { ...promise, ...updates },
       });
     },
     [dispatch, promise, isEditable],
   );
 
   const handleStatusChange = useCallback(
-    (newStatus: string) => {
-      if (!isEditable) return;
+    async (newStatus: string) => {
+      if (!statusEditable || !backendActor) return;
 
       const statusMap: Record<string, any> = {
         None: { None: null },
         Released: { Released: null },
         Confirmed: { Confirmed: null },
         HighPromise: { HighPromise: null },
+        RequestCancellation: { RequestCancellation: null },
+        ConfirmedCancellation: { ConfirmedCancellation: null },
+        ApproveHighPromise: { ApproveHighPromise: null },
       };
 
+      let reason = "";
       if (newStatus === "Objected") {
-        const reason = prompt("Enter objection reason:");
-        if (reason === null) return;
-        statusMap.Objected = { Objected: reason || "" };
+        const inputReason = prompt("Enter objection reason:");
+        if (inputReason === null) return;
+        reason = inputReason || "";
+        statusMap.Objected = { Objected: reason };
       }
 
-      updatePromise({ status: statusMap[newStatus] });
+      try {
+        // Update local state immediately for better UX (no backend save)
+        dispatch({
+          type: "SET_PROMISE_STATUS",
+          contract_id: promise.contract_id,
+          promise: { ...promise, status: statusMap[newStatus] },
+        });
+
+        // Call backend function based on status and user role
+        const isReceiver = profile?.id === promise.receiver.toString();
+
+        if (newStatus === "Confirmed" && isReceiver) {
+          await backendActor.confirmed_c_payment(promise);
+        } else if (newStatus === "ConfirmedCancellation" && isReceiver) {
+          await backendActor.confirmed_cancellation(promise);
+        } else if (newStatus === "ApproveHighPromise" && isReceiver) {
+          await backendActor.approve_high_promise(promise);
+        } else if (newStatus === "Objected" && isReceiver) {
+          await backendActor.object_on_cancel(promise, reason);
+        }
+
+        enqueueSnackbar("Status updated successfully", { variant: "success" });
+      } catch (error) {
+        console.error("Error updating status:", error);
+        // Revert local state on backend error (no backend save)
+        dispatch({
+          type: "SET_PROMISE_STATUS",
+          contract_id: promise.contract_id,
+          promise: promise, // Revert to original state
+        });
+        enqueueSnackbar("Failed to update status", { variant: "error" });
+      }
     },
-    [updatePromise, isEditable],
+    [
+      dispatch,
+      promise,
+      statusEditable,
+      backendActor,
+      profile?.id,
+      enqueueSnackbar,
+    ],
   );
 
   const handleAmountChange = useCallback(
@@ -71,18 +122,33 @@ export const usePromiseActions = (promise: CPayment, isEditable: boolean) => {
 
   const handleReceiverChange = useCallback(
     (newReceiver: string) => {
-      if (!isEditable) return;
+      if (!isEditable || !all_friends || !Array.isArray(all_friends)) return;
 
-      const user = all_friends?.find((u) => u.name === newReceiver);
-      if (!user || promise.sender.toString() === user.id) {
+      // Find user by name (all_friends contains User objects)
+      const user = all_friends.find((u) => u?.name === newReceiver);
+
+      if (!user || !user.id) {
+        enqueueSnackbar("Error: Friend not found", { variant: "error" });
+        return;
+      }
+
+      if (promise.sender.toString() === user.id) {
         enqueueSnackbar("Error: You can't send to yourself", {
           variant: "error",
         });
         return;
       }
+
       updatePromise({ receiver: Principal.fromText(user.id) });
     },
-    [updatePromise, all_friends, promise.sender, enqueueSnackbar, isEditable],
+    [
+      updatePromise,
+      all_friends,
+      promise.sender,
+      enqueueSnackbar,
+      isEditable,
+      profile?.id,
+    ],
   );
 
   const handleDeletePromise = useCallback(() => {

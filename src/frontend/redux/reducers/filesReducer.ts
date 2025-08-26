@@ -236,6 +236,24 @@ export function filesReducer(
       };
     }
 
+    case "SET_PROMISE_STATUS": {
+      const { contract_id, promise } = action;
+
+      // Only update state, don't add to changes (no backend save needed)
+      return {
+        ...state,
+        contracts: {
+          ...state.contracts,
+          [contract_id]: {
+            ...state.contracts[contract_id],
+            promises: state.contracts[contract_id].promises.map((p) =>
+              p.id === promise.id ? promise : p,
+            ),
+          },
+        },
+      };
+    }
+
     case "RENAME_TABLE": {
       const { contract_id, table_id, new_name } = action;
 
@@ -1434,12 +1452,15 @@ export function filesReducer(
       console.log("- Insert Index:", insertIndex);
       console.log("- Available Contracts:", Object.keys(state.contracts));
       console.log("- Contract Exists:", !!state.contracts[contract_id]);
-      
+
       let currentContract = state.contracts[contract_id];
-      
+
       // If contract doesn't exist, create a default one
       if (!currentContract) {
-        console.log("ADD_PROMISE: Creating default contract for ID:", contract_id);
+        console.log(
+          "ADD_PROMISE: Creating default contract for ID:",
+          contract_id,
+        );
         currentContract = {
           id: contract_id,
           name: "Default Contract",
@@ -1450,14 +1471,14 @@ export function filesReducer(
           contracts: [],
           date_created: Date.now() * 1000000, // Convert to nanoseconds
         };
-        
+
         // Add the new contract to state
         state = {
           ...state,
           contracts: {
             ...state.contracts,
-            [contract_id]: currentContract
-          }
+            [contract_id]: currentContract,
+          },
         };
       }
 
@@ -1525,8 +1546,14 @@ export function filesReducer(
       }
 
       console.log("ADD_PROMISE Final State:");
-      console.log("- Updated Contract:", JSON.stringify(updatedContracts[contract_id], null, 2));
-      console.log("- Total Promises in Contract:", updatedContracts[contract_id]?.promises?.length || 0);
+      console.log(
+        "- Updated Contract:",
+        JSON.stringify(updatedContracts[contract_id], null, 2),
+      );
+      console.log(
+        "- Total Promises in Contract:",
+        updatedContracts[contract_id]?.promises?.length || 0,
+      );
 
       return {
         ...state,

@@ -5,6 +5,9 @@ export const STATUS_CONFIGS = {
   Confirmed: { color: "#0284c7", bg: "#eff6ff", icon: "🤝" },
   Objected: { color: "#dc2626", bg: "#fef2f2", icon: "⚠️" },
   HighPromise: { color: "#ea580c", bg: "#fff7ed", icon: "⭐" },
+  RequestCancellation: { color: "#f59e0b", bg: "#fffbeb", icon: "🔄" },
+  ConfirmedCancellation: { color: "#6b7280", bg: "#f9fafb", icon: "❌" },
+  ApproveHighPromise: { color: "#10b981", bg: "#ecfdf5", icon: "⭐✅" },
 } as const;
 
 // Common responsive breakpoints

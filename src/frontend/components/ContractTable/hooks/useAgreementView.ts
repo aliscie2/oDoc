@@ -54,6 +54,14 @@ export const useAgreementView = (contract: CustomContract) => {
 
   const currentData = viewMode === "promises" ? filteredPromises : contract.payments;
   const isEditable = viewMode === "promises" && isCreator;
+  
+  // Function to check if user can edit status for a specific promise
+  const canEditStatus = useCallback((promise: CPayment) => {
+    if (viewMode !== "promises") return false;
+    const isPromiseSender = profile.id === promise.sender.toString();
+    const isPromiseReceiver = profile.id === promise.receiver.toString();
+    return isPromiseSender || isPromiseReceiver;
+  }, [viewMode, profile.id]);
 
   // Event handlers
   const toggleCard = useCallback((id: string) => {
@@ -93,6 +101,7 @@ export const useAgreementView = (contract: CustomContract) => {
     isCreator,
     currentData,
     isEditable,
+    canEditStatus,
     
     // Handlers
     toggleCard,
