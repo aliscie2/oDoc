@@ -1,5 +1,5 @@
 import { createPluginFactory } from "@udecode/plate-common";
-import SlateCustomContract from "../ContractTable/SlateCustomContract";
+import SlateCustomContract from "../customContractView/SlateCustomContract";
 const CONTRACT_KEY = "custom_contract";
 
 interface Props {

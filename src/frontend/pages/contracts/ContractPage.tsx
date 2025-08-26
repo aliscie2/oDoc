@@ -1,4 +1,4 @@
-import CustomContractViewer from "@/components/ContractTable";
+import CustomContractViewer from "@/components/customContractView";
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useDispatch, useSelector } from "react-redux";
