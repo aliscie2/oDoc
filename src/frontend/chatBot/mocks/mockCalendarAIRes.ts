@@ -1,5 +1,6 @@
-import { TimeFormatter } from "@/chatBot/utiles";
+
 import { Calendar } from "$/declarations/backend/backend.did";
+import { TimeFormatter } from "../utils";
 
 // Simplified command structure suggestions:
 // Events:

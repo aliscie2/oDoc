@@ -76,6 +76,24 @@ yarn start
 - **Vite** - Lightning-fast build tool
 - **Tailwind CSS** - Utility-first styling
 
+### Architecture
+**Current**: Component-based (example: chatBot module)
+```
+chatBot/
+├── components/
+│   ├── InputBox.tsx
+│   ├── MessageHistory.tsx
+│   └── ChatWindow.tsx
+├── hooks/
+│   ├── useChatState.ts
+│   └── useChatActions.ts
+├── utils/
+│   └── messageFormatter.ts
+└── types.ts
+```
+
+**Future**: Feature-Based Architecture - organizing by business features for better scalability.
+
 ### Decentralized Backend
 - **Internet Computer** - Web3 blockchain for scalable dApps
 - **Rust** - High-performance canister development

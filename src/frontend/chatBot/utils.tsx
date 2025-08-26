@@ -17,7 +17,6 @@ interface CalendarAction {
   availability?: any;
   blocked_time?: any;
   id?: string;
-  id?: string;
 }
 
 // Time formatting utilities
