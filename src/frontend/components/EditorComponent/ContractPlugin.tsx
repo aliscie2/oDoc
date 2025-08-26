@@ -1,6 +1,5 @@
 import { createPluginFactory } from "@udecode/plate-common";
-import SlateCustomContract from "./SlateCustomContract";
-import { insertTableRow, insertTableColumn } from "@udecode/plate-table";
+import SlateCustomContract from "../ContractTable/SlateCustomContract";
 const CONTRACT_KEY = "custom_contract";
 
 interface Props {
@@ -58,41 +57,6 @@ const createContractPlugin = createPluginFactory({
   // },
 });
 
-const tableFloatingOptions = {
-  floatingToolbar: {
-    items: [
-      {
-        text: "Table",
-        children: [
-          {
-            text: "Add Row Below",
-            onClick: (editor) => insertTableRow(editor),
-          },
-          {
-            text: "Add Column After",
-            onClick: (editor) => insertTableColumn(editor),
-          },
-          { text: "Remove Row", onClick: (editor) => deleteTableRow(editor) },
-          // {
-          //   text: "Remove Column",
-          //   onClick: (editor) => deleteTableColumn(editor),
-          // },
-          // {
-          //   text: "Delete Table",
-          //   onClick: (editor) => {
-          //     const tableEntry = findNode(editor, {
-          //       type: getPluginType(editor, ELEMENT_TABLE),
-          //     });
-          //     if (tableEntry) {
-          //       editor.removeNodes({ at: tableEntry[1] });
-          //     }
-          //   },
-          // },
-        ],
-      },
-    ],
-  },
-};
 
 export { CONTRACT_KEY };
 export default createContractPlugin;

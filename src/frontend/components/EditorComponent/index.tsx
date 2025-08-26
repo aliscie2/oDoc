@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import OdocEditor, { MyMentionItem } from "odoc_editor_v2";
 import createContractPlugin, {
   CONTRACT_KEY,
-} from "../ContractTable/ContractPlugin";
+} from "./ContractPlugin";
 import TableChartIcon from "@mui/icons-material/TableChart";
 
 import { custom_contract } from "../../DataProcessing/dataSamples";

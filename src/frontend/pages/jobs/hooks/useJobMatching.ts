@@ -8,7 +8,7 @@ import {
   compressJobsForMatching,
   JOB_MATCHING_PROMPT,
 } from "../utils/jobMatchingPrompt";
-import { mockJobMatchResponse } from "../utils/mockJobMatches";
+import { mockJobMatchResponse } from "../../../chatBot/mocks/mockJobMatches";
 import { textToJson } from "../utils/processResponseJobs";
 
 interface AIMatchResponse {

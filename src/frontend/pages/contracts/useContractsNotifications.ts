@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../redux/reducers";
-import { useBackendContext } from "../contexts/BackendContext";
+import { useBackendContext } from "@/contexts/BackendContext";
+import { RootState } from "@/redux/reducers";
+
 import {
-  Notification,
-  CustomContract,
   CPayment,
-  User,
-} from "../../declarations/backend/backend.did";
+  CustomContract,
+  Notification
+} from "$/declarations/backend/backend.did";
 
 export interface ContractWithNotifications extends CustomContract {
   _unseenCount: number;

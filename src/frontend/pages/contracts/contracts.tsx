@@ -24,11 +24,11 @@ import { useNavigate } from "react-router-dom";
 import {
   CPayment,
   User,
-} from "../../../declarations/backend/backend.did";
-import { custom_contract, randomString } from "../../DataProcessing/dataSamples";
-import { ContractWithNotifications, useContractsNotifications } from "../../hooks/useContractsNotifications";
-import { RootState } from "../../redux/reducers";
-import { createShortContractUrl } from "../../utils/urlEncoder";
+} from "$/declarations/backend/backend.did";
+import { custom_contract, randomString } from "@/DataProcessing/dataSamples";
+import { ContractWithNotifications, useContractsNotifications } from "./useContractsNotifications";
+import { RootState } from "@/redux/reducers";
+import { createShortContractUrl } from "@/utils/urlEncoder";
 
 // Personal Summary Component (for contracts shared with user)
 interface PersonalSummaryProps {

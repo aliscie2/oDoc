@@ -158,39 +158,3 @@ function cleanDisplayResponse(text: string): string {
     .replace(/\s+/g, " ") // Normalize whitespace
     .trim();
 }
-
-// Helper function to handle multiple extractedData objects (from your original code)
-const parseJsonContent = (jsonText: string) => {
-  const parsed = parseWithFallbacks(jsonText);
-  if (!parsed) return null;
-
-  // Return arrays as-is
-  if (Array.isArray(parsed)) {
-    return parsed;
-  }
-
-  // Handle multiple extractedData objects pattern
-  const extractedDataCount = (jsonText.match(/"extractedData"\s*:/g) || [])
-    .length;
-  if (extractedDataCount > 1) {
-    const feedbackMatch = jsonText.match(/"feedback"\s*:\s*"([^"]*)"/);
-    const feedback = feedbackMatch?.[1] || "";
-
-    const extractedDataObjects = [];
-    const regex = /"extractedData"\s*:\s*({[^}]*})/g;
-    let match;
-
-    while ((match = regex.exec(jsonText)) !== null) {
-      try {
-        const dataObj = parseWithFallbacks(match[1]);
-        if (dataObj) extractedDataObjects.push(dataObj);
-      } catch (e) {
-        console.warn("Error parsing extractedData object:", e);
-      }
-    }
-
-    return { feedback, extractedDataArray: extractedDataObjects };
-  }
-
-  return parsed;
-};

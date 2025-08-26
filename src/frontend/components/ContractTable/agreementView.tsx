@@ -274,7 +274,8 @@ const PromiseCardHeader = memo<{
             alignItems: "center",
             justifyContent: "space-between",
             flexWrap: "wrap",
-            gap: 2,
+            gap: { xs: 1, sm: 2 },
+            minHeight: "48px",
           }}
         >
           {/* Title and Status */}
@@ -282,15 +283,24 @@ const PromiseCardHeader = memo<{
             sx={{
               display: "flex",
               alignItems: "center",
-              gap: 2,
-              flex: 1,
-              minWidth: "200px",
+              gap: { xs: 1, sm: 2 },
+              flex: "1 1 auto",
+              minWidth: 0, // Allow shrinking
+              maxWidth: { xs: "100%", sm: "40%" },
+              order: { xs: 1, sm: 1 },
             }}
           >
             <Typography
               variant={isExpanded ? "h6" : "body1"}
               fontWeight={700}
-              sx={{ color: "primary.main" }}
+              sx={{
+                color: "primary.main",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                flex: "1 1 auto",
+                minWidth: 0,
+              }}
             >
               {firstCellTitle}
             </Typography>
@@ -298,6 +308,7 @@ const PromiseCardHeader = memo<{
               <Box
                 className="editable-field"
                 onClick={(e) => e.stopPropagation()}
+                sx={{ flex: "0 0 auto" }}
               >
                 <TextField
                   label="Status"
@@ -323,6 +334,7 @@ const PromiseCardHeader = memo<{
                   bgcolor: statusConfig.bg,
                   color: statusConfig.color,
                   fontWeight: 600,
+                  flex: "0 0 auto",
                 }}
               />
             )}
@@ -334,15 +346,23 @@ const PromiseCardHeader = memo<{
               display: "flex",
               alignItems: "center",
               gap: 1,
-              flex: 1,
+              flex: "1 1 auto",
               justifyContent: "center",
-              minWidth: "200px",
+              minWidth: 0, // Allow shrinking
+              maxWidth: { xs: "100%", sm: "35%" },
+              order: { xs: 3, sm: 2 },
             }}
           >
             <UserAvatarMenu user={senderData.user} />
             <Typography
               variant={isExpanded ? "body2" : "caption"}
               fontWeight={600}
+              sx={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                maxWidth: "80px",
+              }}
             >
               {(() => {
                 const displayName =
@@ -418,6 +438,12 @@ const PromiseCardHeader = memo<{
                     <Typography
                       variant={isExpanded ? "body2" : "caption"}
                       fontWeight={600}
+                      sx={{
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        maxWidth: "80px",
+                      }}
                     >
                       {(() => {
                         const displayName =
@@ -451,9 +477,11 @@ const PromiseCardHeader = memo<{
                 display: "flex",
                 alignItems: "center",
                 gap: 1,
-                flex: 1,
+                flex: "0 0 auto",
                 justifyContent: "flex-end",
-                minWidth: "150px",
+                minWidth: "120px",
+                maxWidth: "200px",
+                order: { xs: 2, sm: 3 },
               }}
             >
               <AccountBalanceWalletIcon color="success" fontSize="small" />
@@ -486,6 +514,9 @@ const PromiseCardHeader = memo<{
                     fontWeight: 700,
                     color: "success.main",
                     fontFamily: "monospace",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
                   }}
                 >
                   ${promise.amount?.toLocaleString() || 0}
