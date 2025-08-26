@@ -252,7 +252,7 @@ const JobPage = () => {
       const currentJob = job[0];
       const res = await backendActor.get_calendar_by_author(currentJob.user_id);
       const calendar = res[0];
-      const emails = calendar?.googleIds || [];
+      const emails = calendar?.google_ids || [];
       emails.push(...currentJob.emails);
 
       if (emails.length === 0) {

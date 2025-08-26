@@ -18,7 +18,7 @@ export const useGoogleCalendar = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [emailInput, setEmailInput] = useState("");
-  const [emails, setEmails] = useState(calendar?.googleIds || []);
+  const [emails, setEmails] = useState(calendar?.google_ids || []);
 
   const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
   const SCOPES =
@@ -46,8 +46,8 @@ export const useGoogleCalendar = () => {
   }, [currentJobId, jobs, emailInput]);
 
   useEffect(() => {
-    if (calendar?.googleIds) setEmails(calendar.googleIds);
-  }, [calendar?.googleIds]);
+    if (calendar?.google_ids) setEmails(calendar.google_ids);
+  }, [calendar?.google_ids]);
 
   const storeTokens = (token, calId) => {
     localStorage.setItem("googleCalendarToken", token);
@@ -293,7 +293,7 @@ export const useGoogleCalendar = () => {
 
     try {
       const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const emails = calendar?.googleIds;
+      const emails = calendar?.google_ids;
       const now = new Date().toISOString();
       const allEvents = [];
 
@@ -346,7 +346,7 @@ export const useGoogleCalendar = () => {
     const isShareCalendarPage =
       window.location.pathname === "/calendar" &&
       window.location.search.includes("id=");
-    if (!isShareCalendarPage && calendar?.googleIds?.length > 0) {
+    if (!isShareCalendarPage && calendar?.google_ids?.length > 0) {
       (async () => {
         connectCal();
       })();

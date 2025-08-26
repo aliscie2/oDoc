@@ -24,9 +24,9 @@ interface ContentNode {
   children: ContentNode[];
   language: string;
   indent: number;
-  listStart: number;
+  list_start: number;
   parent: string[];
-  listStyleType: string;
+  list_style_type: string;
 }
 
 interface NavigationProps {

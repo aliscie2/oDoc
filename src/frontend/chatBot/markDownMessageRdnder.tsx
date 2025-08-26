@@ -104,10 +104,10 @@ const MarkdownMessage = ({ message, isUser = false }: MarkdownMessageProps) => {
             color: theme.palette.text.primary,
           },
           "& ul": {
-            listStyleType: "disc",
+            list_style_type: "disc",
           },
           "& ol": {
-            listStyleType: "decimal",
+            list_style_type: "decimal",
           },
           "& li": {
             display: "list-item",

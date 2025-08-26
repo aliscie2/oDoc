@@ -350,7 +350,7 @@ export function calendarReducer(state = initialState, action: any): any {
           ...state,
           calendar: {
             ...state.calendar,
-            googleIds: [...(state.calendar.googleIds || []), action.email],
+            google_ids: [...(state.calendar.google_ids || []), action.email],
           },
         };
       }
@@ -358,7 +358,7 @@ export function calendarReducer(state = initialState, action: any): any {
         ...state,
         calendar: {
           ...state.calendar,
-          googleIds: [...(state.calendar.googleIds || []), action.email],
+          google_ids: [...(state.calendar.google_ids || []), action.email],
           id: action.id,
         },
       };

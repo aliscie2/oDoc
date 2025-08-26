@@ -34,7 +34,7 @@ function nesting(
     type: content_node._type,
     data: content_node.data,
     value: content_node.value,
-    listStyleType: content_node.listStyleType,
+    list_style_type: content_node.list_style_type,
     ...formats,
   };
 
@@ -48,8 +48,8 @@ function nesting(
   if (indent) {
     item["indent"] = indent;
   }
-  if (content_node.listStart) {
-    item["listStart"] = Number(content_node.listStart);
+  if (content_node.list_start) {
+    item["list_start"] = Number(content_node.list_start);
   }
 
   if (content_node.language.length > 0) {

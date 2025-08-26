@@ -23,14 +23,14 @@ export function filesReducer(
       return {
         ...state,
         all_friends,
-        files: action.data.Files,
-        wallet: action.data.Wallet,
-        files_content: deserializeContents(action.data.FilesContents[0]),
-        contracts: deserializeContracts(action.data.Contracts),
-        profile: action.data.Profile,
-        friends: action.data.Friends,
+        files: action.data.files,
+        wallet: action.data.wallet,
+        files_content: deserializeContents(action.data.files_contents[0]),
+        contracts: deserializeContracts(action.data.contracts),
+        profile: action.data.profile,
+        friends: action.data.friends,
         inited: true,
-        profile_history: action.data.ProfileHistory || state.profile_history,
+        profile_history: action.data.profile_history || state.profile_history,
         workspaces: action.data.workspaces || state.workspaces,
         // friends: action.data.Friends.map(friend => friend.id === action.id ? {...friend, ...action} : friend)
       };

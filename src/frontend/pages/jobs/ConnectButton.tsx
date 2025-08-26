@@ -55,7 +55,7 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({
       matchingJob.user_id,
     );
     const calendar = res[0];
-    const emails = calendar?.googleIds || [];
+    const emails = calendar?.google_ids || [];
     emails.push(...matchingJob.emails);
     if (emails.length == 0) {
       alert("User did not set thier email yet, try to contact them via oDoc.");

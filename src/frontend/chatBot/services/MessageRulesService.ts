@@ -85,7 +85,7 @@ export class MessageRulesService {
         message: () => {
           const currentJob = this.currentJob;
           const hasEmails =
-            currentJob?.emails?.length || this.calendar?.googleIds?.length;
+            currentJob?.emails?.length || this.calendar?.google_ids?.length;
           return `😒 There are no good matches now,${hasEmails ? " but" : " make sure to set your email so"} we will alert you via email 😃.`;
         },
         actionType: "AUTO_MESSAGE",

@@ -232,7 +232,7 @@ const EventDialog = ({ open, onClose, slotInfo, selectedEvent = null }) => {
         }
         dispatch({ type: "UPDATE_EVENT", event: eventPayload });
       } else {
-        const attendees = [calendar?.googleIds?.[0], calendarId].filter(
+        const attendees = [calendar?.google_ids?.[0], calendarId].filter(
           Boolean,
         ); // Remove null/undefined values
 

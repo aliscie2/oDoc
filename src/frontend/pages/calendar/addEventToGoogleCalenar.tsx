@@ -63,8 +63,8 @@ const GoogleCalendarButton: React.FC<GoogleCalendarButtonProps> = ({
       // let data = {
       //   calendarUrl,
       // };
-      // for email in calendar.googleIds
-      for (const email of calendar?.googleIds) {
+      // for email in calendar.google_ids
+      for (const email of calendar?.google_ids) {
         // let isEmailSent = await sendEmail("New event","You have new event created" ,[email],data,"new_event");
         const isEmailSent = await sendEmail(
           `New event`,

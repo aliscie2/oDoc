@@ -65,7 +65,6 @@ const useAppInitialization = () => {
 
   const isLoggedIn = useSelector(selectIsLoggedIn);
   const isRegistered = useSelector(selectIsRegistered);
-
   const isFetching = useSelector(selectIsFetching);
   const profile = useSelector(selectProfile);
   const { posts } = useSelector((state: RootState) => state.filesState);
@@ -106,9 +105,9 @@ const useAppInitialization = () => {
     if (!initState.serviceWorkerRegistered && "serviceWorker" in navigator) {
       navigator.serviceWorker
         .register("/service-worker.js")
-        .then(() =>
-          setInitState((prev) => ({ ...prev, serviceWorkerRegistered: true })),
-        )
+        .then(() => {
+          setInitState((prev) => ({ ...prev, serviceWorkerRegistered: true }));
+        })
         .catch(console.error);
     }
   }, [initState.serviceWorkerRegistered]);
@@ -121,7 +120,7 @@ const useAppInitialization = () => {
   // Reset initialization when user logs in to trigger data refetch
   useEffect(() => {
     if (isLoggedIn) {
-      setInitState(prev => ({
+      setInitState((prev) => ({
         ...prev,
         initialDataFetched: false,
         userDataFetched: false,
@@ -132,7 +131,9 @@ const useAppInitialization = () => {
   // Main initialization
   useEffect(() => {
     const initializeApp = async () => {
-      if (!isLoggedIn || isFetching || initState.initialDataFetched) return;
+      if (!isLoggedIn || isFetching || initState.initialDataFetched) {
+        return;
+      }
 
       try {
         dispatch({ type: "IS_FETCHING", isFetching: true });
@@ -141,7 +142,7 @@ const useAppInitialization = () => {
           backendActor.get_my_jobs(),
           backendActor.get_initial_data(),
         ]);
-        console.log({ initialRes });
+
         if (
           initialRes.status === "fulfilled" &&
           isLoggedIn &&
@@ -168,14 +169,20 @@ const useAppInitialization = () => {
             .get_work_spaces()
             .catch(() => []);
           const profileRes = await backendActor.get_user_profile(
-            Principal.fromText(initialRes.value.Ok.Profile.id),
+            Principal.fromText(initialRes.value.Ok.profile.id),
           );
 
           dispatch({
             type: "INIT_FILES_STATE",
             data: {
-              ...initialRes.value.Ok,
+              // Convert snake_case backend response to PascalCase for reducer compatibility
+              Profile: initialRes.value.Ok.profile,
               ProfileHistory: profileRes.Ok || profileRes,
+              Files: initialRes.value.Ok.files || [],
+              Friends: initialRes.value.Ok.friends || [],
+              Wallet: initialRes.value.Ok.wallet || null,
+              FilesContents: initialRes.value.Ok.files_contents || [],
+              Contracts: initialRes.value.Ok.contracts || {},
               workspaces,
             },
           });
@@ -185,7 +192,7 @@ const useAppInitialization = () => {
               backendActor.get_work_spaces(),
               backendActor.get_friends(),
               backendActor.get_wallet(),
-              backendActor.get_page_files(1),
+              backendActor.get_all_files(),
             ],
           );
 
@@ -195,7 +202,8 @@ const useAppInitialization = () => {
               Profile: profile,
               ProfileHistory: profile,
               Files: files.status === "fulfilled" ? files.value : [],
-              Friends: friends.status === "fulfilled" ? friends.value : [],
+              Friends:
+                friends.status === "fulfilled" ? friends.value || [] : [],
               Wallet: wallet.status === "fulfilled" ? wallet.value : null,
               workspaces:
                 workspaces.status === "fulfilled" ? workspaces.value : [],
@@ -214,7 +222,14 @@ const useAppInitialization = () => {
     };
 
     initializeApp();
-  }, [isLoggedIn, isFetching, initState.initialDataFetched, dispatch, logout]);
+  }, [
+    isLoggedIn,
+    isFetching,
+    initState.initialDataFetched,
+    dispatch,
+    logout,
+    checkAuthAndLogout,
+  ]);
 
   // User data fetching
   useEffect(() => {

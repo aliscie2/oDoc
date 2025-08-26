@@ -46,11 +46,11 @@ function de_nesting(nested: any[]) {
         data: item.data || [],
         text: item.text || "",
         indent: BigInt(item.indent || 0),
-        listStyleType: item.listStyleType || "",
+        list_style_type: item.list_style_type || "",
         language: item.language || "",
         parent: parent,
         children: children.map((child) => String(child.id)),
-        listStart: BigInt(item.listStart || 0),
+        list_start: BigInt(item.list_start || 0),
       };
 
       data.push(obj);

@@ -125,7 +125,7 @@ export class MessageProcessor {
           owner: "local-user",
           events: [],
           availabilities: this.config.calendar?.availabilities || [],
-          googleIds: this.config.calendar?.googleIds || [],
+          google_ids: this.config.calendar?.google_ids || [],
         };
         return mockCalendarAIResponse(calendarData, message.split("//")[1]);
       
