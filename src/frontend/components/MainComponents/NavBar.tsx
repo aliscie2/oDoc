@@ -24,7 +24,7 @@ import { FileIndexing } from "../../../declarations/backend/backend.did";
 import flattenTree from "../../DataProcessing/deserlize/flatenFiles";
 import GetMoreFiles from "../Actions/GetMoreFiles";
 import { buildTree } from "./SortableTree/utilities";
-
+import ForumIcon from "@mui/icons-material/Forum";
 import {
   DarkMode as DarkModeIcon,
   LightMode as LightModeIcon,
@@ -101,6 +101,7 @@ const NavBar = (props: any) => {
       icon: isDarkMode ? <LightModeIcon /> : <DarkModeIcon />,
       onClick: () => dispatch({ type: "TOGGLE_DARK" }),
     },
+    { label: "Social posts", to: "/posts", icon: <ForumIcon /> },
     { label: "About Us", to: "/about", icon: <InfoIcon /> },
     // { label: "Discover", to: "/discover", icon: <ExploreIcon /> },
     {
@@ -198,15 +199,18 @@ const NavBar = (props: any) => {
                   component={Link}
                   to={link.to}
                   sx={{
-                    padding: "4px 8px", // Reduced padding
-                    minHeight: "36px", // Reduced height
+                    padding: "2px 6px", // Further reduced padding
+                    minHeight: "28px", // Further reduced height
+                    margin: "2px 0", // Reduced margin between items
                   }}
                 >
                   {link.icon && (
                     <Box
                       sx={{
-                        fontSize: "0.9rem", // Smaller icon
-                        minWidth: "24px", // Reduced icon width
+                        fontSize: "0.8rem", // Even smaller icon
+                        minWidth: "20px", // Further reduced icon width
+                        display: "flex",
+                        alignItems: "center",
                       }}
                     >
                       {link.icon}
@@ -215,10 +219,11 @@ const NavBar = (props: any) => {
                   <ListItemText
                     primary={link.label}
                     sx={{
-                      marginLeft: "8px", // Reduced margin
+                      marginLeft: "6px", // Further reduced margin
                       "& .MuiTypography-root": {
-                        fontSize: isMobile ? "0.875rem" : "0.9rem", // Smaller font
+                        fontSize: isMobile ? "0.8rem" : "0.825rem", // Even smaller font
                         color: theme.palette.text.primary,
+                        lineHeight: 1.2, // Tighter line height
                       },
                     }}
                   />

@@ -71,13 +71,11 @@ const useAppInitialization = () => {
   const isRegistered = useSelector(selectIsRegistered);
   const isFetching = useSelector(selectIsFetching);
   const profile = useSelector(selectProfile);
-  const { posts } = useSelector((state: RootState) => state.filesState);
 
   const [initState, setInitState] = useState({
     serviceWorkerRegistered: false,
     initialDataFetched: false,
     userDataFetched: false,
-    postsFetched: false,
     depositProcessed: false,
   });
 
@@ -129,6 +127,8 @@ const useAppInitialization = () => {
         initialDataFetched: false,
         userDataFetched: false,
       }));
+      // Clear posts initialization flag when user logs in
+      sessionStorage.removeItem('postsInitialized');
     }
   }, [isLoggedIn]);
 
@@ -295,27 +295,7 @@ const useAppInitialization = () => {
     fetchUserData();
   }, [profile?.id, initState.userDataFetched, dispatch]);
 
-  // Posts fetching
-  useEffect(() => {
-    const fetchPosts = async () => {
-      if (posts.length > 0 || initState.postsFetched) return;
 
-      try {
-        const fetchedPosts = await backendActor.get_posts(
-          BigInt(0),
-          BigInt(10),
-        );
-        if (fetchedPosts.length > 0) {
-          dispatch({ type: "ADD_POSTS", posts: fetchedPosts });
-        }
-        setInitState((prev) => ({ ...prev, postsFetched: true }));
-      } catch (error) {
-        console.error("Posts fetch error:", error);
-      }
-    };
-
-    fetchPosts();
-  }, [posts.length, initState.postsFetched, dispatch]);
 
   // Token deposit
   useEffect(() => {
