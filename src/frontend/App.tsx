@@ -400,10 +400,17 @@ const App: React.FC = () => {
     }
   }, [navigate, shouldShowApp]);
   // swtich caseses
-  
+
   switch (authStatus) {
     case 'loading':
       return <RunawayJellyfish thinking={true} scale={2} />;
+    case 'anonymous':
+      return <div>
+        <TopNavBar />
+      <PageContainer>
+        <Pages />
+      </PageContainer>
+    </div>
     case 'authenticated':
       return <RegistrationForm />;
     default:
