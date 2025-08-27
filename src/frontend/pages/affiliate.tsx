@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Card,
@@ -21,12 +21,17 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  useMediaQuery,
   CircularProgress,
 } from "@mui/material";
 import { ContentCopy, Star, Info, MonetizationOn } from "@mui/icons-material";
-import { backendActor } from "../utils/backendUtils";
+import { backendActor } from "@/utils/backendUtils";
 import { useSelector } from "react-redux";
+import { selectProfile } from "../redux/selectors";
+import type {
+  Affiliate,
+  AffiliateStats,
+  ReferralPayments,
+} from "../../declarations/backend/backend.did";
 
 // Separate components for better organization
 const RewardSystemInfo = () => {
@@ -80,7 +85,7 @@ const RewardSystemInfo = () => {
   );
 };
 
-const StatsGrid = ({ stats }) => {
+const StatsGrid = React.memo(({ stats }: { stats: AffiliateStats }) => {
   const theme = useTheme();
 
   return (
@@ -92,10 +97,10 @@ const StatsGrid = ({ stats }) => {
               Total Earnings
             </Typography>
             <Typography variant="h4">
-              ${stats.total_earnings.toFixed(2)}
+              ${(stats?.total_earnings ?? 0).toFixed(2)}
             </Typography>
             <Typography variant="subtitle2" color="textSecondary">
-              From {stats.total_referrals.toString()} referrals
+              From {stats?.total_referrals?.toString() ?? "0"} referrals
             </Typography>
           </CardContent>
         </Card>
@@ -107,7 +112,7 @@ const StatsGrid = ({ stats }) => {
               Total Referrals
             </Typography>
             <Typography variant="h4">
-              {stats.total_referrals.toString()}
+              {stats?.total_referrals?.toString() ?? "0"}
             </Typography>
             <Typography variant="subtitle2" color="textSecondary">
               Active users referred
@@ -122,7 +127,7 @@ const StatsGrid = ({ stats }) => {
               Trustworthy Users
             </Typography>
             <Typography variant="h4">
-              {stats.trusted_users.toString()}
+              {stats?.trusted_users?.toString() ?? "0"}
             </Typography>
             <Typography variant="subtitle2" color="textSecondary">
               3+ Star Rating
@@ -132,77 +137,90 @@ const StatsGrid = ({ stats }) => {
       </Grid>
     </Grid>
   );
-};
+});
 
-const PaymentHistory = ({ earnings }) => {
-  const theme = useTheme();
+const PaymentHistory = React.memo(
+  ({ earnings }: { earnings: ReferralPayments[] }) => {
+    const theme = useTheme();
 
-  return (
-    <Card sx={{ mt: 4, backgroundColor: theme.palette.background.paper }}>
-      <CardContent>
-        <Typography variant="h6" gutterBottom>
-          Payment History
-        </Typography>
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Date</TableCell>
-                <TableCell align="right">Amount</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {earnings.map((payment, index) => (
-                <TableRow key={index}>
-                  <TableCell>
-                    {new Date(payment.date_created).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell align="right">
-                    ${payment.amount.toFixed(2)}
-                  </TableCell>
+    return (
+      <Card sx={{ mt: 4, backgroundColor: theme.palette.background.paper }}>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>
+            Payment History
+          </Typography>
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Date</TableCell>
+                  <TableCell align="right">Amount</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </CardContent>
-    </Card>
-  );
-};
+              </TableHead>
+              <TableBody>
+                {earnings?.length > 0 ? (
+                  earnings.map((payment: ReferralPayments, index: number) => (
+                    <TableRow key={index}>
+                      <TableCell>
+                        {new Date(payment.date_created).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell align="right">
+                        ${payment.amount.toFixed(2)}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={2} align="center">
+                      No payment history available
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </CardContent>
+      </Card>
+    );
+  },
+);
 
 const AffiliateDashboard = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const [affiliateData, setAffiliateData] = useState(null);
+  const [affiliateData, setAffiliateData] = useState<Affiliate | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [copySuccess, setCopySuccess] = useState(false);
-  // Using direct backendActor import
-  const { profile } = useSelector((state: any) => state.filesState);
+  const profile = useSelector(selectProfile);
 
   useEffect(() => {
+    if (!profile?.id) return;
+
     const fetchAffiliateData = async () => {
       try {
-        // if (!backendActor) {
-        //   throw new Error('Backend actor not initialized');
-        // }
-        const response = await backendActor?.get_affiliate_data(profile?.id);
+        setLoading(true);
+        setError(null);
+
+        const response = await backendActor.get_affiliate_data(profile.id);
+
         if ("Ok" in response) {
           setAffiliateData(response.Ok);
         } else {
-          // throw new Error('Failed to fetch affiliate data');
+          setError(response.Err || "Failed to fetch affiliate data");
         }
       } catch (err) {
-        setError(err.message);
+        const errorMessage =
+          err instanceof Error ? err.message : "Unknown error occurred";
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
     };
 
     fetchAffiliateData();
-  }, [backendActor]);
+  }, [profile?.id]);
 
-  const handleCopyLink = async () => {
+  const handleCopyLink = useCallback(async () => {
     if (!affiliateData?.id) return;
 
     try {
@@ -211,9 +229,11 @@ const AffiliateDashboard = () => {
       );
       setCopySuccess(true);
     } catch (err) {
-      setError("Failed to copy to clipboard");
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to copy to clipboard";
+      setError(errorMessage);
     }
-  };
+  }, [affiliateData?.id]);
 
   if (loading) {
     return (
@@ -269,7 +289,7 @@ const AffiliateDashboard = () => {
                 fontFamily: "monospace",
               }}
             >
-              {window.location.host}/f?id={affiliateData.id}
+              {window.location.host}/f?id={affiliateData?.id ?? ""}
             </Typography>
             <Tooltip title="Copy to clipboard">
               <IconButton onClick={handleCopyLink} color="primary">
@@ -282,7 +302,7 @@ const AffiliateDashboard = () => {
 
       <StatsGrid stats={affiliateData.stats} />
       <RewardSystemInfo />
-      <PaymentHistory earnings={affiliateData.earnings} />
+      <PaymentHistory earnings={affiliateData.earnings || []} />
 
       <Snackbar
         open={copySuccess}
