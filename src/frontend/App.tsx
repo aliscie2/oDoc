@@ -19,7 +19,11 @@ import {
   selectProfile,
 } from "./redux/selectors";
 import getckUsdcBalance from "./utils/getBalance";
-import { backendActor, ckUSDCActor } from "./utils/backendUtils";
+import {
+  backendActor,
+  ckUSDCActor,
+  initializeSmartActors,
+} from "./utils/backendUtils";
 import { useAuth } from "./hooks/useAuth";
 
 import RegistrationForm from "./components/MainComponents/RegistrationForm";
@@ -138,6 +142,9 @@ const useAppInitialization = () => {
       try {
         dispatch({ type: "IS_FETCHING", isFetching: true });
 
+        // Ensure smart actors are initialized before making API calls
+        await initializeSmartActors();
+
         const [jobsRes, initialRes] = await Promise.allSettled([
           backendActor.get_my_jobs(),
           backendActor.get_initial_data(),
@@ -146,11 +153,15 @@ const useAppInitialization = () => {
         if (
           initialRes.status === "fulfilled" &&
           isLoggedIn &&
-          initialRes.value?.Err === "Anonymous user."
+          "Err" in initialRes.value &&
+          initialRes.value.Err === "Anonymous user."
         ) {
           dispatch({ type: "IS_REGISTERED", isRegistered: false });
           return null;
-        } else if (initialRes.status === "fulfilled" && initialRes.value?.Ok) {
+        } else if (
+          initialRes.status === "fulfilled" &&
+          "Ok" in initialRes.value
+        ) {
           dispatch({ type: "IS_REGISTERED", isRegistered: true });
         } else {
           logout();
@@ -410,7 +421,7 @@ const App: React.FC = () => {
         <GoogleCalendarOnboarding />
       </Suspense>
       <TopNavBar />
-      {isRegistered && (
+      {isRegistered == true && (
         <Suspense fallback={null}>
           <ChatContainer />
         </Suspense>

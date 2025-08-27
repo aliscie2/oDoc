@@ -121,45 +121,71 @@ export class BackendUtils {
   }
 }
 
-// Initialize smart actors on module load
-export const initializeSmartActors = async () => {
-  try {
-    const client = await AuthClient.create({
-      idleOptions: {
-        disableIdle: true,
-        disableDefaultIdleCallback: true,
-        idleTimeout: 30 * 24 * 60 * 60 * 1000,
-      },
-    });
+// Track initialization state to prevent multiple simultaneous initializations
+let isInitializing = false;
+let initializationPromise: Promise<void> | null = null;
 
-    const isAuthenticated = await client.isAuthenticated();
-    
-    if (isAuthenticated) {
-      const identity = client.getIdentity();
-      const host = import.meta.env.VITE_DFX_NETWORK !== "ic"
-        ? import.meta.env.VITE_IC_HOST
-        : "https://ic0.app";
-      
-      const agent = new HttpAgent({ identity, host });
-      
-      if (import.meta.env.VITE_DFX_NETWORK !== "ic") {
-        await agent.fetchRootKey().catch(() => {});
-      }
-      
-      smartBackendActor = Actor.createActor<_SERVICE>(idlFactory, {
-        agent,
-        canisterId,
-      });
-      
-      smartCkUSDCActor = await getLedgerActor(agent);
-    }
-  } catch (error) {
-    console.warn("Smart actor initialization failed, using default backend:", error);
+// Initialize smart actors on module load
+export const initializeSmartActors = async (): Promise<void> => {
+  // If already initializing, wait for that to complete
+  if (isInitializing && initializationPromise) {
+    return initializationPromise;
   }
+
+  // If already initialized with authenticated actor, skip
+  if (smartBackendActor && smartBackendActor !== backend) {
+    return Promise.resolve();
+  }
+
+  isInitializing = true;
   
-  // Always fallback to default backend if smart actor creation fails
-  if (!smartBackendActor) {
-    smartBackendActor = backend;
+  initializationPromise = (async () => {
+    try {
+      const client = await AuthClient.create({
+        idleOptions: {
+          disableIdle: true,
+          disableDefaultIdleCallback: true,
+          idleTimeout: 30 * 24 * 60 * 60 * 1000,
+        },
+      });
+
+      const isAuthenticated = await client.isAuthenticated();
+      
+      if (isAuthenticated) {
+        const identity = client.getIdentity();
+        
+        const host = import.meta.env.VITE_DFX_NETWORK !== "ic"
+          ? import.meta.env.VITE_IC_HOST
+          : "https://ic0.app";
+        
+        const agent = new HttpAgent({ identity, host });
+        
+        if (import.meta.env.VITE_DFX_NETWORK !== "ic") {
+          await agent.fetchRootKey().catch(() => {});
+        }
+        
+        smartBackendActor = Actor.createActor<_SERVICE>(idlFactory, {
+          agent,
+          canisterId,
+        });
+        
+        smartCkUSDCActor = await getLedgerActor(agent);
+      }
+    } catch (error) {
+      console.error("Smart actor initialization failed:", error);
+    }
+    
+    // Always fallback to default backend if smart actor creation fails
+    if (!smartBackendActor) {
+      smartBackendActor = backend;
+    }
+  })();
+
+  try {
+    await initializationPromise;
+  } finally {
+    isInitializing = false;
+    initializationPromise = null;
   }
 };
 
@@ -191,7 +217,6 @@ export const login = async (): Promise<boolean> => {
   const alreadyAuthenticated = await client.isAuthenticated();
 
   if (alreadyAuthenticated) {
-    // Already logged in, just refresh the actors
     await initializeSmartActors();
     return true;
   }
@@ -207,14 +232,15 @@ export const login = async (): Promise<boolean> => {
       identityProvider,
       onSuccess: async () => {
         try {
-          // Reinitialize actors after successful login
           await initializeSmartActors();
           resolve(true);
         } catch (error) {
+          console.error("Error reinitializing actors after login:", error);
           reject(error);
         }
       },
       onError: (error) => {
+        console.error("Login error:", error);
         reject(error);
       },
     });

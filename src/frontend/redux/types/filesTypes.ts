@@ -92,7 +92,6 @@ export const initialState: InitialState = {
   inited: false,
   wallet: { balance: 0, address: "", mnemonic: "", exchanges: [] },
   isLoggedIn: null,
-  isRegistered: false,
   current_file: null,
   is_files_saved: true,
   files: [],
