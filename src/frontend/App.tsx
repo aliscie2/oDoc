@@ -13,8 +13,6 @@ import NavBar from "./components/MainComponents/NavBar";
 import TopNavBar from "./components/MainComponents/topNavBar";
 import { RootState } from "./redux/reducers";
 import {
-  selectIsLoggedIn,
-  selectIsRegistered,
   selectIsFetching,
   selectProfile,
 } from "./redux/selectors";
@@ -61,14 +59,20 @@ const PageContainer = styled(Box)(({ theme }) => ({
   },
 }));
 
+
+
 // hooks/useAppInitialization.ts
 const useAppInitialization = () => {
+
+
+  const {logout, checkAuthStatus, authStatus } = useAuth();
+    
   const dispatch = useDispatch();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-  const { logout, checkAuthStatus } = useAuth();
+  
 
-  const isLoggedIn = useSelector(selectIsLoggedIn);
-  const isRegistered = useSelector(selectIsRegistered);
+  const isLoggedIn = authStatus === 'authenticated' || authStatus === 'registered';
+
   const isFetching = useSelector(selectIsFetching);
   const profile = useSelector(selectProfile);
 
@@ -149,6 +153,7 @@ const useAppInitialization = () => {
           backendActor.get_my_jobs(),
           backendActor.get_initial_data(),
         ]);
+        console.log({initialRes})
 
         if (
           initialRes.status === "fulfilled" &&
@@ -370,7 +375,9 @@ const useAppInitialization = () => {
 };
 
 const App: React.FC = () => {
-  const isRegistered = useSelector(selectIsRegistered);
+  
+
+  const { authStatus, shouldShowApp } = useAuth();
   const navigate = useNavigate();
   const [backendReady, setBackendReady] = useState(false);
 
@@ -385,35 +392,41 @@ const App: React.FC = () => {
   // Domain-based navigation logic
   useEffect(() => {
     if (
-      isRegistered === true &&
+      shouldShowApp &&
       window.location.hostname.includes("odoc.app") &&
       !localStorage.getItem("isVisitedContractsPage")
     ) {
       navigate("/contracts");
     }
-  }, [navigate, isRegistered]);
+  }, [navigate, shouldShowApp]);
+  // swtich caseses
+  
+  switch (authStatus) {
+    case 'loading':
+      return <RunawayJellyfish thinking={true} scale={2} />;
+    case 'authenticated':
+      return <RegistrationForm />;
+    default:
+      return (
+        <MainContent>
+          <Suspense fallback={null}>
+            <GoogleCalendarOnboarding />
+          </Suspense>
+          <TopNavBar />
+          <Suspense fallback={null}>
+            <ChatContainer />
+          </Suspense>
+          <DndProvider backend={HTML5Backend}>
+            <NavBar>
+              <PageContainer>
+                <Pages />
+              </PageContainer>
+            </NavBar>
+          </DndProvider>
+        </MainContent>
+      );
+   }
 
-  if (!backendReady) return <RunawayJellyfish thinking={true} scale={2} />;
 
-  return (
-    <MainContent>
-      <Suspense fallback={null}>
-        <GoogleCalendarOnboarding />
-      </Suspense>
-      <TopNavBar />
-      {isRegistered == true && (
-        <Suspense fallback={null}>
-          <ChatContainer />
-        </Suspense>
-      )}
-      <DndProvider backend={HTML5Backend}>
-        <NavBar>
-          <PageContainer>
-            {isRegistered === false ? <RegistrationForm /> : <Pages />}
-          </PageContainer>
-        </NavBar>
-      </DndProvider>
-    </MainContent>
-  );
 };
 export default App;

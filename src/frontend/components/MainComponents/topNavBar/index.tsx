@@ -49,6 +49,7 @@ import EnhancedUserAvatar from "./EnhancedUserAvatar";
 import { logout } from "@/utils/backendUtils";
 import { convertToBlobLink } from "@/DataProcessing/imageToVec";
 import getStyles from "./styles";
+import { useAuth } from "@/hooks/useAuth";
 
 // Configuration-driven navigation - optimized for robustness
 const NAV_CONFIG = {
@@ -215,12 +216,13 @@ const createNavItem = (key, config, state, handlers) => {
 
 // Main navigation component
 export default function TopNavBar() {
-  const { isLoggedIn, isRegistered } = useSelector(
-    (state: any) => state.uiState,
-  );
+  const { authStatus } = useAuth();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  // Using direct logout import
+  
+  // Derive legacy values for backward compatibility
+  const isRegistered = authStatus === 'registered';
+  
   const state = useNavigationState();
   const showMobileMenu = useMobileScrollBehavior(state.isMobile);
 

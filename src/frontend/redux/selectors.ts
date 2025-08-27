@@ -34,6 +34,11 @@ export const selectProfile = createSelector(
 );
 
 // Memoized UI selectors
+export const selectAuthStatus = createSelector(
+  [selectUIState],
+  (uiState) => uiState.authStatus,
+);
+
 export const selectIsLoggedIn = createSelector(
   [selectUIState],
   (uiState) => uiState.isLoggedIn,

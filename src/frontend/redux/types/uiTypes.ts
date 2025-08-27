@@ -31,29 +31,37 @@ export type Action =
   | LogoutAction
   | LoginAction
   | ToggleSearchToolAction
+  | { type: "SET_AUTH_STATUS"; authStatus: AuthStatus }
   | { type: "IS_REGISTERED"; isRegistered: boolean }
   | { type: "IS_FETCHING"; isFetching: boolean };
+
+// Auth Status Type
+export type AuthStatus = 'loading' | 'anonymous' | 'authenticated' | 'registered';
 
 // State Interface
 export interface State {
   isFetching: boolean;
-  isRegistered: boolean | null;
+  authStatus: AuthStatus;
   count: number;
   isNavOpen: boolean;
   searchTool: boolean;
   isDarkMode: boolean;
   searchValue: string;
-  isLoggedIn: boolean | null;
+  // Legacy fields - will be removed after migration
+  isRegistered?: boolean | null;
+  isLoggedIn?: boolean | null;
 }
 
 // Initial State
 export const initialState: State = {
-  isRegistered: null,
+  authStatus: 'loading',
   count: 0,
   isNavOpen: false,
   searchTool: false,
   isDarkMode: Boolean(localStorage.getItem("isDarkMode") === "true"),
   searchValue: "",
-  isLoggedIn: null,
   isFetching: false,
+  // Legacy fields - will be removed after migration
+  isRegistered: null,
+  isLoggedIn: null,
 };

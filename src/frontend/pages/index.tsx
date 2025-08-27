@@ -2,7 +2,7 @@ import { Route, Routes } from "react-router-dom";
 import React, { Suspense, useMemo } from "react";
 import { CircularProgress, Box } from "@mui/material";
 import { useSelector } from "react-redux";
-import { selectIsLoggedIn } from "@/redux/selectors";
+import { useAuth } from "@/hooks/useAuth";
 
 // Immediate imports for critical components
 import LandingPage from "./LandingPage";
@@ -46,12 +46,12 @@ const Pages = React.memo(() => {
     (state: any) => state.filesState,
   );
 
-  const isLoggedIn = useSelector(selectIsLoggedIn);
+  const { shouldShowApp } = useAuth();
 
   const MainPage = useMemo(() => {
     const currentDomain = window.location.hostname;
 
-    if (isLoggedIn) {
+    if (shouldShowApp) {
       return <JobsPage />;
     }
     if (currentDomain === "odoc.app") {
@@ -59,7 +59,7 @@ const Pages = React.memo(() => {
     } else {
       return <ICPJobsLandingPage />;
     }
-  }, [isLoggedIn]);
+  }, [shouldShowApp]);
 
   return (
     <Suspense fallback={<PageLoader />}>

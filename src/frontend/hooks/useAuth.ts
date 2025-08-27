@@ -1,57 +1,95 @@
 import { useCallback } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { login as loginUtil, logout as logoutUtil, BackendUtils } from '../utils/backendUtils';
+import { selectAuthStatus } from '../redux/selectors';
+import { backendActor } from '../utils/backendUtils';
+import type { AuthStatus } from '../redux/types/uiTypes';
+import { Principal } from '@dfinity/principal';
 
 export const useAuth = () => {
-  const dispatch = useDispatch();
+ const dispatch = useDispatch();
+ const authStatus = useSelector(selectAuthStatus);
+ 
 
-  const login = useCallback(async () => {
-    try {
-      dispatch({ type: "IS_FETCHING", isFetching: true });
-      const success = await loginUtil();
-      if (success) {
-        dispatch({ type: "LOGIN" });
-      }
-      return success;
-    } catch (error) {
-      console.error('Login failed:', error);
-      return false;
-    } finally {
-      dispatch({ type: "IS_FETCHING", isFetching: false });
-    }
-  }, [dispatch]);
+ const setAuthStatus = useCallback((status: AuthStatus) => {
+   dispatch({ type: "SET_AUTH_STATUS", authStatus: status });
+ }, [dispatch]);
 
-  const logout = useCallback(async () => {
-    try {
-      await logoutUtil();
-      dispatch({ type: "LOGOUT" });
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
-  }, [dispatch]);
+ const checkAuthStatus = useCallback(async () => {
+   setAuthStatus('loading');
+   
+   try {
+     const client = await BackendUtils.getAuthClient();
+     const isAuthenticated = await client.isAuthenticated();
+     
+     if (!isAuthenticated) {
+       setAuthStatus('anonymous');
+       return false;
+     }
 
-  const checkAuthStatus = useCallback(async () => {
-    try {
-      const client = await BackendUtils.getAuthClient();
-      const isAuthenticated = await client.isAuthenticated();
-      
-      if (isAuthenticated) {
-        dispatch({ type: "LOGIN" });
-      } else {
-        dispatch({ type: "LOGOUT" });
-      }
-      
-      return isAuthenticated;
-    } catch (error) {
-      console.error('Auth check failed:', error);
-      dispatch({ type: "LOGOUT" });
-      return false;
-    }
-  }, [dispatch]);
+     try {
+        const identity  = client.getIdentity();
+        const principal : Principal = identity.getPrincipal();
+       const profile = await backendActor.get_user_profile(principal);
+       const hasProfile = profile && 'Ok' in profile && profile.Ok?.id;
+       
+       setAuthStatus(hasProfile ? 'registered' : 'authenticated');
+       return true;
+     } catch (error) {
+       setAuthStatus('authenticated');
+       return true;
+     }
+   } catch (error) {
+     console.error('Auth check failed:', error);
+     setAuthStatus('anonymous');
+     return false;
+   }
+ }, [setAuthStatus]);
 
-  return {
-    login,
-    logout,
-    checkAuthStatus,
-  };
+ const login = useCallback(async () => {
+   try {
+     dispatch({ type: "IS_FETCHING", isFetching: true });
+     const success = await loginUtil();
+     if (success) {
+       await checkAuthStatus();
+     }
+     return success;
+   } catch (error) {
+     console.error('Login failed:', error);
+     setAuthStatus('anonymous');
+     return false;
+   } finally {
+     dispatch({ type: "IS_FETCHING", isFetching: false });
+   }
+ }, [dispatch, checkAuthStatus, setAuthStatus]);
+
+ const logout = useCallback(async () => {
+   try {
+     await logoutUtil();
+     setAuthStatus('anonymous');
+   } catch (error) {
+     console.error('Logout failed:', error);
+     setAuthStatus('anonymous');
+   }
+ }, [setAuthStatus]);
+
+ const register = useCallback(async (profileData: any) => {
+   try {
+     setAuthStatus('registered');
+     return true;
+   } catch (error) {
+     console.error('Registration failed:', error);
+     return false;
+   }
+ }, [setAuthStatus]);
+
+ return {
+  shouldShowApp: authStatus === 'registered',
+   authStatus,
+   login,
+   logout,
+   register,
+   checkAuthStatus,
+   setAuthStatus,
+ };
 };
