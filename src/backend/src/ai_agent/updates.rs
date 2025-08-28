@@ -22,6 +22,7 @@ pub async fn ask_ai(
     prompt: String,
     system_prompt: String,
     quick: bool,
+    api_key: String
 ) -> Result<AiResponse, String> {
     // Check if user exists and has credits
     if !UserState::is_user_exists() {
@@ -39,17 +40,14 @@ pub async fn ask_ai(
         return Err("Insufficient credits for this request".to_string());
     }
 
-    // HTTP request to Claude using IC HTTP outcalls
-    // TODO: Move API key to environment variables or canister state for security
-    let api_key = std::env::var("ANTHROPIC_API_KEY")
-        .unwrap_or_else(|_| "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".to_string());
 
     // Use current Claude 3.5 models
     let model = if quick {
-        "claude-3-5-haiku-20241022"
+        "claude-3-haiku-20240307"
     } else {
         "claude-3-5-sonnet-20241022"
     };
+    // claude-3-5-sonnet-20241022
     let max_tokens = if quick { 1000 } else { 4000 };
 
     // Build request body according to Anthropic API spec

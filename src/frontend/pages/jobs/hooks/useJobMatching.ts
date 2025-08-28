@@ -106,7 +106,8 @@ export const useJobMatching = (currentJob: Job | null) => {
         const aiResponse = await backendActor.ask_ai(
           `candidates: ${JSON.stringify(compressedCandidates)}, Current: ${JSON.stringify(jobWithoutId)}`,
           JOB_MATCHING_PROMPT,
-          false // quick parameter
+          false,// quick parameter
+          import.meta.env.VITE_ANTHROPIC_API_KEY
         );
 
         if (!aiResponse || 'Err' in aiResponse) {

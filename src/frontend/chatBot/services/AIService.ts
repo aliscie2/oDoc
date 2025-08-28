@@ -29,6 +29,7 @@ export class AIService {
       config.prompt,
       config.promptType,
       config.classify, // classify=true means quick=true (for classification)
+      import.meta.env.VITE_ANTHROPIC_API_KEY
     );
     console.log({ aiResponse });
     if (!aiResponse || "Err" in aiResponse) {

@@ -658,7 +658,7 @@ export interface _SERVICE {
   'add_owner' : ActorMethod<[AddOwnerArgs], Result_2>,
   'add_swap' : ActorMethod<[AddSwapArgs], Result_2>,
   'approve_high_promise' : ActorMethod<[CPayment], Result_3>,
-  'ask_ai' : ActorMethod<[string, string, boolean], Result_4>,
+  'ask_ai' : ActorMethod<[string, string, boolean, string], Result_4>,
   'buy_ai_credits' : ActorMethod<[number], Result_3>,
   'cancel_friend_request' : ActorMethod<[string], Result>,
   'chat' : ActorMethod<[Array<ChatMessage>], string>,

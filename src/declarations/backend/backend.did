@@ -588,7 +588,7 @@ service : () -> {
   add_owner : (AddOwnerArgs) -> (Result_2);
   add_swap : (AddSwapArgs) -> (Result_2);
   approve_high_promise : (CPayment) -> (Result_3);
-  ask_ai : (text, text, bool) -> (Result_4);
+  ask_ai : (text, text, bool, text) -> (Result_4);
   buy_ai_credits : (float64) -> (Result_3);
   cancel_friend_request : (text) -> (Result);
   chat : (vec ChatMessage) -> (text);

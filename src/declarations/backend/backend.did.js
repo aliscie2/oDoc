@@ -701,7 +701,11 @@ export const idlFactory = ({ IDL }) => {
     'add_owner' : IDL.Func([AddOwnerArgs], [Result_2], []),
     'add_swap' : IDL.Func([AddSwapArgs], [Result_2], []),
     'approve_high_promise' : IDL.Func([CPayment], [Result_3], []),
-    'ask_ai' : IDL.Func([IDL.Text, IDL.Text, IDL.Bool], [Result_4], []),
+    'ask_ai' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Bool, IDL.Text],
+        [Result_4],
+        [],
+      ),
     'buy_ai_credits' : IDL.Func([IDL.Float64], [Result_3], []),
     'cancel_friend_request' : IDL.Func([IDL.Text], [Result], []),
     'chat' : IDL.Func([IDL.Vec(ChatMessage)], [IDL.Text], []),
