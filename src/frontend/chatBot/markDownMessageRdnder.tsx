@@ -82,7 +82,7 @@ const MarkdownMessage = ({ message, isUser = false }: MarkdownMessageProps) => {
   return (
     <Box
       sx={{
-        textAlign: isUser ? "right" : "left",
+        textAlign: "left",
         mb: 1,
       }}
     >
