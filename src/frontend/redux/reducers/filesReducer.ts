@@ -2,7 +2,7 @@ import { FilesActions, InitialState, initialState } from "../types/filesTypes";
 import {
   Friend,
   StoredContract,
-} from "../../../declarations/backend/backend.did";
+} from "$/declarations/backend/backend.did";
 import { deserializeContents } from "../../DataProcessing/deserlize/deserializeContents";
 import { deserializeContracts } from "../../DataProcessing/deserlize/deserializeContracts";
 
@@ -1106,125 +1106,7 @@ export function filesReducer(
       };
     }
 
-    case "UPDATE_ROWS": {
-      const { contract_id, table_id, rows } = action;
 
-      // Update/add multiple rows in the specific table
-      const updatedContracts = {
-        ...state.contracts,
-        [contract_id]: {
-          ...state.contracts[contract_id],
-          contracts: state.contracts[contract_id].contracts.map((table) => {
-            if (table.id === table_id) {
-              const updatedRows = [...table.rows];
-              rows.forEach((newRow) => {
-                const existingIndex = updatedRows.findIndex(
-                  (r) => r.id === newRow.id,
-                );
-                if (existingIndex !== -1) {
-                  updatedRows[existingIndex] = newRow;
-                } else {
-                  updatedRows.push(newRow);
-                }
-              });
-              return { ...table, rows: updatedRows };
-            }
-            return table;
-          }),
-        },
-      };
-
-      // Update changes
-      const contractsArray = Array.isArray(state.changes.contracts)
-        ? state.changes.contracts
-        : [];
-      const existingContractIndex = contractsArray.findIndex(
-        (c) => c.id === contract_id,
-      );
-      let updatedChangesContracts;
-
-      if (existingContractIndex !== -1) {
-        updatedChangesContracts = contractsArray.map((c, index) => {
-          if (index === existingContractIndex) {
-            const existingTableIndex = c.tables.findIndex(
-              (t) => t.id === table_id,
-            );
-            if (existingTableIndex !== -1) {
-              return {
-                ...c,
-                tables: c.tables.map((t, tIndex) => {
-                  if (tIndex === existingTableIndex) {
-                    const updatedRows = [...t.rows];
-                    rows.forEach((newRow) => {
-                      const existingIndex = updatedRows.findIndex(
-                        (r) => r.id === newRow.id,
-                      );
-                      if (existingIndex !== -1) {
-                        updatedRows[existingIndex] = newRow;
-                      } else {
-                        updatedRows.push(newRow);
-                      }
-                    });
-                    return { ...t, rows: updatedRows };
-                  }
-                  return t;
-                }),
-              };
-            } else {
-              return {
-                ...c,
-                tables: [
-                  ...c.tables,
-                  {
-                    id: table_id,
-                    name: "",
-                    rows: rows,
-                    rows_indexes: [],
-                    delete_columns: [],
-                    columns_indexes: [],
-                    columns: [],
-                    delete_rows: [],
-                  },
-                ],
-              };
-            }
-          }
-          return c;
-        });
-      } else {
-        const newContractUpdate = {
-          permissions: [],
-          promises_indexes: [],
-          id: contract_id,
-          name: [],
-          delete_tables: [],
-          tables: [
-            {
-              id: table_id,
-              name: "",
-              rows: rows,
-              rows_indexes: [],
-              delete_columns: [],
-              columns_indexes: [],
-              columns: [],
-              delete_rows: [],
-            },
-          ],
-          delete_promises: [],
-          promises: [],
-        };
-        updatedChangesContracts = [...contractsArray, newContractUpdate];
-      }
-
-      return {
-        ...state,
-        contracts: updatedContracts,
-        changes: {
-          ...state.changes,
-          contracts: updatedChangesContracts,
-        },
-      };
-    }
 
     case "DELETE_ROW": {
       const { contract_id, table_id, row_id } = action;
@@ -1874,7 +1756,10 @@ export function filesReducer(
       return { ...state, friends };
 
     case "ADD_FRIEND":
-      return { ...state, friends: [...state.friends, action.friend] };
+      return { ...state, friends: [...state.friends, action.friend],
+
+        all_friends:action.user?[...state.all_friends, action.user]:state.all_friends
+       };
 
     case "CONFIRM_FRIEND":
       const sender = action.friend.sender;

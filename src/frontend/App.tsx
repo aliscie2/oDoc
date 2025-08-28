@@ -161,13 +161,11 @@ const useAppInitialization = () => {
           "Err" in initialRes.value &&
           initialRes.value.Err === "Anonymous user."
         ) {
-          dispatch({ type: "IS_REGISTERED", isRegistered: false });
           return null;
         } else if (
           initialRes.status === "fulfilled" &&
           "Ok" in initialRes.value
         ) {
-          dispatch({ type: "IS_REGISTERED", isRegistered: true });
         } else {
           logout();
         }
@@ -399,8 +397,9 @@ const App: React.FC = () => {
       navigate("/contracts");
     }
   }, [navigate, shouldShowApp]);
-  // swtich caseses
 
+
+  console.log({authStatus})
   switch (authStatus) {
     case 'loading':
       return <RunawayJellyfish thinking={true} scale={2} />;

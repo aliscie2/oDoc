@@ -1,7 +1,4 @@
-import {
-  CPayment,
-  CustomContract,
-} from "$/declarations/backend/backend.did";
+import { CPayment, CustomContract } from "$/declarations/backend/backend.did";
 import { RootState } from "@/redux/reducers";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import AddIcon from "@mui/icons-material/Add";
@@ -252,9 +249,10 @@ const PromiseCardHeader = memo<{
       receiverData.name !== "Unknown" ||
       (promise.amount && promise.amount > 0);
     const shouldShowAmount =
-      viewMode === "promises" ||
-      receiverData.name !== "Unknown" ||
-      (promise.amount && promise.amount > 0);
+      (viewMode === "promises" ||
+        receiverData.name !== "Unknown" ||
+        (promise.amount && promise.amount > 0)) &&
+      !(promise.sender.toString() !== profile.id && promise.amount === 0);
 
     return (
       <Box

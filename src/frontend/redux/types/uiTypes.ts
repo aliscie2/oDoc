@@ -32,7 +32,6 @@ export type Action =
   | LoginAction
   | ToggleSearchToolAction
   | { type: "SET_AUTH_STATUS"; authStatus: AuthStatus }
-  | { type: "IS_REGISTERED"; isRegistered: boolean }
   | { type: "IS_FETCHING"; isFetching: boolean };
 
 // Auth Status Type
@@ -47,9 +46,6 @@ export interface State {
   searchTool: boolean;
   isDarkMode: boolean;
   searchValue: string;
-  // Legacy fields - will be removed after migration
-  isRegistered?: boolean | null;
-  isLoggedIn?: boolean | null;
 }
 
 // Initial State
@@ -61,7 +57,4 @@ export const initialState: State = {
   isDarkMode: Boolean(localStorage.getItem("isDarkMode") === "true"),
   searchValue: "",
   isFetching: false,
-  // Legacy fields - will be removed after migration
-  isRegistered: null,
-  isLoggedIn: null,
 };

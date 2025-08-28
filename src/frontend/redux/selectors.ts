@@ -41,12 +41,12 @@ export const selectAuthStatus = createSelector(
 
 export const selectIsLoggedIn = createSelector(
   [selectUIState],
-  (uiState) => uiState.isLoggedIn,
+  (uiState) => uiState.authStatus === 'authenticated' || uiState.authStatus === 'registered',
 );
 
 export const selectIsRegistered = createSelector(
   [selectUIState],
-  (uiState) => uiState.isRegistered,
+  (uiState) => uiState.authStatus === 'registered',
 );
 
 export const selectIsFetching = createSelector(

@@ -6,10 +6,11 @@ import {
   Friend,
   InitialData,
   StoredContract,
+  User,
   UserProfile,
   Wallet,
   WorkSpace,
-} from "../../../declarations/backend/backend.did";
+} from "$/declarations/backend/backend.did";
 
 export interface InitialState {
   inited: boolean;
@@ -78,7 +79,7 @@ export type FilesActions =
   | { type: "CHANGE_CURRENT_WORKSPACE"; currentWorkspace: WorkSpace }
   | { type: "UPDATE_ANONYMOUS"; anonymous: boolean }
   | { type: "INIT_FILES_STATE"; data: InitialData }
-  | { type: "ADD_FRIEND" }
+  | { type: "ADD_FRIEND"; user?: User, friend: Friend }
   | { type: "REMOVE_FRIEND" }
   | { type: "ADD_FILES_LIST"; friends: FileNode[] }
   | { type: "ADD_CONTENTS_LIST"; friends: FileNode[] }

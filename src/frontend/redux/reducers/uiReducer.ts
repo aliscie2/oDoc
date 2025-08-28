@@ -6,21 +6,11 @@ export function uiReducer(state = initialState, action: Action): State {
       return {
         ...state,
         authStatus: action.authStatus,
-        // Update legacy fields for backward compatibility during migration
-        isLoggedIn: action.authStatus === 'authenticated' || action.authStatus === 'registered',
-        isRegistered: action.authStatus === 'registered',
       };
     case "IS_FETCHING":
       return {
         ...state,
         isFetching: action.isFetching,
-      };
-    case "IS_REGISTERED":
-      return {
-        ...state,
-        isRegistered: action.isRegistered,
-        // Update authStatus based on legacy action for backward compatibility
-        authStatus: action.isRegistered ? 'registered' : 'authenticated',
       };
 
     case "TOGGLE_NAV":
@@ -49,14 +39,11 @@ export function uiReducer(state = initialState, action: Action): State {
       return {
         ...state,
         authStatus: 'anonymous',
-        isRegistered: null,
-        isLoggedIn: false,
       };
     case "LOGIN":
       return {
         ...state,
         authStatus: 'authenticated',
-        isLoggedIn: true,
       };
     case "SEARCH_TOOL":
       return {

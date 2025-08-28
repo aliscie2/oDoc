@@ -109,9 +109,10 @@ const useNavigationState = () => {
   const location = useLocation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const { isNavOpen, isDarkMode, isFetching, isLoggedIn } = useSelector(
+  const { isNavOpen, isDarkMode, isFetching, authStatus } = useSelector(
     (state) => state.uiState,
   );
+  const isLoggedIn = authStatus === 'authenticated' || authStatus === 'registered';
   const { notifications } = useSelector((state) => state.notificationState);
 
   const currentPath = location.pathname;
@@ -127,6 +128,7 @@ const useNavigationState = () => {
     isDarkMode,
     isFetching,
     isLoggedIn,
+    authStatus,
     notifications,
   };
 };
@@ -275,12 +277,12 @@ export default function TopNavBar() {
 
     if (!state.isLoggedIn) {
       authState = "loggedOut";
-    } else if (state.isRegistered === null) {
-      authState = "nullRegistered";
-    } else if (state.isRegistered === false) {
+    } else if (authStatus === 'authenticated') {
       authState = "unregistered";
-    } else {
+    } else if (authStatus === 'registered') {
       authState = "registered";
+    } else {
+      authState = "nullRegistered";
     }
 
     const configuredItems = NAV_CONFIG[context][authState] || [];

@@ -2,7 +2,7 @@ import React from "react";
 import { useSnackbar } from "notistack";
 import { backendActor } from "../utils/backendUtils";
 import { useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 interface FriendshipButtonProps {
   profile: any;
@@ -11,7 +11,12 @@ interface FriendshipButtonProps {
 }
 
 const FriendshipButton: React.FC<FriendshipButtonProps> = ({ user }) => {
-  const { Anonymous, profile, friends } = useSelector(
+
+
+  const dispatch = useDispatch();
+
+  
+  const { profile, friends } = useSelector(
     (state: any) => state.filesState,
   );
   // Using direct backendActor import
@@ -46,7 +51,16 @@ const FriendshipButton: React.FC<FriendshipButtonProps> = ({ user }) => {
     handleAction(
       async () => {
         const res = await backendActor.send_friend_request(user.id);
-
+        if ("Ok" in res){
+          
+          let friend = {
+             id: String,
+            sender: profile,
+            receiver: res.Ok,
+            confirmed: false,
+        } 
+        dispatch({type:"ADD_FRIEND",friend, user:res.Ok })       
+        }
         return res;
       },
       () => {
