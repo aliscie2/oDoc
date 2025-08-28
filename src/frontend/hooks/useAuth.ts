@@ -52,6 +52,8 @@ export const useAuth = () => {
      const success = await loginUtil();
      if (success) {
        await checkAuthStatus();
+       // Reload the page after successful login
+       window.location.reload();
      }
      return success;
    } catch (error) {
