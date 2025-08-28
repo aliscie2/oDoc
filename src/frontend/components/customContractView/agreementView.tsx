@@ -627,6 +627,7 @@ const ContractHeader = memo<{
           <TextField
             defaultValue={contract?.name || "Untitled"}
             onChange={handleContractNameChange}
+            disabled={contract.creator?.toString() !== profile.id}
             size="small"
             sx={{
               flex: 1,
@@ -742,7 +743,9 @@ const ContractHeader = memo<{
               {isMobile ? "+" : "New"}
             </Button>
           )}
-          <DeleteContractButton contractId={contract.id} />
+          {contract.creator?.toString() === profile.id && (
+            <DeleteContractButton contractId={contract.id} />
+          )}
           <Button
             onClick={onSwitchToTable}
             variant="outlined"
