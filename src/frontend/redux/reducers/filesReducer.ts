@@ -1,8 +1,8 @@
-import { FilesActions, InitialState, initialState } from "../types/filesTypes";
 import { Friend, StoredContract } from "$/declarations/backend/backend.did";
 import { deserializeContents } from "../../DataProcessing/deserlize/deserializeContents";
 import { deserializeContracts } from "../../DataProcessing/deserlize/deserializeContracts";
 import { initializeApp } from "../slices/appSlice";
+import { InitialState, initialState } from "../types/filesTypes";
 
 export function filesReducer(
   state: InitialState = initialState,
@@ -11,11 +11,7 @@ export function filesReducer(
   // Handle the new thunk fulfilled action
   if (action.type === initializeApp.fulfilled.type) {
     // Skip if already initialized or no valid payload
-    if (
-      !action.payload ||
-      !action.payload.Profile ||
-      action.payload.alreadyInitialized
-    ) {
+    if (!action.payload || !action.payload.Profile) {
       return state;
     }
 
@@ -1534,68 +1530,48 @@ export function filesReducer(
 
     case "DELETE_PROMISE": {
       const { contract_id, id } = action;
-
-      // Remove promise from contract
-      const updatedContracts = {
-        ...state.contracts,
-        [contract_id]: {
-          ...state.contracts[contract_id],
-          promises: state.contracts[contract_id].promises.filter(
-            (p) => p.id !== id,
-          ),
-        },
+      
+      const existingContract = state.contracts[contract_id];
+      if (!existingContract) return state;
+    
+      const currentChanges = state.changes.contracts.find(c => c.id === contract_id);
+      const promiseInChanges = currentChanges?.promises.some(p => p.id === id) || 
+                              currentChanges?.promises_indexes.some(idx => idx[1] === id);
+    
+      const updatedChanges = currentChanges ? {
+        ...currentChanges,
+        promises: currentChanges.promises.filter(p => p.id !== id),
+        promises_indexes: currentChanges.promises_indexes.filter(idx => idx[1] !== id),
+        delete_promises: promiseInChanges ? 
+          currentChanges.delete_promises : 
+          [...currentChanges.delete_promises, id]
+      } : {
+        id: contract_id,
+        permissions: [],
+        promises_indexes: [],
+        name: [],
+        delete_tables: [],
+        tables: [],
+        delete_promises: [id],
+        promises: []
       };
-
-      // Ensure changes.contracts is an array
-      const contractsArray = Array.isArray(state.changes.contracts)
-        ? state.changes.contracts
-        : [];
-
-      // Find existing contract update in changes
-      const existingContractIndex = contractsArray.findIndex(
-        (c) => c.id === contract_id,
-      );
-      let updatedChangesContracts;
-
-      if (existingContractIndex !== -1) {
-        // Contract update exists, remove promise and handle delete_promises
-        updatedChangesContracts = contractsArray.map((c, index) => {
-          if (index === existingContractIndex) {
-            const updatedPromises = c.promises.filter((p) => p.id !== id);
-            const updatedDeletePromises = !id.includes("fresh_promise")
-              ? [...c.delete_promises, id]
-              : c.delete_promises;
-
-            return {
-              ...c,
-              promises: updatedPromises,
-              delete_promises: updatedDeletePromises,
-            };
-          }
-          return c;
-        });
-      } else {
-        // Contract update doesn't exist, create new one
-        const newContractUpdate = {
-          id: contract_id,
-          permissions: [],
-          promises_indexes: [],
-          name: [],
-          delete_tables: [],
-          tables: [],
-          delete_promises: !id.includes("fresh_promise") ? [id] : [],
-          promises: [],
-        };
-        updatedChangesContracts = [...contractsArray, newContractUpdate];
-      }
-
+    
       return {
         ...state,
-        contracts: updatedContracts,
+        contracts: {
+          ...state.contracts,
+          [contract_id]: {
+            ...existingContract,
+            promises: existingContract.promises.filter(p => p.id !== id),
+            promises_indexes: existingContract.promises_indexes?.filter(idx => idx[1] !== id) || []
+          }
+        },
         changes: {
           ...state.changes,
-          contracts: updatedChangesContracts,
-        },
+          contracts: currentChanges ?
+            state.changes.contracts.map(c => c.id === contract_id ? updatedChanges : c) :
+            [...state.changes.contracts, updatedChanges]
+        }
       };
     }
 
