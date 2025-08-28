@@ -6,6 +6,7 @@ import { filesReducer } from "./filesReducer";
 import { jobReducer } from "./jobReducer";
 import { notificationReducer } from "./notificationReducer";
 import { uiReducer } from "./uiReducer";
+import appReducer from "../slices/appSlice";
 
 const allStoreReducers = {
   uiState: uiReducer,
@@ -15,6 +16,7 @@ const allStoreReducers = {
   calendarState: calendarReducer,
   jobState: jobReducer,
   AIState: AIReducer,
+  appState: appReducer,
 };
 const rootReducer = combineReducers(allStoreReducers);
 

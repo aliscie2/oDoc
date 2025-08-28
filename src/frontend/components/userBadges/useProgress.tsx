@@ -1,3 +1,4 @@
+import { useAuth } from "@/hooks/useAuth";
 import { tutorials } from "@/pages/LandingPage/landingPageData";
 import { RootState } from "@/redux/reducers";
 import { useMemo } from "react";
@@ -171,13 +172,13 @@ const badgeDefinitions: Omit<BadgeType, "unlocked" | "progress">[] = [
     userType: "both",
   },
 ];
+const { isLoggedIn } = useAuth();
 
 const useProgress = (): ProgressData => {
   const state = useSelector((state: RootState) => state);
 
   const data = useMemo(() => {
     const { profile, wallet, all_friends } = state.filesState;
-    const { isLoggedIn } = state.uiState;
 
     // Calculate karma score (based on payments and disputes)
     const karmaScore = wallet?.actions_rate || 0;

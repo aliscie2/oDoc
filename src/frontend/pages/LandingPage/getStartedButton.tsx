@@ -13,6 +13,7 @@ import { useSelector } from "react-redux";
 import { ClickAwayListener } from "@mui/base";
 import { Z_INDEX_SIDE_NAVBAR } from "../../constants/zIndex";
 import LoginButton from "@/components/MainComponents/topNavBar/loginButton";
+import { useAuth } from "@/hooks/useAuth";
 
 const shineAnimation = keyframes`
   0% { background-position: 0% 50%; }
@@ -43,7 +44,7 @@ function GetStartedButton() {
     (state: any) => state.filesState,
   );
   // Using direct login import
-  const { isLoggedIn } = useSelector((state: any) => state.uiState);
+  const { isLoggedIn } = useAuth();
   const [showTooltip, setShowTooltip] = useState(false);
 
   const theme = useTheme();

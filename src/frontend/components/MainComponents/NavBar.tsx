@@ -29,6 +29,7 @@ import {
   DarkMode as DarkModeIcon,
   LightMode as LightModeIcon,
 } from "@mui/icons-material";
+import { useAuth } from "@/hooks/useAuth";
 // Styled components for theme-aware styling
 const StyledDrawerPaper = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
@@ -90,9 +91,10 @@ const NavBar = (props: any) => {
     (state: any) => state.filesState,
   );
   const dispatch = useDispatch();
-  const { isNavOpen, isDarkMode, isLoggedIn } = useSelector(
+  const { isNavOpen, isDarkMode } = useSelector(
     (state: any) => state.uiState,
   );
+  const { isLoggedIn } = useAuth();
   const [defaultItems, setDefaultItems] = useState([]);
 
   const navLinks = [

@@ -1,17 +1,18 @@
-import React, { useEffect } from "react";
-import { Box } from "@mui/material";
-import CreatePost from "./createPost";
-import ViewPostComponent from "./viewPost";
-import LoadMorePosts from "./LoadMorePosts";
-import { useSelector, useDispatch } from "react-redux";
+import { useAuth } from "@/hooks/useAuth";
 import { RootState } from "@/redux/reducers";
 import { backendActor } from "@/utils/backendUtils";
+import { Box } from "@mui/material";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import CreatePost from "./createPost";
+import LoadMorePosts from "./LoadMorePosts";
+import ViewPostComponent from "./viewPost";
 
 const Posts: React.FC = () => {
   const dispatch = useDispatch();
   const { posts } = useSelector((state: RootState) => state.filesState);
-
-  const { isLoggedIn } = useSelector((state: any) => state.uiState);
+  const { authStatus } = useAuth();
+  const isLoggedIn = authStatus === 'registered';
   const { searchValue, searchTool } = useSelector(
     (state: any) => state.uiState,
   );
@@ -31,6 +32,7 @@ const Posts: React.FC = () => {
           BigInt(0),
           BigInt(10),
         );
+        console.log("Fetched posts:", fetchedPosts);
 
         if (fetchedPosts.length > 0) {
           dispatch({ type: "ADD_POSTS", posts: fetchedPosts });

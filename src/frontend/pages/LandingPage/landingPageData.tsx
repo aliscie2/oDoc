@@ -32,20 +32,17 @@ export const tutorials: Tutorial[] = [
     title: "Internet identity",
     videoUrl: "https://www.youtube.com/embed/Lg-0q5oEenk",
     description: "A guide to using Internet Identity for authentication",
-    checkCondition: (state: any) => {
-      const { isLoggedIn } = state.uiState;
-      return isLoggedIn;
-    },
+    checkCondition: (state: any) => state.isLoggedIn,
   },
   {
     title: "Make friends",
     videoUrl: "https://www.youtube.com/embed/f0RVw6RJxos",
     description: "Social networking guide for Odoc",
     checkCondition: (state: any) => {
-      const { isLoggedIn } = state.uiState;
+
       const { profile, all_friends } = state.filesState;
       return (
-        isLoggedIn &&
+        state.isLoggedIn &&
         profile?.id &&
         all_friends.filter((f: any) => f.id !== profile?.id).length > 0
       );

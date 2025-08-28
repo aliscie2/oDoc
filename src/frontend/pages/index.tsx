@@ -46,12 +46,12 @@ const Pages = React.memo(() => {
     (state: any) => state.filesState,
   );
 
-  const { shouldShowApp } = useAuth();
+  const { isLoggedIn } = useAuth();
 
   const MainPage = useMemo(() => {
     const currentDomain = window.location.hostname;
 
-    if (shouldShowApp) {
+    if (isLoggedIn) {
       return <JobsPage />;
     }
     if (currentDomain === "odoc.app") {
@@ -59,7 +59,7 @@ const Pages = React.memo(() => {
     } else {
       return <ICPJobsLandingPage />;
     }
-  }, [shouldShowApp]);
+  }, [isLoggedIn]);
 
   return (
     <Suspense fallback={<PageLoader />}>

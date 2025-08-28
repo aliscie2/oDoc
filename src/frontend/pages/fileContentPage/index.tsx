@@ -22,6 +22,7 @@ import NestedTabMenu from "./contentTab";
 import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
 import { Helmet } from "react-helmet-async";
 import NotFound from "../notFound404";
+import { useAuth } from "@/hooks/useAuth";
 
 const ExpandingInput = styled(Input)(({ theme }) => ({
   "& input": {
@@ -66,10 +67,13 @@ const ToggleWrapper = styled(Box)(({ theme }) => ({
   },
 }));
 
+
 function FileContentPage() {
+
+  const { isLoggedIn } = useAuth();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const { isLoggedIn } = useSelector((state: any) => state.uiState);
+  
   const [showContentTabs, setShowContentTabs] = useState(false);
   const fileId = window.location.pathname.split("/")[1];
   const dispatch = useDispatch();

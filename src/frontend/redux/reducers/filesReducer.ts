@@ -1,44 +1,56 @@
 import { FilesActions, InitialState, initialState } from "../types/filesTypes";
-import {
-  Friend,
-  StoredContract,
-} from "$/declarations/backend/backend.did";
+import { Friend, StoredContract } from "$/declarations/backend/backend.did";
 import { deserializeContents } from "../../DataProcessing/deserlize/deserializeContents";
 import { deserializeContracts } from "../../DataProcessing/deserlize/deserializeContracts";
+import { initializeApp } from "../slices/appSlice";
 
 export function filesReducer(
   state: InitialState = initialState,
-  action: FilesActions,
+  action: any, // Changed to any to handle both old actions and thunk actions
 ): InitialState {
-  switch (action.type) {
-    case "INIT_FILES_STATE":
-      const all_friends = [action.data.Profile];
-      // Add defensive check for Friends array
-      if (action.data.Friends && Array.isArray(action.data.Friends)) {
-        action.data.Friends.forEach((f: Friend) => {
-          if (f.sender.id !== action.data.Profile.id) {
-            all_friends.push(f.sender);
-          } else {
-            all_friends.push(f.receiver);
-          }
-        });
-      }
-      return {
-        ...state,
-        all_friends,
-        files: action.data.Files || [],
-        wallet: action.data.Wallet,
-        files_content: action.data.FilesContents && action.data.FilesContents[0] 
-          ? deserializeContents(action.data.FilesContents[0]) 
-          : {},
-        contracts: action.data.Contracts ? deserializeContracts(action.data.Contracts) : {},
-        profile: action.data.Profile,
-        friends: action.data.Friends || [],
-        inited: true,
-        profile_history: action.data.ProfileHistory || state.profile_history,
-        workspaces: action.data.workspaces || state.workspaces,
-      };
+  // Handle the new thunk fulfilled action
+  if (action.type === initializeApp.fulfilled.type) {
+    // Skip if already initialized or no valid payload
+    if (
+      !action.payload ||
+      !action.payload.Profile ||
+      action.payload.alreadyInitialized
+    ) {
+      return state;
+    }
 
+    const all_friends = [action.payload.Profile];
+    // Add defensive check for Friends array
+    if (action.payload.Friends && Array.isArray(action.payload.Friends)) {
+      action.payload.Friends.forEach((f: Friend) => {
+        if (f.sender.id !== action.payload.Profile.id) {
+          all_friends.push(f.sender);
+        } else {
+          all_friends.push(f.receiver);
+        }
+      });
+    }
+    return {
+      ...state,
+      all_friends,
+      files: action.payload.Files || [],
+      wallet: action.payload.Wallet,
+      files_content:
+        action.payload.FilesContents && action.payload.FilesContents[0]
+          ? deserializeContents(action.payload.FilesContents[0])
+          : {},
+      contracts: action.payload.Contracts
+        ? deserializeContracts(action.payload.Contracts)
+        : {},
+      profile: action.payload.Profile,
+      friends: action.payload.Friends || [],
+      inited: true,
+      profile_history: action.payload.ProfileHistory || state.profile_history,
+      workspaces: action.payload.workspaces || state.workspaces,
+    };
+  }
+
+  switch (action.type) {
     case "CHANGE_CURRENT_WORKSPACE":
       return {
         ...state,
@@ -1106,8 +1118,6 @@ export function filesReducer(
       };
     }
 
-
-
     case "DELETE_ROW": {
       const { contract_id, table_id, row_id } = action;
 
@@ -1756,10 +1766,14 @@ export function filesReducer(
       return { ...state, friends };
 
     case "ADD_FRIEND":
-      return { ...state, friends: [...state.friends, action.friend],
+      return {
+        ...state,
+        friends: [...state.friends, action.friend],
 
-        all_friends:action.user?[...state.all_friends, action.user]:state.all_friends
-       };
+        all_friends: action.user
+          ? [...state.all_friends, action.user]
+          : state.all_friends,
+      };
 
     case "CONFIRM_FRIEND":
       const sender = action.friend.sender;

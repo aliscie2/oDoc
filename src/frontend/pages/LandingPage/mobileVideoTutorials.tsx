@@ -13,6 +13,7 @@ import { tutorials } from "./landingPageData";
 import { ChevronLeft, ChevronRight, CheckCircle } from "@mui/icons-material";
 import VideoPlayer from "../videoTutorial/videoPlayer";
 import { useSelector } from "react-redux";
+import { useAuth } from "@/hooks/useAuth";
 
 interface TutorialsSectionProps {
   // Remove state prop since we're using Redux selectors directly
@@ -31,10 +32,13 @@ const MobileTutrials: React.FC<TutorialsSectionProps> = () => {
   const overlayTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Get state from Redux store
+  const { isLoggedIn } = useAuth();
   const state = {
     uiState: useSelector((state: any) => state.uiState),
     filesState: useSelector((state: any) => state.filesState),
+    isLoggedIn
   };
+  
 
   const currentTutorial = tutorials[selectedTutorial] || tutorials[0];
 

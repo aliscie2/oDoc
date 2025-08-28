@@ -78,7 +78,6 @@ export type FilesActions =
   | { type: "DELETE_WORKSPACE"; workspace: WorkSpace }
   | { type: "CHANGE_CURRENT_WORKSPACE"; currentWorkspace: WorkSpace }
   | { type: "UPDATE_ANONYMOUS"; anonymous: boolean }
-  | { type: "INIT_FILES_STATE"; data: InitialData }
   | { type: "ADD_FRIEND"; user?: User, friend: Friend }
   | { type: "REMOVE_FRIEND" }
   | { type: "ADD_FILES_LIST"; friends: FileNode[] }

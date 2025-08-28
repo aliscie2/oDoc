@@ -84,7 +84,7 @@ export const useAuth = () => {
  }, [setAuthStatus]);
 
  return {
-  shouldShowApp: authStatus === 'registered',
+  isLoggedIn: authStatus === 'registered',
    authStatus,
    login,
    logout,

@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
 import { backendActor } from "@/utils/backendUtils";
+import { initializeApp } from "@/redux/slices/appSlice";
 
 import serializeFileContents from "@/DataProcessing/serialize/serializeFileContents";
 import { ContractUpdates } from "$/declarations/backend/backend.did";
@@ -124,12 +125,7 @@ export const useDocsSave = (): UseDocsSaveReturn => {
     try {
       // Reset all changes in the files state
       dispatch({ type: "RESOLVE_CHANGES" });
-      const res = await backendActor?.get_initial_data();
-      res &&
-        dispatch({
-          type: "INIT_FILES_STATE",
-          data: { ...res.Ok },
-        });
+      dispatch(initializeApp() as any);
       enqueueSnackbar("Document changes reset successfully!", {
         variant: "info",
       });

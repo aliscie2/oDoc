@@ -23,6 +23,7 @@ import {
   initializeSmartActors,
 } from "./utils/backendUtils";
 import { useAuth } from "./hooks/useAuth";
+import { initializeApp } from "./redux/slices/appSlice";
 
 import RegistrationForm from "./components/MainComponents/RegistrationForm";
 import {
@@ -81,6 +82,7 @@ const useAppInitialization = () => {
     initialDataFetched: false,
     userDataFetched: false,
     depositProcessed: false,
+    appInitDispatched: false,
   });
 
   const checkAuthAndLogout = useCallback(
@@ -138,8 +140,8 @@ const useAppInitialization = () => {
 
   // Main initialization
   useEffect(() => {
-    const initializeApp = async () => {
-      if (authStatus !=="registered" || !isLoggedIn || isFetching || initState.initialDataFetched) {
+    const initializeAppData = async () => {
+      if (authStatus !=="registered" || !isLoggedIn || isFetching || initState.initialDataFetched || initState.appInitDispatched) {
         return;
       }
 
@@ -149,26 +151,9 @@ const useAppInitialization = () => {
         // Ensure smart actors are initialized before making API calls
         await initializeSmartActors();
 
-        const [jobsRes, initialRes] = await Promise.allSettled([
+        const [jobsRes] = await Promise.allSettled([
           backendActor.get_my_jobs(),
-          backendActor.get_initial_data(),
         ]);
-        console.log({initialRes})
-
-        if (
-          initialRes.status === "fulfilled" &&
-          isLoggedIn &&
-          "Err" in initialRes.value &&
-          initialRes.value.Err === "Anonymous user."
-        ) {
-          return null;
-        } else if (
-          initialRes.status === "fulfilled" &&
-          "Ok" in initialRes.value
-        ) {
-        } else {
-          logout();
-        }
 
         if (jobsRes.status === "fulfilled") {
           dispatch({
@@ -178,56 +163,10 @@ const useAppInitialization = () => {
           });
         }
 
-        if (initialRes.status === "fulfilled" && !("Err" in initialRes.value)) {
-          const workspaces = await backendActor
-            .get_work_spaces()
-            .catch(() => []);
-          const profileRes = await backendActor.get_user_profile(
-            Principal.fromText(initialRes.value.Ok.profile.id),
-          );
+        // Single dispatch for initialization - let the thunk handle success/fallback logic
+        dispatch(initializeApp(profile) as any);
 
-          dispatch({
-            type: "INIT_FILES_STATE",
-            data: {
-              // Convert snake_case backend response to PascalCase for reducer compatibility
-              Profile: initialRes.value.Ok.profile,
-              ProfileHistory: profileRes.Ok || profileRes,
-              Files: initialRes.value.Ok.files || [],
-              Friends: initialRes.value.Ok.friends || [],
-              Wallet: initialRes.value.Ok.wallet || null,
-              FilesContents: initialRes.value.Ok.files_contents || [],
-              Contracts: initialRes.value.Ok.contracts || {},
-              workspaces,
-            },
-          });
-        } else {
-          const [workspaces, friends, wallet, files] = await Promise.allSettled(
-            [
-              backendActor.get_work_spaces(),
-              backendActor.get_friends(),
-              backendActor.get_wallet(),
-              backendActor.get_all_files(),
-            ],
-          );
-
-          dispatch({
-            type: "INIT_FILES_STATE",
-            data: {
-              Profile: profile,
-              ProfileHistory: profile,
-              Files: files.status === "fulfilled" ? files.value : [],
-              Friends:
-                friends.status === "fulfilled" ? friends.value || [] : [],
-              Wallet: wallet.status === "fulfilled" ? wallet.value : null,
-              workspaces:
-                workspaces.status === "fulfilled" ? workspaces.value : [],
-              FilesContents: [],
-              Contracts: {},
-            },
-          });
-        }
-
-        setInitState((prev) => ({ ...prev, initialDataFetched: true }));
+        setInitState((prev) => ({ ...prev, initialDataFetched: true, appInitDispatched: true }));
       } catch (error) {
         checkAuthAndLogout(error);
       } finally {
@@ -235,14 +174,17 @@ const useAppInitialization = () => {
       }
     };
 
-    initializeApp();
+    initializeAppData();
   }, [
     isLoggedIn,
     isFetching,
     initState.initialDataFetched,
+    initState.appInitDispatched,
     dispatch,
     logout,
     checkAuthAndLogout,
+    profile,
+    authStatus,
   ]);
 
   // User data fetching
@@ -375,7 +317,7 @@ const useAppInitialization = () => {
 const App: React.FC = () => {
   
 
-  const { authStatus, shouldShowApp } = useAuth();
+  const { authStatus, isLoggedIn } = useAuth();
   const navigate = useNavigate();
   const [backendReady, setBackendReady] = useState(false);
 
@@ -390,13 +332,13 @@ const App: React.FC = () => {
   // Domain-based navigation logic
   useEffect(() => {
     if (
-      shouldShowApp &&
+      isLoggedIn &&
       window.location.hostname.includes("odoc.app") &&
       !localStorage.getItem("isVisitedContractsPage")
     ) {
       navigate("/contracts");
     }
-  }, [navigate, shouldShowApp]);
+  }, [navigate, isLoggedIn]);
 
 
   console.log({authStatus})
