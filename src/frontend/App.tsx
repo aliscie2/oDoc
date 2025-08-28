@@ -139,7 +139,7 @@ const useAppInitialization = () => {
   // Main initialization
   useEffect(() => {
     const initializeApp = async () => {
-      if (!isLoggedIn || isFetching || initState.initialDataFetched) {
+      if (authStatus !=="registered" || !isLoggedIn || isFetching || initState.initialDataFetched) {
         return;
       }
 
