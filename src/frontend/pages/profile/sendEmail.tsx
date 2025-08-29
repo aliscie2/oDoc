@@ -33,7 +33,7 @@ const EmailComposer = () => {
       email_list.forEach(async (email) => {
         const response = await sendEmail(subject, sanitizedHtml, email);
         if (response.status !== 200) {
-          console.log({ response });
+          
         }
       });
 

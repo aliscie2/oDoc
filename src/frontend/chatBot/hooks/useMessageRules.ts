@@ -14,10 +14,9 @@ export const useMessageRules = () => {
     jobs: state.jobState.jobs,
     jobSearchStage: state.jobState.jobSearchStage,
   }));
-
   // Memoize both the service and its methods to prevent re-renders
   const messageRulesService = useMemo(
-    () => new MessageRulesService(jobs, calendar, jobSearchStage, currentJobId),
+    () => new MessageRulesService(jobs?jobs:[], calendar, jobSearchStage, currentJobId),
     [jobs, calendar, jobSearchStage, currentJobId],
   );
 

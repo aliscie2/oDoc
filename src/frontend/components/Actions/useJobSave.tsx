@@ -37,7 +37,7 @@ export const useJobsSave = (): UseJobsSaveReturn => {
     setLoading(true);
 
     try {
-      console.log({ jobChanges });
+      
       const res = await backendActor.update_job(jobChanges, [
         credits,
       ]);

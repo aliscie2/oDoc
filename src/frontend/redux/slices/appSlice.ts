@@ -1,11 +1,10 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { Principal } from "@dfinity/principal";
-import { backendActor } from "@/utils/backendUtils";
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 // Consolidated initialization thunk
 export const initializeApp = createAsyncThunk(
   'app/initialize',
-  async (fallbackProfile: any = null, { rejectWithValue, getState }) => {
+  async (backendActor: any = null, { rejectWithValue, getState }) => {
     try {
       // Check if already initialized to prevent re-runs
       const state = getState() as any;
@@ -17,6 +16,7 @@ export const initializeApp = createAsyncThunk(
       const [initialRes] = await Promise.allSettled([
         backendActor.get_initial_data(),
       ]);
+      
 
       if (initialRes.status === "fulfilled" && "Ok" in initialRes.value) {
         const workspaces = await backendActor.get_work_spaces().catch(() => []);
@@ -43,8 +43,8 @@ export const initializeApp = createAsyncThunk(
         ]);
 
         return {
-          Profile: fallbackProfile,
-          ProfileHistory: fallbackProfile,
+          Profile: {},
+          ProfileHistory: {},
           Files: files.status === "fulfilled" ? files.value : [],
           Friends: friends.status === "fulfilled" ? friends.value || [] : [],
           Wallet: null,

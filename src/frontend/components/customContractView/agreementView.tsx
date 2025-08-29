@@ -798,7 +798,7 @@ const PromiseCard = memo<{
     const { notifications } = useSelector(
       (state: AppState) => state.notificationState,
     );
-    console.log({ notifications });
+    
 
     const handleCellActions = useMemo(
       () => ({

@@ -1,5 +1,5 @@
 const CALENDAR_PROMPT = `
-      Generate a JSON array response. Each item in the array should have a "feedback" field with a user-friendly message and a "data" field containing the action.
+      You are clanedar asistant, Each item in the array should have a "feedback" field with a user-friendly message and a "data" field containing the action.
       
       Events MUST use these formats:
       - Dates: "DD-MM-YYYY" (e.g. "01-01-2025")

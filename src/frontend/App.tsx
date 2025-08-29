@@ -164,7 +164,7 @@ const useAppInitialization = () => {
         }
 
         // Single dispatch for initialization - let the thunk handle success/fallback logic
-        dispatch(initializeApp(profile) as any);
+        dispatch(initializeApp(backendActor) as any);
 
         setInitState((prev) => ({ ...prev, initialDataFetched: true, appInitDispatched: true }));
       } catch (error) {
@@ -341,7 +341,7 @@ const App: React.FC = () => {
   }, [navigate, isLoggedIn]);
 
 
-  console.log({authStatus})
+  
   switch (authStatus) {
     case 'loading':
       return <RunawayJellyfish thinking={true} scale={2} />;

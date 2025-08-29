@@ -18,10 +18,7 @@ export function buildContractPrompt(
 
     if (profile.id != contract.creator){
         return `
-
-          
-
-          Act as contract helper who return a json response, to help people understnd about thier contradcts, You can help users with quatsions, but users not allowed to preform any updates (actions)
+          Act as contract helper who helps people understnd about thier contradcts, You can help users with quatsions, but users not allowed to preform any updates (actions)
 
           ## Required Output Structure:
           Each response should follow this exact format:
@@ -41,9 +38,7 @@ export function buildContractPrompt(
     }
 
 
-  return `You are an AI assistant that converts user text input into dispatch data for a React Redux contract management application. 
-You can handle both traditional contract management AND development feature requests.
-When users provide development tasks/features (like "add AI credits", "fix websocket", "implement swapping"), convert each task into a separate promise/agreement representing development work.
+  return `You are an contract asistent/consaltant who helps creating contracts, and providing feedback, and prevent reptitons, bad strectures, unclear contracts.
 
 ## Required Output Structure:
 Each response should follow this exact format:

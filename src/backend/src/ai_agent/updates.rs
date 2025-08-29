@@ -89,9 +89,30 @@ pub async fn ask_ai(
     };
 
     let cycles = 230_949_972_000u128;
-    let (response,): (HttpResponse,) = http_request(request, cycles)
-        .await
-        .map_err(|e| format!("HTTP request failed: {:?}", e))?;
+    
+    // Add retry logic for consensus errors
+    let mut attempts = 0;
+    let max_attempts = 3;
+    
+    let response = loop {
+        attempts += 1;
+        
+        match http_request(request.clone(), cycles).await {
+            Ok((response,)) => break response,
+            Err(e) => {
+                let error_msg = format!("{:?}", e);
+                
+                // Check if it's a consensus error
+                if error_msg.contains("No consensus could be reached") && attempts < max_attempts {
+                    ic_cdk::println!("Consensus error on attempt {}, retrying...", attempts);
+                    // Small delay before retry (using IC timer)
+                    continue;
+                } else {
+                    return Err(format!("HTTP request failed after {} attempts: {:?}", attempts, e));
+                }
+            }
+        }
+    };
 
     if response.status != 200u16 {
         let error_body = String::from_utf8(response.body.clone())
@@ -135,23 +156,55 @@ pub async fn ask_ai(
 
 #[query]
 fn transform(raw: TransformArgs) -> HttpResponse {
-    // Simple transform that removes non-deterministic headers
-    // Keep only content-related headers for consensus
+    // More aggressive transform to ensure consensus
+    // Remove ALL headers that could be non-deterministic
     let mut sanitized_headers = Vec::new();
+    
+    // Only keep absolutely essential headers
     for header in raw.response.headers {
         let header_name = header.name.to_lowercase();
-        // Keep essential headers for API responses
-        if header_name.starts_with("content-")
-            || header_name == "x-ratelimit-requests-remaining"
-            || header_name == "x-ratelimit-tokens-remaining"
-        {
+        // Only keep content-type for proper parsing
+        if header_name == "content-type" {
             sanitized_headers.push(header);
         }
     }
 
+    // Parse and sanitize the response body to remove non-deterministic fields
+    let sanitized_body = if raw.response.status == 200u16 {
+        match String::from_utf8(raw.response.body.clone()) {
+            Ok(body_str) => {
+                match serde_json::from_str::<serde_json::Value>(&body_str) {
+                    Ok(mut json) => {
+                        // Remove non-deterministic fields from Anthropic API response
+                        if let Some(obj) = json.as_object_mut() {
+                            obj.remove("id"); // Request ID is non-deterministic
+                            obj.remove("created_at"); // Timestamp is non-deterministic
+                            
+                            // Clean usage object if present
+                            if let Some(usage) = obj.get_mut("usage") {
+                                if let Some(usage_obj) = usage.as_object_mut() {
+                                    // Keep token counts but remove any timestamps or IDs
+                                    usage_obj.retain(|k, _| {
+                                        k == "input_tokens" || k == "output_tokens" || k == "total_tokens"
+                                    });
+                                }
+                            }
+                        }
+                        
+                        serde_json::to_vec(&json).unwrap_or(raw.response.body)
+                    }
+                    Err(_) => raw.response.body // Keep original if not valid JSON
+                }
+            }
+            Err(_) => raw.response.body // Keep original if not valid UTF-8
+        }
+    } else {
+        raw.response.body // Keep error responses as-is
+    };
+
     HttpResponse {
         status: raw.response.status,
-        body: raw.response.body,
+        body: sanitized_body,
         headers: sanitized_headers,
     }
 }

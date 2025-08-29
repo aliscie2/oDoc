@@ -46,7 +46,7 @@ function ContractPage() {
 
         if (contract && "Ok" in contract) {
           const fetchedContract = contract.Ok.CustomContract;
-          console.log({ result: fetchedContract });
+          
           // Only update state without saving to backend - contract already exists
           dispatch({ type: "SET_CONTRACT", contract: fetchedContract });
         } else if (contract && "Err" in contract) {

@@ -102,7 +102,7 @@ export const useGoogleCalendar = () => {
             );
             const calData = await calRes.json();
             localStorage.setItem("googleCalendarId", calData.id);
-            console.log({ y: calData.id });
+            
             localStorage.setItem(
               "googleCalendarToken" + calData.id,
               response.access_token,
@@ -300,7 +300,7 @@ export const useGoogleCalendar = () => {
       for (const email of emails) {
         try {
           const x = localStorage.getItem("googleCalendarToken" + email);
-          console.log({ x, email });
+          
           const eventsRes = await fetch(
             `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(email)}/events?timeMin=${now}&maxResults=50&singleEvents=true&orderBy=startTime&timeZone=${userTimeZone}`,
             {

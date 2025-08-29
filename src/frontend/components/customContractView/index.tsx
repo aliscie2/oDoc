@@ -435,7 +435,7 @@ const CustomContractViewer = memo<{ contractId: string }>(({ contractId }) => {
   const { isDarkMode } = useSelector((state) => state.uiState);
 
   const currentContract = useContractData(contractId, contracts);
-  console.log({ contracts, currentContract });
+  
   const [dataType, setDataType] = useDataType(contractId);
   const columnConfig = useColumnConfig(profile, all_friends, wallet);
   const gridData = useGridData(currentContract, dataType, columnConfig);

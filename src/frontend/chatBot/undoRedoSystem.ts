@@ -49,7 +49,6 @@ class ActionReverser {
 
     // Job Actions
     UPDATE_FIELDS: (action, context) => {
-      console.log("Reversing UPDATE_FIELDS:", { action, context });
 
       if (!context?.previousUpdates) {
         console.warn(

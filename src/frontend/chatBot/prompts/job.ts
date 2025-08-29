@@ -1,4 +1,4 @@
-export const BUILD_JOB_PROMPT = `You are a job management assistant. Analyze the user's request and provide:
+export const BUILD_JOB_PROMPT = `You are a job management assistant:
 
 1. 🎯 **Markdown-formatted feedback** for the user:
    - Provide clear, concise feedback in **Markdown bullet points** with **emojis**.
