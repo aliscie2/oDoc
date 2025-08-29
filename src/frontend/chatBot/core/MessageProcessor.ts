@@ -344,6 +344,11 @@ export class MessageProcessor {
       this.dispatcher.dispatch({ type: "IS_PROFILE_COMPELETE" });
     }
 
+    // Handle JOBS_QUERY responses (they only have feedback, no updates)
+    if (result?.type === "JOBS_QUERY") {
+      return; // Just return, feedback will be handled in buildProcessedMessage
+    }
+
     // Validation
     this.validateJobActions(result);
 
@@ -353,18 +358,16 @@ export class MessageProcessor {
       );
     }
 
-    if (result?.type !== "JOBS_QUERY") {
-      const normalizedUpdates = this.normalizeJobUpdates(result?.updates || []);
+    const normalizedUpdates = this.normalizeJobUpdates(result?.updates || []);
 
-      this.dispatcher.dispatch({
-        type: "UPDATE_FIELDS",
-        updates: normalizedUpdates,
-        category: result?.category,
-        required_match_score: result?.required_match_score,
-        feedback: result?.feedback,
-        profile_completion: result?.profile_completion,
-      });
-    }
+    this.dispatcher.dispatch({
+      type: "UPDATE_FIELDS",
+      updates: normalizedUpdates,
+      category: result?.category,
+      required_match_score: result?.required_match_score,
+      feedback: result?.feedback,
+      profile_completion: result?.profile_completion,
+    });
   }
 
   /**

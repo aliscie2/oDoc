@@ -13,7 +13,7 @@ interface AIMessageResult<T = any> {
   parsedData: T;
   remainingCredits: number;
 }
-
+const JSON_PROMPT = "Analyze the user's request and provide a pure and only json. "
 export class AIService {
   constructor(
     private backendActor: any,
@@ -24,14 +24,14 @@ export class AIService {
     config: AIMessageConfig,
     abortSignal?: AbortSignal,
   ): Promise<AIMessageResult<T>> {
-    console.log({ config });
     const aiResponse = await this.backendActor.ask_ai(
       config.prompt,
-      config.promptType,
+      JSON_PROMPT+config.promptType,
       config.classify, // classify=true means quick=true (for classification)
-      import.meta.env.VITE_ANTHROPIC_API_KEY
+      import.meta.env.VITE_ANTHROPIC_API_KEY,
     );
-    console.log({ aiResponse });
+    console.log("AI Response: ", aiResponse);
+
     if (!aiResponse || "Err" in aiResponse) {
       throw new Error(
         aiResponse && "Err" in aiResponse
@@ -39,7 +39,6 @@ export class AIService {
           : "AI returned no response",
       );
     }
-    console.log({ aiResponse });
 
     const response = aiResponse.Ok.response;
     const remainingCredits = aiResponse.Ok.remaining_credits;
