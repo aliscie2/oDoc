@@ -5,6 +5,7 @@ import {
   Button,
   Card,
   CardContent,
+  CircularProgress,
   Container,
   Divider,
   Grid,
@@ -22,6 +23,7 @@ import { formatRelativeTime } from "../../utils/time";
 import EditProfile from "./editeProfile";
 import CopyButton from "../../components/MuiComponents/copyButton";
 import EmailComposer from "./sendEmail";
+import { CircleParkingOff } from "lucide-react";
 interface ProfilePageProps {
   profile: any;
   history: any;
@@ -163,6 +165,11 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
 
   const founderOfOdoc =
     "tgwpc-6xuon-k3a6y-ey7lt-xksjs-qx22h-ikhbt-4yp3a-6stco-rymbe-pqe";
+
+  console.log({ safeProfile });
+  if (!profile) {
+    return <CircularProgress />;
+  }
 
   return (
     <Container key={JSON.stringify(profile)} maxWidth="lg" sx={{ py: 4 }}>

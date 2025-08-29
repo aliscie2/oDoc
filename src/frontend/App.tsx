@@ -29,6 +29,7 @@ import {
 
 import RunawayJellyfish from "./components/creature/runAeayJellyFish";
 import useSocket from "./websocket/use_socket";
+import { RootState } from "./redux/reducers";
 
 // Lazy load heavy components
 const GoogleCalendarOnboarding = React.lazy(
@@ -68,6 +69,7 @@ const useAppInitialization = () => {
 
   const isFetching = useSelector(selectIsFetching);
   const profile = useSelector(selectProfile);
+  const { inited } = useSelector((state: RootState) => state.filesState);
 
   const [initState, setInitState] = useState({
     serviceWorkerRegistered: false,
@@ -77,18 +79,6 @@ const useAppInitialization = () => {
     appInitDispatched: false,
   });
 
-  // Service worker registration
-  useEffect(() => {
-    if (!initState.serviceWorkerRegistered && "serviceWorker" in navigator) {
-      navigator.serviceWorker
-        .register("/service-worker.js")
-        .then(() => {
-          setInitState((prev) => ({ ...prev, serviceWorkerRegistered: true }));
-        })
-        .catch(console.error);
-    }
-  }, [initState.serviceWorkerRegistered]);
-
   // Authentication check on app start
   useEffect(() => {
     checkAuthStatus();
@@ -96,7 +86,8 @@ const useAppInitialization = () => {
 
   // Reset initialization when user logs in to trigger data refetch
   useEffect(() => {
-    if (isLoggedIn) {
+    if (inited) {
+      console.log("xxx");
       setInitState((prev) => ({
         ...prev,
         initialDataFetched: false,
@@ -105,11 +96,12 @@ const useAppInitialization = () => {
       // Clear posts initialization flag when user logs in
       sessionStorage.removeItem("postsInitialized");
     }
-  }, [isLoggedIn]);
+  }, [inited]);
 
   // Main initialization
   useEffect(() => {
     const initializeAppData = async () => {
+      console.log("yyyyy");
       if (
         authStatus !== "registered" ||
         !isLoggedIn ||
@@ -153,15 +145,13 @@ const useAppInitialization = () => {
       }
     };
 
-    initializeAppData();
+    !isFetching && isLoggedIn && !inited && initializeAppData();
   }, [
     isLoggedIn,
-    isFetching,
     initState.initialDataFetched,
     initState.appInitDispatched,
     dispatch,
     logout,
-    profile,
     authStatus,
   ]);
 
@@ -169,6 +159,7 @@ const useAppInitialization = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       if (!profile?.id || initState.userDataFetched) return;
+      console.log("zzzz");
 
       try {
         const [notifications, chats, calendar, credits] =
@@ -215,13 +206,14 @@ const useAppInitialization = () => {
       }
     };
 
-    fetchUserData();
-  }, [profile?.id, initState.userDataFetched, dispatch]);
+    inited && fetchUserData();
+  }, [inited, profile?.id, initState.userDataFetched, dispatch]);
 
   // Token deposit
   useEffect(() => {
     const processDeposit = async () => {
       if (!profile?.id || initState.depositProcessed) return;
+      console.log("1111");
 
       try {
         if (!ckUSDCActor) return;
@@ -278,8 +270,9 @@ const useAppInitialization = () => {
       }
     };
 
-    processDeposit();
+    inited && processDeposit();
   }, [
+    inited,
     profile?.id,
     initState.depositProcessed,
     enqueueSnackbar,
@@ -293,15 +286,9 @@ const useAppInitialization = () => {
 const App: React.FC = () => {
   const { authStatus, isLoggedIn } = useAuth();
   const navigate = useNavigate();
-  const [backendReady, setBackendReady] = useState(false);
 
   useAppInitialization();
   useSocket();
-
-  // Check backend readiness
-  useEffect(() => {
-    setBackendReady(!!backendActor);
-  }, []);
 
   // Domain-based navigation logic
   useEffect(() => {
