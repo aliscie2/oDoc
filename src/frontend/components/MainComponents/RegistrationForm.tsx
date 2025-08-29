@@ -15,6 +15,7 @@ import { RegisterUser } from "../../../declarations/backend/backend.did";
 import compressImage from "@/DataProcessing/compressImage";
 import { useLocation } from "react-router-dom";
 import RunawayJellyfish from "../creature/runAeayJellyFish";
+import { useAuth } from "@/hooks/useAuth";
 
 // Utility function to convert File to Uint8Array
 const fileToUint8Array = (file: File): Promise<Uint8Array> => {
@@ -41,6 +42,7 @@ interface FormValues {
 }
 
 const RegistrationForm: React.FC = () => {
+  const {cleanUp} = useAuth();
   const { enqueueSnackbar } = useSnackbar();
   // Using direct backendActor import
 
@@ -99,7 +101,9 @@ const RegistrationForm: React.FC = () => {
       };
 
       const affiliateId = "";
+      console.log({affiliateId:'xxx'});
       const result = await backendActor.register(affiliateId, input);
+      
 
       if (result?.Ok) {
         enqueueSnackbar(`Welcome ${result.Ok.name}, to Odoc`, {
@@ -110,9 +114,9 @@ const RegistrationForm: React.FC = () => {
         enqueueSnackbar(result.Err, { variant: "error" });
       }
     } catch (error) {
-      enqueueSnackbar(error.message || "Registration failed", {
-        variant: "error",
-      });
+      alert("Somethigng went wrong please try again in a second")
+      await cleanUp()
+
     } finally {
       setLoading(false);
     }

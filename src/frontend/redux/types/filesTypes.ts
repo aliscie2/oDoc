@@ -32,7 +32,7 @@ export interface InitialState {
   top_dialog: { open: boolean; content: any; title: string | null };
   workspaces: WorkSpace[];
   contracts: Record<string, StoredContract>;
-  all_friends: Friend[];
+  all_friends: User[];
   all_users: any[];
 
   [key: string]: any;

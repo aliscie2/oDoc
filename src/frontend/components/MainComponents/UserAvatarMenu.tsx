@@ -21,7 +21,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import { backendActor } from "../../utils/backendUtils";
 import { useSnackbar } from "notistack";
 import { Principal } from "@dfinity/principal";
-import { Rating, Message } from "../../../declarations/backend/backend.did";
+import { Rating, Message, User } from "$/declarations/backend/backend.did";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/reducers";
 import { randomString } from "../../DataProcessing/dataSamples";
@@ -54,7 +54,7 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
     (state: RootState) => state.filesState,
   );
 
-  const [user, setUser] = useState(initialUser);
+  const [user, setUser] = useState<User>(initialUser);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [rating, setRating] = useState<number>(0);
@@ -63,6 +63,8 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
   const [activeChat, setActiveChat] = useState<any>(null);
   const [isCalled, setCalled] = useState(false);
   const [isLoading, setLoading] = useState(false);
+  const { all_friends } = useSelector((state: RootState) => state.filesState);
+
 
   useEffect(() => {
     setUser(initialUser);
@@ -72,11 +74,20 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
     (async () => {
       if (user_id && !isCalled) {
         setLoading(true);
-        const response = await backendActor.get_user(user_id);
-        setLoading(false);
-        if ("Ok" in response) {
-          setUser(response.Ok);
+        let foundUser = all_friends.find(f=>f.id==user_id);
+        console.log({foundUser})
+        if (foundUser){
+          setUser(foundUser);
+          
+        } else {
+          const response = await backendActor.get_user(user_id);
+          setLoading(false);
+          if ("Ok" in response) {
+            setUser(response.Ok);
+          }
         }
+
+        setLoading(false);
         setCalled(true);
       }
     })();

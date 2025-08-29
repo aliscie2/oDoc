@@ -85,6 +85,39 @@ export const useAuth = () => {
    }
  }, [setAuthStatus]);
 
+
+
+
+ const cleanUp = useCallback(async () => {
+  
+
+  localStorage.clear()
+      // clear indexdb storage
+      const indexedDB = window.indexedDB;
+      if (indexedDB) {
+        const openRequest = indexedDB.open("dfinity-studio", 1);
+        openRequest.onsuccess = (event) => {
+          const db = openRequest.result;
+          const transaction = db.transaction(["canister"], "readwrite");
+          const objectStore = transaction.objectStore("canister");
+          objectStore.clear();
+          transaction.oncomplete = () => {
+            console.log("IndexedDB storage cleared successfully");
+          };
+          transaction.onerror = (event) => {
+            console.error("Error clearing IndexedDB storage:", event.target.error);
+          };
+        };
+        openRequest.onerror = (event) => {
+          console.error("Error opening IndexedDB:", event.target.error);
+        };
+      }
+
+      await logout();
+
+
+}, [setAuthStatus]);
+
  return {
   isLoggedIn: authStatus === 'registered',
    authStatus,
@@ -93,5 +126,6 @@ export const useAuth = () => {
    register,
    checkAuthStatus,
    setAuthStatus,
+   cleanUp
  };
 };

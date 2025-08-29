@@ -64,17 +64,17 @@ export const usePromiseActions = (
       }
 
       try {
-        // Update local state immediately for better UX (no backend save)
-        dispatch({
-          type: "SET_PROMISE_STATUS",
-          contract_id: promise.contract_id,
-          promise: { ...promise, status: statusMap[newStatus] },
-        });
-
         // Call backend function based on status and user role
         const isReceiver = profile?.id === promise.receiver.toString();
 
-        if (newStatus === "Confirmed" && isReceiver) {
+        // Check if current user is the contract creator
+        if (promise.sender.toString() === profile?.id) {
+          dispatch({
+            type: "UPDATE_PROMISE",
+            contract_id: promise.contract_id,
+            promise: { ...promise, status: statusMap[newStatus] },
+          });
+        } else if (newStatus === "Confirmed" && isReceiver) {
           await backendActor.confirmed_c_payment(promise);
         } else if (newStatus === "ConfirmedCancellation" && isReceiver) {
           await backendActor.confirmed_cancellation(promise);
@@ -82,6 +82,13 @@ export const usePromiseActions = (
           await backendActor.approve_high_promise(promise);
         } else if (newStatus === "Objected" && isReceiver) {
           await backendActor.object_on_cancel(promise, reason);
+        } else {
+          // Update local state for other cases
+          dispatch({
+            type: "SET_PROMISE_STATUS",
+            contract_id: promise.contract_id,
+            promise: { ...promise, status: statusMap[newStatus] },
+          });
         }
 
         enqueueSnackbar("Status updated successfully", { variant: "success" });

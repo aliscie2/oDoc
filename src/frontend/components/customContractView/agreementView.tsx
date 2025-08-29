@@ -350,7 +350,7 @@ const PromiseCardHeader = memo<{
               order: { xs: 3, sm: 2 },
             }}
           >
-            <UserAvatarMenu user={senderData.user} />
+            <UserAvatarMenu user_id={promise.sender.toString()} />
             <Typography
               variant={isExpanded ? "body2" : "caption"}
               fontWeight={600}
@@ -431,7 +431,7 @@ const PromiseCardHeader = memo<{
                   </Box>
                 ) : (
                   <>
-                    <UserAvatarMenu user={receiverData.user} />
+                    <UserAvatarMenu user_id={promise.receiver.toString()}  />
                     <Typography
                       variant={isExpanded ? "body2" : "caption"}
                       fontWeight={600}

@@ -66,7 +66,7 @@ const PageContainer = styled(Box)(({ theme }) => ({
 const useAppInitialization = () => {
 
 
-  const {logout, checkAuthStatus, authStatus } = useAuth();
+  const {logout, checkAuthStatus, authStatus, cleanUp } = useAuth();
     
   const dispatch = useDispatch();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
@@ -85,28 +85,6 @@ const useAppInitialization = () => {
     appInitDispatched: false,
   });
 
-  const checkAuthAndLogout = useCallback(
-    (error: any) => {
-      const errorString = error?.toString() || "";
-      const authErrors = [
-        "Invalid signature",
-        "EcdsaP256 signature could not be verified",
-        "Invalid delegation",
-      ];
-
-      if (authErrors.some((err) => errorString.includes(err))) {
-        localStorage.clear();
-        sessionStorage.clear();
-        try {
-          indexedDB.deleteDatabase("authClientDB");
-        } catch (e) {}
-        logout();
-        return true;
-      }
-      return false;
-    },
-    [logout],
-  );
 
   // Service worker registration
   useEffect(() => {
@@ -168,7 +146,7 @@ const useAppInitialization = () => {
 
         setInitState((prev) => ({ ...prev, initialDataFetched: true, appInitDispatched: true }));
       } catch (error) {
-        checkAuthAndLogout(error);
+        await cleanUp()
       } finally {
         dispatch({ type: "IS_FETCHING", isFetching: false });
       }
@@ -182,7 +160,6 @@ const useAppInitialization = () => {
     initState.appInitDispatched,
     dispatch,
     logout,
-    checkAuthAndLogout,
     profile,
     authStatus,
   ]);
@@ -353,7 +330,7 @@ const App: React.FC = () => {
       </PageContainer>
     </div>
     case 'authenticated':
-      return <RegistrationForm />;
+      return <RegistrationForm  />;
     default:
       return (
         <MainContent>
