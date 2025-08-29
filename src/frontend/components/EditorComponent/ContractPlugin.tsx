@@ -57,6 +57,5 @@ const createContractPlugin = createPluginFactory({
   // },
 });
 
-
 export { CONTRACT_KEY };
 export default createContractPlugin;

@@ -7,5 +7,7 @@ export const formatStatus = (status: any): string => {
 
 export const getStatusConfig = (status: any) => {
   const key = Object.keys(status || {})[0] || "None";
-  return STATUS_CONFIGS[key as keyof typeof STATUS_CONFIGS] || STATUS_CONFIGS.None;
+  return (
+    STATUS_CONFIGS[key as keyof typeof STATUS_CONFIGS] || STATUS_CONFIGS.None
+  );
 };

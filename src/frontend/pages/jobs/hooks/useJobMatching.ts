@@ -106,17 +106,21 @@ export const useJobMatching = (currentJob: Job | null) => {
         const aiResponse = await backendActor.ask_ai(
           `candidates: ${JSON.stringify(compressedCandidates)}, Current: ${JSON.stringify(jobWithoutId)}`,
           JOB_MATCHING_PROMPT,
-          false,// quick parameter
-          import.meta.env.VITE_ANTHROPIC_API_KEY
+          false, // quick parameter
+          import.meta.env.VITE_ANTHROPIC_API_KEY,
         );
 
-        if (!aiResponse || 'Err' in aiResponse) {
-          throw new Error(aiResponse && 'Err' in aiResponse ? aiResponse.Err : "AI returned no response");
+        if (!aiResponse || "Err" in aiResponse) {
+          throw new Error(
+            aiResponse && "Err" in aiResponse
+              ? aiResponse.Err
+              : "AI returned no response",
+          );
         }
 
         const responseText = aiResponse.Ok.response;
         const remainingCredits = aiResponse.Ok.remaining_credits;
-        
+
         // Update credits after AI call
         dispatch({
           type: "UPDATE_AI_CREDITS",
@@ -148,7 +152,7 @@ export const useJobMatching = (currentJob: Job | null) => {
         };
 
         const saveResult = await backendActor.update_job([jobUpdate], []);
-        if (saveResult && 'Err' in saveResult) {
+        if (saveResult && "Err" in saveResult) {
           console.error("Failed to auto-save matches:", saveResult.Err);
         }
       }

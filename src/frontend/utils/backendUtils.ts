@@ -33,21 +33,24 @@ export class BackendUtils {
     try {
       const client = await this.getAuthClient();
       const isAuthenticated = await client.isAuthenticated();
-      
+
       if (isAuthenticated) {
         const identity = client.getIdentity();
         const host = this.getHost();
         const agent = await this.createHttpAgent(identity, host);
-        
+
         this.backendActor = Actor.createActor<_SERVICE>(idlFactory, {
           agent,
           canisterId,
         });
-        
+
         return this.backendActor;
       }
     } catch (error) {
-      console.warn("Failed to create authenticated actor, falling back to default:", error);
+      console.warn(
+        "Failed to create authenticated actor, falling back to default:",
+        error,
+      );
     }
 
     // Fallback to default backend (works with yarn start)
@@ -59,7 +62,7 @@ export class BackendUtils {
       try {
         const client = await this.getAuthClient();
         const isAuthenticated = await client.isAuthenticated();
-        
+
         if (isAuthenticated) {
           const identity = client.getIdentity();
           const host = this.getHost();
@@ -76,11 +79,11 @@ export class BackendUtils {
   static async logout(): Promise<void> {
     try {
       const client = await this.getAuthClient();
-      
+
       // Clear all auth-related storage
       localStorage.clear();
       sessionStorage.clear();
-      
+
       // Clear IndexedDB auth storage
       if (typeof window !== "undefined" && window.indexedDB) {
         try {
@@ -89,9 +92,9 @@ export class BackendUtils {
           console.warn("Could not clear IndexedDB:", e);
         }
       }
-      
+
       await client.logout({ returnTo: "/" });
-      
+
       // Reset cached actors
       this.authClient = null;
       this.backendActor = null;
@@ -107,7 +110,10 @@ export class BackendUtils {
       : "https://ic0.app";
   }
 
-  private static async createHttpAgent(identity: Identity, host: string): Promise<HttpAgent> {
+  private static async createHttpAgent(
+    identity: Identity,
+    host: string,
+  ): Promise<HttpAgent> {
     const agent = new HttpAgent({ identity, host });
 
     if (import.meta.env.VITE_DFX_NETWORK !== "ic") {
@@ -138,7 +144,7 @@ export const initializeSmartActors = async (): Promise<void> => {
   }
 
   isInitializing = true;
-  
+
   initializationPromise = (async () => {
     try {
       const client = await AuthClient.create({
@@ -150,31 +156,32 @@ export const initializeSmartActors = async (): Promise<void> => {
       });
 
       const isAuthenticated = await client.isAuthenticated();
-      
+
       if (isAuthenticated) {
         const identity = client.getIdentity();
-        
-        const host = import.meta.env.VITE_DFX_NETWORK !== "ic"
-          ? import.meta.env.VITE_IC_HOST
-          : "https://ic0.app";
-        
+
+        const host =
+          import.meta.env.VITE_DFX_NETWORK !== "ic"
+            ? import.meta.env.VITE_IC_HOST
+            : "https://ic0.app";
+
         const agent = new HttpAgent({ identity, host });
-        
+
         if (import.meta.env.VITE_DFX_NETWORK !== "ic") {
           await agent.fetchRootKey().catch(() => {});
         }
-        
+
         smartBackendActor = Actor.createActor<_SERVICE>(idlFactory, {
           agent,
           canisterId,
         });
-        
+
         smartCkUSDCActor = await getLedgerActor(agent);
       }
     } catch (error) {
       console.error("Smart actor initialization failed:", error);
     }
-    
+
     // Always fallback to default backend if smart actor creation fails
     if (!smartBackendActor) {
       smartBackendActor = backend;
@@ -199,7 +206,7 @@ export const backendActor = new Proxy({} as ActorSubclass<_SERVICE>, {
       return smartBackendActor[prop as keyof ActorSubclass<_SERVICE>];
     }
     return backend[prop as keyof ActorSubclass<_SERVICE>];
-  }
+  },
 });
 
 export const ckUSDCActor = new Proxy({} as any, {
@@ -208,7 +215,7 @@ export const ckUSDCActor = new Proxy({} as any, {
       return smartCkUSDCActor[prop];
     }
     return undefined;
-  }
+  },
 });
 
 // Login functionality
@@ -223,9 +230,10 @@ export const login = async (): Promise<boolean> => {
 
   return new Promise((resolve, reject) => {
     const port = import.meta.env.VITE_DFX_PORT;
-    const identityProvider = import.meta.env.VITE_DFX_NETWORK !== "ic"
-      ? `http://rdmx6-jaaaa-aaaaa-aaadq-cai.localhost:${port}`
-      : "https://identity.ic0.app/#authorize";
+    const identityProvider =
+      import.meta.env.VITE_DFX_NETWORK !== "ic"
+        ? `http://rdmx6-jaaaa-aaaaa-aaadq-cai.localhost:${port}`
+        : "https://identity.ic0.app/#authorize";
 
     client.login({
       maxTimeToLive: BigInt(365 * 24 * 60 * 60 * 1000000000), // 1 year in nanoseconds

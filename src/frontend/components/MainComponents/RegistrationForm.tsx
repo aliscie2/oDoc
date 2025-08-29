@@ -42,7 +42,7 @@ interface FormValues {
 }
 
 const RegistrationForm: React.FC = () => {
-  const {cleanUp} = useAuth();
+  const { cleanUp } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
   // Using direct backendActor import
 
@@ -101,9 +101,8 @@ const RegistrationForm: React.FC = () => {
       };
 
       const affiliateId = "";
-      console.log({affiliateId:'xxx'});
+      console.log({ affiliateId: "xxx" });
       const result = await backendActor.register(affiliateId, input);
-      
 
       if (result?.Ok) {
         enqueueSnackbar(`Welcome ${result.Ok.name}, to Odoc`, {
@@ -114,9 +113,8 @@ const RegistrationForm: React.FC = () => {
         enqueueSnackbar(result.Err, { variant: "error" });
       }
     } catch (error) {
-      alert("Somethigng went wrong please try again in a second")
-      await cleanUp()
-
+      alert("Somethigng went wrong please try again in a second");
+      await cleanUp();
     } finally {
       setLoading(false);
     }

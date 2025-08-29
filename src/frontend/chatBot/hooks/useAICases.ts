@@ -5,13 +5,23 @@ import { AICasesService } from "../services/AICasesService";
 
 export const useAICases = () => {
   const { calendar } = useSelector((state: RootState) => state.calendarState);
-  const { currentJobId, jobs } = useSelector((state: RootState) => state.jobState);
+  const { currentJobId, jobs } = useSelector(
+    (state: RootState) => state.jobState,
+  );
   const { contracts, all_friends, profile } = useSelector(
     (state: RootState) => state.filesState,
   );
 
   const aiCasesService = useMemo(
-    () => new AICasesService(calendar, jobs, currentJobId, contracts, all_friends, profile),
+    () =>
+      new AICasesService(
+        calendar,
+        jobs,
+        currentJobId,
+        contracts,
+        all_friends,
+        profile,
+      ),
     [calendar, jobs, currentJobId, contracts, all_friends, profile],
   );
 

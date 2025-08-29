@@ -8,8 +8,14 @@ export interface UseChatActionsConfig {
   setChatHistory: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
   setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
   setIsMinimized: React.Dispatch<React.SetStateAction<boolean>>;
-  setAbortController: React.Dispatch<React.SetStateAction<AbortController | null>>;
-  processMessage: (message: string, messageId: string | number, abortSignal?: AbortSignal) => Promise<any>;
+  setAbortController: React.Dispatch<
+    React.SetStateAction<AbortController | null>
+  >;
+  processMessage: (
+    message: string,
+    messageId: string | number,
+    abortSignal?: AbortSignal,
+  ) => Promise<any>;
 }
 
 /**

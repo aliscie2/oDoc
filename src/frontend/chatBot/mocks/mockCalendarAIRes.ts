@@ -1,4 +1,3 @@
-
 import { Calendar } from "$/declarations/backend/backend.did";
 import { TimeFormatter } from "../utils";
 

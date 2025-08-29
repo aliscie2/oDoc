@@ -1,14 +1,17 @@
 import React from "react";
 import { useChatState } from "./hooks/useChatState";
 import { useChatActions, UseChatActionsConfig } from "./hooks/useChatActions";
-import { useTriggeredMessages, UseTriggeredMessagesConfig } from "./hooks/useTriggeredMessages";
+import {
+  useTriggeredMessages,
+  UseTriggeredMessagesConfig,
+} from "./hooks/useTriggeredMessages";
 import { useMessageProcessor } from "./hooks/useMessageProcessor";
 import { ChatWindow } from "./components/ChatWindow";
 import { AIInput } from "./components/AIInput";
 
 // ===== MAIN COMPONENT =====
 const ChatContainer = () => {
-  console.log('.......tst')
+  console.log(".......tst");
   const {
     assistantName,
     chatHistory,

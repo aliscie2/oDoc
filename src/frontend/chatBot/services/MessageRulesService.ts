@@ -58,7 +58,8 @@ export class MessageRulesService {
         id: "calendar",
         type: "immediate",
         priority: 1,
-        condition: () => this.jobs.length > 0 && !this.calendar?.availabilities?.length,
+        condition: () =>
+          this.jobs.length > 0 && !this.calendar?.availabilities?.length,
         message: () =>
           `📅 For others to book an interview with you, you can say, for example: "I am available every day except Fridays, from 9 AM to 3 PM."`,
         actionType: "WELCOME_MESSAGE",
@@ -127,9 +128,7 @@ export class MessageRulesService {
     if (filters?.type)
       filtered = filtered.filter((rule) => rule.type === filters.type);
     if (filters?.priority !== undefined)
-      filtered = filtered.filter(
-        (rule) => rule.priority === filters.priority,
-      );
+      filtered = filtered.filter((rule) => rule.priority === filters.priority);
     if (filters?.showOnce !== undefined)
       filtered = filtered.filter(
         (rule) => rule.metadata?.showOnce === filters.showOnce,

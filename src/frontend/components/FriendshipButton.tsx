@@ -11,14 +11,9 @@ interface FriendshipButtonProps {
 }
 
 const FriendshipButton: React.FC<FriendshipButtonProps> = ({ user }) => {
-
-
   const dispatch = useDispatch();
 
-  
-  const { profile, friends } = useSelector(
-    (state: any) => state.filesState,
-  );
+  const { profile, friends } = useSelector((state: any) => state.filesState);
   // Using direct backendActor import
   const [isLoading, setIsLoading] = useState(false);
 
@@ -51,15 +46,14 @@ const FriendshipButton: React.FC<FriendshipButtonProps> = ({ user }) => {
     handleAction(
       async () => {
         const res = await backendActor.send_friend_request(user.id);
-        if ("Ok" in res){
-          
-          let friend = {
-             id: String,
+        if ("Ok" in res) {
+          const friend = {
+            id: String,
             sender: profile,
             receiver: res.Ok,
             confirmed: false,
-        } 
-        dispatch({type:"ADD_FRIEND",friend, user:res.Ok })       
+          };
+          dispatch({ type: "ADD_FRIEND", friend, user: res.Ok });
         }
         return res;
       },

@@ -35,7 +35,11 @@ export type Action =
   | { type: "IS_FETCHING"; isFetching: boolean };
 
 // Auth Status Type
-export type AuthStatus = 'loading' | 'anonymous' | 'authenticated' | 'registered';
+export type AuthStatus =
+  | "loading"
+  | "anonymous"
+  | "authenticated"
+  | "registered";
 
 // State Interface
 export interface State {
@@ -50,7 +54,7 @@ export interface State {
 
 // Initial State
 export const initialState: State = {
-  authStatus: 'loading',
+  authStatus: "loading",
   count: 0,
   isNavOpen: false,
   searchTool: false,

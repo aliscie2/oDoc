@@ -21,12 +21,12 @@ import { Helmet } from "react-helmet-async";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
-import {
-  CPayment,
-  User,
-} from "$/declarations/backend/backend.did";
+import { CPayment, User } from "$/declarations/backend/backend.did";
 import { custom_contract, randomString } from "@/DataProcessing/dataSamples";
-import { ContractWithNotifications, useContractsNotifications } from "./useContractsNotifications";
+import {
+  ContractWithNotifications,
+  useContractsNotifications,
+} from "./useContractsNotifications";
 import { RootState } from "@/redux/reducers";
 import { createShortContractUrl } from "@/utils/urlEncoder";
 
@@ -131,7 +131,6 @@ const ContractCard: React.FC<ContractCardProps> = ({
   profile,
   allFriends,
 }) => {
-
   const [isExpanded, setIsExpanded] = React.useState(false);
   const navigate = useNavigate();
   const theme = useTheme();
@@ -246,8 +245,8 @@ const ContractCard: React.FC<ContractCardProps> = ({
                 label={
                   profile?.id === contract.creator
                     ? "Created by you"
-                    : allFriends.find((f) => f.id === contract.creator)
-                        ?.name || "Shared with you"
+                    : allFriends.find((f) => f.id === contract.creator)?.name ||
+                      "Shared with you"
                 }
                 size="small"
                 variant="filled"
@@ -341,8 +340,6 @@ const ContractCard: React.FC<ContractCardProps> = ({
                 </Box>
               </Box>
             </Stack>
-
-
           </CardContent>
         </Card>
       </Box>
@@ -356,15 +353,20 @@ const ContractsHistory: React.FC = () => {
   const { profile, all_friends } = useSelector(
     (state: RootState) => state.filesState,
   );
-  
+
   // Use the centralized contracts notifications hook
-  const { contracts: contractsList, loading, error, totalUnseenCount } = useContractsNotifications();
+  const {
+    contracts: contractsList,
+    loading,
+    error,
+    totalUnseenCount,
+  } = useContractsNotifications();
 
   console.log(
     "ContractsHistory rendered with",
     contractsList.length,
     "contracts, total unseen:",
-    totalUnseenCount
+    totalUnseenCount,
   );
 
   // Mark that user has visited contracts page
@@ -434,7 +436,9 @@ const ContractsHistory: React.FC = () => {
       {/* Error display */}
       {error && (
         <Box sx={{ mb: 2, p: 2, bgcolor: "error.light", borderRadius: 1 }}>
-          <Typography color="error">Error loading contracts: {error}</Typography>
+          <Typography color="error">
+            Error loading contracts: {error}
+          </Typography>
         </Box>
       )}
 

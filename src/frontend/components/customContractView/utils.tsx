@@ -52,7 +52,9 @@ export const transformPromisesDataAndColumns = (
 
   // Add new columns for cell fields that don't exist in base columns
   const extraColumns = Array.from(uniqueFields)
-    .filter((field) => !existingColumnDefs.some((col: any) => col.field === field))
+    .filter(
+      (field) => !existingColumnDefs.some((col: any) => col.field === field),
+    )
     .map((field: any) => ({
       field,
       headerName:

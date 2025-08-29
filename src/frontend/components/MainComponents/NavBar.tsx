@@ -91,9 +91,7 @@ const NavBar = (props: any) => {
     (state: any) => state.filesState,
   );
   const dispatch = useDispatch();
-  const { isNavOpen, isDarkMode } = useSelector(
-    (state: any) => state.uiState,
-  );
+  const { isNavOpen, isDarkMode } = useSelector((state: any) => state.uiState);
   const { isLoggedIn } = useAuth();
   const [defaultItems, setDefaultItems] = useState([]);
 

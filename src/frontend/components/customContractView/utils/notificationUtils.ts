@@ -23,7 +23,9 @@ export const findUnseenNotificationForPromise = (
 // Track notifications that are being processed to avoid duplicate calls
 const processingNotifications = new Set<string>();
 
-export const isNotificationAlreadyCalled = (notificationId: string): boolean => {
+export const isNotificationAlreadyCalled = (
+  notificationId: string,
+): boolean => {
   return processingNotifications.has(notificationId);
 };
 
@@ -31,6 +33,8 @@ export const markNotificationAsCalled = (notificationId: string): void => {
   processingNotifications.add(notificationId);
 };
 
-export const removeNotificationFromProcessing = (notificationId: string): void => {
+export const removeNotificationFromProcessing = (
+  notificationId: string,
+): void => {
   processingNotifications.delete(notificationId);
 };

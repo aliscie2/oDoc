@@ -112,7 +112,8 @@ const useNavigationState = () => {
   const { isNavOpen, isDarkMode, isFetching, authStatus } = useSelector(
     (state) => state.uiState,
   );
-  const isLoggedIn = authStatus === 'authenticated' || authStatus === 'registered';
+  const isLoggedIn =
+    authStatus === "authenticated" || authStatus === "registered";
   const { notifications } = useSelector((state) => state.notificationState);
 
   const currentPath = location.pathname;
@@ -221,10 +222,10 @@ export default function TopNavBar() {
   const { authStatus } = useAuth();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  
+
   // Derive legacy values for backward compatibility
-  const isRegistered = authStatus === 'registered';
-  
+  const isRegistered = authStatus === "registered";
+
   const state = useNavigationState();
   const showMobileMenu = useMobileScrollBehavior(state.isMobile);
 
@@ -277,9 +278,9 @@ export default function TopNavBar() {
 
     if (!state.isLoggedIn) {
       authState = "loggedOut";
-    } else if (authStatus === 'authenticated') {
+    } else if (authStatus === "authenticated") {
       authState = "unregistered";
-    } else if (authStatus === 'registered') {
+    } else if (authStatus === "registered") {
       authState = "registered";
     } else {
       authState = "nullRegistered";

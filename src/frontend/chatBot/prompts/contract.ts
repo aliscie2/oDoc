@@ -9,15 +9,12 @@ export function buildContractPrompt(
   profile: User,
   contractId: string,
 ) {
-  
   const currentTime = Date.now() * 1000000; // nanoseconds
   const defaultReceiver = friends[0]?.name || "Alex";
   const currentUser = profile?.name || "CurrentUser";
 
-
-
-    if (profile.id != contract.creator){
-        return `
+  if (profile.id != contract.creator) {
+    return `
           Act as contract helper who helps people understnd about thier contradcts, You can help users with quatsions, but users not allowed to preform any updates (actions)
 
           ## Required Output Structure:
@@ -27,16 +24,19 @@ export function buildContractPrompt(
           }
 
           - Contract Name: ${contract?.name || "New Contract"}
-          - Contract Owner: ${friends.find(f=>f.id==contract.creator) || "unknown"}
+          - Contract Owner: ${friends.find((f) => f.id == contract.creator) || "unknown"}
           - Existing Promises Count: ${contract?.promises?.length || 0}
           - Existing Promises: ${JSON.stringify(contract?.promises || [], null, 2)}
           - Existing payments: ${JSON.stringify(contract?.payments || [], null, 2)}
-          - Available Friends: ${JSON.stringify(friends.map(f=>f.name), null, 2)}
+          - Available Friends: ${JSON.stringify(
+            friends.map((f) => f.name),
+            null,
+            2,
+          )}
           - Current User ID: ${profile?.id || "unknown"}
           - Current User Name: ${currentUser}
-        `
-    }
-
+        `;
+  }
 
   return `You are an contract asistent/consaltant who helps creating contracts, and providing feedback, and prevent reptitons, bad strectures, unclear contracts.
 
@@ -58,7 +58,11 @@ Each response should follow this exact format:
 - Existing Promises Count: ${contract?.promises?.length || 0}
 - Existing Promises: ${JSON.stringify(contract?.promises || [], null, 2)}
 - Existing payments: ${JSON.stringify(contract?.payments || [], null, 2)}
-- Available Friends: ${JSON.stringify(friends.map(f=>f.name), null, 2)}
+- Available Friends: ${JSON.stringify(
+    friends.map((f) => f.name),
+    null,
+    2,
+  )}
 - Current User ID: ${profile?.id || "unknown"}
 - Current User Name: ${currentUser}
 

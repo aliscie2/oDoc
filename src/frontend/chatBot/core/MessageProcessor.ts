@@ -60,7 +60,7 @@ export class MessageProcessor {
     private aiService: AIServiceInterface,
     private aiCases: AICasesInterface,
     private navigation: NavigationInterface,
-    private dispatcher: DispatchInterface
+    private dispatcher: DispatchInterface,
   ) {}
 
   /**
@@ -105,7 +105,12 @@ export class MessageProcessor {
     if (import.meta.env.VITE_DFX_NETWORK === "local") {
       result = this.processLocalMode(aiCase, message);
     } else {
-      result = await this.processProductionMode(aiCase, message, prompt, abortSignal);
+      result = await this.processProductionMode(
+        aiCase,
+        message,
+        prompt,
+        abortSignal,
+      );
     }
 
     // Process actions based on case type
@@ -128,9 +133,11 @@ export class MessageProcessor {
           google_ids: this.config.calendar?.google_ids || [],
         };
         return mockCalendarAIResponse(calendarData, message.split("//")[1]);
-      
+
       case "JOB":
-        const currentJob = this.config.jobs.find((job) => job.id === this.config.currentJobId);
+        const currentJob = this.config.jobs.find(
+          (job) => job.id === this.config.currentJobId,
+        );
         const result = mockJobAIResponse(
           currentJob || ({} as Job),
           this.config.jobs,
@@ -139,7 +146,7 @@ export class MessageProcessor {
         );
         result.profile_completion = 1;
         return result;
-      
+
       default:
         return { feedback: "Local mode not implemented for this case" };
     }
@@ -152,7 +159,7 @@ export class MessageProcessor {
     aiCase: any,
     message: string,
     prompt: string,
-    abortSignal?: AbortSignal
+    abortSignal?: AbortSignal,
   ): Promise<any> {
     let systemPrompt = aiCase.systemPrompt;
     let actualPrompt = prompt;
@@ -190,7 +197,9 @@ export class MessageProcessor {
       contractId = "default_contract_" + Date.now();
     }
 
-    const storedContract = contractId ? this.config.contracts[contractId] : null;
+    const storedContract = contractId
+      ? this.config.contracts[contractId]
+      : null;
     const contract =
       storedContract && "CustomContract" in storedContract
         ? storedContract.CustomContract
@@ -273,7 +282,11 @@ export class MessageProcessor {
     }
 
     // Process contract actions with friend name resolution
-    if (action.type === "ADD_PROMISE" && action.promise && this.config.profile?.id) {
+    if (
+      action.type === "ADD_PROMISE" &&
+      action.promise &&
+      this.config.profile?.id
+    ) {
       this.resolvePromiseParticipants(action);
     }
   }
@@ -300,7 +313,10 @@ export class MessageProcessor {
     }
 
     // Handle receiver
-    if (action.promise.receiver && typeof action.promise.receiver === "string") {
+    if (
+      action.promise.receiver &&
+      typeof action.promise.receiver === "string"
+    ) {
       const friend = this.findFriendByName(action.promise.receiver);
       if (friend) {
         action.promise.receiver = Principal.fromText(friend.id);
@@ -308,7 +324,10 @@ export class MessageProcessor {
         try {
           action.promise.receiver = Principal.fromText(action.promise.receiver);
         } catch (error) {
-          console.error(`Invalid principal format: ${action.promise.receiver}`, error);
+          console.error(
+            `Invalid principal format: ${action.promise.receiver}`,
+            error,
+          );
           return;
         }
       }
@@ -321,9 +340,7 @@ export class MessageProcessor {
   private findFriendByName(name: string): any {
     return this.config.all_friends.find(
       (f: any) =>
-        f.name === name ||
-        f.sender?.name === name ||
-        f.receiver?.name === name,
+        f.name === name || f.sender?.name === name || f.receiver?.name === name,
     );
   }
 
@@ -382,7 +399,8 @@ export class MessageProcessor {
         throw new Error("You can create only one talent profile");
       }
       if (
-        this.config.jobs.filter((j) => Object.keys(j.category)[0] === "Job").length >= 3
+        this.config.jobs.filter((j) => Object.keys(j.category)[0] === "Job")
+          .length >= 3
       ) {
         throw new Error("You can have max 3 job posts");
       }
@@ -397,7 +415,9 @@ export class MessageProcessor {
       if (typeof update === "object" && update.field && update.values) {
         return {
           field: update.field,
-          values: Array.isArray(update.values) ? update.values : [update.values],
+          values: Array.isArray(update.values)
+            ? update.values
+            : [update.values],
         };
       }
       return update;
@@ -433,7 +453,8 @@ export class MessageProcessor {
         aiCase.class === "JOB"
           ? this.config.jobs.find((job) => job.id === this.config.currentJobId)
           : undefined,
-      prev_contract: aiCase.class === "CONTRACT" ? this.getContractForUndo() : undefined,
+      prev_contract:
+        aiCase.class === "CONTRACT" ? this.getContractForUndo() : undefined,
       category: aiCase.class === "JOB" ? result?.category : undefined,
       required_match_score:
         aiCase.class === "JOB" ? result?.required_match_score : undefined,
@@ -444,7 +465,8 @@ export class MessageProcessor {
    * Gets contract data for undo system
    */
   private getContractForUndo(): any {
-    const contractId = new URLSearchParams(this.navigation.location.search).get("id") || "";
+    const contractId =
+      new URLSearchParams(this.navigation.location.search).get("id") || "";
     const contract = this.config.contracts[contractId];
     return contract && "CustomContract" in contract
       ? contract.CustomContract
@@ -487,10 +509,16 @@ export class MessageProcessor {
       }
 
       // Find matching AI case by class
-      const matchingCase = this.aiCases.aiCases.find((c) => c.class === parsed.type);
+      const matchingCase = this.aiCases.aiCases.find(
+        (c) => c.class === parsed.type,
+      );
 
       if (matchingCase) {
-        return await this.processAICase(matchingCase, compactedMessage, abortSignal);
+        return await this.processAICase(
+          matchingCase,
+          compactedMessage,
+          abortSignal,
+        );
       } else {
         return this.handleOtherCases(parsed);
       }
@@ -503,7 +531,10 @@ export class MessageProcessor {
   /**
    * Classifies message using AI or local logic
    */
-  private async classifyMessage(message: string, abortSignal?: AbortSignal): Promise<any> {
+  private async classifyMessage(
+    message: string,
+    abortSignal?: AbortSignal,
+  ): Promise<any> {
     if (import.meta.env.VITE_DFX_NETWORK === "local") {
       if (message.includes("//")) {
         const type = message.split("//")[0].toUpperCase();
@@ -530,7 +561,10 @@ export class MessageProcessor {
     if (parsed.type === "JOB" && this.navigation.location.pathname !== "/") {
       this.navigation.navigate("/");
     }
-    if (parsed.type === "CALENDAR" && this.navigation.location.pathname !== "/calendar") {
+    if (
+      parsed.type === "CALENDAR" &&
+      this.navigation.location.pathname !== "/calendar"
+    ) {
       this.navigation.navigate("/calendar");
     }
   }
@@ -549,7 +583,8 @@ export class MessageProcessor {
       }
       return {
         action_type: "CONTRACT",
-        feedback: "Please choose one of contracts, then open full view, to continue",
+        feedback:
+          "Please choose one of contracts, then open full view, to continue",
         actions: [],
         done: true,
       };

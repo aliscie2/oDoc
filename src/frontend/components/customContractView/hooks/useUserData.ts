@@ -10,35 +10,38 @@ interface AppState {
 }
 
 export const useUserData = () => {
-  const { profile, all_friends } = useSelector((state: AppState) => state.filesState);
+  const { profile, all_friends } = useSelector(
+    (state: AppState) => state.filesState,
+  );
 
   return (userId: Principal | string): { name: string; user?: User } => {
     if (!userId) {
-      return { 
-        name: "Unknown", 
-        user: { 
-          id: "unknown", 
-          name: "Unknown", 
-          description: "", 
-          email: "", 
-          photo: new Uint8Array() 
-        } 
+      return {
+        name: "Unknown",
+        user: {
+          id: "unknown",
+          name: "Unknown",
+          description: "",
+          email: "",
+          photo: new Uint8Array(),
+        },
       };
     }
 
-    const userIdString = typeof userId === 'string' ? userId : userId.toString();
-    
+    const userIdString =
+      typeof userId === "string" ? userId : userId.toString();
+
     // Check if it's the current user
     if (profile?.id && userIdString === profile.id) {
-      return { 
-        name: profile.name || "Me", 
-        user: { 
-          id: profile.id, 
-          name: profile.name || "Me", 
-          description: "", 
-          email: "", 
-          photo: new Uint8Array() 
-        } 
+      return {
+        name: profile.name || "Me",
+        user: {
+          id: profile.id,
+          name: profile.name || "Me",
+          description: "",
+          email: "",
+          photo: new Uint8Array(),
+        },
       };
     }
 
@@ -51,15 +54,15 @@ export const useUserData = () => {
     }
 
     // Fallback for unknown users
-    return { 
-      name: "Unknown", 
-      user: { 
-        id: userIdString, 
-        name: "Unknown", 
-        description: "", 
-        email: "", 
-        photo: new Uint8Array() 
-      } 
+    return {
+      name: "Unknown",
+      user: {
+        id: userIdString,
+        name: "Unknown",
+        description: "",
+        email: "",
+        photo: new Uint8Array(),
+      },
     };
   };
 };

@@ -13,7 +13,8 @@ interface AIMessageResult<T = any> {
   parsedData: T;
   remainingCredits: number;
 }
-const JSON_PROMPT = "Analyze the user's request and provide a pure and only json. "
+const JSON_PROMPT =
+  "Analyze the user's request and provide a pure and only json. ";
 export class AIService {
   constructor(
     private backendActor: any,
@@ -26,7 +27,7 @@ export class AIService {
   ): Promise<AIMessageResult<T>> {
     const aiResponse = await this.backendActor.ask_ai(
       config.prompt,
-      JSON_PROMPT+config.promptType,
+      JSON_PROMPT + config.promptType,
       config.classify, // classify=true means quick=true (for classification)
       import.meta.env.VITE_ANTHROPIC_API_KEY,
     );

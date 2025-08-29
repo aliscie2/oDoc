@@ -12,7 +12,7 @@ const Posts: React.FC = () => {
   const dispatch = useDispatch();
   const { posts } = useSelector((state: RootState) => state.filesState);
   const { authStatus } = useAuth();
-  const isLoggedIn = authStatus === 'registered';
+  const isLoggedIn = authStatus === "registered";
   const { searchValue, searchTool } = useSelector(
     (state: any) => state.uiState,
   );

@@ -18,9 +18,7 @@ export const useJobsSave = (): UseJobsSaveReturn => {
   // Using direct backendActor import
   const saveInProgress = useRef(false);
   const { jobChanges, isChanged } = useSelector((state: any) => state.jobState);
-  const { credits } = useSelector(
-    (state: any) => state.AIState,
-  );
+  const { credits } = useSelector((state: any) => state.AIState);
 
   // Get state directly from Redux
 
@@ -37,10 +35,7 @@ export const useJobsSave = (): UseJobsSaveReturn => {
     setLoading(true);
 
     try {
-      
-      const res = await backendActor.update_job(jobChanges, [
-        credits,
-      ]);
+      const res = await backendActor.update_job(jobChanges, [credits]);
 
       if (res?.Err) {
         enqueueSnackbar(res.Err, { variant: "error" });
@@ -67,10 +62,7 @@ export const useJobsSave = (): UseJobsSaveReturn => {
   const reset = async () => {
     try {
       // Reset job changes
-      const updateJobRes = await backendActor.update_job(
-          [],
-          [],
-        );
+      const updateJobRes = await backendActor.update_job([], []);
 
       if (updateJobRes?.Err) {
         enqueueSnackbar(updateJobRes.Err, { variant: "error" });

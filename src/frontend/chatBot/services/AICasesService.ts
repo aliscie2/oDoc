@@ -67,7 +67,9 @@ export class AICasesService {
           location.pathname === "/" || location.pathname === "/jobs",
         class: "JOB",
         messageBuilder: (message) => {
-          const currentJob = this.jobs.find((job) => job.id === this.currentJobId);
+          const currentJob = this.jobs.find(
+            (job) => job.id === this.currentJobId,
+          );
           return `User Input: ${message.trim()}, Current Job Data: ${JSON.stringify(currentJob || {})}`;
         },
         priority: 2,

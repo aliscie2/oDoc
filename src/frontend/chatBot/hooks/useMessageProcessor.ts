@@ -20,7 +20,9 @@ export const useMessageProcessor = () => {
 
   // Redux state
   const { calendar } = useSelector((state: RootState) => state.calendarState);
-  const { currentJobId, jobs } = useSelector((state: RootState) => state.jobState);
+  const { currentJobId, jobs } = useSelector(
+    (state: RootState) => state.jobState,
+  );
   const { contracts, all_friends, profile } = useSelector(
     (state: RootState) => state.filesState,
   );
@@ -59,7 +61,7 @@ export const useMessageProcessor = () => {
       aiService,
       aiCases,
       navigationInterface,
-      dispatchInterface
+      dispatchInterface,
     );
   }, [
     calendar,
@@ -86,7 +88,7 @@ export const useMessageProcessor = () => {
         const result = await messageProcessor.processMessage(
           message,
           messageId,
-          abortSignal
+          abortSignal,
         );
 
         // Track message responses for debugging/analytics
@@ -101,7 +103,7 @@ export const useMessageProcessor = () => {
         throw error;
       }
     },
-    [messageProcessor]
+    [messageProcessor],
   );
 
   return {

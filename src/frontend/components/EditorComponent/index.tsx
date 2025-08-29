@@ -1,9 +1,7 @@
 import * as React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import OdocEditor, { MyMentionItem } from "odoc_editor_v2";
-import createContractPlugin, {
-  CONTRACT_KEY,
-} from "./ContractPlugin";
+import createContractPlugin, { CONTRACT_KEY } from "./ContractPlugin";
 import TableChartIcon from "@mui/icons-material/TableChart";
 
 import { custom_contract } from "../../DataProcessing/dataSamples";

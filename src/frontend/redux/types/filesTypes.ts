@@ -4,7 +4,6 @@ import {
   FileIndexing,
   FileNode,
   Friend,
-  InitialData,
   StoredContract,
   User,
   UserProfile,
@@ -78,7 +77,7 @@ export type FilesActions =
   | { type: "DELETE_WORKSPACE"; workspace: WorkSpace }
   | { type: "CHANGE_CURRENT_WORKSPACE"; currentWorkspace: WorkSpace }
   | { type: "UPDATE_ANONYMOUS"; anonymous: boolean }
-  | { type: "ADD_FRIEND"; user?: User, friend: Friend }
+  | { type: "ADD_FRIEND"; user?: User; friend: Friend }
   | { type: "REMOVE_FRIEND" }
   | { type: "ADD_FILES_LIST"; friends: FileNode[] }
   | { type: "ADD_CONTENTS_LIST"; friends: FileNode[] }

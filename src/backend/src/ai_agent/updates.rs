@@ -22,7 +22,7 @@ pub async fn ask_ai(
     prompt: String,
     system_prompt: String,
     quick: bool,
-    api_key: String
+    api_key: String,
 ) -> Result<AiResponse, String> {
     // Check if user exists and has credits
     if !UserState::is_user_exists() {
@@ -39,7 +39,6 @@ pub async fn ask_ai(
     if current_credits < credit_cost {
         return Err("Insufficient credits for this request".to_string());
     }
-
 
     // Use current Claude 3.5 models
     let model = if quick {
@@ -89,26 +88,29 @@ pub async fn ask_ai(
     };
 
     let cycles = 230_949_972_000u128;
-    
+
     // Add retry logic for consensus errors
     let mut attempts = 0;
     let max_attempts = 3;
-    
+
     let response = loop {
         attempts += 1;
-        
+
         match http_request(request.clone(), cycles).await {
             Ok((response,)) => break response,
             Err(e) => {
                 let error_msg = format!("{:?}", e);
-                
+
                 // Check if it's a consensus error
                 if error_msg.contains("No consensus could be reached") && attempts < max_attempts {
                     ic_cdk::println!("Consensus error on attempt {}, retrying...", attempts);
                     // Small delay before retry (using IC timer)
                     continue;
                 } else {
-                    return Err(format!("HTTP request failed after {} attempts: {:?}", attempts, e));
+                    return Err(format!(
+                        "HTTP request failed after {} attempts: {:?}",
+                        attempts, e
+                    ));
                 }
             }
         }
@@ -159,7 +161,7 @@ fn transform(raw: TransformArgs) -> HttpResponse {
     // More aggressive transform to ensure consensus
     // Remove ALL headers that could be non-deterministic
     let mut sanitized_headers = Vec::new();
-    
+
     // Only keep absolutely essential headers
     for header in raw.response.headers {
         let header_name = header.name.to_lowercase();
@@ -179,24 +181,26 @@ fn transform(raw: TransformArgs) -> HttpResponse {
                         if let Some(obj) = json.as_object_mut() {
                             obj.remove("id"); // Request ID is non-deterministic
                             obj.remove("created_at"); // Timestamp is non-deterministic
-                            
+
                             // Clean usage object if present
                             if let Some(usage) = obj.get_mut("usage") {
                                 if let Some(usage_obj) = usage.as_object_mut() {
                                     // Keep token counts but remove any timestamps or IDs
                                     usage_obj.retain(|k, _| {
-                                        k == "input_tokens" || k == "output_tokens" || k == "total_tokens"
+                                        k == "input_tokens"
+                                            || k == "output_tokens"
+                                            || k == "total_tokens"
                                     });
                                 }
                             }
                         }
-                        
+
                         serde_json::to_vec(&json).unwrap_or(raw.response.body)
                     }
-                    Err(_) => raw.response.body // Keep original if not valid JSON
+                    Err(_) => raw.response.body, // Keep original if not valid JSON
                 }
             }
-            Err(_) => raw.response.body // Keep original if not valid UTF-8
+            Err(_) => raw.response.body, // Keep original if not valid UTF-8
         }
     } else {
         raw.response.body // Keep error responses as-is

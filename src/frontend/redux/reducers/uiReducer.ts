@@ -38,12 +38,12 @@ export function uiReducer(state = initialState, action: Action): State {
     case "LOGOUT":
       return {
         ...state,
-        authStatus: 'anonymous',
+        authStatus: "anonymous",
       };
     case "LOGIN":
       return {
         ...state,
-        authStatus: 'authenticated',
+        authStatus: "authenticated",
       };
     case "SEARCH_TOOL":
       return {

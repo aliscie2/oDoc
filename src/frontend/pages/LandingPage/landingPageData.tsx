@@ -39,7 +39,6 @@ export const tutorials: Tutorial[] = [
     videoUrl: "https://www.youtube.com/embed/f0RVw6RJxos",
     description: "Social networking guide for Odoc",
     checkCondition: (state: any) => {
-
       const { profile, all_friends } = state.filesState;
       return (
         state.isLoggedIn &&

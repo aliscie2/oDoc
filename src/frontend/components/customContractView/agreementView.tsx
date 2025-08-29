@@ -431,7 +431,7 @@ const PromiseCardHeader = memo<{
                   </Box>
                 ) : (
                   <>
-                    <UserAvatarMenu user_id={promise.receiver.toString()}  />
+                    <UserAvatarMenu user_id={promise.receiver.toString()} />
                     <Typography
                       variant={isExpanded ? "body2" : "caption"}
                       fontWeight={600}
@@ -798,7 +798,6 @@ const PromiseCard = memo<{
     const { notifications } = useSelector(
       (state: AppState) => state.notificationState,
     );
-    
 
     const handleCellActions = useMemo(
       () => ({

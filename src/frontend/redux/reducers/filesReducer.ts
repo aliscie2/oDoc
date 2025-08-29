@@ -1530,48 +1530,60 @@ export function filesReducer(
 
     case "DELETE_PROMISE": {
       const { contract_id, id } = action;
-      
+
       const existingContract = state.contracts[contract_id];
       if (!existingContract) return state;
-    
-      const currentChanges = state.changes.contracts.find(c => c.id === contract_id);
-      const promiseInChanges = currentChanges?.promises.some(p => p.id === id) || 
-                              currentChanges?.promises_indexes.some(idx => idx[1] === id);
-    
-      const updatedChanges = currentChanges ? {
-        ...currentChanges,
-        promises: currentChanges.promises.filter(p => p.id !== id),
-        promises_indexes: currentChanges.promises_indexes.filter(idx => idx[1] !== id),
-        delete_promises: promiseInChanges ? 
-          currentChanges.delete_promises : 
-          [...currentChanges.delete_promises, id]
-      } : {
-        id: contract_id,
-        permissions: [],
-        promises_indexes: [],
-        name: [],
-        delete_tables: [],
-        tables: [],
-        delete_promises: [id],
-        promises: []
-      };
-    
+
+      const currentChanges = state.changes.contracts.find(
+        (c) => c.id === contract_id,
+      );
+      const promiseInChanges =
+        currentChanges?.promises.some((p) => p.id === id) ||
+        currentChanges?.promises_indexes.some((idx) => idx[1] === id);
+
+      const updatedChanges = currentChanges
+        ? {
+            ...currentChanges,
+            promises: currentChanges.promises.filter((p) => p.id !== id),
+            promises_indexes: currentChanges.promises_indexes.filter(
+              (idx) => idx[1] !== id,
+            ),
+            delete_promises: promiseInChanges
+              ? currentChanges.delete_promises
+              : [...currentChanges.delete_promises, id],
+          }
+        : {
+            id: contract_id,
+            permissions: [],
+            promises_indexes: [],
+            name: [],
+            delete_tables: [],
+            tables: [],
+            delete_promises: [id],
+            promises: [],
+          };
+
       return {
         ...state,
         contracts: {
           ...state.contracts,
           [contract_id]: {
             ...existingContract,
-            promises: existingContract.promises.filter(p => p.id !== id),
-            promises_indexes: existingContract.promises_indexes?.filter(idx => idx[1] !== id) || []
-          }
+            promises: existingContract.promises.filter((p) => p.id !== id),
+            promises_indexes:
+              existingContract.promises_indexes?.filter(
+                (idx) => idx[1] !== id,
+              ) || [],
+          },
         },
         changes: {
           ...state.changes,
-          contracts: currentChanges ?
-            state.changes.contracts.map(c => c.id === contract_id ? updatedChanges : c) :
-            [...state.changes.contracts, updatedChanges]
-        }
+          contracts: currentChanges
+            ? state.changes.contracts.map((c) =>
+                c.id === contract_id ? updatedChanges : c,
+              )
+            : [...state.changes.contracts, updatedChanges],
+        },
       };
     }
 

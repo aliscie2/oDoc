@@ -36,9 +36,8 @@ const MobileTutrials: React.FC<TutorialsSectionProps> = () => {
   const state = {
     uiState: useSelector((state: any) => state.uiState),
     filesState: useSelector((state: any) => state.filesState),
-    isLoggedIn
+    isLoggedIn,
   };
-  
 
   const currentTutorial = tutorials[selectedTutorial] || tutorials[0];
 

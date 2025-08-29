@@ -32,7 +32,9 @@ export const FIELD_CONFIGS = {
     sx: {
       "& .MuiInput-underline:before": { display: "none" },
       "& .MuiInput-underline:after": { display: "none" },
-      "& .MuiInput-underline:hover:not(.Mui-disabled):before": { display: "none" },
+      "& .MuiInput-underline:hover:not(.Mui-disabled):before": {
+        display: "none",
+      },
     },
   },
 } as const;

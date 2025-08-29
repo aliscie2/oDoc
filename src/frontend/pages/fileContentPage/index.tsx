@@ -67,13 +67,11 @@ const ToggleWrapper = styled(Box)(({ theme }) => ({
   },
 }));
 
-
 function FileContentPage() {
-
   const { isLoggedIn } = useAuth();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  
+
   const [showContentTabs, setShowContentTabs] = useState(false);
   const fileId = window.location.pathname.split("/")[1];
   const dispatch = useDispatch();

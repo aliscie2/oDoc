@@ -65,7 +65,6 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
   const [isLoading, setLoading] = useState(false);
   const { all_friends } = useSelector((state: RootState) => state.filesState);
 
-
   useEffect(() => {
     setUser(initialUser);
   }, [initialUser]);
@@ -74,11 +73,10 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
     (async () => {
       if (user_id && !isCalled) {
         setLoading(true);
-        let foundUser = all_friends.find(f=>f.id==user_id);
-        console.log({foundUser})
-        if (foundUser){
+        const foundUser = all_friends.find((f) => f.id == user_id);
+        console.log({ foundUser });
+        if (foundUser) {
           setUser(foundUser);
-          
         } else {
           const response = await backendActor.get_user(user_id);
           setLoading(false);

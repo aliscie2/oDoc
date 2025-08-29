@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, Suspense, useState } from "react";
+import React, { useEffect, Suspense, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import Pages from "./pages";
@@ -11,11 +11,7 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { canisterId } from "../declarations/backend";
 import NavBar from "./components/MainComponents/NavBar";
 import TopNavBar from "./components/MainComponents/topNavBar";
-import { RootState } from "./redux/reducers";
-import {
-  selectIsFetching,
-  selectProfile,
-} from "./redux/selectors";
+import { selectIsFetching, selectProfile } from "./redux/selectors";
 import getckUsdcBalance from "./utils/getBalance";
 import {
   backendActor,
@@ -60,19 +56,15 @@ const PageContainer = styled(Box)(({ theme }) => ({
   },
 }));
 
-
-
 // hooks/useAppInitialization.ts
 const useAppInitialization = () => {
+  const { logout, checkAuthStatus, authStatus, cleanUp } = useAuth();
 
-
-  const {logout, checkAuthStatus, authStatus, cleanUp } = useAuth();
-    
   const dispatch = useDispatch();
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
-  
 
-  const isLoggedIn = authStatus === 'authenticated' || authStatus === 'registered';
+  const isLoggedIn =
+    authStatus === "authenticated" || authStatus === "registered";
 
   const isFetching = useSelector(selectIsFetching);
   const profile = useSelector(selectProfile);
@@ -84,7 +76,6 @@ const useAppInitialization = () => {
     depositProcessed: false,
     appInitDispatched: false,
   });
-
 
   // Service worker registration
   useEffect(() => {
@@ -112,14 +103,20 @@ const useAppInitialization = () => {
         userDataFetched: false,
       }));
       // Clear posts initialization flag when user logs in
-      sessionStorage.removeItem('postsInitialized');
+      sessionStorage.removeItem("postsInitialized");
     }
   }, [isLoggedIn]);
 
   // Main initialization
   useEffect(() => {
     const initializeAppData = async () => {
-      if (authStatus !=="registered" || !isLoggedIn || isFetching || initState.initialDataFetched || initState.appInitDispatched) {
+      if (
+        authStatus !== "registered" ||
+        !isLoggedIn ||
+        isFetching ||
+        initState.initialDataFetched ||
+        initState.appInitDispatched
+      ) {
         return;
       }
 
@@ -144,9 +141,13 @@ const useAppInitialization = () => {
         // Single dispatch for initialization - let the thunk handle success/fallback logic
         dispatch(initializeApp(backendActor) as any);
 
-        setInitState((prev) => ({ ...prev, initialDataFetched: true, appInitDispatched: true }));
+        setInitState((prev) => ({
+          ...prev,
+          initialDataFetched: true,
+          appInitDispatched: true,
+        }));
       } catch (error) {
-        await cleanUp()
+        await cleanUp();
       } finally {
         dispatch({ type: "IS_FETCHING", isFetching: false });
       }
@@ -216,8 +217,6 @@ const useAppInitialization = () => {
 
     fetchUserData();
   }, [profile?.id, initState.userDataFetched, dispatch]);
-
-
 
   // Token deposit
   useEffect(() => {
@@ -292,8 +291,6 @@ const useAppInitialization = () => {
 };
 
 const App: React.FC = () => {
-  
-
   const { authStatus, isLoggedIn } = useAuth();
   const navigate = useNavigate();
   const [backendReady, setBackendReady] = useState(false);
@@ -317,20 +314,20 @@ const App: React.FC = () => {
     }
   }, [navigate, isLoggedIn]);
 
-
-  
   switch (authStatus) {
-    case 'loading':
+    case "loading":
       return <RunawayJellyfish thinking={true} scale={2} />;
-    case 'anonymous':
-      return <div>
-        <TopNavBar />
-      <PageContainer>
-        <Pages />
-      </PageContainer>
-    </div>
-    case 'authenticated':
-      return <RegistrationForm  />;
+    case "anonymous":
+      return (
+        <div>
+          <TopNavBar />
+          <PageContainer>
+            <Pages />
+          </PageContainer>
+        </div>
+      );
+    case "authenticated":
+      return <RegistrationForm />;
     default:
       return (
         <MainContent>
@@ -350,8 +347,6 @@ const App: React.FC = () => {
           </DndProvider>
         </MainContent>
       );
-   }
-
-
+  }
 };
 export default App;

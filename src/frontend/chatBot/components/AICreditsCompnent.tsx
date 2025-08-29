@@ -17,14 +17,16 @@ import { Link } from "react-router-dom";
 const AICreditsComponent = () => {
   const theme = useTheme();
   const { wallet } = useSelector((state: any) => state.filesState);
-  const { credits: aiCredits } = useSelector(
-    (state: any) => state.AIState,
-  );
+  const { credits: aiCredits } = useSelector((state: any) => state.AIState);
   const [showBuyPanel, setShowBuyPanel] = useState(false);
   const [buyAmount, setBuyAmount] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [credits, setCredits] = useState(aiCredits);
-  const [popoverPosition, setPopoverPosition] = useState({ bottom: "100%", left: 0, right: "auto" });
+  const [popoverPosition, setPopoverPosition] = useState({
+    bottom: "100%",
+    left: 0,
+    right: "auto",
+  });
   const containerRef = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch();
   // Using direct backendActor import
@@ -49,15 +51,15 @@ const AICreditsComponent = () => {
     if (showBuyPanel && containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect();
       const popoverWidth = 200; // minWidth from Paper
-      
+
       const newPosition = { bottom: "100%", left: 0, right: "auto" };
-      
+
       // Check horizontal overflow
       if (rect.left + popoverWidth > window.innerWidth) {
         newPosition.right = 0;
         newPosition.left = "auto";
       }
-      
+
       setPopoverPosition(newPosition);
     }
   }, [showBuyPanel]);

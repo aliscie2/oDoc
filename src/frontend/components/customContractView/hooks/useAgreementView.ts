@@ -3,7 +3,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import { Principal } from "@dfinity/principal";
 import { useSnackbar } from "notistack";
-import { CPayment, CustomContract, Friend, Notification } from "$/declarations/backend/backend.did";
+import {
+  CPayment,
+  CustomContract,
+  Friend,
+  Notification,
+} from "$/declarations/backend/backend.did";
 import { createNewPromis } from "../utils";
 
 interface AppState {
@@ -26,7 +31,7 @@ export const useAgreementView = (contract: CustomContract) => {
 
   const [expandedCards, setExpandedCards] = useState(new Set<string>());
   const [viewMode, setViewMode] = useState<"promises" | "payments">("promises");
-  
+
   // Filter toggle state - load from localStorage
   const [hideReceivedPromises, setHideReceivedPromises] = useState(() => {
     const saved = localStorage.getItem("hideReceivedPromises");
@@ -35,33 +40,48 @@ export const useAgreementView = (contract: CustomContract) => {
 
   // Save filter state to localStorage
   useEffect(() => {
-    localStorage.setItem("hideReceivedPromises", JSON.stringify(hideReceivedPromises));
+    localStorage.setItem(
+      "hideReceivedPromises",
+      JSON.stringify(hideReceivedPromises),
+    );
   }, [hideReceivedPromises]);
 
   // Computed values
   const isOnContractPage = location.pathname === "/contract";
   const isCreator = profile.id === contract.creator?.toString();
-  
+
   const filteredPromises = useMemo(() => {
     if (viewMode !== "promises" || !contract.promises) return contract.promises;
-    
-    if (contract.creator?.toString() !== profile.id && hideReceivedPromises) {
-      return contract.promises.filter((p) => p.receiver.toText() === profile.id);
-    }
-    
-    return contract.promises;
-  }, [contract.promises, contract.creator, profile.id, viewMode, hideReceivedPromises]);
 
-  const currentData = viewMode === "promises" ? filteredPromises : contract.payments;
+    if (contract.creator?.toString() !== profile.id && hideReceivedPromises) {
+      return contract.promises.filter(
+        (p) => p.receiver.toText() === profile.id,
+      );
+    }
+
+    return contract.promises;
+  }, [
+    contract.promises,
+    contract.creator,
+    profile.id,
+    viewMode,
+    hideReceivedPromises,
+  ]);
+
+  const currentData =
+    viewMode === "promises" ? filteredPromises : contract.payments;
   const isEditable = viewMode === "promises" && isCreator;
-  
+
   // Function to check if user can edit status for a specific promise
-  const canEditStatus = useCallback((promise: CPayment) => {
-    if (viewMode !== "promises") return false;
-    const isPromiseSender = profile.id === promise.sender.toString();
-    const isPromiseReceiver = profile.id === promise.receiver.toString();
-    return isPromiseSender || isPromiseReceiver;
-  }, [viewMode, profile.id]);
+  const canEditStatus = useCallback(
+    (promise: CPayment) => {
+      if (viewMode !== "promises") return false;
+      const isPromiseSender = profile.id === promise.sender.toString();
+      const isPromiseReceiver = profile.id === promise.receiver.toString();
+      return isPromiseSender || isPromiseReceiver;
+    },
+    [viewMode, profile.id],
+  );
 
   // Event handlers
   const toggleCard = useCallback((id: string) => {
@@ -83,7 +103,10 @@ export const useAgreementView = (contract: CustomContract) => {
   }, [dispatch, contract, profile.id, isEditable]);
 
   const handleViewModeChange = useCallback(
-    (_: React.MouseEvent<HTMLElement>, newMode: "promises" | "payments" | null) => {
+    (
+      _: React.MouseEvent<HTMLElement>,
+      newMode: "promises" | "payments" | null,
+    ) => {
       if (newMode !== null) setViewMode(newMode);
     },
     [],
@@ -95,14 +118,14 @@ export const useAgreementView = (contract: CustomContract) => {
     viewMode,
     hideReceivedPromises,
     setHideReceivedPromises,
-    
+
     // Computed
     isOnContractPage,
     isCreator,
     currentData,
     isEditable,
     canEditStatus,
-    
+
     // Handlers
     toggleCard,
     handleAddPromise,
