@@ -1,5 +1,5 @@
 import { buildContractPrompt } from "./contract";
-import { BUILD_JOB_PROMPT } from "./profile";
+import { BUILD_JOB_PROMPT } from "./job";
 import CALENDAR_PROMPT from "./calendar";
 import { CLASSSIFER_PRPT } from "./classify";
 
