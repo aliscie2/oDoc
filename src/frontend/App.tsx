@@ -290,16 +290,6 @@ const App: React.FC = () => {
   useAppInitialization();
   useSocket();
 
-  // Domain-based navigation logic
-  useEffect(() => {
-    if (
-      isLoggedIn &&
-      window.location.hostname.includes("odoc.app") &&
-      !localStorage.getItem("isVisitedContractsPage")
-    ) {
-      navigate("/contracts");
-    }
-  }, [navigate, isLoggedIn]);
 
   switch (authStatus) {
     case "loading":

@@ -32,10 +32,9 @@ root.render(
         <HelmetProvider>
           <Helmet>
             {["twitter:image", "og:image"].map((property: string) => {
-              const imageName = window.location.hostname.includes("icpjobs")
-                ? "https://raw.githubusercontent.com/aliscie2/oDoc/refs/heads/dev2/public/icpjobs_thumnail.png"
-                : "https://raw.githubusercontent.com/aliscie2/oDoc/refs/heads/dev2/public/odoc_thumnail.png";
-
+              const imageName = window.location.hostname.includes("icpjobs.com")
+                ? window.location.hostname+"/icpjobs_thumnail.png"
+                : window.location.hostname+"/odoc_thumnail.png";
               return (
                 <meta key={property} property={property} content={imageName} />
               );

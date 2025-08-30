@@ -369,11 +369,6 @@ const ContractsHistory: React.FC = () => {
     totalUnseenCount,
   );
 
-  // Mark that user has visited contracts page
-  useEffect(() => {
-    localStorage.setItem("isVisitedContractsPage", "true");
-  }, []);
-
   const handleCreateContract = () => {
     try {
       if (!profile) {
