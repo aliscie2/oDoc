@@ -1,4 +1,4 @@
-import { ContentNode } from "../../../declarations/backend/backend.did";
+import { ContentNode } from "$/declarations/backend/backend.did";
 import {
   convertStyleArrayToObject,
   URLKEYLEAFE,
@@ -8,7 +8,6 @@ export interface SlateNode {
   id: string;
   language?: string;
   type?: string;
-  language?: string;
   text?: string;
   children?: SlateNode[];
   data?: any[];
@@ -80,14 +79,14 @@ export function deserializeContentTree(contentList: Array<ContentNode>) {
 
 export function deserializeContents(
   content: Array<[string, Array<ContentNode>]>,
-) {
+): Record<string, Array<SlateNode>> {
   if (!content) {
-    return [];
+    return {};
   }
   if (content.length == 0) {
-    return [];
+    return {};
   }
-  const data = {};
+  const data: Record<string, Array<SlateNode>> = {};
   content.map((node: [string, Array<ContentNode>]) => {
     if (!node[0]) {
       return;

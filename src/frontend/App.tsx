@@ -87,7 +87,6 @@ const useAppInitialization = () => {
   // Reset initialization when user logs in to trigger data refetch
   useEffect(() => {
     if (inited) {
-      console.log("xxx");
       setInitState((prev) => ({
         ...prev,
         initialDataFetched: false,

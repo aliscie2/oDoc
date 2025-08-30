@@ -23,6 +23,7 @@ import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
 import { Helmet } from "react-helmet-async";
 import NotFound from "../notFound404";
 import { useAuth } from "@/hooks/useAuth";
+import { logger } from "@/DevUtils/logData";
 
 // Custom hook for file data fetching
 const useFileData = (fileId: string) => {
@@ -217,6 +218,8 @@ function FileContentPage() {
     );
 
   const isAuthor = currentFile.author === profile.id;
+
+  // logger({ files_content:files_content[currentFile.id] });
 
   return (
     <div style={{ marginTop: "3px", marginLeft: "10%", marginRight: "10%" }}>

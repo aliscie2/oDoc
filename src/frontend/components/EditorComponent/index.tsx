@@ -5,6 +5,7 @@ import createContractPlugin, { CONTRACT_KEY } from "./ContractPlugin";
 import TableChartIcon from "@mui/icons-material/TableChart";
 
 import { custom_contract } from "../../DataProcessing/dataSamples";
+import { logger } from "@/DevUtils/logData";
 
 interface Props {
   handleOnInsertComponent?: any;
@@ -17,6 +18,7 @@ interface Props {
 }
 
 function EditorComponent(props: Props) {
+  logger({ EditorComponent: props.content });
   const dispatch = useDispatch();
 
   const { all_friends, profile } = useSelector(
@@ -61,6 +63,7 @@ function EditorComponent(props: Props) {
 
   const handleInputChange = React.useCallback(
     (changes: any) => {
+      logger({ changes });
       props.onChange?.(changes);
     },
     [props.onChange],

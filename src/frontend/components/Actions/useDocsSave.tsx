@@ -86,6 +86,8 @@ export const useDocsSave = (): UseDocsSaveReturn => {
         contractsArray,
         enqueueSnackbar,
       );
+
+      console.log({ serializedContent });
       const res: any = await backendActor.multi_updates(
         changes.files,
         serializedContent,

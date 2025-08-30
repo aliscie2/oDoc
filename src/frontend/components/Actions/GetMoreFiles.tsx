@@ -1,10 +1,31 @@
+import { Button, Tooltip } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Button, Tooltip } from "@mui/material";
 
-import { ContentNode } from "../../../declarations/backend/backend.did";
-import { backendActor } from "../../utils/backendUtils";
+import { ContentNode } from "$/declarations/backend/backend.did";
+import {
+  deserializeContents,
+  SlateNode,
+} from "@/DataProcessing/deserlize/deserializeContents";
 import { RootState } from "@/redux/reducers";
+import { backendActor } from "@/utils/backendUtils";
+import { Dispatch } from "redux";
+
+async function hanldeFetching(dispatch:Dispatch ,page:number){
+
+
+  const res = await backendActor.get_more_files(page);
+    const files = res[0];
+    const rowContents: Array<[string, Array<ContentNode>]> = res[1];
+    const contents: Record<string, Array<SlateNode>> = deserializeContents(
+      rowContents,
+    );
+
+    dispatch({ type: "ADD_FILES_LIST", files });
+    dispatch({ type: "ADD_CONTENTS_LIST", contents });
+    return files.length >0
+
+}
 
 const GetMoreFiles: React.FC = () => {
   const { isNavOpen } = useSelector((state: RootState) => state.uiState);
@@ -20,38 +41,24 @@ const GetMoreFiles: React.FC = () => {
   }
   const [page, setPage] = useState(1);
   const [isMore, setNoMoreToload] = useState(true);
-  console.log({ lookingForFile });
   useEffect(() => {
     (async () => {
       if (
-        files.length == 0 &&
+        files.length === 0 &&
         inited &&
-        page == 1 &&
+        page === 1 &&
         (isNavOpen || lookingForFile === true)
       ) {
-        const res = await backendActor?.get_more_files(page);
-        console.log({ res });
-        const files = res[0];
-        const contents: Array<[string, Array<ContentNode>]> = res[1];
-
-        dispatch({ type: "ADD_FILES_LIST", files });
-        dispatch({ type: "ADD_CONTENTS_LIST", contents });
+        console.log("xxx")
+        await hanldeFetching(dispatch, page)
         setPage(page + 1);
       }
     })();
   }, [files, inited, page, isNavOpen, lookingForFile]);
 
   const handleCreateFile = async () => {
-    const res = await backendActor?.get_more_files(page);
-    const files = res[0];
-    if (files.length === 0) {
-      setNoMoreToload(false);
-      return;
-    }
-    const contents: Array<[string, Array<ContentNode>]> = res[1];
-
-    dispatch({ type: "ADD_FILES_LIST", files });
-    dispatch({ type: "ADD_CONTENTS_LIST", contents });
+    let moreFiles = await hanldeFetching(dispatch, page)
+    !moreFiles&&setNoMoreToload(false)
     setPage(page + 1);
   };
 
