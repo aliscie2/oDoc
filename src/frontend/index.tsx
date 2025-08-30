@@ -33,8 +33,8 @@ root.render(
           <Helmet>
             {["twitter:image", "og:image"].map((property: string) => {
               const imageName = window.location.hostname.includes("icpjobs.com")
-                ? window.location.hostname+"/icpjobs_thumnail.png"
-                : window.location.hostname+"/odoc_thumnail.png";
+                ? window.location.hostname + "/icpjobs_thumnail.png"
+                : window.location.hostname + "/odoc_thumnail.png";
               return (
                 <meta key={property} property={property} content={imageName} />
               );

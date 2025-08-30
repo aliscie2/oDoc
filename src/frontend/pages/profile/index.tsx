@@ -23,7 +23,6 @@ import { formatRelativeTime } from "../../utils/time";
 import EditProfile from "./editeProfile";
 import CopyButton from "../../components/MuiComponents/copyButton";
 import EmailComposer from "./sendEmail";
-import { CircleParkingOff } from "lucide-react";
 interface ProfilePageProps {
   profile: any;
   history: any;

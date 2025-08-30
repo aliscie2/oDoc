@@ -9,7 +9,6 @@ import { selectAuthStatus } from "../redux/selectors";
 import { backendActor } from "../utils/backendUtils";
 import type { AuthStatus } from "../redux/types/uiTypes";
 import { Principal } from "@dfinity/principal";
-import { RootState } from "@/redux/reducers";
 
 export const useAuth = () => {
   const dispatch = useDispatch();

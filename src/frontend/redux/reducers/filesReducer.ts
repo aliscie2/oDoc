@@ -1,5 +1,4 @@
 import { Friend, StoredContract } from "$/declarations/backend/backend.did";
-import { deserializeContents } from "../../DataProcessing/deserlize/deserializeContents";
 import { deserializeContracts } from "../../DataProcessing/deserlize/deserializeContracts";
 import { initializeApp } from "../slices/appSlice";
 import { InitialState, initialState } from "../types/filesTypes";
@@ -29,12 +28,7 @@ export function filesReducer(
     return {
       ...state,
       all_friends,
-      files: action.payload.Files || [],
       wallet: action.payload.Wallet,
-      files_content:
-        action.payload.FilesContents && action.payload.FilesContents[0]
-          ? deserializeContents(action.payload.FilesContents[0])
-          : {},
       contracts: action.payload.Contracts
         ? deserializeContracts(action.payload.Contracts)
         : {},
@@ -163,6 +157,7 @@ export function filesReducer(
       return {
         ...state,
         current_file: action.file,
+        lookingForFile: action.file ? false : true,
       };
 
     case "CHANGE_FILE_PARENT": {

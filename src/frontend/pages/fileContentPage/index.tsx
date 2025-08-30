@@ -24,6 +24,74 @@ import { Helmet } from "react-helmet-async";
 import NotFound from "../notFound404";
 import { useAuth } from "@/hooks/useAuth";
 
+// Custom hook for file data fetching
+const useFileData = (fileId: string) => {
+  const { isLoggedIn } = useAuth();
+  const dispatch = useDispatch();
+  const [fetchingFromBackend, setFetchingFromBackend] = useState(false);
+
+  const {
+    inited,
+    files_content,
+    profile,
+    files,
+    current_file,
+    lookingForFile,
+  } = useSelector((state: any) => state.filesState);
+
+  const currentFile = files.find((file: any) => file.id === fileId);
+
+  // Set current file in Redux if not already set
+  useEffect(() => {
+    dispatch({
+      type: "CURRENT_FILE",
+      file: currentFile,
+    });
+  }, [currentFile]);
+
+  // Fetch file from backend if not found locally
+  // useEffect(() => {
+  //   const fetchFileFromBackend = async () => {
+  //     if (
+  //       !currentFile &&
+  //       fileId &&
+  //       isLoggedIn &&
+  //       inited &&
+  //       !fetchingFromBackend
+  //     ) {
+  //       setFetchingFromBackend(true);
+  //       try {
+  //         console.log('ok....')
+  //           const res = await backendActor.get_one_file_content(fileId);
+  //           console.log({res})
+  //           const files = res[0];
+  //           const contents: Array<[string, Array<any>]> = res[1];
+
+  //           if (files.length > 0) {
+  //             dispatch({ type: "ADD_FILES_LIST", files });
+  //             dispatch({ type: "ADD_CONTENTS_LIST", contents });
+  //           }
+
+  //       } catch (error) {
+  //         console.error("Error fetching file from backend:", error);
+  //       } finally {
+  //         setFetchingFromBackend(false);
+  //       }
+  //     }
+  //   };
+
+  //   fetchFileFromBackend();
+  // }, [currentFile, fileId, isLoggedIn, inited, fetchingFromBackend, dispatch]);
+
+  return {
+    currentFile,
+    files_content,
+    profile,
+    inited,
+    fetchingFromBackend,
+  };
+};
+
 const ExpandingInput = styled(Input)(({ theme }) => ({
   "& input": {
     width: "100%",
@@ -69,26 +137,15 @@ const ToggleWrapper = styled(Box)(({ theme }) => ({
 
 function FileContentPage() {
   const { isLoggedIn } = useAuth();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMobile = useMediaQuery(useTheme().breakpoints.down("sm"));
 
   const [showContentTabs, setShowContentTabs] = useState(false);
   const fileId = window.location.pathname.split("/")[1];
   const dispatch = useDispatch();
 
-  const { inited, files_content, profile, files, current_file } = useSelector(
-    (state: any) => state.filesState,
-  );
-
-  const currentFile = files.find((file: any) => file.id === fileId);
-  useEffect(() => {
-    if (!current_file) {
-      dispatch({
-        type: "CURRENT_FILE",
-        file: currentFile,
-      });
-    }
-  }, [currentFile]);
+  // Use custom hook for file data management
+  const { currentFile, files_content, profile, inited, fetchingFromBackend } =
+    useFileData(fileId);
   const editorKey = (currentFile && currentFile.id) || "";
 
   const handleContentTabsToggle = () => {
@@ -123,22 +180,22 @@ function FileContentPage() {
     }
   }, 250);
 
-  // Show loading spinner while files are being loaded (and user is logged in)
-  if (!inited && isLoggedIn) {
+  // Show loading spinner while files are being loaded or fetching from backend
+  if ((!inited && isLoggedIn) || fetchingFromBackend) {
     return (
       <Box
         display="flex"
         justifyContent="center"
         alignItems="center"
-        minHeight="100vh" // or whatever height you want
+        minHeight="100vh"
       >
         <RunawayJellyfish thinking={true} scale={isMobile ? 1.5 : 2} />
       </Box>
     );
   }
 
-  // Check for 404 case first (when initialization is complete but no files exist)
-  if (!currentFile || (inited && files.length === 0)) {
+  // Check for 404 case - only show 404 if initialization is complete, not fetching, and file is still not found
+  if (inited && !currentFile && !fetchingFromBackend) {
     return (
       <Box
         display="flex"
@@ -155,7 +212,8 @@ function FileContentPage() {
     currentFile?.author === profile.id ||
     Object.keys(currentFile.permission)[0] === "CanUpdate" ||
     currentFile.users_permissions.some(
-      ([userId, permissions]) => userId === profile.id && permissions.CanUpdate,
+      ([userId, permissions]: [string, any]) =>
+        userId === profile.id && permissions.CanUpdate,
     );
 
   const isAuthor = currentFile.author === profile.id;
@@ -217,7 +275,7 @@ function FileContentPage() {
         <Typography
           to={`/user?id=${currentFile?.author}`}
           component={Link}
-          variant="body4"
+          variant="body1"
           color={"primary"}
         >
           See the author
@@ -227,7 +285,6 @@ function FileContentPage() {
       <EditorComponent
         readOnly={!isAuthor}
         id={currentFile.id}
-        contentEditable={editable}
         onChange={onChange}
         editorKey={editorKey}
         content={files_content[currentFile.id]}

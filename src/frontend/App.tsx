@@ -290,7 +290,6 @@ const App: React.FC = () => {
   useAppInitialization();
   useSocket();
 
-
   switch (authStatus) {
     case "loading":
       return <RunawayJellyfish thinking={true} scale={2} />;

@@ -30,30 +30,10 @@ export const initializeApp = createAsyncThunk(
             profileRes && typeof profileRes === "object" && "Ok" in profileRes
               ? profileRes.Ok
               : profileRes,
-          Files: initialRes.value.Ok.files || [],
           Friends: initialRes.value.Ok.friends || [],
           Wallet: initialRes.value.Ok.wallet || null,
-          FilesContents: initialRes.value.Ok.files_contents || [],
           Contracts: initialRes.value.Ok.contracts || {},
           workspaces,
-        };
-      } else {
-        // Fallback: fetch data individually
-        const [workspaces, friends, files] = await Promise.allSettled([
-          backendActor.get_work_spaces(),
-          backendActor.get_friends(),
-          backendActor.get_all_files(),
-        ]);
-
-        return {
-          Profile: {},
-          ProfileHistory: {},
-          Files: files.status === "fulfilled" ? files.value : [],
-          Friends: friends.status === "fulfilled" ? friends.value || [] : [],
-          Wallet: null,
-          workspaces: workspaces.status === "fulfilled" ? workspaces.value : [],
-          FilesContents: [],
-          Contracts: {},
         };
       }
     } catch (error) {
