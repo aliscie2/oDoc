@@ -198,7 +198,7 @@ const FeatureSection = ({ title, icon, children, reversed = false }) => {
               sx={{
                 fontWeight: 700,
                 mb: 3,
-                background: "linear-gradient(45deg, #1976d2, #9c27b0)",
+                background: "linear-gradient(45deg, #40e0d0, #0000)",
                 backgroundClip: "text",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
