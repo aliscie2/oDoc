@@ -381,20 +381,18 @@ export const idlFactory = ({ IDL }) => {
     'children' : IDL.Vec(IDL.Text),
     'parent' : IDL.Text,
   });
-  const Friend = IDL.Record({
+  const FEFriend = IDL.Record({
     'id' : IDL.Text,
-    'sender' : User,
-    'confirmed' : IDL.Bool,
-    'receiver' : User,
+    'is_sender' : IDL.Bool,
+    'name' : IDL.Text,
+    'description' : IDL.Text,
+    'email' : IDL.Text,
+    'photo' : IDL.Vec(IDL.Nat8),
   });
   const InitialData = IDL.Record({
-    'files' : IDL.Vec(FileNode),
     'contracts' : IDL.Vec(IDL.Tuple(IDL.Text, StoredContract)),
-    'files_contents' : IDL.Opt(
-      IDL.Vec(IDL.Tuple(IDL.Text, IDL.Vec(ContentNode)))
-    ),
     'wallet' : Wallet,
-    'friends' : IDL.Vec(Friend),
+    'friends' : IDL.Vec(FEFriend),
     'profile' : User,
   });
   const Result_11 = IDL.Variant({ 'Ok' : InitialData, 'Err' : IDL.Text });
@@ -498,6 +496,12 @@ export const idlFactory = ({ IDL }) => {
   const ContractNotification = IDL.Record({
     'contract_type' : IDL.Text,
     'contract_id' : IDL.Text,
+  });
+  const Friend = IDL.Record({
+    'id' : IDL.Text,
+    'sender' : User,
+    'confirmed' : IDL.Bool,
+    'receiver' : User,
   });
   const FriendRequestNotification = IDL.Record({ 'friend' : Friend });
   const PaymentAction = IDL.Variant({
@@ -749,7 +753,6 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(PostUser)],
         ['query'],
       ),
-    'get_friends' : IDL.Func([], [IDL.Vec(Friend)], ['query']),
     'get_initial_data' : IDL.Func([], [Result_11], ['query']),
     'get_job' : IDL.Func([IDL.Text], [IDL.Opt(Job)], ['query']),
     'get_logs' : IDL.Func([GetErrorLogsArgs], [IDL.Vec(Log)], ['query']),

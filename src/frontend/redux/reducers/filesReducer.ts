@@ -1,4 +1,4 @@
-import { Friend, StoredContract } from "$/declarations/backend/backend.did";
+import { FEFriend, StoredContract } from "$/declarations/backend/backend.did";
 import { deserializeContracts } from "../../DataProcessing/deserlize/deserializeContracts";
 import { initializeApp } from "../slices/appSlice";
 import { InitialState, initialState } from "../types/filesTypes";
@@ -17,12 +17,15 @@ export function filesReducer(
     const all_friends = [action.payload.Profile];
     // Add defensive check for Friends array
     if (action.payload.Friends && Array.isArray(action.payload.Friends)) {
-      action.payload.Friends.forEach((f: Friend) => {
-        if (f.sender.id !== action.payload.Profile.id) {
-          all_friends.push(f.sender);
-        } else {
-          all_friends.push(f.receiver);
-        }
+      action.payload.Friends.forEach((f: FEFriend) => {
+        // FEFriend contains the friend's info directly, no need to check sender/receiver
+        all_friends.push({
+          id: f.id,
+          name: f.name,
+          description: f.description,
+          email: f.email,
+          photo: f.photo,
+        });
       });
     }
     return {

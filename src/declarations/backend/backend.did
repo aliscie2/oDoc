@@ -238,6 +238,14 @@ type FEChat = record {
   workspaces : vec text;
   admins : vec UserFE;
 };
+type FEFriend = record {
+  id : text;
+  is_sender : bool;
+  name : text;
+  description : text;
+  email : text;
+  photo : blob;
+};
 type FileIndexing = record { id : text; new_index : nat64; parent : opt text };
 type FileNode = record {
   id : text;
@@ -279,11 +287,9 @@ type HttpResponse = record {
 };
 type IndexAccount = record { owner : principal; subaccount : opt blob };
 type InitialData = record {
-  files : vec FileNode;
   contracts : vec record { text; StoredContract };
-  files_contents : opt vec record { text; vec ContentNode };
   wallet : Wallet;
-  friends : vec Friend;
+  friends : vec FEFriend;
   profile : User;
 };
 type Job = record {
@@ -616,7 +622,6 @@ service : () -> {
   get_file : (text) -> (opt FileNode) query;
   get_file_content : (text) -> (opt vec ContentNode) query;
   get_filtered_posts : (opt vec text, opt text) -> (vec PostUser) query;
-  get_friends : () -> (vec Friend) query;
   get_initial_data : () -> (Result_11) query;
   get_job : (text) -> (opt Job) query;
   get_logs : (GetErrorLogsArgs) -> (vec Log) query;

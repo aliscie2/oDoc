@@ -14,12 +14,61 @@ use crate::user::User;
 use crate::user_history::UserHistory;
 use crate::{StoredContract, Wallet};
 
+
+
+#[derive(Clone, Debug, Default, CandidType, Deserialize)]
+pub struct FEFriend {
+    pub id: String,
+    pub name: String,
+    pub email: String,
+    pub description: String,
+    pub photo: Vec<u8>,
+    pub is_sender: bool,
+}
+
+fn convert_friends_to_fe_friends(friends: Vec<Friend>) -> Vec<FEFriend> {
+    friends
+        .into_iter()
+        .filter_map(|friend| {
+            let current_caller: String = caller().to_string();
+            let is_sender = current_caller == friend.sender.id;
+            
+            // Choose the other user's data (not the current caller)
+            let user_data = if is_sender {
+                &friend.receiver
+            } else {
+                &friend.sender
+            };
+            
+            // Prevent duplication: skip if friend's ID equals caller's ID
+            if user_data.id == current_caller {
+                return None;
+            }
+            
+            // Clean up photo if too large
+            let photo = if user_data.photo.len() > 500000 {
+                Vec::new()
+            } else {
+                user_data.photo.clone()
+            };
+            
+            Some(FEFriend {
+                id: user_data.id.clone(),
+                name: user_data.name.clone(),
+                email: user_data.email.clone(),
+                description: user_data.description.clone(),
+                photo,
+                is_sender,
+            })
+        })
+        .collect()
+}
+
+
 #[derive(Clone, Debug, Default, CandidType, Deserialize)]
 pub struct InitialData {
     profile: User,
-    files_contents: Option<HashMap<FileId, ContentTree>>,
-    files: Vec<FileNode>,
-    friends: Vec<Friend>,
+    friends: Vec<FEFriend>,
     // DiscoverUsers: HashMap<String, User>,
     contracts: HashMap<ContractId, StoredContract>,
     wallet: Wallet,
@@ -72,9 +121,6 @@ fn get_initial_data() -> Result<InitialData, String> {
         return Err("Anonymous user.".to_string());
     }
 
-    let files_contents = ContentNode::get_page_files_content(1_f32);
-    let files = FileNode::get_page_files(1_f32);
-
     let contracts: HashMap<ContractId, StoredContract> =
         Contract::get_all_contracts().unwrap_or_default();
     let mut profile = profile.unwrap();
@@ -82,23 +128,9 @@ fn get_initial_data() -> Result<InitialData, String> {
         profile.photo = Vec::new()
     };
     let friends: Vec<Friend> = Friend::get_list(caller());
-
-    let friends: Vec<Friend> = friends
-        .into_iter()
-        .map(|mut friend| {
-            if friend.sender.photo.len() > 500000 {
-                friend.sender.photo = Vec::new()
-            };
-            if friend.receiver.photo.len() > 500000 {
-                friend.receiver.photo = Vec::new()
-            };
-            friend
-        })
-        .collect();
+    let friends: Vec<FEFriend> = convert_friends_to_fe_friends(friends);
     let initial_data = InitialData {
         profile,
-        files_contents: Some(files_contents),
-        files,
         friends,
         contracts,
         wallet: Wallet::get(caller()),

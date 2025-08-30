@@ -1,4 +1,4 @@
-import React, { useEffect, Suspense, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import Pages from "./pages";
@@ -11,15 +11,15 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { canisterId } from "../declarations/backend";
 import NavBar from "./components/MainComponents/NavBar";
 import TopNavBar from "./components/MainComponents/topNavBar";
+import { useAuth } from "./hooks/useAuth";
 import { selectIsFetching, selectProfile } from "./redux/selectors";
-import getckUsdcBalance from "./utils/getBalance";
+import { initializeApp } from "./redux/slices/appSlice";
 import {
   backendActor,
   ckUSDCActor,
   initializeSmartActors,
 } from "./utils/backendUtils";
-import { useAuth } from "./hooks/useAuth";
-import { initializeApp } from "./redux/slices/appSlice";
+import getckUsdcBalance from "./utils/getBalance";
 
 import RegistrationForm from "./components/MainComponents/RegistrationForm";
 import {
@@ -28,8 +28,8 @@ import {
 } from "./pages/calendar/serializers";
 
 import RunawayJellyfish from "./components/creature/runAeayJellyFish";
-import useSocket from "./websocket/use_socket";
 import { RootState } from "./redux/reducers";
+import useSocket from "./websocket/use_socket";
 
 // Lazy load heavy components
 const GoogleCalendarOnboarding = React.lazy(
@@ -283,6 +283,7 @@ const useAppInitialization = () => {
 };
 
 const App: React.FC = () => {
+  const { profile, friends } = useSelector((state: any) => state.filesState);
   const { authStatus, isLoggedIn } = useAuth();
   const navigate = useNavigate();
 

@@ -100,6 +100,7 @@ const StatsSection = () => {
           backendActor.get_sns_status(),
           getckUsdcBalance(ckUSDCActor, canisterId),
         ]);
+        console.log({snsResponse, balance})
 
         if (snsResponse.Ok) {
           const { number_users, active_users } = snsResponse.Ok;

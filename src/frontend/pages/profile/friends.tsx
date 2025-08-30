@@ -21,11 +21,13 @@ interface User {
   averageRating?: number;
 }
 
-interface Friend {
+interface FEFriend {
   id: string;
-  sender: User;
-  receiver: User;
-  confirmed: boolean;
+  is_sender: boolean;
+  name: string;
+  description: string;
+  email: string;
+  photo: Uint8Array | number[];
 }
 
 interface Chat {
@@ -47,7 +49,7 @@ interface ChatWindowPosition {
 }
 
 interface FriendsListProps {
-  friends: Friend[];
+  friends: FEFriend[];
   currentUser: User;
   onAcceptFriend: (friendId: string) => void;
   onRejectFriend: (friendId: string) => void;
@@ -64,10 +66,14 @@ const FriendsList: React.FC<FriendsListProps> = ({ friends, currentUser }) => {
     <>
       <List>
         {friends.map((friend) => {
-          const otherUser =
-            friend.sender.id === currentUser?.id
-              ? friend.receiver
-              : friend.sender;
+          // FEFriend contains the friend's info directly
+          const friendUser = {
+            id: friend.id,
+            name: friend.name,
+            description: friend.description,
+            email: friend.email,
+            photo: friend.photo
+          };
           return (
             <ListItem
               key={friend.id}
@@ -76,24 +82,24 @@ const FriendsList: React.FC<FriendsListProps> = ({ friends, currentUser }) => {
                 currentUser.id == profile.id && (
                   <FriendshipButton
                     profile={currentUser}
-                    user={otherUser}
+                    user={friendUser}
                     friends={friends}
                   />
                 )
               }
             >
               <UserAvatarMenu
-                user={otherUser}
-                // onMessageClick={() => setSelectedUser(otherUser)}
+                user={friendUser}
+                // onMessageClick={() => setSelectedUser(friendUser)}
               />
               <ListItemText
-                primary={otherUser.name}
+                primary={friend.name}
                 secondary={
                   <Stack direction="row" spacing={1} alignItems="center">
                     <Chip
-                      label={otherUser.description}
+                      label={friend.description}
                       size="small"
-                      color={friend.confirmed ? "success" : "default"}
+                      color="success"
                     />
                   </Stack>
                 }

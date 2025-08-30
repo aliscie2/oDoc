@@ -255,6 +255,14 @@ export interface FEChat {
   'workspaces' : Array<string>,
   'admins' : Array<UserFE>,
 }
+export interface FEFriend {
+  'id' : string,
+  'is_sender' : boolean,
+  'name' : string,
+  'description' : string,
+  'email' : string,
+  'photo' : Uint8Array | number[],
+}
 export interface FileIndexing {
   'id' : string,
   'new_index' : bigint,
@@ -309,11 +317,9 @@ export interface IndexAccount {
   'subaccount' : [] | [Uint8Array | number[]],
 }
 export interface InitialData {
-  'files' : Array<FileNode>,
   'contracts' : Array<[string, StoredContract]>,
-  'files_contents' : [] | [Array<[string, Array<ContentNode>]>],
   'wallet' : Wallet,
-  'friends' : Array<Friend>,
+  'friends' : Array<FEFriend>,
   'profile' : User,
 }
 export interface Job {
@@ -692,7 +698,6 @@ export interface _SERVICE {
     [[] | [Array<string>], [] | [string]],
     Array<PostUser>
   >,
-  'get_friends' : ActorMethod<[], Array<Friend>>,
   'get_initial_data' : ActorMethod<[], Result_11>,
   'get_job' : ActorMethod<[string], [] | [Job]>,
   'get_logs' : ActorMethod<[GetErrorLogsArgs], Array<Log>>,
