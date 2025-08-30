@@ -1,18 +1,17 @@
-import { Box } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 import React, { useEffect, useRef } from "react";
 
 import { Job } from "$/declarations/backend/backend.did";
-import { useSelector } from "react-redux";
 import {
   selectCurrentJobId,
   selectJobs,
   selectProfile,
 } from "@/redux/selectors";
+import { useSelector } from "react-redux";
 
-import JobSelector from "./JobSelector";
 import JobSearchComponent from "./JobSearchComponent";
+import JobSelector from "./JobSelector";
 
-import LoginButton from "@/components/MainComponents/topNavBar/loginButton";
 import { Helmet } from "react-helmet-async";
 
 const JobsPage: React.FC = React.memo(() => {
@@ -26,7 +25,7 @@ const JobsPage: React.FC = React.memo(() => {
   }, [currentJobId, jobs]);
 
   if (!profile) {
-    return <LoginButton data-testid="jobs-login-button" />;
+    return <CircularProgress />
   }
 
   return (
