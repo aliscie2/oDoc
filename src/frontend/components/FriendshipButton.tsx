@@ -89,9 +89,7 @@ const FriendshipButton: React.FC<FriendshipButtonProps> = ({ user }) => {
       () => {
         setLocalFriends(
           localFriends.map((friend: FEFriend) =>
-            friend.id === user.id
-              ? { ...friend, is_sender: false }
-              : friend,
+            friend.id === user.id ? { ...friend, is_sender: false } : friend,
           ),
         );
       },
@@ -104,9 +102,7 @@ const FriendshipButton: React.FC<FriendshipButtonProps> = ({ user }) => {
       },
       () => {
         setLocalFriends(
-          localFriends.filter(
-            (friend: FEFriend) => friend.id !== user.id,
-          ),
+          localFriends.filter((friend: FEFriend) => friend.id !== user.id),
         );
       },
     );
@@ -132,16 +128,16 @@ const FriendshipButton: React.FC<FriendshipButtonProps> = ({ user }) => {
       },
       () => {
         setLocalFriends(
-          localFriends.filter(
-            (friend: FEFriend) => friend.id !== user.id,
-          ),
+          localFriends.filter((friend: FEFriend) => friend.id !== user.id),
         );
       },
     );
   if (!profile || !user) return null;
 
-  const friendRelation = localFriends.find((friend: FEFriend) => friend.id === user.id);
-  
+  const friendRelation = localFriends.find(
+    (friend: FEFriend) => friend.id === user.id,
+  );
+
   // With FEFriend, we need to determine the relationship status differently
   // If friend exists and is_sender is false, it means we are friends (confirmed)
   // If friend exists and is_sender is true, it means we sent a request (pending)

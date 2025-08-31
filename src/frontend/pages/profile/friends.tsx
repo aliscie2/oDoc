@@ -72,7 +72,7 @@ const FriendsList: React.FC<FriendsListProps> = ({ friends, currentUser }) => {
             name: friend.name,
             description: friend.description,
             email: friend.email,
-            photo: friend.photo
+            photo: friend.photo,
           };
           return (
             <ListItem

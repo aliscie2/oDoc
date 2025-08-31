@@ -25,7 +25,7 @@ const JobsPage: React.FC = React.memo(() => {
   }, [currentJobId, jobs]);
 
   if (!profile) {
-    return <CircularProgress />
+    return <CircularProgress />;
   }
 
   return (

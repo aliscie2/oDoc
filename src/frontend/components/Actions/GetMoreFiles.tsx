@@ -11,20 +11,17 @@ import { RootState } from "@/redux/reducers";
 import { backendActor } from "@/utils/backendUtils";
 import { Dispatch } from "redux";
 
-async function hanldeFetching(dispatch:Dispatch ,page:number){
-
-
+async function hanldeFetching(dispatch: Dispatch, page: number) {
   const res = await backendActor.get_more_files(page);
-    const files = res[0];
-    const rowContents: Array<[string, Array<ContentNode>]> = res[1];
-    const contents: Record<string, Array<SlateNode>> = deserializeContents(
-      rowContents,
-    );
+  const files = res[0];
+  const rowContents: Array<[string, Array<ContentNode>]> = res[1];
+  const contents: Record<string, Array<SlateNode>> = deserializeContents(
+    rowContents,
+  );
 
-    dispatch({ type: "ADD_FILES_LIST", files });
-    dispatch({ type: "ADD_CONTENTS_LIST", contents });
-    return files.length >0
-
+  dispatch({ type: "ADD_FILES_LIST", files });
+  dispatch({ type: "ADD_CONTENTS_LIST", contents });
+  return files.length > 0;
 }
 
 const GetMoreFiles: React.FC = () => {
@@ -49,16 +46,16 @@ const GetMoreFiles: React.FC = () => {
         page === 1 &&
         (isNavOpen || lookingForFile === true)
       ) {
-        console.log("xxx")
-        await hanldeFetching(dispatch, page)
+        console.log("xxx");
+        await hanldeFetching(dispatch, page);
         setPage(page + 1);
       }
     })();
   }, [files, inited, page, isNavOpen, lookingForFile]);
 
   const handleCreateFile = async () => {
-    let moreFiles = await hanldeFetching(dispatch, page)
-    !moreFiles&&setNoMoreToload(false)
+    let moreFiles = await hanldeFetching(dispatch, page);
+    !moreFiles && setNoMoreToload(false);
     setPage(page + 1);
   };
 

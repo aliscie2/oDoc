@@ -1,7 +1,7 @@
 // ChatBot module exports
 export { default as ChatContainer } from "./ChatContainer";
 export { TimeFormatter, CalendarFormatter, ActionProcessor } from "./utils";
-export { default as MarkdownMessageRenderer } from "./markdownRenderer";
+// export { default as MarkdownMessageRenderer } from "./markdownRenderer";
 // useChatHandler has been removed - use individual hooks with dependency injection
 // Example: useAIService(), useMessageRules(), useMessageProcessor(), useChatActions(config) // DEPRECATED - see CONTAINER_EXAMPLE.md
 

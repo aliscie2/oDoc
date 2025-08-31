@@ -1,16 +1,10 @@
-import { Box, CircularProgress, Typography, Button } from "@mui/material";
-import { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
-import { useSearchParams } from "react-router-dom";
-import { backendActor } from "../utils/backendUtils";
-import { useSnackbar } from "notistack";
-import JobDetails from "./jobs/JobDetails";
-import UserAvatarMenu from "@/components/MainComponents/UserAvatarMenu";
-import sendEmail from "../utils/sendEmail";
-import { convertToBlobLink } from "../DataProcessing/imageToVec";
-import { RootState } from "../redux/reducers";
+import { Job, User } from "$/declarations/backend/backend.did";
+import { Box, CircularProgress, Typography } from "@mui/material";
+import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { User } from "$/declarations/backend/backend.did";
+import { useSearchParams } from "react-router-dom";
+import { convertToBlobLink } from "../DataProcessing/imageToVec";
+import { backendActor } from "../utils/backendUtils";
 
 // Helper function to generate thumbnail with canvas
 const generateThumbnailDataUrl = async (
@@ -178,15 +172,98 @@ const generateThumbnailDataUrl = async (
   });
 };
 
+// SEO Component for Job Page
+interface JobPageSEOProps {
+  job: Job | null;
+  user: User | null;
+  thumbnailUrl: string;
+}
+
+const JobPageSEO: React.FC<JobPageSEOProps> = ({ job, user, thumbnailUrl }) => {
+  if (!job) return null;
+
+  // SEO data preparation
+  const jobTitle = job.job_titles?.[0] || "Job Opportunity";
+  const jobDescription =
+    job.description || "Explore this job opportunity on ICPJobs";
+  const truncatedDescription =
+    jobDescription.split(" ").slice(0, 25).join(" ") +
+    (jobDescription.split(" ").length > 25 ? "..." : "");
+  const pageTitle = `${jobTitle} | ICPJobs - Internet Computer Job Board`;
+
+  return (
+    <Helmet>
+      {/* Page title */}
+      <title>{pageTitle}</title>
+
+      {/* Meta description */}
+      <meta name="description" content={truncatedDescription} />
+
+      {/* Keywords */}
+      {job.skills && job.skills.length > 0 && (
+        <meta
+          name="keywords"
+          content={`${job.skills.join(", ")}, job, career, Internet Computer, ICP, blockchain, ${jobTitle}`}
+        />
+      )}
+
+      {/* Open Graph tags */}
+      <meta property="og:title" content={jobTitle} />
+      <meta property="og:description" content={truncatedDescription} />
+      <meta property="og:type" content="article" />
+      <meta property="og:url" content={window.location.href} />
+      {thumbnailUrl && <meta property="og:image" content={thumbnailUrl} />}
+      <meta property="og:site_name" content="ICPJobs" />
+
+      {/* Twitter Card tags */}
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content={jobTitle} />
+      <meta name="twitter:description" content={truncatedDescription} />
+      {thumbnailUrl && <meta name="twitter:image" content={thumbnailUrl} />}
+
+      {/* Additional SEO tags */}
+      <meta name="robots" content="index, follow" />
+      <link rel="canonical" href={window.location.href} />
+
+      {/* Structured data for job posting */}
+      <script type="application/ld+json">
+        {JSON.stringify({
+          "@context": "https://schema.org/",
+          "@type": "JobPosting",
+          title: jobTitle,
+          description: jobDescription,
+          datePosted: job.date_created
+            ? new Date(Number(job.date_created) / 1000000).toISOString()
+            : undefined,
+          hiringOrganization: {
+            "@type": "Organization",
+            name: user?.name || "ICPJobs Employer",
+          },
+          jobLocation: {
+            "@type": "Place",
+            address: "Remote",
+          },
+          employmentType:
+            Object.keys(job.category || {})[0] === "Job"
+              ? "FULL_TIME"
+              : "CONTRACT",
+          skills: job.skills?.join(", "),
+          qualifications: job.education?.join(", "),
+          url: window.location.href,
+          identifier: {
+            "@type": "PropertyValue",
+            name: "Job ID",
+            value: job.id,
+          },
+        })}
+      </script>
+    </Helmet>
+  );
+};
 const JobPage = () => {
   const [searchParams] = useSearchParams();
-  // Using direct backendActor import
-  const { enqueueSnackbar } = useSnackbar();
-  const { profile } = useSelector((state: RootState) => state.filesState);
   const [job, setJob] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [connecting, setConnecting] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [thumbnailUrl, setThumbnailUrl] = useState<string>("");
 
@@ -195,18 +272,15 @@ const JobPage = () => {
   useEffect(() => {
     const fetchJob = async () => {
       if (!jobId || !backendActor) {
-        setError("No job ID provided");
         setLoading(false);
         return;
       }
 
       try {
         const result = await backendActor.get_job(jobId);
-
-        if (result && result.length > 0) {
+        if (result?.length > 0) {
           setJob(result);
           const currentJob = result[0];
-          setLoading(false);
 
           if (currentJob.user_id) {
             const userResponse = await backendActor.get_user(
@@ -214,28 +288,23 @@ const JobPage = () => {
             );
             if ("Ok" in userResponse) {
               setUser(userResponse.Ok);
-
-              // Generate thumbnail
               const dataUrl = await generateThumbnailDataUrl(
-                currentJob.title,
+                currentJob.job_titles?.[0] || "Job Opportunity",
                 currentJob.description,
                 userResponse.Ok.photo,
               );
               setThumbnailUrl(dataUrl);
             }
           } else {
-            // Generate thumbnail without user photo
             const dataUrl = await generateThumbnailDataUrl(
-              currentJob.title,
+              currentJob.job_titles?.[0] || "Job Opportunity",
               currentJob.description,
             );
             setThumbnailUrl(dataUrl);
           }
-        } else {
-          setError("Job not found");
         }
       } catch (err) {
-        setError("Failed to fetch job");
+        console.error("Failed to fetch job");
       } finally {
         setLoading(false);
       }
@@ -244,100 +313,19 @@ const JobPage = () => {
     fetchJob();
   }, [jobId, backendActor]);
 
-  const handleConnect = async () => {
-    if (!job || !job[0] || !backendActor) return;
-
-    setConnecting(true);
-    try {
-      const currentJob = job[0];
-      const res = await backendActor.get_calendar_by_author(currentJob.user_id);
-      const calendar = res[0];
-      const emails = calendar?.google_ids || [];
-      emails.push(...currentJob.emails);
-
-      if (emails.length === 0) {
-        alert(
-          "User did not set their email yet, try to contact them via oDoc.",
-        );
-        return;
-      }
-
-      const category = Object.keys(currentJob.category)[0];
-      const message =
-        category === "Job"
-          ? "We found a new job opportunity for you."
-          : "We found a new talent that may meet your requirements.";
-
-      for (const email of emails) {
-        const isEmailSent = await sendEmail(
-          "oDoc AI job matcher",
-          message,
-          [email],
-          { job: currentJob },
-          "odoc_job_match",
-        );
-
-        if (isEmailSent) {
-          enqueueSnackbar("Email sent successfully!", { variant: "success" });
-          break;
-        }
-      }
-    } catch (error) {
-      enqueueSnackbar("Failed to send email", { variant: "error" });
-    } finally {
-      setConnecting(false);
-    }
-  };
-
   if (loading) return <CircularProgress />;
-  if (error) return <Typography color="error">{error}</Typography>;
   if (!job) return <Typography>Job not found</Typography>;
 
-  const currentJob = job?.[0];
-  const showConnectButton =
-    profile && currentJob && profile.id !== currentJob.user_id;
-
   return (
-    <Box sx={{ p: 2 }}>
-      {currentJob && thumbnailUrl && (
-        <Helmet>
-          <meta property="og:image" content={thumbnailUrl} />
-          <meta property="og:title" content={currentJob.title} />
-          <meta
-            property="og:description"
-            content={currentJob.description.split(" ").slice(0, 10).join(" ")}
-          />
-          <meta name="twitter:card" content="summary_large_image" />
-          <meta name="twitter:image" content={thumbnailUrl} />
-        </Helmet>
+    <Box sx={{ p: 2, textAlign: "center" }}>
+      <JobPageSEO job={job[0]} user={user} thumbnailUrl={thumbnailUrl} />
+      {thumbnailUrl && (
+        <img
+          src={thumbnailUrl}
+          alt="Job Thumbnail"
+          style={{ maxWidth: "100%", height: "auto" }}
+        />
       )}
-
-      {showConnectButton && (
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: 2,
-            mb: 2,
-          }}
-        >
-          <UserAvatarMenu
-            user={user || { id: currentJob.user_id, name: "Unknown User" }}
-          />
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleConnect}
-            disabled={connecting}
-            sx={{ minWidth: "100px" }}
-          >
-            {connecting ? <CircularProgress size={24} /> : "Connect"}
-          </Button>
-        </Box>
-      )}
-
-      {currentJob && <JobDetails job={currentJob} match={null} />}
     </Box>
   );
 };
