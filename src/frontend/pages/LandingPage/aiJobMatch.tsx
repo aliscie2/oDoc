@@ -364,7 +364,7 @@ const AIConversationStep = () => {
               mx: "auto",
             }}
           >
-            No manual work anymore. Ask, it is done.
+            No manual work anymore. Ask, and it is done.
           </Typography>
         </Box>
 
@@ -392,7 +392,14 @@ const AIConversationStep = () => {
             },
           }}
         >
-          <Box component="span" sx={{ whiteSpace: "pre" }}>
+          <Box
+            component="span"
+            sx={{
+              whiteSpace: "pre-wrap",
+              wordBreak: "break-word",
+              overflowWrap: "anywhere",
+            }}
+          >
             {typedText || (
               <Box component="span" sx={{ color: "text.secondary" }}>
                 Describe your needs...
@@ -454,7 +461,7 @@ const JobMatchingStep = () => {
       <Container maxWidth="md">
         <Box sx={{ textAlign: "center", mb: 6 }}>
           <Typography variant="h3" sx={{ mb: 2, fontWeight: 600 }}>
-            2. Job Matching Card
+            2. Job Matching
           </Typography>
           <Typography
             variant="h5"
@@ -592,13 +599,13 @@ const EmailInboxItem = ({
       <Typography variant="h6" sx={{ mb: 0.5 }}>
         {subject}
       </Typography>
-      <Typography 
-        variant="body2" 
-        sx={{ 
+      <Typography
+        variant="body2"
+        sx={{
           color: "text.secondary",
           overflow: "hidden",
           textOverflow: "ellipsis",
-          whiteSpace: "nowrap"
+          whiteSpace: "nowrap",
         }}
       >
         {preview}
@@ -613,26 +620,16 @@ const EmailNotificationsStep = () => {
     {
       from: `alert@${window.location.hostname}`,
       subject: "Looking for AI agents developer",
-      preview: "New job match found! A startup is seeking an experienced AI developer for their autonomous agent platform...",
+      preview:
+        "New job match found! A startup is seeking an experienced AI developer for their autonomous agent platform...",
       time: "2 min ago",
     },
     {
       from: `alert@${window.location.hostname}`,
       subject: "Looking for farming co-founder",
-      preview: "Perfect match alert! An agricultural tech startup needs a co-founder with your background...",
+      preview:
+        "Perfect match alert! An agricultural tech startup needs a co-founder with your background...",
       time: "1 hour ago",
-    },
-    {
-      from: `notifications@${window.location.hostname}`,
-      subject: "Weekly job digest",
-      preview: "Here are 5 new opportunities that match your profile this week...",
-      time: "1 day ago",
-    },
-    {
-      from: `alert@${window.location.hostname}`,
-      subject: "Rust developer position available",
-      preview: "Urgent: Web3 company needs senior Rust developer for DeFi project...",
-      time: "2 days ago",
     },
   ];
 
@@ -646,7 +643,8 @@ const EmailNotificationsStep = () => {
             3. Email Notifications
           </Typography>
           <Typography variant="body1" sx={{ opacity: 0.7 }}>
-            If you don't like current matches, wait for an email alert when a good match is found.
+            If you don't like current matches, wait for an email alert when a
+            good match is found.
           </Typography>
         </Box>
 
@@ -740,49 +738,45 @@ const CalendarStep = () => {
 
   return (
     <Box
-      sx={{ minHeight: "100vh", display: "flex", alignItems: "center", py: 8 }}
+      sx={{ minHeight: "80vh", display: "flex", alignItems: "center", py: 4 }}
     >
-      <Container maxWidth="lg">
-        <Box sx={{ textAlign: "center", mb: 6 }}>
-          <Typography variant="h3" sx={{ mb: 2, fontWeight: 600 }}>
+      <Container maxWidth="md">
+        <Box sx={{ textAlign: "center", mb: 4 }}>
+          <Typography variant="h3" sx={{ mb: 1, fontWeight: 600 }}>
             4. Smart Meeting Scheduler
           </Typography>
-          <Typography variant="h6" sx={{ opacity: 0.7, mb: 2 }}>
-            After finding your perfect match, automatically schedule meetings,
-            in a time suits you.
+          <Typography variant="body1" sx={{ opacity: 0.7, mb: 1 }}>
+            After finding your perfect match, automatically schedule meetings.
           </Typography>
         </Box>
 
         <Box
           sx={{
             display: "flex",
-            gap: 4,
             justifyContent: "center",
-            flexWrap: "wrap",
           }}
         >
           {/* Meeting Details Card */}
           <Card
             sx={{
-              p: 4,
+              p: 3,
               borderRadius: 3,
-              maxWidth: 450,
-              flex: 1,
-              minWidth: 350,
+              maxWidth: 400,
+              width: "100%",
             }}
           >
-            <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
-              <People sx={{ mr: 2, fontSize: 32, color: "secondary.main" }} />
+            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+              <People sx={{ mr: 1, fontSize: 24, color: "secondary.main" }} />
               <Typography variant="h6">Meeting Details</Typography>
             </Box>
 
             <Fade in={true} key={currentStep}>
               <Box>
                 <Box
-                  sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}
+                  sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}
                 >
                   <Avatar
-                    sx={{ width: 50, height: 50, bgcolor: "secondary.main" }}
+                    sx={{ width: 40, height: 40, bgcolor: "secondary.main" }}
                     src={currentMeeting.avatar}
                   >
                     {currentMeeting.participant
@@ -791,7 +785,7 @@ const CalendarStep = () => {
                       .join("")}
                   </Avatar>
                   <Box>
-                    <Typography variant="h6" fontWeight="bold">
+                    <Typography variant="subtitle1" fontWeight="bold">
                       {currentMeeting.participant}
                     </Typography>
                     <Typography variant="body2" sx={{ opacity: 0.7 }}>
@@ -800,64 +794,48 @@ const CalendarStep = () => {
                   </Box>
                 </Box>
 
-                <Box sx={{ mb: 3 }}>
+                <Box sx={{ mb: 2 }}>
                   <Typography
                     variant="subtitle1"
                     fontWeight="bold"
-                    sx={{ mb: 1 }}
+                    sx={{ mb: 0.5 }}
                   >
                     {currentMeeting.title}
                   </Typography>
-                  <Typography variant="body2" sx={{ opacity: 0.8, mb: 1 }}>
-                    📅 December {selectedDate}, 2024
-                  </Typography>
-                  <Typography variant="body2" sx={{ opacity: 0.8, mb: 1 }}>
-                    🕐 {currentMeeting.time}
-                  </Typography>
                   <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                    💻 {currentMeeting.type}
+                    📅 Dec {selectedDate} • 🕐 {currentMeeting.time} • 💻{" "}
+                    {currentMeeting.type}
                   </Typography>
                 </Box>
 
-                <Box sx={{ mb: 3 }}>
+                <Box sx={{ mb: 2 }}>
                   <Typography
-                    variant="subtitle2"
+                    variant="body2"
                     fontWeight="bold"
-                    sx={{ mb: 1 }}
+                    sx={{ mb: 0.5 }}
                   >
-                    Meeting Agenda:
+                    Agenda: {currentMeeting.agenda.join(" • ")}
                   </Typography>
-                  {currentMeeting.agenda.map((item, index) => (
-                    <Typography
-                      key={index}
-                      variant="body2"
-                      sx={{ opacity: 0.8, ml: 2 }}
-                    >
-                      • {item}
-                    </Typography>
-                  ))}
                 </Box>
 
                 {showConfirmation ? (
-                  <Box sx={{ textAlign: "center", py: 2 }}>
+                  <Box sx={{ textAlign: "center", py: 1 }}>
                     <Typography
-                      variant="h6"
-                      sx={{ color: "success.main", mb: 2 }}
+                      variant="subtitle1"
+                      sx={{ color: "success.main", mb: 1 }}
                     >
                       ✅ Meeting Scheduled!
                     </Typography>
                     <Typography variant="body2" sx={{ opacity: 0.7 }}>
-                      Calendar invite sent to both parties
+                      Calendar invite sent
                     </Typography>
                   </Box>
                 ) : (
                   <Button
                     variant="contained"
                     fullWidth
-                    size="large"
                     sx={{
-                      py: 1.5,
-                      fontSize: "1.1rem",
+                      py: 1,
                       background:
                         "linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)",
                       "&:hover": {
@@ -874,30 +852,27 @@ const CalendarStep = () => {
           </Card>
         </Box>
 
-        {/* Additional Features */}
-        <Box sx={{ textAlign: "center", mt: 6 }}>
-          <Typography variant="h6" sx={{ mb: 2, opacity: 0.8 }}>
-            Smart Features
-          </Typography>
+        {/* Compact Features */}
+        <Box sx={{ textAlign: "center", mt: 3 }}>
           <Box
             sx={{
               display: "flex",
               justifyContent: "center",
-              gap: 4,
+              gap: 3,
               flexWrap: "wrap",
             }}
           >
             {[
-              { icon: "🤖", text: "AI suggests optimal meeting times" },
-              { icon: "🔄", text: "Auto-sync with Google Calendar" },
-              { icon: "💬", text: "Pre-meeting chat integration" },
-              { icon: "📝", text: "Automated follow-up reminders" },
+              { icon: "🤖", text: "AI scheduling" },
+              { icon: "🔄", text: "Auto-sync" },
+              { icon: "💬", text: "Chat integration" },
+              { icon: "📝", text: "Follow-ups" },
             ].map((feature, index) => (
-              <Box key={index} sx={{ textAlign: "center", maxWidth: 200 }}>
-                <Typography variant="h4" sx={{ mb: 1 }}>
+              <Box key={index} sx={{ textAlign: "center", maxWidth: 120 }}>
+                <Typography variant="h6" sx={{ mb: 0.5 }}>
                   {feature.icon}
                 </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.7 }}>
+                <Typography variant="caption" sx={{ opacity: 0.7 }}>
                   {feature.text}
                 </Typography>
               </Box>
@@ -949,6 +924,9 @@ const CryptoAgreementStep = () => {
         <Box sx={{ textAlign: "center", mb: 6 }}>
           <Typography variant="h3" sx={{ mb: 2, fontWeight: 600 }}>
             5. Create Crypto Agreement
+          </Typography>
+          <Typography variant="body" sx={{ mb: 2, fontWeight: 600 }}>
+            After all of that you can create an agreement on the blockchain, with the person you met.
           </Typography>
         </Box>
 
@@ -1485,7 +1463,7 @@ const SocialSharingStep = () => {
   );
 };
 
-// Simple Footer Component
+// Enhanced Footer Component
 const SimpleFooter = () => {
   const socialLinks = [
     {
@@ -1498,39 +1476,211 @@ const SimpleFooter = () => {
   ];
 
   return (
-    <Box component="footer" sx={{ py: 6, textAlign: "center" }}>
-      <Container maxWidth="md">
-        <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
-          {window.location.hostname}
-        </Typography>
+    <Box
+      component="footer"
+      sx={{
+        mt: 12,
+        py: 8,
+        backgroundColor: "background.paper",
+        borderTop: "2px solid",
+        borderColor: "divider",
+        position: "relative",
+        "&::before": {
+          content: '""',
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: "1px",
+          background:
+            "linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)",
+        },
+      }}
+    >
+      <Container maxWidth="lg">
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", md: "row" },
+            justifyContent: "space-between",
+            alignItems: { xs: "center", md: "flex-start" },
+            gap: 4,
+            mb: 6,
+          }}
+        >
+          {/* Brand Section */}
+          <Box sx={{ textAlign: { xs: "center", md: "left" } }}>
+            <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
+              {window.location.hostname}
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{ mb: 2, opacity: 0.8, maxWidth: 300 }}
+            >
+              The complete online work toolkit for the Web3 era.
+            </Typography>
+            <Typography variant="body2" sx={{ opacity: 0.6 }}>
+              AI-powered job matching • Smart contracts • Team management
+            </Typography>
+          </Box>
 
-        <Typography variant="body1" sx={{ mb: 4, opacity: 0.7 }}>
-          The online work tool kit.
-        </Typography>
+          {/* Links Section */}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              gap: { xs: 3, sm: 6 },
+              textAlign: { xs: "center", md: "left" },
+            }}
+          >
+            <Box>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+                Platform
+              </Typography>
+              <Stack spacing={1}>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    opacity: 0.7,
+                    cursor: "pointer",
+                    "&:hover": { opacity: 1 },
+                  }}
+                >
+                  Find Jobs
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    opacity: 0.7,
+                    cursor: "pointer",
+                    "&:hover": { opacity: 1 },
+                  }}
+                >
+                  Find Talent
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    opacity: 0.7,
+                    cursor: "pointer",
+                    "&:hover": { opacity: 1 },
+                  }}
+                >
+                  AI Matching
+                </Typography>
+              </Stack>
+            </Box>
 
-        <Box sx={{ display: "flex", justifyContent: "center", gap: 2, mb: 4 }}>
-          {socialLinks.map((social) => {
-            const Icon = social.icon;
-            return (
-              <IconButton
-                key={social.name}
-                onClick={() => window.open(social.url, "_blank")}
-                sx={{
-                  transition: "transform 0.3s ease",
-                  "&:hover": { transform: "scale(1.1)" },
-                }}
-              >
-                <Icon />
-              </IconButton>
-            );
-          })}
+            <Box>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+                Resources
+              </Typography>
+              <Stack spacing={1}>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    opacity: 0.7,
+                    cursor: "pointer",
+                    "&:hover": { opacity: 1 },
+                  }}
+                >
+                  Documentation
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    opacity: 0.7,
+                    cursor: "pointer",
+                    "&:hover": { opacity: 1 },
+                  }}
+                >
+                  API
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    opacity: 0.7,
+                    cursor: "pointer",
+                    "&:hover": { opacity: 1 },
+                  }}
+                >
+                  Support
+                </Typography>
+              </Stack>
+            </Box>
+
+            <Box>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+                Community
+              </Typography>
+              <Stack spacing={1}>
+                {socialLinks.map((social) => {
+                  const Icon = social.icon;
+                  return (
+                    <Box
+                      key={social.name}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        cursor: "pointer",
+                        opacity: 0.7,
+                        "&:hover": { opacity: 1 },
+                        justifyContent: { xs: "center", md: "flex-start" },
+                      }}
+                      onClick={() => window.open(social.url, "_blank")}
+                    >
+                      <Icon sx={{ fontSize: 16 }} />
+                      <Typography variant="body2">{social.name}</Typography>
+                    </Box>
+                  );
+                })}
+              </Stack>
+            </Box>
+          </Box>
         </Box>
 
-        <Divider sx={{ mb: 3 }} />
+        {/* Bottom Section */}
+        <Divider sx={{ mb: 4, opacity: 0.3 }} />
 
-        <Typography variant="body2" sx={{ opacity: 0.6 }}>
-          © {new Date().getFullYear()} Made by oDoc.app team.
-        </Typography>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 2,
+            textAlign: { xs: "center", sm: "left" },
+          }}
+        >
+          <Typography variant="body2" sx={{ opacity: 0.6 }}>
+            © {new Date().getFullYear()} Made by oDoc.app team. All rights
+            reserved.
+          </Typography>
+
+          <Box sx={{ display: "flex", gap: 3 }}>
+            <Typography
+              variant="body2"
+              sx={{
+                opacity: 0.6,
+                cursor: "pointer",
+                "&:hover": { opacity: 1 },
+              }}
+            >
+              Privacy Policy
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{
+                opacity: 0.6,
+                cursor: "pointer",
+                "&:hover": { opacity: 1 },
+              }}
+            >
+              Terms of Service
+            </Typography>
+          </Box>
+        </Box>
       </Container>
     </Box>
   );
@@ -1547,7 +1697,9 @@ const LandingPage = () => {
   const typedText = useTypingAnimation(texts);
 
   return (
-    <Box>
+    <Box sx={{ position: "relative" }}>
+      {/* Animated Grid Background */}
+
       <Helmet>
         <title>
           {window.location.hostname} - AI-Powered Job Matching for ICP Ecosystem
@@ -1646,14 +1798,20 @@ const LandingPage = () => {
       </Box>
 
       {/* Journey Steps */}
-      <AIConversationStep />
-      <JobMatchingStep />
-      <EmailNotificationsStep />
-      <CalendarStep />
-      <CryptoAgreementStep />
-      <ProjectManagementStep />
-      <SocialMediaShare />
+      
+        <AIConversationStep />
 
+        <JobMatchingStep />
+      
+        <EmailNotificationsStep />
+      
+        <CalendarStep />
+      
+        <CryptoAgreementStep />
+      
+        <ProjectManagementStep />
+
+        <SocialMediaShare/>
       {/* Footer */}
       <SimpleFooter />
     </Box>
