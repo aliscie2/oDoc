@@ -14,20 +14,19 @@
     />
 
     <!-- Primary Meta Tags -->
-
     <meta
       name="title"
-      content="ICPJOBS - AI job match | icp jobs | Crypto Agreements Platform on ICP | odoc is crypto work tool kit for freelancers and online workers"
+      content="ICPJOBS - Your AI Workforce Copilot | Smart Job Matching | Crypto-Native Team Management"
     />
     <meta
       name="description"
-      content="Secure blockchain-based document management platform leveraging ICP's trustless architecture for immutable records and smart contract automation."
+      content="AI-powered talent matching meets crypto payments. From discovery to delivery - build, manage & scale your Web3 team with zero friction."
     />
     <meta
       name="keywords"
-      content="job match, crypto agreement platform, blockchain contracts, ICP smart agreements, decentralized crypto contracts, Web3 legal documents, AI-powered agreements, no-middleman contracts, global crypto agreements, business crypto contracts, lawyer blockchain agreements, freelancer crypto payments, escrow smart contracts, transparent crypto deals, cross-border blockchain agreements, immutable contract records, crypto document management, ICP agreement automation, trustless crypto contracts, enterprise blockchain documents, secure crypto paperwork, calendar, talk to your calendar, scheduler "
+      content="AI workforce copilot, AI job matching 2025, crypto freelance platform, Web3 talent marketplace, smart contract payments, AI team builder, crypto-native workforce, blockchain freelance jobs, AI recruitment automation, decentralized team management, crypto payroll, smart calendar AI, Web3 work platform, AI hiring copilot, blockchain job board, crypto gig economy, remote Web3 jobs, AI talent scout, decentralized workforce, crypto contractor platform"
     />
-    <meta name="author" content="ODOC Team" />
+    <meta name="author" content="ICPJOBS Team" />
     <link rel="canonical" href="https://icpjobs.com/" />
 
     <!-- Open Graph / Facebook -->
@@ -35,11 +34,11 @@
     <meta property="og:url" content="https://icpjobs.com" />
     <meta
       property="og:title"
-      content="ICPJobs | AI jobs match | Crypto Agreements | Trustless Document Management on Blockchain"
+      content="ICPJOBS - Your AI Workforce Copilot | Web3 Team Management Revolution"
     />
     <meta
       property="og:description"
-      content="Enterprise-grade document automation with ICP smart contracts and decentralized identity management."
+      content="AI matches talent, crypto secures contracts, automation handles the rest. The complete workforce ecosystem for 2025."
     />
     <meta
       key="og:image"
@@ -48,18 +47,18 @@
     />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:site_name" content="ODOC" />
+    <meta property="og:site_name" content="ICPJOBS" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:url" content="https://icpjobs.com" />
     <meta
       name="twitter:title"
-      content="ICPJOBS | AI job match | Crypto Agreements"
+      content="ICPJOBS - AI Workforce Copilot | Crypto Team Management"
     />
     <meta
       name="twitter:description"
-      content="Decentralized workflow automation with ICP-based smart contracts and immutable audit trails."
+      content="Beyond freelancing - Team Intelligence. AI-powered recruitment meets crypto-native payments on Web3."
     />
     <meta
       name="twitter:image"
@@ -90,7 +89,6 @@
         }
       }
       
-      /* Hide loading screen when app is ready */
       .app-loaded #loading-screen {
         display: none !important;
       }
@@ -161,11 +159,11 @@
       {
         "@context": "https://schema.org",
         "@type": "Organization",
-        "name": "ODOC",
+        "name": "ICPJOBS",
         "url": "https://icpjobs.com",
         "logo": "/icpjobs_logo.png",
         "sameAs": ["https://x.com/odoc_ic", "https://www.youtube.com/@odoc_ic"],
-        "description": "Secure blockchain-based document management platform leveraging ICP's trustless architecture for immutable records and smart contract automation."
+        "description": "AI-powered workforce copilot combining smart talent matching, crypto-native payments, and automated team management on Web3 infrastructure."
       }
     </script>
   </head>
@@ -173,7 +171,6 @@
   <body class="dark">
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root">
-      <!-- Loading screen that shows while PWA is loading -->
       <div id="loading-screen" style="
         position: fixed;
         top: 0;
@@ -222,11 +219,9 @@
       </div>
     </div>
     <script>
-      // Set dynamic domain name in loading message
       document.getElementById('domain-name').textContent = window.location.hostname;
     </script>
     <script>
-      // Polyfill for crypto.randomUUID
       if (!crypto.randomUUID) {
         crypto.randomUUID = function () {
           return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(

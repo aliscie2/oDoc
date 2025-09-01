@@ -49,16 +49,11 @@ const Pages = React.memo(() => {
   const { isLoggedIn } = useAuth();
 
   const MainPage = useMemo(() => {
-    const currentDomain = window.location.hostname;
 
     if (isLoggedIn) {
       return <JobsPage />;
     }
-    if (currentDomain === "odoc.app") {
-      return <LandingPage />;
-    } else {
-      return <ICPJobsLandingPage />;
-    }
+    return <ICPJobsLandingPage />;
   }, [isLoggedIn]);
 
   return (
