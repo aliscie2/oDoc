@@ -369,40 +369,50 @@ const AIConversationStep = () => {
         </Box>
 
         <RunawayJellyfish />
-        <TextField
-          fullWidth
-          value={typedText}
-          placeholder="Describe your needs..."
+        <Box
           sx={{
-            "& .MuiInputBase-input": {
-              fontSize: "1.1rem",
-              fontFamily: "monospace",
-              paddingRight: "16px !important", // Add padding to prevent text overflow behind cursor
+            width: "100%",
+            minHeight: "56px",
+            border: "1px solid",
+            borderColor: "divider",
+            borderRadius: 1,
+            padding: "16px 14px",
+            fontSize: "1.1rem",
+            fontFamily: "monospace",
+            display: "flex",
+            alignItems: "center",
+            backgroundColor: "background.paper",
+            "&:hover": {
+              borderColor: "text.primary",
             },
-            "& .MuiInputBase-root": {
-              paddingRight: "12px", // Ensure container has proper padding
+            "&:focus-within": {
+              borderColor: "primary.main",
+              borderWidth: "2px",
+              padding: "15px 13px", // Adjust padding to account for thicker border
             },
           }}
-          InputProps={{
-            readOnly: true,
-            endAdornment: (
-              <Box
-                sx={{
-                  width: 2,
-                  height: 20,
-                  bgcolor: "primary.main",
-                  animation: "blink 1s infinite",
-                  marginLeft: "8px", // Add margin to create space between text and cursor
-                  flexShrink: 0, // Prevent cursor from shrinking
-                  "@keyframes blink": {
-                    "0%, 50%": { opacity: 1 },
-                    "51%, 100%": { opacity: 0 },
-                  },
-                }}
-              />
-            ),
-          }}
-        />
+        >
+          <Box component="span" sx={{ whiteSpace: "pre" }}>
+            {typedText || (
+              <Box component="span" sx={{ color: "text.secondary" }}>
+                Describe your needs...
+              </Box>
+            )}
+          </Box>
+          <Box
+            sx={{
+              width: 2,
+              height: 20,
+              bgcolor: "primary.main",
+              animation: "blink 1s infinite",
+              marginLeft: "2px",
+              "@keyframes blink": {
+                "0%, 50%": { opacity: 1 },
+                "51%, 100%": { opacity: 0 },
+              },
+            }}
+          />
+        </Box>
       </Container>
     </Box>
   );
@@ -845,7 +855,7 @@ const CalendarStep = () => {
 
 // Step 5: Crypto Agreement Component
 const CryptoAgreementStep = () => {
-  const [visibleFields, setVisibleFields] = useState(0);
+  const [visibleFields, setVisibleFields] = useState(1); // Start with first field visible
 
   const fields = [
     { id: "amount", label: "Amount", value: "500 USDC" },
@@ -860,12 +870,13 @@ const CryptoAgreementStep = () => {
   ];
 
   useEffect(() => {
+    // Show first field immediately, then animate the rest
     const fieldInterval = setInterval(() => {
       setVisibleFields((prev) => {
         if (prev < fields.length + 1) return prev + 1; // +1 for completion state
-        return 0;
+        return 1; // Reset to show first field instead of 0
       });
-    }, 2000);
+    }, 1500); // Reduced from 2000ms to 1500ms for faster animation
 
     return () => {
       clearInterval(fieldInterval);
@@ -890,9 +901,12 @@ const CryptoAgreementStep = () => {
             p: 4,
             borderRadius: 3,
             maxWidth: 500,
+            minHeight: 400, // Fixed minimum height
             mx: "auto",
             position: "relative",
             overflow: "visible",
+            display: "flex",
+            flexDirection: "column",
           }}
         >
           {/* Green Shield Icon - appears when completed */}
@@ -917,87 +931,99 @@ const CryptoAgreementStep = () => {
             </Fade>
           )}
 
-          <Stack spacing={3}>
+          <Stack spacing={3} sx={{ flex: 1 }}>
             {/* Amount Field */}
-            {visibleFields >= 1 && (
-              <Fade in={true} timeout={800}>
-                <Box>
-                  <Typography variant="body2" sx={{ mb: 1 }}>
-                    Amount
-                  </Typography>
-                  <Typography variant="h4" fontWeight="bold">
-                    500 USDC
-                  </Typography>
-                </Box>
-              </Fade>
-            )}
-
-            {/* Receiver Field */}
-            {visibleFields >= 2 && (
-              <Fade in={true} timeout={800}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                  <Avatar
-                    sx={{
-                      width: 50,
-                      height: 50,
-                      bgcolor: "primary.main",
-                    }}
-                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face"
-                  >
-                    JS
-                  </Avatar>
+            <Box sx={{ minHeight: 60 }}>
+              {visibleFields >= 1 && (
+                <Fade in={true} timeout={800}>
                   <Box>
-                    <Typography variant="body2">Receiver</Typography>
-                    <Typography variant="h6">John Smith</Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ opacity: 0.7, fontSize: "0.8rem" }}
-                    >
-                      Senior ICP Developer
+                    <Typography variant="body2" sx={{ mb: 1 }}>
+                      Amount
+                    </Typography>
+                    <Typography variant="h4" fontWeight="bold">
+                      500 USDC
                     </Typography>
                   </Box>
-                </Box>
-              </Fade>
-            )}
+                </Fade>
+              )}
+            </Box>
+
+            {/* Receiver Field */}
+            <Box sx={{ minHeight: 70 }}>
+              {visibleFields >= 2 && (
+                <Fade in={true} timeout={800}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                    <Avatar
+                      sx={{
+                        width: 50,
+                        height: 50,
+                        bgcolor: "primary.main",
+                      }}
+                      src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face"
+                    >
+                      JS
+                    </Avatar>
+                    <Box>
+                      <Typography variant="body2">Receiver</Typography>
+                      <Typography variant="h6">John Smith</Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{ opacity: 0.7, fontSize: "0.8rem" }}
+                      >
+                        Senior ICP Developer
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Fade>
+              )}
+            </Box>
 
             {/* Type Field */}
-            {visibleFields >= 3 && (
-              <Fade in={true} timeout={800}>
-                <Box>
-                  <Typography variant="body2" sx={{ mb: 1 }}>
-                    Type
-                  </Typography>
-                  <Chip label="Escrow" variant="outlined" />
-                </Box>
-              </Fade>
-            )}
+            <Box sx={{ minHeight: 50 }}>
+              {visibleFields >= 3 && (
+                <Fade in={true} timeout={800}>
+                  <Box>
+                    <Typography variant="body2" sx={{ mb: 1 }}>
+                      Type
+                    </Typography>
+                    <Chip label="Escrow" variant="outlined" />
+                  </Box>
+                </Fade>
+              )}
+            </Box>
 
             {/* Staking Time Field */}
-            {visibleFields >= 4 && (
-              <Fade in={true} timeout={800}>
-                <Box>
-                  <Typography variant="body2" sx={{ mb: 1 }}>
-                    Staking Time
-                  </Typography>
-                  <Typography variant="h6">30 days</Typography>
+            <Box sx={{ minHeight: 50 }}>
+              {visibleFields >= 4 && (
+                <Fade in={true} timeout={800}>
+                  <Box>
+                    <Typography variant="body2" sx={{ mb: 1 }}>
+                      Staking Time
+                    </Typography>
+                    <Typography variant="h6">30 days</Typography>
+                  </Box>
+                </Fade>
+              )}
+            </Box>
+
+            {/* Conditions Field */}
+            <Box sx={{ minHeight: 60 }}>
+              {visibleFields >= 5 && (
+                <Fade in={true} timeout={800}>
+                  <Box>
+                    <Typography variant="body2" sx={{ mb: 1 }}>
+                      Conditions
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontStyle: "italic" }}>
+                      "Build AI job match ICP canister in 30 days"
+                    </Typography>
                 </Box>
               </Fade>
             )}
 
-            {/* Conditions Field */}
-            {visibleFields >= 5 && (
-              <Fade in={true} timeout={800}>
-                <Box>
-                  <Typography variant="body2" sx={{ mb: 1 }}>
-                    Conditions
-                  </Typography>
-                  <Typography variant="body1" sx={{ fontStyle: "italic" }}>
-                    "Build AI job match ICP canister in 30 days"
-                  </Typography>
-                </Box>
-              </Fade>
-            )}
+</Box>
           </Stack>
+          
         </Card>
       </Container>
     </Box>
@@ -1458,8 +1484,6 @@ const SimpleFooter = () => {
 
 // Main Landing Page Component
 const LandingPage = () => {
-  
-
   const texts = [
     "Your AI Workforce Copilot",
     "AI Job match",
@@ -1468,8 +1492,6 @@ const LandingPage = () => {
   ];
   const typedText = useTypingAnimation(texts);
 
-
-  
   return (
     <Box>
       <Helmet>
@@ -1552,7 +1574,7 @@ const LandingPage = () => {
               minHeight: { xs: "3.5rem", md: "4.5rem" },
             }}
           >
-           {typedText}
+            {typedText}
           </Typography>
           <Typography
             variant="h5"
