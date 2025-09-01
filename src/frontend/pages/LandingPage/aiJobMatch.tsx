@@ -1549,7 +1549,7 @@ const LandingPage = () => {
               mb: 3,
               fontWeight: 700,
               fontSize: { xs: "2.5rem", md: "3.5rem" },
-              minHeight: { xs: "2.5rem", md: "3.5rem" },
+              minHeight: { xs: "3.5rem", md: "4.5rem" },
             }}
           >
            {typedText}
