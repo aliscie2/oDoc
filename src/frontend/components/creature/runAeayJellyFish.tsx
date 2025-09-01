@@ -340,20 +340,20 @@ const RunawayJellyfish = ({
   );
   const eyeDistance = LogoSvg
     ? isLookingAtCamera
-      ? 6
+      ? 15
       : 65
     : isMoving
-      ? 12
-      : 8;
+      ? 25
+      : 20;
   const eyeX = 255.5 + Math.cos(eyeAngle) * eyeDistance;
   const eyeY = 263.5 + Math.sin(eyeAngle) * eyeDistance;
   const pupilDistance = LogoSvg
     ? isLookingAtCamera
-      ? 3
+      ? 8
       : 60
     : isMoving
-      ? 6
-      : 4;
+      ? 15
+      : 12;
   const pupilX = 255.5 + Math.cos(eyeAngle) * pupilDistance;
   const pupilY = 263.5 + Math.sin(eyeAngle) * pupilDistance;
 
@@ -425,8 +425,8 @@ const RunawayJellyfish = ({
               : `scaleY(${(isMoving ? 1.1 : 1) * thinkingSquint})`,
             transformOrigin: `${eyeX}px ${eyeY}px`,
             transition: LogoSvg
-              ? "cx 0.8s ease-in-out, cy 0.8s ease-in-out, transform 0.3s ease-out"
-              : "transform 0.15s ease-out",
+              ? "cx 0.4s ease-out, cy 0.4s ease-out, transform 0.3s ease-out"
+              : "cx 0.2s ease-out, cy 0.2s ease-out, transform 0.15s ease-out",
           }}
         />
         <circle
@@ -440,8 +440,8 @@ const RunawayJellyfish = ({
               : `scaleY(${(isMoving ? 1.2 : 1) * thinkingSquint})`,
             transformOrigin: `${pupilX}px ${pupilY}px`,
             transition: LogoSvg
-              ? "cx 0.8s ease-in-out, cy 0.8s ease-in-out, transform 0.3s ease-out"
-              : "transform 0.15s ease-out",
+              ? "cx 0.4s ease-out, cy 0.4s ease-out, transform 0.3s ease-out"
+              : "cx 0.2s ease-out, cy 0.2s ease-out, transform 0.15s ease-out",
           }}
         />
       </>

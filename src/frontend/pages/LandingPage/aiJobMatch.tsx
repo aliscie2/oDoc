@@ -9,6 +9,7 @@ import {
   Handshake as HandshakeIcon,
   CheckCircle as CheckCircleIcon,
   YouTube,
+  Notifications,
 } from "@mui/icons-material";
 import { SvgIcon } from "@mui/material";
 import GitHubIcon from "@mui/icons-material/GitHub";
@@ -27,11 +28,13 @@ import {
   Box,
   Container,
   CardContent,
+  Badge,
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { Instagram } from "lucide-react";
 import { LinkedIn } from "@mui/icons-material";
+import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
 
 // Social Media Sharing Component
 const SocialMediaShare = () => {
@@ -259,7 +262,45 @@ const XIcon = (props: any) => (
   </SvgIcon>
 );
 
-// Typing Animation Hook
+// Typing Animation Hook for Hero Section
+const useHeroTypingAnimation = (texts: string[], speed = 100) => {
+  const [currentTextIndex, setCurrentTextIndex] = useState(0);
+  const [currentText, setCurrentText] = useState("");
+  const [isTyping, setIsTyping] = useState(true);
+
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+
+    if (isTyping) {
+      const targetText = texts[currentTextIndex];
+      if (currentText.length < targetText.length) {
+        timeout = setTimeout(() => {
+          setCurrentText(targetText.slice(0, currentText.length + 1));
+        }, speed);
+      } else {
+        // No waiting time - immediately start deleting
+        setIsTyping(false);
+      }
+    } else {
+      if (currentText.length > 0) {
+        timeout = setTimeout(() => {
+          // Delete from left to right by removing the first character
+          setCurrentText(currentText.slice(1));
+        }, speed / 2);
+      } else {
+        // No waiting time - immediately move to next text
+        setCurrentTextIndex((prev) => (prev + 1) % texts.length);
+        setIsTyping(true);
+      }
+    }
+
+    return () => clearTimeout(timeout);
+  }, [currentText, currentTextIndex, isTyping, texts, speed]);
+
+  return currentText;
+};
+
+// Typing Animation Hook for other components
 const useTypingAnimation = (texts: string[], speed = 50) => {
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
   const [currentText, setCurrentText] = useState("");
@@ -282,7 +323,8 @@ const useTypingAnimation = (texts: string[], speed = 50) => {
     } else {
       if (currentText.length > 0) {
         timeout = setTimeout(() => {
-          setCurrentText(currentText.slice(0, -1));
+          // Delete from left to right by removing the first character
+          setCurrentText(currentText.slice(1));
         }, speed / 2);
       } else {
         setCurrentTextIndex((prev) => (prev + 1) % texts.length);
@@ -326,47 +368,41 @@ const AIConversationStep = () => {
           </Typography>
         </Box>
 
-        <Card sx={{ p: 4, borderRadius: 3, maxWidth: 600, mx: "auto" }}>
-          <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
-            <SmartToy sx={{ mr: 2, fontSize: 32 }} />
-            <Typography variant="h6">AI Assistant</Typography>
-          </Box>
-
-          <TextField
-            fullWidth
-            value={typedText}
-            placeholder="Describe your needs..."
-            sx={{
-              "& .MuiInputBase-input": {
-                fontSize: "1.1rem",
-                fontFamily: "monospace",
-                paddingRight: "16px !important", // Add padding to prevent text overflow behind cursor
-              },
-              "& .MuiInputBase-root": {
-                paddingRight: "12px", // Ensure container has proper padding
-              },
-            }}
-            InputProps={{
-              readOnly: true,
-              endAdornment: (
-                <Box
-                  sx={{
-                    width: 2,
-                    height: 20,
-                    bgcolor: "primary.main",
-                    animation: "blink 1s infinite",
-                    marginLeft: "8px", // Add margin to create space between text and cursor
-                    flexShrink: 0, // Prevent cursor from shrinking
-                    "@keyframes blink": {
-                      "0%, 50%": { opacity: 1 },
-                      "51%, 100%": { opacity: 0 },
-                    },
-                  }}
-                />
-              ),
-            }}
-          />
-        </Card>
+        <RunawayJellyfish />
+        <TextField
+          fullWidth
+          value={typedText}
+          placeholder="Describe your needs..."
+          sx={{
+            "& .MuiInputBase-input": {
+              fontSize: "1.1rem",
+              fontFamily: "monospace",
+              paddingRight: "16px !important", // Add padding to prevent text overflow behind cursor
+            },
+            "& .MuiInputBase-root": {
+              paddingRight: "12px", // Ensure container has proper padding
+            },
+          }}
+          InputProps={{
+            readOnly: true,
+            endAdornment: (
+              <Box
+                sx={{
+                  width: 2,
+                  height: 20,
+                  bgcolor: "primary.main",
+                  animation: "blink 1s infinite",
+                  marginLeft: "8px", // Add margin to create space between text and cursor
+                  flexShrink: 0, // Prevent cursor from shrinking
+                  "@keyframes blink": {
+                    "0%, 50%": { opacity: 1 },
+                    "51%, 100%": { opacity: 0 },
+                  },
+                }}
+              />
+            ),
+          }}
+        />
       </Container>
     </Box>
   );
@@ -541,37 +577,51 @@ const EmailNotificationsStep = () => {
           </Typography>
         </Box>
 
-        <Card sx={{ p: 4, borderRadius: 3, maxWidth: 500, mx: "auto" }}>
-          <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
-            <Email sx={{ mr: 2, fontSize: 32 }} />
-            <Typography variant="h6">Inbox</Typography>
-          </Box>
-
-          <Box
+        <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
+          <Badge
+            badgeContent={1}
             sx={{
-              border: "1px solid",
-              borderColor: "divider",
-              borderRadius: 2,
-              p: 2,
-              mb: 2,
+              "& .MuiBadge-badge": {
+                backgroundColor: "#f44336",
+                color: "white",
+                fontWeight: "bold",
+                fontSize: "0.75rem",
+                minWidth: "20px",
+                height: "20px",
+                borderRadius: "10px",
+              },
+              mr: 2,
             }}
           >
-            <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
-              From: alert@{window.location.hostname}
-            </Typography>
-            <Typography
-              variant="h6"
-              sx={{
-                transition: "opacity 0.5s ease",
-                minHeight: "2rem",
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
-              {emails[currentEmailIndex]}
-            </Typography>
-          </Box>
-        </Card>
+            <Email sx={{ fontSize: 32, color: "primary.main" }} />
+          </Badge>
+          <Typography variant="h6">Inbox</Typography>
+        </Box>
+
+        <Box
+          sx={{
+            border: "1px solid",
+            borderColor: "divider",
+            borderRadius: 2,
+            p: 2,
+            mb: 2,
+          }}
+        >
+          <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
+            From: alert@{window.location.hostname}
+          </Typography>
+          <Typography
+            variant="h6"
+            sx={{
+              transition: "opacity 0.5s ease",
+              minHeight: "2rem",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            {emails[currentEmailIndex]}
+          </Typography>
+        </Box>
       </Container>
     </Box>
   );
@@ -1408,6 +1458,18 @@ const SimpleFooter = () => {
 
 // Main Landing Page Component
 const LandingPage = () => {
+  
+
+  const texts = [
+    "Your AI Workforce Copilot",
+    "AI Job match",
+    "Crypto agreements",
+    "Team mangment",
+  ];
+  const typedText = useTypingAnimation(texts);
+
+
+  
   return (
     <Box>
       <Helmet>
@@ -1487,9 +1549,10 @@ const LandingPage = () => {
               mb: 3,
               fontWeight: 700,
               fontSize: { xs: "2.5rem", md: "3.5rem" },
+              minHeight: { xs: "2.5rem", md: "3.5rem" },
             }}
           >
-            Your AI Workforce Copilot
+           {typedText}
           </Typography>
           <Typography
             variant="h5"
