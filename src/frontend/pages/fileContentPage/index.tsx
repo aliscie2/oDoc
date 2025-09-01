@@ -182,7 +182,7 @@ function FileContentPage() {
   }, 250);
 
   // Show loading spinner while files are being loaded or fetching from backend
-  if ((!inited && isLoggedIn) || fetchingFromBackend) {
+  if ((!inited && isLoggedIn && !currentFile) || fetchingFromBackend) {
     return (
       <Box
         display="flex"
@@ -196,7 +196,7 @@ function FileContentPage() {
   }
 
   // Check for 404 case - only show 404 if initialization is complete, not fetching, and file is still not found
-  if (inited && !currentFile && !fetchingFromBackend) {
+  if (!currentFile || inited  && !fetchingFromBackend) {
     return (
       <Box
         display="flex"
@@ -210,16 +210,16 @@ function FileContentPage() {
   }
 
   const editable =
-    currentFile?.author === profile.id ||
+    currentFile?.author === profile?.id ||
     Object.keys(currentFile.permission)[0] === "CanUpdate" ||
     currentFile.users_permissions.some(
       ([userId, permissions]: [string, any]) =>
         userId === profile.id && permissions.CanUpdate,
     );
 
-  const isAuthor = currentFile.author === profile.id;
+  const isAuthor = currentFile?.author === profile?.id;
 
-  // logger({ files_content:files_content[currentFile.id] });
+
 
   return (
     <div style={{ marginTop: "3px", marginLeft: "10%", marginRight: "10%" }}>
