@@ -556,22 +556,85 @@ const JobMatchingStep = () => {
   );
 };
 
+// Email Inbox Component
+const EmailInboxItem = ({
+  from,
+  subject,
+  preview,
+  time,
+  isUnread = false,
+}: {
+  from: string;
+  subject: string;
+  preview: string;
+  time: string;
+  isUnread?: boolean;
+}) => {
+  return (
+    <Box
+      sx={{
+        border: "1px solid",
+        borderColor: "divider",
+        borderRadius: 2,
+        p: 2,
+        mb: 2,
+        backgroundColor: "background.paper",
+      }}
+    >
+      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+          From: {from}
+        </Typography>
+        <Typography variant="caption" sx={{ color: "text.secondary" }}>
+          {time}
+        </Typography>
+      </Box>
+      <Typography variant="h6" sx={{ mb: 0.5 }}>
+        {subject}
+      </Typography>
+      <Typography 
+        variant="body2" 
+        sx={{ 
+          color: "text.secondary",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap"
+        }}
+      >
+        {preview}
+      </Typography>
+    </Box>
+  );
+};
+
 // Step 3: Email Notifications Component
 const EmailNotificationsStep = () => {
-  const [currentEmailIndex, setCurrentEmailIndex] = useState(0);
-
   const emails = [
-    "Looking for AI agents developer",
-    "Looking to farming co-founder",
+    {
+      from: `alert@${window.location.hostname}`,
+      subject: "Looking for AI agents developer",
+      preview: "New job match found! A startup is seeking an experienced AI developer for their autonomous agent platform...",
+      time: "2 min ago",
+    },
+    {
+      from: `alert@${window.location.hostname}`,
+      subject: "Looking for farming co-founder",
+      preview: "Perfect match alert! An agricultural tech startup needs a co-founder with your background...",
+      time: "1 hour ago",
+    },
+    {
+      from: `notifications@${window.location.hostname}`,
+      subject: "Weekly job digest",
+      preview: "Here are 5 new opportunities that match your profile this week...",
+      time: "1 day ago",
+    },
+    {
+      from: `alert@${window.location.hostname}`,
+      subject: "Rust developer position available",
+      preview: "Urgent: Web3 company needs senior Rust developer for DeFi project...",
+      time: "2 days ago",
+    },
   ];
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentEmailIndex((prev) => (prev + 1) % emails.length);
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, []);
 
   return (
     <Box
@@ -583,13 +646,13 @@ const EmailNotificationsStep = () => {
             3. Email Notifications
           </Typography>
           <Typography variant="body1" sx={{ opacity: 0.7 }}>
-            If you don't like current matches, wait for an email alert.
+            If you don't like current matches, wait for an email alert when a good match is found.
           </Typography>
         </Box>
 
         <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
           <Badge
-            badgeContent={1}
+            badgeContent={2}
             sx={{
               "& .MuiBadge-badge": {
                 backgroundColor: "#f44336",
@@ -608,28 +671,21 @@ const EmailNotificationsStep = () => {
           <Typography variant="h6">Inbox</Typography>
         </Box>
 
-        <Box
-          sx={{
-            border: "1px solid",
-            borderColor: "divider",
-            borderRadius: 2,
-            p: 2,
-            mb: 2,
-          }}
-        >
-          <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
-            From: alert@{window.location.hostname}
-          </Typography>
-          <Typography
-            variant="h6"
-            sx={{
-              transition: "opacity 0.5s ease",
-              minHeight: "2rem",
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
-            {emails[currentEmailIndex]}
+        <Box>
+          {emails.map((email, index) => (
+            <EmailInboxItem
+              key={index}
+              from={email.from}
+              subject={email.subject}
+              preview={email.preview}
+              time={email.time}
+            />
+          ))}
+        </Box>
+
+        <Box sx={{ textAlign: "center", mt: 3 }}>
+          <Typography variant="body2" sx={{ opacity: 0.6 }}>
+            {emails.length} messages
           </Typography>
         </Box>
       </Container>
@@ -1017,13 +1073,11 @@ const CryptoAgreementStep = () => {
                     <Typography variant="body1" sx={{ fontStyle: "italic" }}>
                       "Build AI job match ICP canister in 30 days"
                     </Typography>
-                </Box>
-              </Fade>
-            )}
-
-</Box>
+                  </Box>
+                </Fade>
+              )}
+            </Box>
           </Stack>
-          
         </Card>
       </Container>
     </Box>

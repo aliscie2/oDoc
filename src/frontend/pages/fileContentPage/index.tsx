@@ -196,7 +196,7 @@ function FileContentPage() {
   }
 
   // Check for 404 case - only show 404 if initialization is complete, not fetching, and file is still not found
-  if (!currentFile || inited  && !fetchingFromBackend) {
+  if (!currentFile || (inited && !fetchingFromBackend)) {
     return (
       <Box
         display="flex"
@@ -218,8 +218,6 @@ function FileContentPage() {
     );
 
   const isAuthor = currentFile?.author === profile?.id;
-
-
 
   return (
     <div style={{ marginTop: "3px", marginLeft: "10%", marginRight: "10%" }}>
