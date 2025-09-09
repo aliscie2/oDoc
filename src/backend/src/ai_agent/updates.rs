@@ -39,15 +39,17 @@ pub async fn ask_ai(
     if current_credits < credit_cost {
         return Err("Insufficient credits for this request".to_string());
     }
-
+    let max_tokens = if quick { 500 } else { 8192 };
     // Use current Claude 3.5 models
     let model = if quick {
         "claude-3-haiku-20240307"
+    } else if  prompt.split_whitespace().count() > 700 {
+        "claude-3-7-sonnet-latest"
     } else {
         "claude-3-5-sonnet-20241022"
-    };
-    // claude-3-5-sonnet-20241022
-    let max_tokens = if quick { 1000 } else { 4000 };
+    };    
+
+    
 
     // Build request body according to Anthropic API spec
     let request_body = json!({
