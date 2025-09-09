@@ -530,7 +530,6 @@ const CalendarStep = () => {
               sx={{ 
                 fontWeight: 700, 
                 mb: 2,
-                color: theme.palette.primary.main,
                 fontSize: { xs: '2rem', md: '3rem' }
               }}
             >

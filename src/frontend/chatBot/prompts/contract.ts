@@ -69,7 +69,7 @@ Each response should follow this exact format:
 ## Agreement System (Like Building Blocks):
 **Structure**: Status + Participants + Amount + Conditions + Metadata
 **Dev Tasks**: amount=0, receiver="Username", descriptive IDs (ai_credits_feature), tech details in cells
-
+## Make sure Conditions (AKA cells) have data including linkes from the prompt message.
 ### Promise Management Actions:
 
 #### Deleting Promises

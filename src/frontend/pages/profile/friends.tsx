@@ -94,15 +94,7 @@ const FriendsList: React.FC<FriendsListProps> = ({ friends, currentUser }) => {
               />
               <ListItemText
                 primary={friend.name}
-                secondary={
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Chip
-                      label={friend.description}
-                      size="small"
-                      color="success"
-                    />
-                  </Stack>
-                }
+                secondary={friend.description}
               />
             </ListItem>
           );
