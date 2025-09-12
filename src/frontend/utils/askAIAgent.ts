@@ -1,3 +1,24 @@
+function calculateAICost(prompt: string, response: string, quick: boolean): number {
+  // Rough token estimation: ~4 characters per token for English text
+  const estimateTokens = (text: string): number => Math.ceil(text.length / 4);
+  
+  const inputTokens = estimateTokens(prompt);
+  const outputTokens = estimateTokens(response);
+  
+  if (quick) {
+    // llama-3.1-8b-instant pricing (example rates)
+    const inputCostPerToken = 0.00000005;  // $0.05 per 1M tokens
+    const outputCostPerToken = 0.00000005;
+    return (inputTokens * inputCostPerToken) + (outputTokens * outputCostPerToken);
+  } else {
+    // llama-3.3-70b-versatile pricing (example rates)
+    const inputCostPerToken = 0.00000059;  // $0.59 per 1M tokens  
+    const outputCostPerToken = 0.00000079; // $0.79 per 1M tokens
+    return (inputTokens * inputCostPerToken) + (outputTokens * outputCostPerToken);
+  }
+}
+
+
 interface AiResponse {
   remainingCredits: number;
   response: string;
@@ -11,7 +32,8 @@ async function ask_ai(
   prompt: string,
   systemPrompt: string,
   quick: boolean,
-  apiKey: string
+  apiKey: string,
+  current_credits: number
 ): Promise<AiResponse> {
   const model = quick ? "llama-3.1-8b-instant" : "llama-3.3-70b-versatile";
   const maxTokens = quick ? 500 : 8192;
@@ -62,7 +84,7 @@ async function ask_ai(
   }
 
   return {
-    Ok: {response: responseText, remaining_credits:0.7}
+    Ok: {response: responseText, remaining_credits:current_credits - calculateAICost(prompt,responseText,quick)}
   };
 }
 

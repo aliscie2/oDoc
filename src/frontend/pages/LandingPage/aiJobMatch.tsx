@@ -32,6 +32,7 @@ import {
 import { Instagram } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Helmet } from "react-helmet-async";
+import { Link } from "react-router";
 
 // Social Media Sharing Component
 const SocialMediaShare = () => {
@@ -1579,7 +1580,7 @@ const SimpleFooter = () => {
               textAlign: { xs: "center", md: "left" },
             }}
           >
-            <Box>
+            {/* <Box>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
                 Platform
               </Typography>
@@ -1615,7 +1616,7 @@ const SimpleFooter = () => {
                   AI Matching
                 </Typography>
               </Stack>
-            </Box>
+            </Box> */}
 
             <Box>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
@@ -1629,10 +1630,12 @@ const SimpleFooter = () => {
                     cursor: "pointer",
                     "&:hover": { opacity: 1 },
                   }}
+                  component={Link}
+                  to='/white_paper'
                 >
-                  Documentation
+                  white paper
                 </Typography>
-                <Typography
+                {/* <Typography
                   variant="body2"
                   sx={{
                     opacity: 0.7,
@@ -1641,8 +1644,8 @@ const SimpleFooter = () => {
                   }}
                 >
                   API
-                </Typography>
-                <Typography
+                </Typography> */}
+                {/* <Typography
                   variant="body2"
                   sx={{
                     opacity: 0.7,
@@ -1651,7 +1654,7 @@ const SimpleFooter = () => {
                   }}
                 >
                   Support
-                </Typography>
+                </Typography> */}
               </Stack>
             </Box>
 
@@ -1704,7 +1707,7 @@ const SimpleFooter = () => {
             reserved.
           </Typography>
 
-          <Box sx={{ display: "flex", gap: 3 }}>
+          {/* <Box sx={{ display: "flex", gap: 3 }}>
             <Typography
               variant="body2"
               sx={{
@@ -1725,7 +1728,7 @@ const SimpleFooter = () => {
             >
               Terms of Service
             </Typography>
-          </Box>
+          </Box> */}
         </Box>
       </Container>
     </Box>

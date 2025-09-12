@@ -7,6 +7,7 @@ interface AIMessageConfig {
   classify: boolean;
   promptType: string;
   skipCreditUpdate?: boolean;
+  credits: number,
 }
 
 interface AIMessageResult<T = any> {
@@ -25,6 +26,7 @@ export class AIService {
   async sendAIMessage<T = any>(
     config: AIMessageConfig,
     abortSignal?: AbortSignal,
+    
   ): Promise<AIMessageResult<T>> {
     console.log({
       x: config.prompt,
@@ -36,6 +38,7 @@ export class AIService {
       JSON_PROMPT + config.promptType,
       config.classify, // classify=true means quick=true (for classification)
       import.meta.env.VITE_GROQ_API_KEY,
+      config.credits
     );
     console.log("AI Response: ", aiResponse);
 
@@ -97,7 +100,9 @@ export class AIService {
     promptType: string,
     classify: boolean = false,
     skipCreditUpdate: boolean = false,
+      credits: number,
   ): AIMessageConfig {
-    return { prompt, classify, promptType, skipCreditUpdate };
+      return { prompt, classify, promptType, skipCreditUpdate, credits };
+
   }
 }

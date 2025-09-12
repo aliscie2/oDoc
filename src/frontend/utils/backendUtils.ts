@@ -1,8 +1,8 @@
 import { ActorSubclass, HttpAgent, Identity, Actor } from "@dfinity/agent";
 import { AuthClient } from "@dfinity/auth-client";
-import { canisterId, idlFactory } from "../../declarations/backend";
-import { backend } from "../../declarations/backend";
-import { _SERVICE } from "../../declarations/backend/backend.did";
+import { canisterId, idlFactory } from "$/declarations/backend";
+import { backend } from "$/declarations/backend";
+import { _SERVICE } from "$/declarations/backend/backend.did";
 import getLedgerActor from "./ckudc_ledger_actor";
 
 // Create a smart backend actor that works with both yarn start and dfx deploy

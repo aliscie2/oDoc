@@ -158,7 +158,7 @@ const AICreditsComponent = () => {
             color: getColor(credits),
           }}
         >
-          {credits.toFixed(1)}
+          {credits.toFixed(3)}
         </Typography>
       </Box>
 

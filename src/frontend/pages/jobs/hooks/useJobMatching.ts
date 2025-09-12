@@ -115,6 +115,7 @@ export const useJobMatching = (currentJob: Job | null) => {
           JOB_MATCHING_PROMPT,
           false, // quick parameter
           import.meta.env.VITE_GROQ_API_KEY,
+          credits,
         );
 
         if (!aiResponse || "Err" in aiResponse) {
