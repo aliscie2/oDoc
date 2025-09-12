@@ -25,11 +25,17 @@ export class AIService {
     config: AIMessageConfig,
     abortSignal?: AbortSignal,
   ): Promise<AIMessageResult<T>> {
+    console.log({
+      x:config.prompt,
+      y:JSON_PROMPT + config.promptType,
+      z:config.classify, // classify=true means quick=true (for classification)
+
+    })
     const aiResponse = await this.backendActor.ask_ai(
       config.prompt,
       JSON_PROMPT + config.promptType,
       config.classify, // classify=true means quick=true (for classification)
-      import.meta.env.VITE_ANTHROPIC_API_KEY,
+      import.meta.env.VITE_GROQ_API_KEY,
     );
     console.log("AI Response: ", aiResponse);
 

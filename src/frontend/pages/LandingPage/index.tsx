@@ -63,9 +63,10 @@ const StatsSection = () => {
     users: 0,
     activeUsers: 0,
     totalDeposit: 0,
+    jobsCount: 0,
+    talentsCount: 0,
   });
   const [isVisible, setIsVisible] = useState(false);
-  // Using direct backendActor and ckUSDCActor imports
   const statsRef = useRef(null);
 
   useEffect(() => {
@@ -100,10 +101,9 @@ const StatsSection = () => {
           backendActor.get_sns_status(),
           getckUsdcBalance(ckUSDCActor, canisterId),
         ]);
-        console.log({ snsResponse, balance });
 
         if (snsResponse.Ok) {
-          const { number_users, active_users } = snsResponse.Ok;
+          const { number_users, active_users, jobs_count, talents_count } = snsResponse.Ok;
           animateCount(number_users, (val) =>
             setStats((prev) => ({ ...prev, users: val })),
           );
@@ -112,6 +112,12 @@ const StatsSection = () => {
           );
           animateCount(Number(balance) / 1000000, (val) =>
             setStats((prev) => ({ ...prev, totalDeposit: val })),
+          );
+          animateCount(jobs_count, (val) =>
+            setStats((prev) => ({ ...prev, jobsCount: val })),
+          );
+          animateCount(talents_count, (val) =>
+            setStats((prev) => ({ ...prev, talentsCount: val })),
           );
         }
       } catch (error) {
@@ -123,9 +129,32 @@ const StatsSection = () => {
   }, [isVisible, backendActor, ckUSDCActor]);
 
   const statsData = [
-    { value: stats.users, label: "Total Users" },
-    { value: stats.activeUsers, label: "Active Users" },
-    { value: stats.totalDeposit, label: "Total Deposits", prefix: "$" },
+    { 
+      value: stats.users, 
+      label: "Total Users", 
+      icon: <PersonAdd sx={{ color: "primary.main", fontSize: "1.2rem", mb: 0.5 }} />
+    },
+    { 
+      value: stats.activeUsers, 
+      label: "Active Users", 
+      icon: <TrendingUp sx={{ color: "success.main", fontSize: "1.2rem", mb: 0.5 }} />
+    },
+    { 
+      value: stats.totalDeposit, 
+      label: "Total Deposits", 
+      prefix: "$",
+      icon: <Payment sx={{ color: "warning.main", fontSize: "1.2rem", mb: 0.5 }} />
+    },
+    { 
+      value: stats.jobsCount, 
+      label: "Jobs", 
+      icon: <Assignment sx={{ color: "info.main", fontSize: "1.2rem", mb: 0.5 }} />
+    },
+    { 
+      value: stats.talentsCount, 
+      label: "Talents", 
+      icon: <Star sx={{ color: "secondary.main", fontSize: "1.2rem", mb: 0.5 }} />
+    },
   ];
 
   return (
@@ -142,7 +171,8 @@ const StatsSection = () => {
     >
       <Grid container spacing={2} textAlign="center">
         {statsData.map((stat, i) => (
-          <Grid item xs={4} key={i}>
+          <Grid item xs={2.4} key={i}>
+            {stat.icon}
             <Typography variant="h5" fontWeight="bold" color="primary">
               {stat.prefix || ""}
               {stat.value.toLocaleString()}
@@ -160,6 +190,7 @@ const StatsSection = () => {
     </Box>
   );
 };
+
 
 const FeatureSection = ({ title, icon, children, reversed = false }) => {
   const isMobile = useMediaQuery("(max-width:900px)");

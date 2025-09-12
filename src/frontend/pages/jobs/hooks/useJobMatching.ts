@@ -103,11 +103,19 @@ export const useJobMatching = (currentJob: Job | null) => {
         const compressedCurrentJob = compressJobForMatching(currentJob);
         const { id: _id, ...jobWithoutId } = compressedCurrentJob;
 
+
+        console.log({
+          x:`candidates: ${JSON.stringify(compressedCandidates)}, Current: ${JSON.stringify(jobWithoutId)}`,
+          y:JOB_MATCHING_PROMPT,
+          z:false, // quick parameter
+        })
+
+
         const aiResponse = await backendActor.ask_ai(
           `candidates: ${JSON.stringify(compressedCandidates)}, Current: ${JSON.stringify(jobWithoutId)}`,
           JOB_MATCHING_PROMPT,
           false, // quick parameter
-          import.meta.env.VITE_ANTHROPIC_API_KEY,
+          import.meta.env.VITE_GROQ_API_KEY,
         );
 
         if (!aiResponse || "Err" in aiResponse) {
