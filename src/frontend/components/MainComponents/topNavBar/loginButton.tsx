@@ -13,6 +13,7 @@ interface LoginButtonProps {
 const LoginButton: React.FC<LoginButtonProps> = ({
   isMobile = false,
   sx = {},
+  children = null,
 }) => {
   const { login } = useAuth();
   const { isFetching } = useSelector((state: RootState) => state.uiState);
@@ -27,6 +28,7 @@ const LoginButton: React.FC<LoginButtonProps> = ({
       />
     );
   }
+  const defualtText = isMobile ? "Get started" : "Login with Internet Identity";
 
   return (
     <Button
@@ -42,7 +44,6 @@ const LoginButton: React.FC<LoginButtonProps> = ({
       sx={{
         fontWeight: 600,
         textTransform: "none",
-        height: "100%",
         minHeight: 48,
         px: isMobile ? 2 : 3,
         fontSize: isMobile ? "0.875rem" : "1rem",
@@ -60,7 +61,7 @@ const LoginButton: React.FC<LoginButtonProps> = ({
         ...sx,
       }}
     >
-      {isMobile ? "Get started" : "Login with Internet Identity"}
+      {children?children:defualtText}
     </Button>
   );
 };

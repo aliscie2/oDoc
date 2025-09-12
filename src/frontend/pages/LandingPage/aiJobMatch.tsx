@@ -1,4 +1,5 @@
 import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
+import LoginButton from "@/components/MainComponents/topNavBar/loginButton";
 import {
   CheckCircle as CheckCircleIcon,
   Email,
@@ -29,7 +30,7 @@ import {
   useTheme,
 } from "@mui/material";
 import { Instagram } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Helmet } from "react-helmet-async";
 
 // Social Media Sharing Component
@@ -501,6 +502,134 @@ const EmailNotificationsStep = () => {
     </Box>
   );
 };
+
+
+// Call to Action Section
+const CallToActionStep = () => {
+  const theme = useTheme();
+  
+  return (
+    <Box
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        py: 8,
+      }}
+    >
+      <Container maxWidth="lg">
+        <Box sx={{ textAlign: "center", mb: 6 }}>
+          <Typography variant="h3" sx={{ mb: 2, fontWeight: 600 }}>
+            Ready to Get Started?
+          </Typography>
+          <Typography variant="body1" sx={{ opacity: 0.7 }}>
+            Choose your path and join the future of work
+          </Typography>
+        </Box>
+
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+            gap: 4,
+            maxWidth: 900,
+            mx: "auto",
+          }}
+        >
+          {/* Job Seeker Card */}
+          <Card
+            sx={{
+              p: 6,
+              borderRadius: 3,
+              textAlign: "center",
+              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              color: "white",
+              cursor: "pointer",
+              transition: "all 0.3s ease",
+              border: "none",
+              "&:hover": {
+                transform: "translateY(-8px)",
+                boxShadow: "0 20px 40px rgba(102, 126, 234, 0.3)",
+              },
+            }}
+          >
+            <Typography variant="h4" sx={{ mb: 3, fontWeight: 700 }}>
+              Find Your Perfect Gig
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 4, opacity: 0.9 }}>
+              Join thousands of developers finding their dream jobs in the Web3 ecosystem
+            </Typography>
+            
+            <LoginButton 
+              sx={{ 
+                width: "100%",
+                backgroundColor: "rgba(255, 255, 255, 0.2)",
+                backdropFilter: "blur(10px)",
+                border: "1px solid rgba(255, 255, 255, 0.3)",
+                "&:hover": {
+                  backgroundColor: "rgba(255, 255, 255, 0.3)",
+                  transform: "none",
+                },
+              }}
+            >
+              Get Started as Job Seeker
+            </LoginButton>
+            
+            <Typography variant="caption" sx={{ display: "block", mt: 3, opacity: 0.8 }}>
+              Free to start • AI-powered matching
+            </Typography>
+          </Card>
+
+          {/* Employer Card */}
+          <Card
+            sx={{
+              p: 6,
+              borderRadius: 3,
+              textAlign: "center",
+              background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+              color: "white",
+              cursor: "pointer",
+              transition: "all 0.3s ease",
+              border: "none",
+              "&:hover": {
+                transform: "translateY(-8px)",
+                boxShadow: "0 20px 40px rgba(240, 147, 251, 0.3)",
+              },
+            }}
+          >
+            <Typography variant="h4" sx={{ mb: 3, fontWeight: 700 }}>
+              Find Perfect Talent
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 4, opacity: 0.9 }}>
+              Connect with top-tier developers and specialists for your next big project
+            </Typography>
+            
+            <LoginButton 
+              sx={{ 
+                width: "100%",
+                backgroundColor: "rgba(255, 255, 255, 0.2)",
+                backdropFilter: "blur(10px)",
+                border: "1px solid rgba(255, 255, 255, 0.3)",
+                "&:hover": {
+                  backgroundColor: "rgba(255, 255, 255, 0.3)",
+                  transform: "none",
+                },
+              }}
+            >
+              Get Started as Employer
+            </LoginButton>
+            
+            <Typography variant="caption" sx={{ display: "block", mt: 3, opacity: 0.8 }}>
+              Post projects • Smart contracts • Team management
+            </Typography>
+          </Card>
+        </Box>
+      </Container>
+    </Box>
+  );
+};
+
+
 
 const CalendarStep = () => {
   const theme = useTheme();
@@ -995,259 +1124,78 @@ const CryptoAgreementStep = () => {
 };
 
 const CryptoAgreementProofsStep = () => {
-  const [activeSection, setActiveSection] = useState(0);
-  const theme = useTheme();
+  const [activeIndex, setActiveIndex] = useState(0);
+  const containerRef = useRef(null);
 
   const proofs = [
-    {
-      title: "Proof of Existence",
-      subtitle: "You can't promise what you haven't deposited first",
-      description: "Deposit funds before making promises",
-      icon: "💰",
-      color: "#4CAF50",
-    },
-    {
-      title: "Proof of Stake",
-      subtitle:
-        "After 3 cancellations, your 4th promise will be staked for a long time",
-      description: "Build instant trust with upfront staking",
-      icon: "🔒",
-      color: "#FF9800",
-    },
-    {
-      title: "Proof of Cap",
-      subtitle:
-        "New users or frequent cancellers can't create oversized promises",
-      description: "Smart limits prevent oversized commitments",
-      icon: "📊",
-      color: "#2196F3",
-    },
-    {
-      title: "Proof of Reputation",
-      subtitle:
-        "Your Karma Score shows completed work, canceled jobs, and disputes resolved",
-      description: "Transparent reputation system",
-      icon: "⭐",
-      color: "#9C27B0",
-    },
+    { title: "Proof of Existence", subtitle: "Deposit funds before making promises", icon: "💰" },
+    { title: "Proof of Stake", subtitle: "Build trust with upfront staking", icon: "🔒" },
+    { title: "Proof of Cap", subtitle: "Smart limits prevent oversized commitments", icon: "📊" },
+    { title: "Proof of Reputation", subtitle: "Your track record shows transparently", icon: "⭐" }
   ];
 
-  const handleScroll = (e) => {
-    const sections = document.querySelectorAll(".proof-section");
-    const scrollY = window.scrollY + window.innerHeight / 2;
-
-    sections.forEach((section, index) => {
-      const rect = section.getBoundingClientRect();
-      const sectionTop = rect.top + window.scrollY;
-      const sectionBottom = sectionTop + rect.height;
-
-      if (scrollY >= sectionTop && scrollY <= sectionBottom) {
-        setActiveSection(index);
-      }
-    });
-  };
-
   useEffect(() => {
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    const handleScroll = () => {
+      const container = containerRef.current;
+      if (!container) return;
+
+      const rect = container.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      
+      if (rect.top <= 0 && rect.bottom >= windowHeight) {
+        const scrollProgress = Math.abs(rect.top) / (rect.height - windowHeight);
+        const newActiveIndex = Math.min(proofs.length - 1, Math.floor(scrollProgress * proofs.length));
+        setActiveIndex(newActiveIndex);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [proofs.length]);
 
   return (
-    <Box>
-      {/* Hero Section */}
-      <Box sx={{ textAlign: "center", py: { xs: 8, md: 12 }, px: 3 }}>
-        <Typography
-          variant="h2"
-          sx={{
-            fontWeight: 700,
-            mb: 3,
-            fontSize: { xs: "2.5rem", md: "4rem" },
-          }}
-        >
-          Crypto Agreement Proofs
-        </Typography>
-        <Typography
-          variant="h5"
-          sx={{ opacity: 0.7, maxWidth: 600, mx: "auto", fontWeight: 300 }}
-        >
-          The blockchain proof system that'll take you places
-        </Typography>
-      </Box>
-
-      {/* Proof Sections */}
-      {proofs.map((proof, index) => (
-        <Box
-          key={index}
-          className="proof-section"
-          sx={{
-            minHeight: "100vh",
-            display: "flex",
-            alignItems: "center",
-            px: 3,
-            position: "relative",
-            "&::before": {
-              content: '""',
-              position: "absolute",
-              left: 0,
-              top: 0,
-              right: 0,
-              bottom: 0,
-              background:
-                theme.palette.mode === "dark"
-                  ? `linear-gradient(135deg, ${proof.color}15, transparent)`
-                  : `linear-gradient(135deg, ${proof.color}08, transparent)`,
-              opacity: activeSection === index ? 1 : 0,
-              transition: "opacity 0.8s ease",
-            },
-          }}
-        >
-          <Container maxWidth="lg">
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: { xs: 4, md: 8 },
-                flexDirection: {
-                  xs: "column",
-                  md: index % 2 === 0 ? "row" : "row-reverse",
-                },
-              }}
-            >
-              {/* Icon Side */}
+    <Box ref={containerRef} sx={{ height: '400vh', py: 8 }}>
+      <Box sx={{ position: 'sticky', top: '20vh', height: '60vh' }}>
+        <Container maxWidth="md">
+          <Typography variant="h2" sx={{ textAlign: 'center', mb: 8, fontWeight: 700 }}>
+            Crypto Agreement Proofs
+          </Typography>
+          
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            {proofs.map((proof, index) => (
               <Box
+                key={index}
                 sx={{
-                  flex: 1,
-                  display: "flex",
-                  justifyContent: "center",
-                  transform:
-                    activeSection === index ? "scale(1)" : "scale(0.9)",
-                  opacity: activeSection === index ? 1 : 0.5,
-                  transition: "all 0.8s ease",
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 3,
+                  p: 3,
+                  borderRadius: 2,
+                  opacity: activeIndex === index ? 1 : 0.3,
+                  transform: activeIndex === index ? 'scale(1.05)' : 'scale(1)',
+                  transition: 'all 0.5s ease'
                 }}
               >
-                <Box
-                  sx={{
-                    width: { xs: 120, md: 200 },
-                    height: { xs: 120, md: 200 },
-                    borderRadius: "50%",
-                    background:
-                      theme.palette.mode === "dark"
-                        ? `linear-gradient(135deg, ${proof.color}25, ${proof.color}10)`
-                        : `linear-gradient(135deg, ${proof.color}20, ${proof.color}08)`,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: { xs: "3rem", md: "5rem" },
-                    border: `2px solid ${proof.color}30`,
-                    backdropFilter: "blur(10px)",
-                    boxShadow:
-                      theme.palette.mode === "dark"
-                        ? `0 10px 30px ${proof.color}20`
-                        : `0 10px 30px ${proof.color}15`,
-                  }}
-                >
+                <Box sx={{ fontSize: '2.5rem', flexShrink: 0 }}>
                   {proof.icon}
                 </Box>
+                
+                <Box>
+                  <Typography variant="h5" sx={{ mb: 1, fontWeight: 600 }}>
+                    {proof.title}
+                  </Typography>
+                  <Typography variant="body1" sx={{ opacity: 0.8 }}>
+                    {proof.subtitle}
+                  </Typography>
+                </Box>
               </Box>
-
-              {/* Content Side */}
-              <Box
-                sx={{
-                  flex: 1,
-                  transform:
-                    activeSection === index
-                      ? "translateY(0)"
-                      : "translateY(20px)",
-                  opacity: activeSection === index ? 1 : 0.6,
-                  transition: "all 0.8s ease",
-                }}
-              >
-                <Typography
-                  variant="h3"
-                  sx={{
-                    fontWeight: 700,
-                    mb: 2,
-                    color: proof.color,
-                    fontSize: { xs: "2rem", md: "3rem" },
-                  }}
-                >
-                  {proof.title}
-                </Typography>
-                <Typography
-                  variant="h5"
-                  sx={{
-                    mb: 3,
-                    fontWeight: 400,
-                    lineHeight: 1.4,
-                    opacity: 0.9,
-                    fontSize: { xs: "1.25rem", md: "1.5rem" },
-                  }}
-                >
-                  {proof.subtitle}
-                </Typography>
-                <Typography
-                  variant="body1"
-                  sx={{
-                    opacity: 0.7,
-                    fontSize: { xs: "1rem", md: "1.125rem" },
-                  }}
-                >
-                  {proof.description}
-                </Typography>
-              </Box>
-            </Box>
-          </Container>
-        </Box>
-      ))}
-
-      {/* Bottom Features */}
-      <Box
-        sx={{
-          py: 8,
-          textAlign: "center",
-          borderTop:
-            theme.palette.mode === "dark"
-              ? "1px solid rgba(255,255,255,0.1)"
-              : "1px solid rgba(0,0,0,0.1)",
-        }}
-      >
-        <Typography variant="h4" sx={{ mb: 6, fontWeight: 600 }}>
-          Built on Blockchain Technology
-        </Typography>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            gap: { xs: 4, md: 8 },
-            flexWrap: "wrap",
-            maxWidth: 800,
-            mx: "auto",
-          }}
-        >
-          {[
-            { icon: "🔐", text: "Immutable Records" },
-            { icon: "⚡", text: "Instant Verification" },
-            { icon: "🌐", text: "Decentralized Trust" },
-            { icon: "📈", text: "Transparent Metrics" },
-          ].map((feature, index) => (
-            <Box key={index} sx={{ textAlign: "center" }}>
-              <Typography variant="h3" sx={{ mb: 1 }}>
-                {feature.icon}
-              </Typography>
-              <Typography
-                variant="body1"
-                sx={{ opacity: 0.7, fontWeight: 500 }}
-              >
-                {feature.text}
-              </Typography>
-            </Box>
-          ))}
-        </Box>
+            ))}
+          </Box>
+        </Container>
       </Box>
     </Box>
   );
 };
-
 // Step 7: Project Management Component
 const ProjectManagementStep = () => {
   const [currentContract, setCurrentContract] = useState(0);
@@ -1902,6 +1850,7 @@ const LandingPage = () => {
       <JobMatchingStep />
 
       <EmailNotificationsStep />
+      <CallToActionStep/>
 
       <CalendarStep />
 
