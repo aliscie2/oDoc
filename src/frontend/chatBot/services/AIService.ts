@@ -1,3 +1,4 @@
+import ask_ai from "@/utils/askAIAgent";
 import { textToJson } from "../../pages/jobs/utils/processResponseJobs";
 
 // AI Message Service Types
@@ -30,7 +31,7 @@ export class AIService {
       y: JSON_PROMPT + config.promptType,
       z: config.classify, // classify=true means quick=true (for classification)
     });
-    const aiResponse = await this.backendActor.ask_ai(
+    const aiResponse = await ask_ai(
       config.prompt,
       JSON_PROMPT + config.promptType,
       config.classify, // classify=true means quick=true (for classification)

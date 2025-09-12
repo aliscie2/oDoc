@@ -237,7 +237,9 @@ export const login = async (): Promise<boolean> => {
     client.login({
       maxTimeToLive: BigInt(365 * 24 * 60 * 60 * 1000000000),
       identityProvider,
-      derivationOrigin: "https://odoc.app",
+      derivationOrigin: import.meta.env.VITE_DFX_NETWORK === "ic" 
+  ? "https://odoc.app" 
+  : window.location.origin,
       onSuccess: async () => {
         try {
           await initializeSmartActors();

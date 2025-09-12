@@ -10,6 +10,7 @@ import {
 } from "../utils/jobMatchingPrompt";
 import { mockJobMatchResponse } from "../../../chatBot/mocks/mockJobMatches";
 import { textToJson } from "../utils/processResponseJobs";
+import ask_ai from "@/utils/askAIAgent";
 
 interface AIMatchResponse {
   candidate_id: string;
@@ -109,7 +110,7 @@ export const useJobMatching = (currentJob: Job | null) => {
           z: false, // quick parameter
         });
 
-        const aiResponse = await backendActor.ask_ai(
+        const aiResponse = await ask_ai(
           `candidates: ${JSON.stringify(compressedCandidates)}, Current: ${JSON.stringify(jobWithoutId)}`,
           JOB_MATCHING_PROMPT,
           false, // quick parameter
