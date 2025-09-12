@@ -14,8 +14,6 @@ use crate::user::User;
 use crate::user_history::UserHistory;
 use crate::{StoredContract, Wallet};
 
-
-
 #[derive(Clone, Debug, Default, CandidType, Deserialize)]
 pub struct FEFriend {
     pub id: String,
@@ -32,26 +30,26 @@ fn convert_friends_to_fe_friends(friends: Vec<Friend>) -> Vec<FEFriend> {
         .filter_map(|friend| {
             let current_caller: String = caller().to_string();
             let is_sender = current_caller == friend.sender.id;
-            
+
             // Choose the other user's data (not the current caller)
             let user_data = if is_sender {
                 &friend.receiver
             } else {
                 &friend.sender
             };
-            
+
             // Prevent duplication: skip if friend's ID equals caller's ID
             if user_data.id == current_caller {
                 return None;
             }
-            
+
             // Clean up photo if too large
             let photo = if user_data.photo.len() > 500000 {
                 Vec::new()
             } else {
                 user_data.photo.clone()
             };
-            
+
             Some(FEFriend {
                 id: user_data.id.clone(),
                 name: user_data.name.clone(),
@@ -63,7 +61,6 @@ fn convert_friends_to_fe_friends(friends: Vec<Friend>) -> Vec<FEFriend> {
         })
         .collect()
 }
-
 
 #[derive(Clone, Debug, Default, CandidType, Deserialize)]
 pub struct InitialData {

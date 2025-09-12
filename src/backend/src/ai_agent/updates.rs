@@ -37,7 +37,7 @@ pub async fn ask_ai(
     if current_credits < credit_cost {
         return Err("Insufficient credits for this request".to_string());
     }
-    
+
     let model = if quick {
         "llama-3.1-8b-instant"
     } else if prompt.split_whitespace().count() > 700 {
@@ -67,8 +67,14 @@ pub async fn ask_ai(
         max_response_bytes: Some(20_000),
         transform: Some(TransformContext::from_name("transform".to_string(), vec![])),
         headers: vec![
-            HttpHeader { name: "Content-Type".to_string(), value: "application/json".to_string() },
-            HttpHeader { name: "Authorization".to_string(), value: format!("Bearer {}", api_key) },
+            HttpHeader {
+                name: "Content-Type".to_string(),
+                value: "application/json".to_string(),
+            },
+            HttpHeader {
+                name: "Authorization".to_string(),
+                value: format!("Bearer {}", api_key),
+            },
         ],
     };
 
@@ -86,7 +92,10 @@ pub async fn ask_ai(
                     ic_cdk::println!("Consensus error on attempt {}, retrying...", attempts);
                     continue;
                 } else {
-                    return Err(format!("HTTP request failed after {} attempts: {:?}", attempts, e));
+                    return Err(format!(
+                        "HTTP request failed after {} attempts: {:?}",
+                        attempts, e
+                    ));
                 }
             }
         }
@@ -95,7 +104,10 @@ pub async fn ask_ai(
     if response.status != 200u16 {
         let error_body = String::from_utf8(response.body.clone())
             .unwrap_or_else(|_| "Unable to parse error response".to_string());
-        return Err(format!("API request failed with status: {} - Response: {}", response.status, error_body));
+        return Err(format!(
+            "API request failed with status: {} - Response: {}",
+            response.status, error_body
+        ));
     }
 
     let response_str = String::from_utf8(response.body)
@@ -126,8 +138,6 @@ pub async fn ask_ai(
         response: response_text,
     })
 }
-
-
 
 #[query]
 fn transform(raw: TransformArgs) -> HttpResponse {
