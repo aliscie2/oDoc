@@ -26,7 +26,7 @@ async function hanldeFetching(dispatch: Dispatch, page: number) {
 
 const GetMoreFiles: React.FC = () => {
   const { isNavOpen } = useSelector((state: RootState) => state.uiState);
-  console.log({isNavOpen})
+  console.log({ isNavOpen });
   // Using direct backendActor import
   const dispatch = useDispatch();
   const { lookingForFile, files, inited, currentWorkspace } = useSelector(

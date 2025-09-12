@@ -112,7 +112,7 @@ const useNavigationState = () => {
   const { isNavOpen, isDarkMode, isFetching, authStatus } = useSelector(
     (state) => state.uiState,
   );
-  console.log({isNavOpen})
+  console.log({ isNavOpen });
   const isLoggedIn =
     authStatus === "authenticated" || authStatus === "registered";
   const { notifications } = useSelector((state) => state.notificationState);

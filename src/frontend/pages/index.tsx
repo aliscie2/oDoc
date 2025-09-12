@@ -49,7 +49,6 @@ const Pages = React.memo(() => {
   const { isLoggedIn } = useAuth();
 
   const MainPage = useMemo(() => {
-
     if (isLoggedIn) {
       return <JobsPage />;
     }

@@ -173,7 +173,6 @@ const badgeDefinitions: Omit<BadgeType, "unlocked" | "progress">[] = [
   },
 ];
 
-
 const useProgress = (): ProgressData => {
   const { isLoggedIn } = useAuth();
   const state = useSelector((state: RootState) => state);

@@ -26,11 +26,10 @@ export class AIService {
     abortSignal?: AbortSignal,
   ): Promise<AIMessageResult<T>> {
     console.log({
-      x:config.prompt,
-      y:JSON_PROMPT + config.promptType,
-      z:config.classify, // classify=true means quick=true (for classification)
-
-    })
+      x: config.prompt,
+      y: JSON_PROMPT + config.promptType,
+      z: config.classify, // classify=true means quick=true (for classification)
+    });
     const aiResponse = await this.backendActor.ask_ai(
       config.prompt,
       JSON_PROMPT + config.promptType,

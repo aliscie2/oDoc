@@ -28,6 +28,7 @@ import promisePaper from "./md/promise.md";
 import roadMap from "./md/roadmap.md";
 import snsPaper from "./md/sns.md";
 import architecture from "./md/architecture.md";
+import jobMatch from "./md/job_match.md";
 
 const TabPanel = ({ children, value, index, ...other }) => (
   <div
@@ -58,6 +59,7 @@ const MarkdownRenderer = () => {
           roadMap,
           snsPaper,
           architecture,
+          jobMatch
         ].map((paper) => fetch(paper).then((response) => response.text()));
         const allTexts = await Promise.all(fetchPromises);
         setMarkdownContent(allTexts.join("\n\n"));

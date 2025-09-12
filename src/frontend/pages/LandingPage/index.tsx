@@ -103,7 +103,8 @@ const StatsSection = () => {
         ]);
 
         if (snsResponse.Ok) {
-          const { number_users, active_users, jobs_count, talents_count } = snsResponse.Ok;
+          const { number_users, active_users, jobs_count, talents_count } =
+            snsResponse.Ok;
           animateCount(number_users, (val) =>
             setStats((prev) => ({ ...prev, users: val })),
           );
@@ -129,31 +130,45 @@ const StatsSection = () => {
   }, [isVisible, backendActor, ckUSDCActor]);
 
   const statsData = [
-    { 
-      value: stats.users, 
-      label: "Total Users", 
-      icon: <PersonAdd sx={{ color: "primary.main", fontSize: "1.2rem", mb: 0.5 }} />
+    {
+      value: stats.users,
+      label: "Total Users",
+      icon: (
+        <PersonAdd
+          sx={{ color: "primary.main", fontSize: "1.2rem", mb: 0.5 }}
+        />
+      ),
     },
-    { 
-      value: stats.activeUsers, 
-      label: "Active Users", 
-      icon: <TrendingUp sx={{ color: "success.main", fontSize: "1.2rem", mb: 0.5 }} />
+    {
+      value: stats.activeUsers,
+      label: "Active Users",
+      icon: (
+        <TrendingUp
+          sx={{ color: "success.main", fontSize: "1.2rem", mb: 0.5 }}
+        />
+      ),
     },
-    { 
-      value: stats.totalDeposit, 
-      label: "Total Deposits", 
+    {
+      value: stats.totalDeposit,
+      label: "Total Deposits",
       prefix: "$",
-      icon: <Payment sx={{ color: "warning.main", fontSize: "1.2rem", mb: 0.5 }} />
+      icon: (
+        <Payment sx={{ color: "warning.main", fontSize: "1.2rem", mb: 0.5 }} />
+      ),
     },
-    { 
-      value: stats.jobsCount, 
-      label: "Jobs", 
-      icon: <Assignment sx={{ color: "info.main", fontSize: "1.2rem", mb: 0.5 }} />
+    {
+      value: stats.jobsCount,
+      label: "Jobs",
+      icon: (
+        <Assignment sx={{ color: "info.main", fontSize: "1.2rem", mb: 0.5 }} />
+      ),
     },
-    { 
-      value: stats.talentsCount, 
-      label: "Talents", 
-      icon: <Star sx={{ color: "secondary.main", fontSize: "1.2rem", mb: 0.5 }} />
+    {
+      value: stats.talentsCount,
+      label: "Talents",
+      icon: (
+        <Star sx={{ color: "secondary.main", fontSize: "1.2rem", mb: 0.5 }} />
+      ),
     },
   ];
 
@@ -190,7 +205,6 @@ const StatsSection = () => {
     </Box>
   );
 };
-
 
 const FeatureSection = ({ title, icon, children, reversed = false }) => {
   const isMobile = useMediaQuery("(max-width:900px)");

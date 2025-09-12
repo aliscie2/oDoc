@@ -1,4 +1,4 @@
-# Job Matching System Documentation
+# Job Match
 
 ## Overview
 
@@ -14,7 +14,7 @@ The job matching system enables job creators and talent users to find relevant m
 
 ### Backend Responsibilities
 
-- **Match Detection**: Finds potential matches based on skill overlap (minimum 30%)
+- **Match Detection**: Finds potential matches based on skill overlap (minimum 60%)
 - **Score Validation**: Validates that all scores are between 0.0 and 1.0
 - **State Management**: Tracks saved matches and their timestamps
 - **Update Detection**: Identifies when profiles have been updated since last match
