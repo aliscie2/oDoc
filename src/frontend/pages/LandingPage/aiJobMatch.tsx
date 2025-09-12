@@ -1820,7 +1820,7 @@ const LandingPage = () => {
         />
         <meta
           property="og:image"
-          content={`${window.location.origin}/icpjobs_thumnail.png`}
+          content={`${window.location.origin}/thumnail.png`}
         />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
@@ -1839,7 +1839,7 @@ const LandingPage = () => {
         />
         <meta
           name="twitter:image"
-          content={`${window.location.origin}/icpjobs_thumnail.png`}
+          content={`${window.location.origin}/thumnail.png`}
         />
 
         {/* LinkedIn */}
@@ -1854,7 +1854,7 @@ const LandingPage = () => {
         />
         <meta
           property="linkedin:image"
-          content={`${window.location.origin}/icpjobs_thumnail.png`}
+          content={`${window.location.origin}/thumnail.png`}
         />
       </Helmet>
 

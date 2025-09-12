@@ -124,3 +124,6 @@ test-e2e:
 dummy_deposit:
 	# replace lqv7v-5z3de-ldfue-z4rrf-u6opp-npwa5-e2us3-fkbx7-yjtwu-gh7x3-yae with the wanted user
 	dfx canister --identity minter call ckusdc_ledger icrc1_transfer '(record {to = record { owner = principal "rhlwg-3ybpc-uxtly-55zob-5cyjy-u5jmz-4zgjk-n7po6-hz5rl-4xeam-fae"; }; amount = 300_000_000; })'
+
+generate_icons:
+	npx pwa-asset-generator ./public/logo.jpg ./public/icons --background "#000000" --manifest ./public/manifest.json --index ./index.html

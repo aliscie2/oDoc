@@ -843,7 +843,7 @@ export default function OdocLandingPage() {
     <Box sx={{ minHeight: "100vh" }}>
       <Helmet>
         <title>ODOC.app</title>
-        <link rel="icon" type="image/png" href={"/logo.png"} />
+        <link rel="icon" type="image/png" href={"/small_logo.png"} />
       </Helmet>
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <ProgressiveTutorialMobile />
