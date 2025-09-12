@@ -230,16 +230,18 @@ export const login = async (): Promise<boolean> => {
 
   return new Promise((resolve, reject) => {
     const port = import.meta.env.VITE_DFX_PORT;
-    const identityProvider = import.meta.env.VITE_DFX_NETWORK !== "ic"
-      ? `http://rdmx6-jaaaa-aaaaa-aaadq-cai.localhost:${port}`
-      : "https://identity.ic0.app/#authorize";
+    const identityProvider =
+      import.meta.env.VITE_DFX_NETWORK !== "ic"
+        ? `http://rdmx6-jaaaa-aaaaa-aaadq-cai.localhost:${port}`
+        : "https://identity.ic0.app/#authorize";
 
     client.login({
       maxTimeToLive: BigInt(365 * 24 * 60 * 60 * 1000000000),
       identityProvider,
-      derivationOrigin: import.meta.env.VITE_DFX_NETWORK === "ic" 
-  ? "https://odoc.app" 
-  : window.location.origin,
+      derivationOrigin:
+        import.meta.env.VITE_DFX_NETWORK === "ic"
+          ? "https://odoc.app"
+          : window.location.origin,
       onSuccess: async () => {
         try {
           await initializeSmartActors();

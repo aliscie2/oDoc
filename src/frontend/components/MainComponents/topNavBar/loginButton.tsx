@@ -61,7 +61,7 @@ const LoginButton: React.FC<LoginButtonProps> = ({
         ...sx,
       }}
     >
-      {children?children:defualtText}
+      {children ? children : defualtText}
     </Button>
   );
 };

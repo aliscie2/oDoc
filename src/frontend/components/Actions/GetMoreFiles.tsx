@@ -55,7 +55,7 @@ const GetMoreFiles: React.FC = () => {
   }, [files, inited, page, isNavOpen, lookingForFile]);
 
   const handleCreateFile = async () => {
-    let moreFiles = await hanldeFetching(dispatch, page);
+    const moreFiles = await hanldeFetching(dispatch, page);
     !moreFiles && setNoMoreToload(false);
     setPage(page + 1);
   };

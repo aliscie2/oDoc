@@ -56,84 +56,89 @@ export interface DispatchInterface {
  */
 export class MessageProcessor {
   constructor(
-  private config: MessageProcessorConfig,
-  private aiService: AIServiceInterface,
-  private aiCases: AICasesInterface,
-  private navigation: NavigationInterface,
-  private dispatcher: DispatchInterface,
-) {
-  this.loadMarkdownContent();
-}
-
-private markdownContent: string = '';
-
-private async loadMarkdownContent() {
-  try {
-    const markdownFiles = [
-      () => import('../../pages/white_paper/md/whitepaper.md?raw'),
-      () => import('../../pages/white_paper/md/promise.md?raw'),
-      () => import('../../pages/white_paper/md/roadmap.md?raw'),
-      () => import('../../pages/white_paper/md/sns.md?raw'),
-      () => import('../../pages/white_paper/md/architecture.md?raw'),
-      () => import('../../pages/white_paper/md/job_match.md?raw'),
-      
-    ];
-    
-    const loadedFiles = await Promise.all(
-      markdownFiles.map(loader => loader().then(module => module.default))
-    );
-    
-    this.markdownContent = loadedFiles.join('\n\n');
-  } catch (error) {
-    console.error('Error loading markdown files:', error);
-    this.markdownContent = '';
+    private config: MessageProcessorConfig,
+    private aiService: AIServiceInterface,
+    private aiCases: AICasesInterface,
+    private navigation: NavigationInterface,
+    private dispatcher: DispatchInterface,
+  ) {
+    this.loadMarkdownContent();
   }
-}
+
+  private markdownContent: string = "";
+
+  private async loadMarkdownContent() {
+    try {
+      const markdownFiles = [
+        () => import("../../pages/white_paper/md/whitepaper.md?raw"),
+        () => import("../../pages/white_paper/md/promise.md?raw"),
+        () => import("../../pages/white_paper/md/roadmap.md?raw"),
+        () => import("../../pages/white_paper/md/sns.md?raw"),
+        () => import("../../pages/white_paper/md/architecture.md?raw"),
+        () => import("../../pages/white_paper/md/job_match.md?raw"),
+      ];
+
+      const loadedFiles = await Promise.all(
+        markdownFiles.map((loader) =>
+          loader().then((module) => module.default),
+        ),
+      );
+
+      this.markdownContent = loadedFiles.join("\n\n");
+    } catch (error) {
+      console.error("Error loading markdown files:", error);
+      this.markdownContent = "";
+    }
+  }
 
   private findRelevantContent(query: string, content: string): string {
-  const queryLower = query.toLowerCase();
-  const sections = content.split(/(?=^# )/gm).filter(s => s.trim());
-  
-  const scoredSections = sections.map(section => {
-    const sectionLower = section.toLowerCase();
-    const queryWords = queryLower.split(/\s+/).filter(w => w.length > 2);
-    
-    let score = 0;
-    queryWords.forEach(word => {
-      const matches = (sectionLower.match(new RegExp(word, 'g')) || []).length;
-      score += matches;
+    const queryLower = query.toLowerCase();
+    const sections = content.split(/(?=^# )/gm).filter((s) => s.trim());
+
+    const scoredSections = sections.map((section) => {
+      const sectionLower = section.toLowerCase();
+      const queryWords = queryLower.split(/\s+/).filter((w) => w.length > 2);
+
+      let score = 0;
+      queryWords.forEach((word) => {
+        const matches = (sectionLower.match(new RegExp(word, "g")) || [])
+          .length;
+        score += matches;
+      });
+
+      return { section, score };
     });
-    
-    return { section, score };
-  });
-  
-  const relevantSections = scoredSections
-    .filter(s => s.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 3)
-    .map(s => s.section);
-    
-  return relevantSections.length > 0 
-    ? relevantSections.join('\n\n') 
-    : content.substring(0, 4000);
-}
 
+    const relevantSections = scoredSections
+      .filter((s) => s.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3)
+      .map((s) => s.section);
 
-private async processGeneralQuery(
-  message: string,
-  abortSignal?: AbortSignal,
-): Promise<ProcessedMessage> {
-  if (!this.markdownContent) {
-    return {
-      action_type: "GENERAL_QUERY",
-      feedback: "Documentation not available at the moment. Please try again later.",
-      actions: [],
-      done: true,
-    };
+    return relevantSections.length > 0
+      ? relevantSections.join("\n\n")
+      : content.substring(0, 4000);
   }
 
-  const relevantContent = this.findRelevantContent(message, this.markdownContent);
-  const ragPrompt = `Based on the following documentation content, answer the user's question about ODOC:
+  private async processGeneralQuery(
+    message: string,
+    abortSignal?: AbortSignal,
+  ): Promise<ProcessedMessage> {
+    if (!this.markdownContent) {
+      return {
+        action_type: "GENERAL_QUERY",
+        feedback:
+          "Documentation not available at the moment. Please try again later.",
+        actions: [],
+        done: true,
+      };
+    }
+
+    const relevantContent = this.findRelevantContent(
+      message,
+      this.markdownContent,
+    );
+    const ragPrompt = `Based on the following documentation content, answer the user's question about ODOC:
 
 Documentation:
 ${relevantContent}
@@ -142,45 +147,51 @@ User Question: ${message}
 
 Provide a helpful and accurate answer based only on the documentation provided. If the question cannot be answered from the documentation, say so clearly.`;
 
-  try {
-    const config = this.aiService.createAIConfig(
-      ragPrompt,
-      'JSON response format: {"feedback": "YOUR RESPONSE in markdown here."}',
-    );
+    try {
+      const config = this.aiService.createAIConfig(
+        ragPrompt,
+        'JSON response format: {"feedback": "YOUR RESPONSE in markdown here."}',
+      );
 
-    const result = await this.aiService.sendAIMessage(config, abortSignal);
-    
-    // Extract feedback properly from parsed data
-    let feedback = "I couldn't find relevant information in the documentation.";
-    
-    if (result.parsedData && typeof result.parsedData === 'object' && result.parsedData.feedback) {
-      feedback = result.parsedData.feedback;
-    } else if (typeof result.response === 'string') {
-      // Try to extract from raw response if parsing failed
-      try {
-        const parsed = JSON.parse(result.response);
-        feedback = parsed.feedback || result.response;
-      } catch {
-        feedback = result.response;
+      const result = await this.aiService.sendAIMessage(config, abortSignal);
+
+      // Extract feedback properly from parsed data
+      let feedback =
+        "I couldn't find relevant information in the documentation.";
+
+      if (
+        result.parsedData &&
+        typeof result.parsedData === "object" &&
+        result.parsedData.feedback
+      ) {
+        feedback = result.parsedData.feedback;
+      } else if (typeof result.response === "string") {
+        // Try to extract from raw response if parsing failed
+        try {
+          const parsed = JSON.parse(result.response);
+          feedback = parsed.feedback || result.response;
+        } catch {
+          feedback = result.response;
+        }
       }
-    }
 
-    return {
-      action_type: "GENERAL_QUERY",
-      feedback,
-      actions: [],
-      done: true,
-    };
-  } catch (error) {
-    console.error("Error processing general query:", error);
-    return {
-      action_type: "GENERAL_QUERY",
-      feedback: "Sorry, I couldn't process your question right now. Please try again later.",
-      actions: [],
-      done: true,
-    };
+      return {
+        action_type: "GENERAL_QUERY",
+        feedback,
+        actions: [],
+        done: true,
+      };
+    } catch (error) {
+      console.error("Error processing general query:", error);
+      return {
+        action_type: "GENERAL_QUERY",
+        feedback:
+          "Sorry, I couldn't process your question right now. Please try again later.",
+        actions: [],
+        done: true,
+      };
+    }
   }
-}
   /**
    * Trims long messages for classification to improve performance
    */
@@ -638,8 +649,12 @@ Provide a helpful and accurate answer based only on the documentation provided. 
           abortSignal,
         );
       } else {
-  return await this.handleOtherCases(parsed, compactedMessage, abortSignal);
-}
+        return await this.handleOtherCases(
+          parsed,
+          compactedMessage,
+          abortSignal,
+        );
+      }
     } catch (error) {
       console.error("Error processing message:", error);
       throw error;
@@ -713,30 +728,35 @@ Provide a helpful and accurate answer based only on the documentation provided. 
   /**
    * Handles other message types (QUESTIONS, LOCAL_HELP, etc.)
    */
-  private async handleOtherCases(parsed: any, message: string, abortSignal?: AbortSignal): Promise<ProcessedMessage> {
-  if (parsed.type === "GENERAL_QUERY") {
-    return await this.processGeneralQuery(message, abortSignal);
-  } else if (parsed.type === "QUESTIONS") {
-    return {
-      action_type: "QUESTIONS",
-      feedback: "Questions functionality with RAG will be implemented soon",
-      actions: [],
-      done: true,
-    };
-  } else if (parsed.feedback?.includes("locally")) {
-    return {
-      action_type: "LOCAL_HELP",
-      feedback: "Locally you can make commands like:\n- Calendar: `calendar//aa>title>09:00>17:00>1,2,3,4,5>false`\n- Job: `Job//as>skill1,skill2` (add skills)",
-      actions: [],
-      done: true,
-    };
-  } else {
-    return {
-      action_type: "OTHER",
-      feedback: parsed.feedback || "Unable to process request",
-      actions: [],
-      done: true,
-    };
+  private async handleOtherCases(
+    parsed: any,
+    message: string,
+    abortSignal?: AbortSignal,
+  ): Promise<ProcessedMessage> {
+    if (parsed.type === "GENERAL_QUERY") {
+      return await this.processGeneralQuery(message, abortSignal);
+    } else if (parsed.type === "QUESTIONS") {
+      return {
+        action_type: "QUESTIONS",
+        feedback: "Questions functionality with RAG will be implemented soon",
+        actions: [],
+        done: true,
+      };
+    } else if (parsed.feedback?.includes("locally")) {
+      return {
+        action_type: "LOCAL_HELP",
+        feedback:
+          "Locally you can make commands like:\n- Calendar: `calendar//aa>title>09:00>17:00>1,2,3,4,5>false`\n- Job: `Job//as>skill1,skill2` (add skills)",
+        actions: [],
+        done: true,
+      };
+    } else {
+      return {
+        action_type: "OTHER",
+        feedback: parsed.feedback || "Unable to process request",
+        actions: [],
+        done: true,
+      };
+    }
   }
-}
 }

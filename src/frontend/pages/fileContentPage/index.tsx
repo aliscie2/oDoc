@@ -23,7 +23,6 @@ import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
 import { Helmet } from "react-helmet-async";
 import NotFound from "../notFound404";
 import { useAuth } from "@/hooks/useAuth";
-import { logger } from "@/DevUtils/logData";
 
 // Custom hook for file data fetching
 const useFileData = (fileId: string) => {

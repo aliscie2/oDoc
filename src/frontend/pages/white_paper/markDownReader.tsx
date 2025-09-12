@@ -59,7 +59,7 @@ const MarkdownRenderer = () => {
           roadMap,
           snsPaper,
           architecture,
-          jobMatch
+          jobMatch,
         ].map((paper) => fetch(paper).then((response) => response.text()));
         const allTexts = await Promise.all(fetchPromises);
         setMarkdownContent(allTexts.join("\n\n"));

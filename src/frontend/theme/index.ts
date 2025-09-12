@@ -1,170 +1,183 @@
 import { createTheme as createMuiTheme, alpha } from "@mui/material/styles";
 
 const baseColors = {
- error: { main: "#F04438", contrastText: "#FFFFFF" },
- info: { main: "#06AED4", contrastText: "#FFFFFF" },
- success: { main: "#10B981", contrastText: "#FFFFFF" },
- warning: { main: "#F79009", contrastText: "#FFFFFF" },
- neutral: {
-   50: "#FAFBFC", 100: "#F5F6F8", 200: "#EAECEF", 300: "#D6D9DC",
-   400: "#9DA4AE", 500: "#6C737F", 600: "#4D5761", 700: "#3A4150",
-   800: "#2A2D3A", 900: "#1A1B23", 950: "#151620"
- }
+  error: { main: "#F04438", contrastText: "#FFFFFF" },
+  info: { main: "#06AED4", contrastText: "#FFFFFF" },
+  success: { main: "#10B981", contrastText: "#FFFFFF" },
+  warning: { main: "#F79009", contrastText: "#FFFFFF" },
+  neutral: {
+    50: "#FAFBFC",
+    100: "#F5F6F8",
+    200: "#EAECEF",
+    300: "#D6D9DC",
+    400: "#9DA4AE",
+    500: "#6C737F",
+    600: "#4D5761",
+    700: "#3A4150",
+    800: "#2A2D3A",
+    900: "#1A1B23",
+    950: "#151620",
+  },
 };
 
 function createPalette(isDarkMode: boolean) {
-  const primary = { 
+  const primary = {
     main: "#2563eb", // Modern blue (slightly deeper than #2196F3)
     light: "#3b82f6",
     dark: "#1d4ed8",
-    contrastText: "#fff" 
+    contrastText: "#fff",
   };
-  
+
   return {
     mode: isDarkMode ? "dark" : "light",
     primary,
     secondary: {
       main: isDarkMode ? "#64748b" : "#475569", // Neutral blue-gray
-      contrastText: "#fff"
+      contrastText: "#fff",
     },
     error: baseColors.error,
     info: baseColors.info,
     success: baseColors.success,
     warning: baseColors.warning,
-    
+
     background: {
-      default: isDarkMode 
+      default: isDarkMode
         ? "#0f172a" // Deep blue-black
         : "#f8fafc", // Cool white
       paper: isDarkMode
         ? alpha("#1e293b", 0.85) // Blue-tinted dark
-        : alpha("#ffffff", 0.85)
+        : alpha("#ffffff", 0.85),
     },
-    
+
     text: {
       primary: isDarkMode ? alpha("#f1f5f9", 0.92) : alpha("#0f172a", 0.9),
-      secondary: isDarkMode ? alpha("#cbd5e1", 0.72) : alpha("#475569", 0.75)
+      secondary: isDarkMode ? alpha("#cbd5e1", 0.72) : alpha("#475569", 0.75),
     },
-    
+
     divider: alpha(primary.main, 0.12),
-    
+
     action: {
       hover: alpha(primary.main, 0.04),
       selected: alpha(primary.main, 0.08),
-      focus: alpha(primary.main, 0.12)
-    }
+      focus: alpha(primary.main, 0.12),
+    },
   };
 }
 
 const createComponents = (palette: any) => ({
- MuiCssBaseline: {
-   styleOverrides: {
-     body: {
-       minHeight: "100vh",
-       background: palette.background.default
-     }
-   }
- },
- 
- MuiCard: {
-   styleOverrides: {
-     root: {
-       background: palette.background.paper,
-       backdropFilter: "blur(20px)",
-       border: `1px solid ${alpha(palette.divider, 0.5)}`,
-       borderRadius: 16,
-       transition: "all 0.3s ease",
-       "&:hover": {
-         transform: "translateY(-2px)",
-         boxShadow: `0 8px 25px ${alpha(palette.primary.main, 0.15)}`
-       }
-     }
-   }
- },
- 
- MuiButton: {
-   styleOverrides: {
-     root: {
-       borderRadius: 12,
-       textTransform: "none",
-       fontWeight: 600,
-       transition: "all 0.3s ease"
-     },
-     contained: {
-       background: `linear-gradient(135deg, ${palette.primary.main}, ${alpha(palette.primary.main, 0.8)})`,
-       boxShadow: `0 4px 15px ${alpha(palette.primary.main, 0.3)}`,
-       "&:hover": {
-         transform: "translateY(-2px)",
-         boxShadow: `0 8px 25px ${alpha(palette.primary.main, 0.4)}`
-       }
-     },
-     outlined: {
-       background: palette.background.paper,
-       border: `1px solid ${alpha(palette.divider, 0.5)}`,
-       backdropFilter: "blur(10px)",
-       "&:hover": {
-         background: alpha(palette.primary.main, 0.08),
-         border: `1px solid ${palette.primary.main}`
-       }
-     }
-   }
- },
- 
- MuiTextField: {
-   styleOverrides: {
-     root: {
-       "& .MuiOutlinedInput-root": {
-         background: palette.background.paper,
-         backdropFilter: "blur(10px)",
-         borderRadius: 12,
-         "& fieldset": {
-           border: `1px solid ${alpha(palette.divider, 0.5)}`
-         },
-         "&:hover fieldset": {
-           border: `1px solid ${palette.primary.main}`
-         },
-         "&.Mui-focused fieldset": {
-           border: `2px solid ${palette.primary.main}`,
-           boxShadow: `0 0 0 4px ${alpha(palette.primary.main, 0.1)}`
-         }
-       }
-     }
-   }
- },
- 
- MuiChip: {
-   styleOverrides: {
-     root: {
-       background: palette.background.paper,
-       backdropFilter: "blur(10px)",
-       border: `1px solid ${alpha(palette.divider, 0.5)}`,
-       borderRadius: 20,
-       transition: "all 0.3s ease",
-       "&:hover": {
-         transform: "translateY(-1px)",
-         boxShadow: `0 4px 15px ${alpha(palette.primary.main, 0.2)}`
-       }
-     }
-   }
- }
+  MuiCssBaseline: {
+    styleOverrides: {
+      body: {
+        minHeight: "100vh",
+        background: palette.background.default,
+      },
+    },
+  },
+
+  MuiCard: {
+    styleOverrides: {
+      root: {
+        background: palette.background.paper,
+        backdropFilter: "blur(20px)",
+        border: `1px solid ${alpha(palette.divider, 0.5)}`,
+        borderRadius: 16,
+        transition: "all 0.3s ease",
+        "&:hover": {
+          transform: "translateY(-2px)",
+          boxShadow: `0 8px 25px ${alpha(palette.primary.main, 0.15)}`,
+        },
+      },
+    },
+  },
+
+  MuiButton: {
+    styleOverrides: {
+      root: {
+        borderRadius: 12,
+        textTransform: "none",
+        fontWeight: 600,
+        transition: "all 0.3s ease",
+      },
+      contained: {
+        background: `linear-gradient(135deg, ${palette.primary.main}, ${alpha(palette.primary.main, 0.8)})`,
+        boxShadow: `0 4px 15px ${alpha(palette.primary.main, 0.3)}`,
+        "&:hover": {
+          transform: "translateY(-2px)",
+          boxShadow: `0 8px 25px ${alpha(palette.primary.main, 0.4)}`,
+        },
+      },
+      outlined: {
+        background: palette.background.paper,
+        border: `1px solid ${alpha(palette.divider, 0.5)}`,
+        backdropFilter: "blur(10px)",
+        "&:hover": {
+          background: alpha(palette.primary.main, 0.08),
+          border: `1px solid ${palette.primary.main}`,
+        },
+      },
+    },
+  },
+
+  MuiTextField: {
+    styleOverrides: {
+      root: {
+        "& .MuiOutlinedInput-root": {
+          background: palette.background.paper,
+          backdropFilter: "blur(10px)",
+          borderRadius: 12,
+          "& fieldset": {
+            border: `1px solid ${alpha(palette.divider, 0.5)}`,
+          },
+          "&:hover fieldset": {
+            border: `1px solid ${palette.primary.main}`,
+          },
+          "&.Mui-focused fieldset": {
+            border: `2px solid ${palette.primary.main}`,
+            boxShadow: `0 0 0 4px ${alpha(palette.primary.main, 0.1)}`,
+          },
+        },
+      },
+    },
+  },
+
+  MuiChip: {
+    styleOverrides: {
+      root: {
+        background: palette.background.paper,
+        backdropFilter: "blur(10px)",
+        border: `1px solid ${alpha(palette.divider, 0.5)}`,
+        borderRadius: 20,
+        transition: "all 0.3s ease",
+        "&:hover": {
+          transform: "translateY(-1px)",
+          boxShadow: `0 4px 15px ${alpha(palette.primary.main, 0.2)}`,
+        },
+      },
+    },
+  },
 });
 
 export function createTheme(isDarkMode: boolean) {
- const palette = createPalette(isDarkMode);
- 
- return createMuiTheme({
-   palette,
-   components: createComponents(palette),
-   shape: { borderRadius: 12 },
-   typography: {
-     fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-     button: {
-       fontWeight: 600,
-       textTransform: "none"
-     }
-   },
-   shadows: Array(25).fill("none").map((_, i) => 
-     i === 0 ? "none" : `0 ${i * 2}px ${i * 4}px ${alpha("#000", isDarkMode ? 0.3 : 0.08)}`
-   )
- });
+  const palette = createPalette(isDarkMode);
+
+  return createMuiTheme({
+    palette,
+    components: createComponents(palette),
+    shape: { borderRadius: 12 },
+    typography: {
+      fontFamily:
+        '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      button: {
+        fontWeight: 600,
+        textTransform: "none",
+      },
+    },
+    shadows: Array(25)
+      .fill("none")
+      .map((_, i) =>
+        i === 0
+          ? "none"
+          : `0 ${i * 2}px ${i * 4}px ${alpha("#000", isDarkMode ? 0.3 : 0.08)}`,
+      ),
+  });
 }

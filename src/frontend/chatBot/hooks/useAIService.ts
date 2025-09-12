@@ -13,11 +13,25 @@ export const useAIService = () => {
   );
 
   return {
-    sendAIMessage: (config: any, abortSignal?: AbortSignal) => 
+    sendAIMessage: (config: any, abortSignal?: AbortSignal) =>
       aiService.sendAIMessage({ ...config, credits: aiCredits }, abortSignal),
-    sendAIMessages: (configs: any[], abortSignal?: AbortSignal) => 
-      aiService.sendAIMessages(configs.map(config => ({ ...config, credits: aiCredits })), abortSignal),
-    createAIConfig: (prompt: string, promptType: string, classify = false, skipCreditUpdate = false) =>
-      aiService.createAIConfig(prompt, promptType, classify, skipCreditUpdate, aiCredits),
+    sendAIMessages: (configs: any[], abortSignal?: AbortSignal) =>
+      aiService.sendAIMessages(
+        configs.map((config) => ({ ...config, credits: aiCredits })),
+        abortSignal,
+      ),
+    createAIConfig: (
+      prompt: string,
+      promptType: string,
+      classify = false,
+      skipCreditUpdate = false,
+    ) =>
+      aiService.createAIConfig(
+        prompt,
+        promptType,
+        classify,
+        skipCreditUpdate,
+        aiCredits,
+      ),
   };
 };

@@ -1,5 +1,5 @@
 import React from "react";
-import { Chip, List, ListItem, ListItemText, Stack } from "@mui/material";
+import { List, ListItem, ListItemText } from "@mui/material";
 import UserAvatarMenu from "../../components/MainComponents/UserAvatarMenu";
 import FriendshipButton from "../../components/FriendshipButton";
 import { useSelector } from "react-redux";

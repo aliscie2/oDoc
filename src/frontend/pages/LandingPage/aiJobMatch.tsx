@@ -8,7 +8,6 @@ import {
   LinkedIn,
   People,
   Shield,
-  Twitter,
   YouTube,
 } from "@mui/icons-material";
 import GitHubIcon from "@mui/icons-material/GitHub";
@@ -29,7 +28,6 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
-import { Instagram } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router";
@@ -504,11 +502,10 @@ const EmailNotificationsStep = () => {
   );
 };
 
-
 // Call to Action Section
 const CallToActionStep = () => {
   const theme = useTheme();
-  
+
   return (
     <Box
       sx={{
@@ -558,11 +555,12 @@ const CallToActionStep = () => {
               Find Your Perfect Gig
             </Typography>
             <Typography variant="body1" sx={{ mb: 4, opacity: 0.9 }}>
-              Join thousands of developers finding their dream jobs in the Web3 ecosystem
+              Join thousands of developers finding their dream jobs in the Web3
+              ecosystem
             </Typography>
-            
-            <LoginButton 
-              sx={{ 
+
+            <LoginButton
+              sx={{
                 width: "100%",
                 backgroundColor: "rgba(255, 255, 255, 0.2)",
                 backdropFilter: "blur(10px)",
@@ -575,8 +573,11 @@ const CallToActionStep = () => {
             >
               Get Started as Job Seeker
             </LoginButton>
-            
-            <Typography variant="caption" sx={{ display: "block", mt: 3, opacity: 0.8 }}>
+
+            <Typography
+              variant="caption"
+              sx={{ display: "block", mt: 3, opacity: 0.8 }}
+            >
               Free to start • AI-powered matching
             </Typography>
           </Card>
@@ -602,11 +603,12 @@ const CallToActionStep = () => {
               Find Perfect Talent
             </Typography>
             <Typography variant="body1" sx={{ mb: 4, opacity: 0.9 }}>
-              Connect with top-tier developers and specialists for your next big project
+              Connect with top-tier developers and specialists for your next big
+              project
             </Typography>
-            
-            <LoginButton 
-              sx={{ 
+
+            <LoginButton
+              sx={{
                 width: "100%",
                 backgroundColor: "rgba(255, 255, 255, 0.2)",
                 backdropFilter: "blur(10px)",
@@ -619,8 +621,11 @@ const CallToActionStep = () => {
             >
               Get Started as Employer
             </LoginButton>
-            
-            <Typography variant="caption" sx={{ display: "block", mt: 3, opacity: 0.8 }}>
+
+            <Typography
+              variant="caption"
+              sx={{ display: "block", mt: 3, opacity: 0.8 }}
+            >
               Post projects • Smart contracts • Team management
             </Typography>
           </Card>
@@ -629,8 +634,6 @@ const CallToActionStep = () => {
     </Box>
   );
 };
-
-
 
 const CalendarStep = () => {
   const theme = useTheme();
@@ -1129,10 +1132,26 @@ const CryptoAgreementProofsStep = () => {
   const containerRef = useRef(null);
 
   const proofs = [
-    { title: "Proof of Existence", subtitle: "Deposit funds before making promises", icon: "💰" },
-    { title: "Proof of Stake", subtitle: "Build trust with upfront staking", icon: "🔒" },
-    { title: "Proof of Cap", subtitle: "Smart limits prevent oversized commitments", icon: "📊" },
-    { title: "Proof of Reputation", subtitle: "Your track record shows transparently", icon: "⭐" }
+    {
+      title: "Proof of Existence",
+      subtitle: "Deposit funds before making promises",
+      icon: "💰",
+    },
+    {
+      title: "Proof of Stake",
+      subtitle: "Build trust with upfront staking",
+      icon: "🔒",
+    },
+    {
+      title: "Proof of Cap",
+      subtitle: "Smart limits prevent oversized commitments",
+      icon: "📊",
+    },
+    {
+      title: "Proof of Reputation",
+      subtitle: "Your track record shows transparently",
+      icon: "⭐",
+    },
   ];
 
   useEffect(() => {
@@ -1142,45 +1161,52 @@ const CryptoAgreementProofsStep = () => {
 
       const rect = container.getBoundingClientRect();
       const windowHeight = window.innerHeight;
-      
+
       if (rect.top <= 0 && rect.bottom >= windowHeight) {
-        const scrollProgress = Math.abs(rect.top) / (rect.height - windowHeight);
-        const newActiveIndex = Math.min(proofs.length - 1, Math.floor(scrollProgress * proofs.length));
+        const scrollProgress =
+          Math.abs(rect.top) / (rect.height - windowHeight);
+        const newActiveIndex = Math.min(
+          proofs.length - 1,
+          Math.floor(scrollProgress * proofs.length),
+        );
         setActiveIndex(newActiveIndex);
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, [proofs.length]);
 
   return (
-    <Box ref={containerRef} sx={{ height: '400vh', py: 8 }}>
-      <Box sx={{ position: 'sticky', top: '20vh', height: '60vh' }}>
+    <Box ref={containerRef} sx={{ height: "400vh", py: 8 }}>
+      <Box sx={{ position: "sticky", top: "20vh", height: "60vh" }}>
         <Container maxWidth="md">
-          <Typography variant="h2" sx={{ textAlign: 'center', mb: 8, fontWeight: 700 }}>
+          <Typography
+            variant="h2"
+            sx={{ textAlign: "center", mb: 8, fontWeight: 700 }}
+          >
             Crypto Agreement Proofs
           </Typography>
-          
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
             {proofs.map((proof, index) => (
               <Box
                 key={index}
                 sx={{
-                  display: 'flex',
-                  alignItems: 'center',
+                  display: "flex",
+                  alignItems: "center",
                   gap: 3,
                   p: 3,
                   borderRadius: 2,
                   opacity: activeIndex === index ? 1 : 0.3,
-                  transform: activeIndex === index ? 'scale(1.05)' : 'scale(1)',
-                  transition: 'all 0.5s ease'
+                  transform: activeIndex === index ? "scale(1.05)" : "scale(1)",
+                  transition: "all 0.5s ease",
                 }}
               >
-                <Box sx={{ fontSize: '2.5rem', flexShrink: 0 }}>
+                <Box sx={{ fontSize: "2.5rem", flexShrink: 0 }}>
                   {proof.icon}
                 </Box>
-                
+
                 <Box>
                   <Typography variant="h5" sx={{ mb: 1, fontWeight: 600 }}>
                     {proof.title}
@@ -1631,7 +1657,7 @@ const SimpleFooter = () => {
                     "&:hover": { opacity: 1 },
                   }}
                   component={Link}
-                  to='/white_paper'
+                  to="/white_paper"
                 >
                   white paper
                 </Typography>
@@ -1853,7 +1879,7 @@ const LandingPage = () => {
       <JobMatchingStep />
 
       <EmailNotificationsStep />
-      <CallToActionStep/>
+      <CallToActionStep />
 
       <CalendarStep />
 

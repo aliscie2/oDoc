@@ -272,18 +272,21 @@ This approach tests:
 The system uses an **inverted index** implementation (`src/backend/src/job_matcher/inverted_index.rs`) to efficiently scale job matching for thousands of users:
 
 **Inverted Index Architecture:**
+
 - **Skill-based indexing**: Each skill maps to a list of job/talent IDs that contain that skill
 - **Dual indexes**: Separate inverted indexes for jobs (`JOBS_INVERTED_IDEX_STORE`) and talents (`TALENTS_INVERTED_IDEX_STORE`)
 - **Latest-first ordering**: New profiles are inserted at the beginning of skill lists for recency-based matching
 - **Efficient lookups**: O(1) skill lookup instead of O(n) linear search through all profiles
 
 **Key Performance Benefits:**
+
 - **Fast matching**: Instead of scanning all profiles, only retrieve IDs from relevant skill indexes
 - **Relevance scoring**: Profiles with more matching skills are ranked higher automatically
 - **Pagination support**: Returns top 50 results to enable efficient pagination
 - **Memory efficient**: Uses IC stable structures for persistent storage across canister upgrades
 
 **Index Operations:**
+
 - `add_new_job/talent()`: Adds profile ID to all relevant skill indexes
 - `delete_job/talent_search()`: Removes profile ID from skill indexes when deleted
 - `search_for_job/talent()`: Efficiently finds matching profiles by skill intersection
