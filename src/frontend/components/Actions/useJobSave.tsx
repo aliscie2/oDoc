@@ -62,7 +62,7 @@ export const useJobsSave = (): UseJobsSaveReturn => {
   const reset = async () => {
     try {
       // Reset job changes
-      const updateJobRes = await backendActor.update_job([], []);
+      const updateJobRes = await backendActor.update_job([], [credits]);
 
       if (updateJobRes?.Err) {
         enqueueSnackbar(updateJobRes.Err, { variant: "error" });

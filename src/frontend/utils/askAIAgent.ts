@@ -62,7 +62,7 @@ async function ask_ai(
   }
 
   return {
-    Ok: {response: responseText, remaining_credits:0}
+    Ok: {response: responseText, remaining_credits:0.7}
   };
 }
 

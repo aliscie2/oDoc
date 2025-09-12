@@ -158,7 +158,7 @@ export const useJobMatching = (currentJob: Job | null) => {
           matches: [processedMatches],
         };
 
-        const saveResult = await backendActor.update_job([jobUpdate], []);
+        const saveResult = await backendActor.update_job([jobUpdate], [credits]);
         if (saveResult && "Err" in saveResult) {
           console.error("Failed to auto-save matches:", saveResult.Err);
         }

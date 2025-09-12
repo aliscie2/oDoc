@@ -4,6 +4,8 @@ use super::pallet::{Category, Job, Match};
 use candid::{CandidType, Deserialize, Principal};
 use ic_cdk_macros::update;
 use serde::Serialize;
+use crate::current_user_state::UserState;
+
 
 #[derive(PartialOrd, PartialEq, Clone, Debug, Serialize, CandidType, Deserialize)]
 pub struct Update {
@@ -47,9 +49,9 @@ fn update_job(updates: Vec<JobUpdate>, _ai_credits: Option<f32>) -> Result<(), S
         return Err("Permission denied (anonymous)".to_string());
     }
 
-    // if let Some(credits) = _ai_credits {
-    //     UserState::set_credits(credits);
-    // }
+    if let Some(credits) = _ai_credits {
+        UserState::set_credits(credits);
+    }
     
 
     let caller_id = ic_cdk::caller().to_string();
