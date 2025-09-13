@@ -1761,136 +1761,157 @@ const SimpleFooter = () => {
   );
 };
 
+const SEOComponent = () => {
+  const seoData = {
+    title: `${window.location.hostname} - ICP Jobs & Blockchain Developer Careers | AI Job Matching`,
+    description: "Find blockchain developer jobs, ICP careers, and Web3 talent. AI-powered job matching platform for Internet Computer Protocol ecosystem. Smart contracts, remote positions, DeFinity careers.",
+    keywords: "ICP jobs, blockchain developer jobs, DeFinity careers, Web3 jobs, Internet Computer Protocol jobs, blockchain engineer, smart contract developer, Rust developer, canister development, Web3 talent, blockchain recruitment, ICP project manager, crypto jobs, decentralized jobs, blockchain careers",
+    structuredData: {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": window.location.hostname,
+      "url": window.location.origin,
+      "description": "AI-powered job matching platform for blockchain developers and Web3 talent in the ICP ecosystem",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": `${window.location.origin}/search?q={search_term_string}`,
+        "query-input": "required name=search_term_string"
+      }
+    },
+    jobPostingData: {
+      "@context": "https://schema.org",
+      "@type": "JobPosting",
+      "title": "Blockchain Developer - ICP Ecosystem",
+      "description": "Join the Internet Computer Protocol ecosystem. Remote blockchain development positions available.",
+      "hiringOrganization": {
+        "@type": "Organization",
+        "name": window.location.hostname
+      },
+      "employmentType": "FULL_TIME",
+      "workHours": "Remote",
+      "skills": ["Rust", "TypeScript", "Blockchain", "Smart Contracts", "ICP", "Web3"]
+    }
+  };
+
+  return (
+    <Helmet>
+      <title>{seoData.title}</title>
+      <meta name="description" content={seoData.description} />
+      <meta name="keywords" content={seoData.keywords} />
+      <link rel="canonical" href={window.location.href} />
+      
+      {/* Open Graph */}
+      <meta property="og:type" content="website" />
+      <meta property="og:url" content={window.location.href} />
+      <meta property="og:title" content={seoData.title} />
+      <meta property="og:description" content={seoData.description} />
+      <meta property="og:image" content={`${window.location.origin}/thumbnail.png`} />
+      <meta property="og:site_name" content={window.location.hostname} />
+
+      {/* Twitter */}
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content={seoData.title} />
+      <meta name="twitter:description" content={seoData.description} />
+      <meta name="twitter:image" content={`${window.location.origin}/thumbnail.png`} />
+
+      {/* Structured Data */}
+      <script type="application/ld+json">{JSON.stringify(seoData.structuredData)}</script>
+      <script type="application/ld+json">{JSON.stringify(seoData.jobPostingData)}</script>
+    </Helmet>
+  );
+};
+
+
+const FAQSection = () => {
+  const faqs = [
+    {
+      q: "How does AI job matching work for blockchain developers?",
+      a: "Our AI analyzes your skills, experience, and preferences to match you with relevant ICP projects, blockchain startups, and Web3 companies. The system learns from successful matches to improve recommendations."
+    },
+    {
+      q: "What types of ICP jobs are available?",
+      a: "We feature Rust developers, canister engineers, full-stack Web3 developers, blockchain architects, project managers, and technical leads specializing in Internet Computer Protocol development."
+    },
+    {
+      q: "How do crypto agreements and smart contracts work?",
+      a: "Our platform creates secure blockchain-based employment agreements with built-in escrow, milestone tracking, and automated payments. All contracts are transparent and immutable on the blockchain."
+    },
+    {
+      q: "Is the platform free for job seekers?",
+      a: "Yes, job seekers can create profiles, receive AI matches, and apply to positions completely free. Premium features include priority matching and advanced filtering options."
+    },
+    {
+      q: "What makes this different from other job boards?",
+      a: "We're built specifically for the Web3 ecosystem with AI-powered matching, integrated smart contracts, automated scheduling, and native crypto payments - eliminating traditional hiring friction."
+    },
+    {
+      q: "How do I get started as a blockchain developer?",
+      a: "Simply create your profile, describe your Web3 experience and interests, and our AI will immediately start finding relevant opportunities in the ICP ecosystem and broader blockchain space."
+    }
+  ];
+
+  const structuredFAQ = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.map(faq => ({
+      "@type": "Question",
+      "name": faq.q,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.a
+      }
+    }))
+  };
+
+  return (
+    <Helmet>
+      <script type="application/ld+json">{JSON.stringify(structuredFAQ)}</script>
+    </Helmet>
+  );
+};
+
+
 // Main Landing Page Component
 const LandingPage = () => {
   const texts = [
-    "Your AI Workforce Copilot",
-    "AI Job match",
-    "Crypto agreements",
-    "Team mangment",
+    "AI Workforce Copilot",
+    "ICP Job Matching", 
+    "Blockchain Careers",
+    "Web3 Talent Hub",
+    "DeFinity Jobs",
+    "Smart Contracts"
   ];
-  const typedText = useTypingAnimation(texts);
+  const typedText = useTypingAnimation(texts, 100);
 
   return (
     <Box sx={{ position: "relative" }}>
-      {/* Animated Grid Background */}
-
-      <Helmet>
-        <title>
-          {window.location.hostname} - AI-Powered Job Matching for ICP Ecosystem ICP jobs
-        </title>
-        <meta
-          name="description"
-          content="Find your perfect job or talent in the Internet Computer Protocol ecosystem with AI-powered matching, smart scheduling, and crypto agreements."
-        />
-
-        {/* Open Graph / Facebook */}
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content={window.location.href} />
-        <meta
-          property="og:title"
-          content={`${window.location.hostname} - AI-Powered Job Matching for ICP Ecosystem`}
-        />
-        <meta
-          property="og:description"
-          content="Find your perfect job or talent in the Internet Computer Protocol ecosystem with AI-powered matching, smart scheduling, and crypto agreements."
-        />
-        <meta
-          property="og:image"
-          content={`${window.location.origin}/thumnail.png`}
-        />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta property="og:site_name" content={window.location.hostname} />
-
-        {/* Twitter */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:url" content={window.location.href} />
-        <meta
-          name="twitter:title"
-          content={`${window.location.hostname} - AI-Powered Job Matching for ICP Ecosystem`}
-        />
-        <meta
-          name="twitter:description"
-          content="Find your perfect job or talent in the Internet Computer Protocol ecosystem with AI-powered matching, smart scheduling, and crypto agreements."
-        />
-        <meta
-          name="twitter:image"
-          content={`${window.location.origin}/thumnail.png`}
-        />
-
-        {/* LinkedIn */}
-        <meta property="linkedin:card" content="summary_large_image" />
-        <meta
-          property="linkedin:title"
-          content={`${window.location.hostname} - AI-Powered Job Matching for ICP Ecosystem`}
-        />
-        <meta
-          property="linkedin:description"
-          content="Find your perfect job or talent in the Internet Computer Protocol ecosystem with AI-powered matching, smart scheduling, and crypto agreements."
-        />
-        <meta
-          property="linkedin:image"
-          content={`${window.location.origin}/thumnail.png`}
-        />
-      </Helmet>
-
+      <SEOComponent />
+      <FAQSection />
+      
       {/* Hero Section */}
-      <Box
-        sx={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          textAlign: "center",
-          py: 8,
-        }}
-      >
+      <Box sx={{ minHeight: "100vh", display: "flex", alignItems: "center", textAlign: "center", py: 8 }}>
         <Container maxWidth="md">
-          <Typography
-            variant="h2"
-            sx={{
-              mb: 3,
-              fontWeight: 700,
-              fontSize: { xs: "2.5rem", md: "3.5rem" },
-              minHeight: { xs: "3.5rem", md: "4.5rem" },
-            }}
-          >
+          <Typography variant="h1" sx={{ mb: 3, fontWeight: 700, fontSize: { xs: "2.5rem", md: "3.5rem" }, minHeight: { xs: "3.5rem", md: "4.5rem" } }}>
             {typedText}
           </Typography>
-          <Typography
-            variant="h5"
-            sx={{
-              mb: 4,
-              opacity: 0.8,
-              maxWidth: 600,
-              mx: "auto",
-            }}
-          >
-            Smart talent matching • Crypto-native payments • Zero-friction team
-            ops. Build your dream team in the Web3 era.
+          <Typography variant="h5" sx={{ mb: 4, opacity: 0.8, maxWidth: 600, mx: "auto" }}>
+            Find ICP developers, blockchain engineers, and Web3 talent. AI-powered job matching for DeFinity ecosystem with smart contract agreements.
+          </Typography>
+          <Typography variant="body1" sx={{ mb: 6, opacity: 0.7 }}>
+            Connect top blockchain developers with innovative projects. From Rust canister development to full-stack Web3 applications.
           </Typography>
         </Container>
       </Box>
 
-      {/* Journey Steps */}
-
       <AIConversationStep />
-
       <JobMatchingStep />
-
       <EmailNotificationsStep />
       <CallToActionStep />
-
       <CalendarStep />
-
       <CryptoAgreementStep />
-
       <CryptoAgreementProofsStep />
-
       <ProjectManagementStep />
-
       <SocialMediaShare />
-      {/* Footer */}
       <SimpleFooter />
     </Box>
   );
