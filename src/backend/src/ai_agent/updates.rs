@@ -40,8 +40,6 @@ pub async fn ask_ai(
 
     let model = if quick {
         "llama-3.1-8b-instant"
-    } else if prompt.split_whitespace().count() > 700 {
-        "llama-3.3-70b-versatile"
     } else {
         "llama-3.3-70b-versatile"
     };
@@ -138,6 +136,7 @@ pub async fn ask_ai(
         response: response_text,
     })
 }
+
 
 #[query]
 fn transform(raw: TransformArgs) -> HttpResponse {

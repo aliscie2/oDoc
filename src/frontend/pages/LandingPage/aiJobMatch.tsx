@@ -1777,7 +1777,7 @@ const LandingPage = () => {
 
       <Helmet>
         <title>
-          {window.location.hostname} - AI-Powered Job Matching for ICP Ecosystem
+          {window.location.hostname} - AI-Powered Job Matching for ICP Ecosystem ICP jobs
         </title>
         <meta
           name="description"
