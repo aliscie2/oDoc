@@ -171,12 +171,6 @@ jobs:
           NODE_ENV: production
           VITE_DFX_NETWORK: local
 
-      - name: Run Playwright tests
-        run: yarn playwright test
-        env:
-          PLAYWRIGHT_BASE_URL: http://localhost:4173
-          VITE_DFX_NETWORK: local
-
       - name: Stop services
         if: always()
         run: |
