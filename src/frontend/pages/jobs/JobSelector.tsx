@@ -1,6 +1,13 @@
 import { Job } from "$/declarations/backend/backend.did";
 import { backendActor } from "@/utils/backendUtils";
-import { Add, Delete, Share, Visibility } from "@mui/icons-material";
+import {
+  Add,
+  Delete,
+  Share,
+  Visibility,
+  PlayArrow,
+  Pause,
+} from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -144,31 +151,41 @@ const JobSelector: React.FC = () => {
   const jobActions = [
     {
       action: "toggle",
-      icon: (job: Job) => (job.active ? "active" : "inactive"),
-      color: (job: Job) => (job.active ? "success" : "error"),
-      disabled: (job: Job) => false,
+      icon: (job: Job) =>
+        job.active ? (
+          <Pause fontSize="small" />
+        ) : (
+          <PlayArrow fontSize="small" />
+        ),
+      color: (job: Job) =>
+        job.active ? theme.palette.warning.main : theme.palette.success.main,
+      tooltip: (job: Job) =>
+        job.active ? "Pause job posting" : "Activate job posting",
+      disabled: () => false,
     },
     {
       action: "details",
-      icon: (job: Job) => <Visibility fontSize="small" />,
-      color: (job: Job) => theme.palette.info.main,
-      disabled: (job: Job) => false,
+      icon: () => <Visibility fontSize="small" />,
+      color: () => theme.palette.info.main,
+      tooltip: () => "View job details",
+      disabled: () => false,
     },
     {
       action: "copy",
-      icon: (job: Job) => <Share fontSize="small" />,
-      color: (job: Job) =>
+      icon: () => <Share fontSize="small" />,
+      color: () =>
         copySuccess ? theme.palette.success.main : theme.palette.info.main,
       tooltip: (job: Job) =>
         copySuccess
           ? "Link copied successfully!"
           : `Copy your ${getJobCategory(job)} link`,
-      disabled: (job: Job) => false,
+      disabled: () => false,
     },
     {
       action: "delete",
-      icon: (job: Job) => <Delete fontSize="small" />,
-      color: (job: Job) => theme.palette.error.main,
+      icon: () => <Delete fontSize="small" />,
+      color: () => theme.palette.error.main,
+      tooltip: () => "Delete job posting",
       disabled: (job: Job) =>
         currentJob?.skills?.length === 0 && jobs.length === 1,
     },
@@ -180,31 +197,89 @@ const JobSelector: React.FC = () => {
       value={job.id}
       onClick={() => handleJobSelect(job.id)}
       data-testid={`job-menu-item-${job.id}`}
-      sx={{ py: 1, "&:hover": { bgcolor: theme.palette.action.hover } }}
+      sx={{
+        py: 2, // More breathing room
+        "&:hover": {
+          bgcolor: theme.palette.action.hover,
+          "& .job-actions": { opacity: 1 }, // Show actions on hover
+        },
+      }}
     >
       <Box sx={{ width: "100%" }}>
         <Box
-          sx={{ display: "flex", alignItems: "center", gap: 1, width: "100%" }}
+          sx={{
+            display: "flex",
+            alignItems: "flex-start",
+            gap: 2,
+            width: "100%",
+          }}
         >
-          <Chip
-            label={getJobCategory(job)}
-            size="small"
-            color="secondary"
-            variant="outlined"
-          />
           <Box sx={{ flex: 1, minWidth: 0 }}>
+            {/* Job title as primary focus */}
             <Typography
-              variant="body1"
+              variant="subtitle1"
               sx={{
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
+                fontWeight: 500,
+                mb: 0.5,
+                color: theme.palette.text.primary,
               }}
             >
               {getJobTitle(job)}
             </Typography>
+
+            {/* Category and status as secondary info */}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+              <Typography
+                variant="caption"
+                sx={{
+                  color: theme.palette.text.secondary,
+                  fontSize: "0.75rem",
+                }}
+              >
+                {getJobCategory(job)}
+              </Typography>
+              {/* Subtle status indicator */}
+              <Box
+                sx={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: "50%",
+                  backgroundColor: job.active
+                    ? theme.palette.success.main
+                    : theme.palette.grey[400],
+                }}
+              />
+              <Typography
+                variant="caption"
+                sx={{
+                  color: job.active
+                    ? theme.palette.success.main
+                    : theme.palette.text.disabled,
+                  fontSize: "0.7rem",
+                  fontWeight: 400,
+                }}
+              >
+                {job.active ? "Active" : "Inactive"}
+              </Typography>
+            </Box>
+
+            {/* Subtle progress bar */}
+            <JobCompletionProgress job={job} />
           </Box>
-          <Box sx={{ display: "flex", gap: 1 }}>
+
+          {/* Minimized action buttons */}
+          <Box
+            className="job-actions"
+            sx={{
+              display: "flex",
+              gap: 0.5,
+              opacity: 0.3, // Hidden by default
+              transition: "opacity 0.2s ease",
+            }}
+          >
             {jobActions.map(({ action, icon, color, tooltip, disabled }) => {
               const isDisabled = disabled(job);
               const buttonColor = color(job);
@@ -212,34 +287,15 @@ const JobSelector: React.FC = () => {
                 <IconButton
                   size="small"
                   disabled={isDisabled}
-                  color={
-                    typeof buttonColor === "string" &&
-                    [
-                      "primary",
-                      "secondary",
-                      "success",
-                      "error",
-                      "info",
-                      "warning",
-                    ].includes(buttonColor)
-                      ? (buttonColor as any)
-                      : undefined
-                  }
                   onClick={(event) => handleJobAction(job, action, event)}
                   sx={{
-                    color:
-                      typeof buttonColor === "string" &&
-                      ![
-                        "primary",
-                        "secondary",
-                        "success",
-                        "error",
-                        "info",
-                        "warning",
-                      ].includes(buttonColor)
-                        ? buttonColor
-                        : undefined,
-                    "&:hover": { bgcolor: theme.palette.info.light + "20" },
+                    color: theme.palette.text.secondary,
+                    "&:hover": {
+                      bgcolor: theme.palette.action.hover,
+                      color: buttonColor,
+                    },
+                    width: 28,
+                    height: 28,
                   }}
                 >
                   {icon(job)}
@@ -254,9 +310,6 @@ const JobSelector: React.FC = () => {
               );
             })}
           </Box>
-        </Box>
-        <Box sx={{ mt: 1, px: 0.5 }}>
-          <JobCompletionProgress job={job} />
         </Box>
       </Box>
     </MenuItem>
@@ -278,8 +331,13 @@ const JobSelector: React.FC = () => {
         elevation={0}
         sx={{
           border: `1px solid ${theme.palette.divider}`,
+          borderRadius: 2,
           overflow: "hidden",
           transition: "all 0.3s ease",
+          bgcolor: theme.palette.background.paper,
+          "&:hover": {
+            borderColor: theme.palette.primary.main + "40",
+          },
         }}
       >
         <Select
@@ -296,32 +354,74 @@ const JobSelector: React.FC = () => {
             bgcolor: theme.palette.background.paper,
           }}
           renderValue={() => (
-            <Box sx={{ width: "100%" }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                {currentJob ? (
-                  <>
-                    <Chip
-                      label={getJobCategory(currentJob)}
-                      size="small"
-                      color="primary"
-                      variant="outlined"
-                    />
-                    <Typography variant="body1" sx={{ flex: 1 }}>
-                      {getJobTitle(currentJob)}
+            <Box sx={{ width: "100%", py: 1 }}>
+              {currentJob ? (
+                <Box>
+                  {/* Job title as primary focus */}
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      fontWeight: 500,
+                      mb: 0.5,
+                      color: theme.palette.text.primary,
+                    }}
+                  >
+                    {getJobTitle(currentJob)}
+                  </Typography>
+
+                  {/* Category and status as secondary info */}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      mb: 1,
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: theme.palette.text.secondary,
+                        fontSize: "0.75rem",
+                      }}
+                    >
+                      {getJobCategory(currentJob)}
                     </Typography>
-                  </>
-                ) : (
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <Add sx={{ color: theme.palette.text.secondary }} />
-                    <Typography variant="body1" color="textSecondary">
-                      Select or create a job
+                    <Box
+                      sx={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: "50%",
+                        backgroundColor: currentJob.active
+                          ? theme.palette.success.main
+                          : theme.palette.grey[400],
+                      }}
+                    />
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: currentJob.active
+                          ? theme.palette.success.main
+                          : theme.palette.text.disabled,
+                        fontSize: "0.7rem",
+                        fontWeight: 400,
+                      }}
+                    >
+                      {currentJob.active ? "Active" : "Inactive"}
                     </Typography>
                   </Box>
-                )}
-              </Box>
-              {currentJob && (
-                <Box sx={{ mt: 1 }}>
+
+                  {/* Subtle progress bar */}
                   <JobCompletionProgress job={currentJob} />
+                </Box>
+              ) : (
+                <Box
+                  sx={{ display: "flex", alignItems: "center", gap: 1, py: 1 }}
+                >
+                  <Add sx={{ color: theme.palette.text.secondary }} />
+                  <Typography variant="body1" color="textSecondary">
+                    Select or create a job
+                  </Typography>
                 </Box>
               )}
             </Box>
@@ -333,29 +433,75 @@ const JobSelector: React.FC = () => {
             disabled={jobs.length >= MAX_JOBS}
             data-testid="create-new-job-option"
             sx={{
-              py: 1,
+              py: 2,
               borderBottom:
                 jobs.length > 0 ? `1px solid ${theme.palette.divider}` : "none",
+              bgcolor:
+                jobs.length >= MAX_JOBS
+                  ? "transparent"
+                  : theme.palette.primary.main + "08", // Subtle highlight
+              "&:hover": {
+                bgcolor:
+                  jobs.length >= MAX_JOBS
+                    ? theme.palette.action.hover
+                    : theme.palette.primary.main + "12",
+              },
             }}
           >
             <Box
               sx={{
                 display: "flex",
                 alignItems: "center",
-                gap: 1,
+                gap: 2,
                 width: "100%",
               }}
             >
-              <Add color={jobs.length >= MAX_JOBS ? "disabled" : "primary"} />
+              <Box
+                sx={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 1,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  bgcolor:
+                    jobs.length >= MAX_JOBS
+                      ? theme.palette.grey[200]
+                      : theme.palette.primary.main + "15",
+                }}
+              >
+                <Add
+                  sx={{
+                    color:
+                      jobs.length >= MAX_JOBS
+                        ? theme.palette.text.disabled
+                        : theme.palette.primary.main,
+                    fontSize: 20,
+                  }}
+                />
+              </Box>
               <Box sx={{ flex: 1 }}>
                 <Typography
-                  variant="body1"
-                  color={jobs.length >= MAX_JOBS ? "textSecondary" : "primary"}
+                  variant="subtitle1"
+                  sx={{
+                    fontWeight: 500,
+                    color:
+                      jobs.length >= MAX_JOBS
+                        ? theme.palette.text.disabled
+                        : theme.palette.primary.main,
+                    mb: jobs.length >= MAX_JOBS ? 0.5 : 0,
+                  }}
                 >
                   Create New Job Post
                 </Typography>
                 {jobs.length >= MAX_JOBS && (
-                  <Typography variant="caption" color="error">
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: theme.palette.error.main,
+                      fontSize: "0.7rem",
+                    }}
+                  >
                     Maximum limit reached ({MAX_JOBS}/{MAX_JOBS})
                   </Typography>
                 )}
@@ -378,8 +524,8 @@ const JobSelector: React.FC = () => {
         onClose={() => setDialogOpen(false)}
         maxWidth="md"
         fullWidth
-        PaperProps={{
-          sx: {
+        sx={{
+          "& .MuiDialog-paper": {
             borderRadius: { xs: 0, sm: 2 },
             m: { xs: 0, sm: 2 },
             maxHeight: { xs: "100vh", sm: "90vh" },
@@ -387,8 +533,6 @@ const JobSelector: React.FC = () => {
             width: { xs: "100vw", sm: "auto" },
             maxWidth: { xs: "100vw", sm: "none" },
           },
-        }}
-        sx={{
           "& .MuiDialog-container": {
             alignItems: { xs: "stretch", sm: "center" },
             p: { xs: 0, sm: 3 },

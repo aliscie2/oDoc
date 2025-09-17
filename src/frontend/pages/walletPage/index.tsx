@@ -39,6 +39,7 @@ import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { depositWithOisy } from "./useOisy";
 import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
+import { usdcConverter } from "@/utils/usdcLedger";
 
 // Enhanced Types
 interface TransactionType {
@@ -80,7 +81,7 @@ interface ReduxState {
 }
 
 type DialogType = "" | "deposit" | "withdraw" | "pay";
-type DepositMethod = "address" | "oisy";
+type DepositMethod = "address" | "oisy" | "usdc";
 
 interface ActionButton {
   type: DialogType;
@@ -390,6 +391,8 @@ const DepositDialog: React.FC<{
   const { profile } = useSelector((state: ReduxState) => state.filesState);
   const [depositMethod, setDepositMethod] = useState<DepositMethod>("address");
   const [oisyAmount, setOisyAmount] = useState<string>("");
+  const [usdcAmount, setUsdcAmount] = useState<string>("");
+  const [usdcBalance, setUsdcBalance] = useState<string>("0");
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const { enqueueSnackbar } = useSnackbar();
 
@@ -424,6 +427,60 @@ const DepositDialog: React.FC<{
     }
   };
 
+  const handleUSDCDeposit = async (): Promise<void> => {
+    if (
+      !usdcAmount ||
+      isNaN(Number(usdcAmount)) ||
+      parseFloat(usdcAmount) <= 0
+    ) {
+      enqueueSnackbar("Please enter a valid amount", { variant: "error" });
+      return;
+    }
+
+    if (!profile) {
+      enqueueSnackbar("Profile not found", { variant: "error" });
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const result = await usdcConverter.convertUSDC(
+        parseFloat(usdcAmount),
+        profile.id,
+      );
+
+      if (result.success) {
+        enqueueSnackbar(
+          `Conversion initiated! Deposit hash: ${result.depositHash.slice(0, 10)}... ckUSDC will appear in ~20 minutes`,
+          { variant: "success", autoHideDuration: 8000 },
+        );
+        onClose();
+        setUsdcAmount("");
+      }
+    } catch (error: any) {
+      if (error.message.includes("No wallets detected")) {
+        enqueueSnackbar("Please install MetaMask or OKX Wallet", {
+          variant: "error",
+        });
+      } else {
+        enqueueSnackbar(error.message || "USDC conversion failed", {
+          variant: "error",
+        });
+      }
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const loadUSDCBalance = async (): Promise<void> => {
+    try {
+      const balance = await usdcConverter.getUSDCBalance();
+      setUsdcBalance(balance);
+    } catch (error) {
+      console.warn("Could not load USDC balance:", error);
+    }
+  };
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>
@@ -446,6 +503,16 @@ const DepositDialog: React.FC<{
               Deposit with Address
             </Button>
             <Button
+              variant={depositMethod === "usdc" ? "contained" : "outlined"}
+              onClick={() => {
+                setDepositMethod("usdc");
+                loadUSDCBalance();
+              }}
+              fullWidth
+            >
+              Convert USDC
+            </Button>
+            <Button
               variant={depositMethod === "oisy" ? "contained" : "outlined"}
               onClick={() => setDepositMethod("oisy")}
               fullWidth
@@ -461,19 +528,8 @@ const DepositDialog: React.FC<{
             </Button>
           </Stack>
 
-          {depositMethod === "address" ? (
+          {depositMethod === "address" && (
             <Box>
-              <Typography variant="subtitle2" gutterBottom>
-                Copy your address and go to{" "}
-                <Link
-                  href="https://oisy.com/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  oisy.com
-                </Link>{" "}
-                to transfer CKUSDC to your wallet.
-              </Typography>
               <TextField
                 fullWidth
                 variant="outlined"
@@ -494,7 +550,48 @@ const DepositDialog: React.FC<{
                 automatically.
               </Typography>
             </Box>
-          ) : (
+          )}
+
+          {depositMethod === "usdc" && (
+            <Box>
+              <Typography variant="subtitle2" gutterBottom>
+                Convert your USDC to ckUSDC on {usdcConverter.getNetworkName()}{" "}
+                (~20 minutes):
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                Available USDC Balance: ${usdcBalance}
+              </Typography>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <TextField
+                  label="Amount (USDC)"
+                  type="number"
+                  value={usdcAmount}
+                  onChange={(e) => setUsdcAmount(e.target.value)}
+                  sx={{ flex: 1 }}
+                />
+                <Button
+                  variant="contained"
+                  onClick={handleUSDCDeposit}
+                  disabled={isProcessing || !usdcAmount}
+                  startIcon={
+                    isProcessing ? <CircularProgress size={20} /> : null
+                  }
+                >
+                  {isProcessing ? "Converting..." : "Convert"}
+                </Button>
+              </Stack>
+              <Typography variant="body2" color="warning.main" sx={{ mt: 1 }}>
+                This requires 2 MetaMask transactions: approve + deposit
+              </Typography>
+              {import.meta.env.VITE_DFX_NETWORK !== "ic" && (
+                <Typography variant="body2" color="info.main" sx={{ mt: 1 }}>
+                  Testing on Sepolia - get test USDC from Circle's faucet
+                </Typography>
+              )}
+            </Box>
+          )}
+
+          {depositMethod === "oisy" && (
             <Box>
               <Typography variant="subtitle2" gutterBottom>
                 Enter amount to deposit directly through Oisy integration:

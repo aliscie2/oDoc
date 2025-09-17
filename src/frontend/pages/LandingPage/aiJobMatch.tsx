@@ -560,6 +560,7 @@ const CallToActionStep = () => {
             </Typography>
 
             <LoginButton
+              onMouseDown={() => localStorage.setItem("UserType", "TALENT")}
               sx={{
                 width: "100%",
                 backgroundColor: "rgba(255, 255, 255, 0.2)",
@@ -608,6 +609,7 @@ const CallToActionStep = () => {
             </Typography>
 
             <LoginButton
+              onMouseDown={() => localStorage.setItem("UserType", "JOB")}
               sx={{
                 width: "100%",
                 backgroundColor: "rgba(255, 255, 255, 0.2)",
@@ -1159,6 +1161,11 @@ const CryptoAgreementProofsStep = () => {
       const container = containerRef.current;
       if (!container) return;
 
+      // Skip scroll effects on mobile devices
+      if (window.innerWidth < 768) {
+        return;
+      }
+
       const rect = container.getBoundingClientRect();
       const windowHeight = window.innerHeight;
 
@@ -1173,45 +1180,112 @@ const CryptoAgreementProofsStep = () => {
       }
     };
 
+    // Add a simple auto-rotation for mobile devices
+    let interval: NodeJS.Timeout;
+    if (window.innerWidth < 768) {
+      interval = setInterval(() => {
+        setActiveIndex((prev) => (prev + 1) % proofs.length);
+      }, 3000);
+    }
+
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (interval) clearInterval(interval);
+    };
   }, [proofs.length]);
 
   return (
-    <Box ref={containerRef} sx={{ height: "400vh", py: 8 }}>
-      <Box sx={{ position: "sticky", top: "20vh", height: "60vh" }}>
+    <Box
+      ref={containerRef}
+      sx={{
+        height: { xs: "auto", md: "400vh" },
+        py: 8,
+        minHeight: { xs: "100vh", md: "auto" },
+      }}
+    >
+      <Box
+        sx={{
+          position: { xs: "static", md: "sticky" },
+          top: { xs: "auto", md: "20vh" },
+          height: { xs: "auto", md: "60vh" },
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
         <Container maxWidth="md">
           <Typography
             variant="h2"
-            sx={{ textAlign: "center", mb: 8, fontWeight: 700 }}
+            sx={{
+              textAlign: "center",
+              mb: { xs: 4, md: 8 },
+              fontWeight: 700,
+              fontSize: { xs: "2rem", md: "3rem" },
+            }}
           >
             Crypto Agreement Proofs
           </Typography>
 
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: { xs: 2, md: 3 },
+            }}
+          >
             {proofs.map((proof, index) => (
               <Box
                 key={index}
                 sx={{
                   display: "flex",
-                  alignItems: "center",
-                  gap: 3,
-                  p: 3,
+                  alignItems: { xs: "flex-start", md: "center" },
+                  gap: { xs: 2, md: 3 },
+                  p: { xs: 2, md: 3 },
                   borderRadius: 2,
-                  opacity: activeIndex === index ? 1 : 0.3,
-                  transform: activeIndex === index ? "scale(1.05)" : "scale(1)",
+                  opacity: { xs: 1, md: activeIndex === index ? 1 : 0.3 },
+                  transform: {
+                    xs: "none",
+                    md: activeIndex === index ? "scale(1.05)" : "scale(1)",
+                  },
                   transition: "all 0.5s ease",
+                  flexDirection: { xs: "column", sm: "row" },
+                  textAlign: { xs: "center", sm: "left" },
+                  border: { xs: "1px solid", md: "none" },
+                  borderColor: { xs: "divider", md: "transparent" },
+                  backgroundColor: {
+                    xs: "background.paper",
+                    md: "transparent",
+                  },
                 }}
               >
-                <Box sx={{ fontSize: "2.5rem", flexShrink: 0 }}>
+                <Box
+                  sx={{
+                    fontSize: { xs: "2rem", md: "2.5rem" },
+                    flexShrink: 0,
+                    alignSelf: { xs: "center", sm: "flex-start" },
+                  }}
+                >
                   {proof.icon}
                 </Box>
 
-                <Box>
-                  <Typography variant="h5" sx={{ mb: 1, fontWeight: 600 }}>
+                <Box sx={{ flex: 1 }}>
+                  <Typography
+                    variant="h5"
+                    sx={{
+                      mb: 1,
+                      fontWeight: 600,
+                      fontSize: { xs: "1.25rem", md: "1.5rem" },
+                    }}
+                  >
                     {proof.title}
                   </Typography>
-                  <Typography variant="body1" sx={{ opacity: 0.8 }}>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      opacity: 0.8,
+                      fontSize: { xs: "0.9rem", md: "1rem" },
+                    }}
+                  >
                     {proof.subtitle}
                   </Typography>
                 </Box>
@@ -1764,33 +1838,44 @@ const SimpleFooter = () => {
 const SEOComponent = () => {
   const seoData = {
     title: `${window.location.hostname} - ICP Jobs & Blockchain Developer Careers | AI Job Matching`,
-    description: "Find blockchain developer jobs, ICP careers, and Web3 talent. AI-powered job matching platform for Internet Computer Protocol ecosystem. Smart contracts, remote positions, DeFinity careers.",
-    keywords: "ICP jobs, blockchain developer jobs, DeFinity careers, Web3 jobs, Internet Computer Protocol jobs, blockchain engineer, smart contract developer, Rust developer, canister development, Web3 talent, blockchain recruitment, ICP project manager, crypto jobs, decentralized jobs, blockchain careers",
+    description:
+      "Find blockchain developer jobs, ICP careers, and Web3 talent. AI-powered job matching platform for Internet Computer Protocol ecosystem. Smart contracts, remote positions, DeFinity careers.",
+    keywords:
+      "ICP jobs, blockchain developer jobs, DeFinity careers, Web3 jobs, Internet Computer Protocol jobs, blockchain engineer, smart contract developer, Rust developer, canister development, Web3 talent, blockchain recruitment, ICP project manager, crypto jobs, decentralized jobs, blockchain careers",
     structuredData: {
       "@context": "https://schema.org",
       "@type": "WebSite",
-      "name": window.location.hostname,
-      "url": window.location.origin,
-      "description": "AI-powered job matching platform for blockchain developers and Web3 talent in the ICP ecosystem",
-      "potentialAction": {
+      name: window.location.hostname,
+      url: window.location.origin,
+      description:
+        "AI-powered job matching platform for blockchain developers and Web3 talent in the ICP ecosystem",
+      potentialAction: {
         "@type": "SearchAction",
-        "target": `${window.location.origin}/search?q={search_term_string}`,
-        "query-input": "required name=search_term_string"
-      }
+        target: `${window.location.origin}/search?q={search_term_string}`,
+        "query-input": "required name=search_term_string",
+      },
     },
     jobPostingData: {
       "@context": "https://schema.org",
       "@type": "JobPosting",
-      "title": "Blockchain Developer - ICP Ecosystem",
-      "description": "Join the Internet Computer Protocol ecosystem. Remote blockchain development positions available.",
-      "hiringOrganization": {
+      title: "Blockchain Developer - ICP Ecosystem",
+      description:
+        "Join the Internet Computer Protocol ecosystem. Remote blockchain development positions available.",
+      hiringOrganization: {
         "@type": "Organization",
-        "name": window.location.hostname
+        name: window.location.hostname,
       },
-      "employmentType": "FULL_TIME",
-      "workHours": "Remote",
-      "skills": ["Rust", "TypeScript", "Blockchain", "Smart Contracts", "ICP", "Web3"]
-    }
+      employmentType: "FULL_TIME",
+      workHours: "Remote",
+      skills: [
+        "Rust",
+        "TypeScript",
+        "Blockchain",
+        "Smart Contracts",
+        "ICP",
+        "Web3",
+      ],
+    },
   };
 
   return (
@@ -1799,87 +1884,97 @@ const SEOComponent = () => {
       <meta name="description" content={seoData.description} />
       <meta name="keywords" content={seoData.keywords} />
       <link rel="canonical" href={window.location.href} />
-      
+
       {/* Open Graph */}
       <meta property="og:type" content="website" />
       <meta property="og:url" content={window.location.href} />
       <meta property="og:title" content={seoData.title} />
       <meta property="og:description" content={seoData.description} />
-      <meta property="og:image" content={`${window.location.origin}/thumbnail.png`} />
+      <meta
+        property="og:image"
+        content={`${window.location.origin}/thumbnail.png`}
+      />
       <meta property="og:site_name" content={window.location.hostname} />
 
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={seoData.title} />
       <meta name="twitter:description" content={seoData.description} />
-      <meta name="twitter:image" content={`${window.location.origin}/thumbnail.png`} />
+      <meta
+        name="twitter:image"
+        content={`${window.location.origin}/thumbnail.png`}
+      />
 
       {/* Structured Data */}
-      <script type="application/ld+json">{JSON.stringify(seoData.structuredData)}</script>
-      <script type="application/ld+json">{JSON.stringify(seoData.jobPostingData)}</script>
+      <script type="application/ld+json">
+        {JSON.stringify(seoData.structuredData)}
+      </script>
+      <script type="application/ld+json">
+        {JSON.stringify(seoData.jobPostingData)}
+      </script>
     </Helmet>
   );
 };
-
 
 const FAQSection = () => {
   const faqs = [
     {
       q: "How does AI job matching work for blockchain developers?",
-      a: "Our AI analyzes your skills, experience, and preferences to match you with relevant ICP projects, blockchain startups, and Web3 companies. The system learns from successful matches to improve recommendations."
+      a: "Our AI analyzes your skills, experience, and preferences to match you with relevant ICP projects, blockchain startups, and Web3 companies. The system learns from successful matches to improve recommendations.",
     },
     {
       q: "What types of ICP jobs are available?",
-      a: "We feature Rust developers, canister engineers, full-stack Web3 developers, blockchain architects, project managers, and technical leads specializing in Internet Computer Protocol development."
+      a: "We feature Rust developers, canister engineers, full-stack Web3 developers, blockchain architects, project managers, and technical leads specializing in Internet Computer Protocol development.",
     },
     {
       q: "How do crypto agreements and smart contracts work?",
-      a: "Our platform creates secure blockchain-based employment agreements with built-in escrow, milestone tracking, and automated payments. All contracts are transparent and immutable on the blockchain."
+      a: "Our platform creates secure blockchain-based employment agreements with built-in escrow, milestone tracking, and automated payments. All contracts are transparent and immutable on the blockchain.",
     },
     {
       q: "Is the platform free for job seekers?",
-      a: "Yes, job seekers can create profiles, receive AI matches, and apply to positions completely free. Premium features include priority matching and advanced filtering options."
+      a: "Yes, job seekers can create profiles, receive AI matches, and apply to positions completely free. Premium features include priority matching and advanced filtering options.",
     },
     {
       q: "What makes this different from other job boards?",
-      a: "We're built specifically for the Web3 ecosystem with AI-powered matching, integrated smart contracts, automated scheduling, and native crypto payments - eliminating traditional hiring friction."
+      a: "We're built specifically for the Web3 ecosystem with AI-powered matching, integrated smart contracts, automated scheduling, and native crypto payments - eliminating traditional hiring friction.",
     },
     {
       q: "How do I get started as a blockchain developer?",
-      a: "Simply create your profile, describe your Web3 experience and interests, and our AI will immediately start finding relevant opportunities in the ICP ecosystem and broader blockchain space."
-    }
+      a: "Simply create your profile, describe your Web3 experience and interests, and our AI will immediately start finding relevant opportunities in the ICP ecosystem and broader blockchain space.",
+    },
   ];
 
   const structuredFAQ = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    "mainEntity": faqs.map(faq => ({
+    mainEntity: faqs.map((faq) => ({
       "@type": "Question",
-      "name": faq.q,
-      "acceptedAnswer": {
+      name: faq.q,
+      acceptedAnswer: {
         "@type": "Answer",
-        "text": faq.a
-      }
-    }))
+        text: faq.a,
+      },
+    })),
   };
 
   return (
     <Helmet>
-      <script type="application/ld+json">{JSON.stringify(structuredFAQ)}</script>
+      <script type="application/ld+json">
+        {JSON.stringify(structuredFAQ)}
+      </script>
     </Helmet>
   );
 };
-
 
 // Main Landing Page Component
 const LandingPage = () => {
   const texts = [
     "AI Workforce Copilot",
-    "ICP Job Matching", 
+    "ICP Job Matching",
     "Blockchain Careers",
     "Web3 Talent Hub",
     "DeFinity Jobs",
-    "Smart Contracts"
+    "Smart Contracts",
   ];
   const typedText = useTypingAnimation(texts, 100);
 
@@ -1887,18 +1982,40 @@ const LandingPage = () => {
     <Box sx={{ position: "relative" }}>
       <SEOComponent />
       <FAQSection />
-      
+
       {/* Hero Section */}
-      <Box sx={{ minHeight: "100vh", display: "flex", alignItems: "center", textAlign: "center", py: 8 }}>
+      <Box
+        sx={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          textAlign: "center",
+          py: 8,
+        }}
+      >
         <Container maxWidth="md">
-          <Typography variant="h1" sx={{ mb: 3, fontWeight: 700, fontSize: { xs: "2.5rem", md: "3.5rem" }, minHeight: { xs: "3.5rem", md: "4.5rem" } }}>
+          <Typography
+            variant="h1"
+            sx={{
+              mb: 3,
+              fontWeight: 700,
+              fontSize: { xs: "2.5rem", md: "3.5rem" },
+              minHeight: { xs: "3.5rem", md: "4.5rem" },
+            }}
+          >
             {typedText}
           </Typography>
-          <Typography variant="h5" sx={{ mb: 4, opacity: 0.8, maxWidth: 600, mx: "auto" }}>
-            Find ICP developers, blockchain engineers, and Web3 talent. AI-powered job matching for DeFinity ecosystem with smart contract agreements.
+          <Typography
+            variant="h5"
+            sx={{ mb: 4, opacity: 0.8, maxWidth: 600, mx: "auto" }}
+          >
+            Find ICP developers, blockchain engineers, and Web3 talent.
+            AI-powered job matching for DeFinity ecosystem with smart contract
+            agreements.
           </Typography>
           <Typography variant="body1" sx={{ mb: 6, opacity: 0.7 }}>
-            Connect top blockchain developers with innovative projects. From Rust canister development to full-stack Web3 applications.
+            Connect top blockchain developers with innovative projects. From
+            Rust canister development to full-stack Web3 applications.
           </Typography>
         </Container>
       </Box>

@@ -14,14 +14,9 @@ export const MessageBubble = ({
   const isUser = msg.type === "user";
   const [isVisible, setIsVisible] = useState(false);
 
-  // Quick appear animation for user messages
   useEffect(() => {
-    if (isUser) {
-      const timer = setTimeout(() => setIsVisible(true), 50);
-      return () => clearTimeout(timer);
-    } else {
-      setIsVisible(true);
-    }
+    const timer = setTimeout(() => setIsVisible(true), isUser ? 50 : 100);
+    return () => clearTimeout(timer);
   }, [isUser]);
 
   const bubbleStyles = {
@@ -38,13 +33,9 @@ export const MessageBubble = ({
       : `1px solid ${isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)"}`,
     backdropFilter: !isUser ? "blur(10px)" : undefined,
     WebkitBackdropFilter: !isUser ? "blur(10px)" : undefined,
-    opacity: isUser ? (isVisible ? 1 : 0) : 1,
-    transform: isUser
-      ? isVisible
-        ? "translateY(0)"
-        : "translateY(10px)"
-      : "none",
-    transition: isUser ? "all 0.3s ease-out" : "none",
+    opacity: isVisible ? 1 : 0,
+    transform: isVisible ? "translateY(0)" : "translateY(10px)",
+    transition: "all 0.3s ease-out",
   };
 
   return (
@@ -56,12 +47,12 @@ export const MessageBubble = ({
       }}
     >
       <Box sx={bubbleStyles}>
-        {msg.type === "ai" && msg.isTyping ? (
+        {msg.type === "ai" ? (
           <TypingMarkdownMessage
             text={msg.message}
             onComplete={() => onTypingComplete(msg.id)}
             onProgress={onTypingProgress}
-            isStreaming={true}
+            isStreaming={false}
           />
         ) : (
           <MarkdownMessage message={msg.message} isUser={isUser} />

@@ -8,12 +8,14 @@ import DfnIcon from "@/assets/dfn.svg";
 interface LoginButtonProps {
   isMobile?: boolean;
   sx?: React.CSSProperties | any;
+  onMouseDown?: () => void;
 }
 
 const LoginButton: React.FC<LoginButtonProps> = ({
   isMobile = false,
   sx = {},
   children = null,
+  onMouseDown = () => {},
 }) => {
   const { login } = useAuth();
   const { isFetching } = useSelector((state: RootState) => state.uiState);
@@ -33,7 +35,8 @@ const LoginButton: React.FC<LoginButtonProps> = ({
   return (
     <Button
       variant="contained"
-      onClick={login}
+      onMouseDown={onMouseDown}
+      onMouseUp={login}
       startIcon={
         <img
           src={DfnIcon}

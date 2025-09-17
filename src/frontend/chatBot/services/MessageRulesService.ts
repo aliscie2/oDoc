@@ -27,7 +27,9 @@ interface MessageFilters {
 }
 
 export class MessageRulesService {
-  private JOB_DETAILS = `\n\n**Let's get started:**\n- Are you looking for your next career move? \n- Or are you hiring and need to find the right candidates?\n\nTell me about your goals, preferred roles, skills, or what kind of talent you're seeking. The more details you share, the better I can assist you!`;
+  private JOB_DETAILS = "\n\nDescribe your ideal candidate - role, skills, experience level, and requirements!";
+private TALENT_DETAILS = "\n\nTell me about your goals, preferred roles, skills, and experience!";
+private GENERAL_DETAILS = "\n\nTell me your goals, skills, and what you're looking for!";
 
   constructor(
     private jobs: any[],
@@ -47,8 +49,13 @@ export class MessageRulesService {
         type: "immediate",
         priority: 1,
         condition: () => this.jobs.length === 0,
-        message: () =>
-          `👋 Welcome! I'm here to help you find the perfect opportunities or connect you with matching jobs or talent ${this.JOB_DETAILS}`,
+          message: () => {
+    const userType = localStorage.getItem("UserType");
+    if (userType === "TALENT") return `👋 Ready to find your next role?${this.TALENT_DETAILS}`;
+    if (userType === "JOB") return `👋 Need to hire?${this.JOB_DETAILS}`;
+    return `👋 Looking for talent or your next job?${this.GENERAL_DETAILS}`;
+  },
+
         actionType: "WELCOME_MESSAGE",
         canUndo: false,
         canRetry: false,
@@ -99,9 +106,7 @@ export class MessageRulesService {
         type: "immediate",
         priority: 2,
         condition: () => this.jobs.length > 0 && !this.currentJobId,
-        message:
-          "🚀 To create a new job or talent post, provide me full details about skills and requirements. " +
-          this.JOB_DETAILS,
+        message: "🚀 Ready for a new post? Give me the details!",
         actionType: "NEW_PROFILE_MESSAGE",
         canUndo: false,
         canRetry: false,

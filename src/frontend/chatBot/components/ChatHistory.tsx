@@ -13,6 +13,7 @@ export const ChatHistory = ({
 }: ChatHistoryProps) => {
   const theme = useTheme();
   const chatRef = useRef<HTMLDivElement>(null);
+  const prevHistoryLength = useRef(chatHistory.length);
 
   const scrollToBottom = useCallback(() => {
     if (chatRef.current) {
@@ -20,8 +21,12 @@ export const ChatHistory = ({
     }
   }, []);
 
-  // Auto-scroll when chat history changes
   useEffect(() => {
+    // Complete all typing animations when new message is added
+    if (chatHistory.length > prevHistoryLength.current) {
+      window.dispatchEvent(new Event("completeAllTyping"));
+    }
+    prevHistoryLength.current = chatHistory.length;
     scrollToBottom();
   }, [chatHistory, scrollToBottom]);
 

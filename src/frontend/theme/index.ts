@@ -29,7 +29,7 @@ function createPalette(isDarkMode: boolean) {
   };
 
   return {
-    mode: isDarkMode ? "dark" : "light",
+    mode: (isDarkMode ? "dark" : "light") as "dark" | "light",
     primary,
     secondary: {
       main: isDarkMode ? "#64748b" : "#475569", // Neutral blue-gray
@@ -71,6 +71,14 @@ const createComponents = (palette: any) => ({
         minHeight: "100vh",
         background: palette.background.default,
       },
+      '@keyframes pulse': {
+        '0%, 100%': {
+          opacity: 1,
+        },
+        '50%': {
+          opacity: 0.5,
+        },
+      },
     },
   },
 
@@ -79,7 +87,7 @@ const createComponents = (palette: any) => ({
       root: {
         background: palette.background.paper,
         backdropFilter: "blur(20px)",
-        border: `1px solid ${alpha(palette.divider, 0.5)}`,
+        border: `1px solid ${palette.mode === "dark" ? alpha(palette.divider, 0.5) : "#e2e8f0"}`,
         borderRadius: 16,
         transition: "all 0.3s ease",
         "&:hover": {
@@ -107,8 +115,9 @@ const createComponents = (palette: any) => ({
         },
       },
       outlined: {
-        background: palette.background.paper,
-        border: `1px solid ${alpha(palette.divider, 0.5)}`,
+        background:
+          palette.mode === "dark" ? palette.background.paper : "#ffffff",
+        border: `1px solid ${palette.mode === "dark" ? alpha(palette.divider, 0.5) : "#d1d5db"}`,
         backdropFilter: "blur(10px)",
         "&:hover": {
           background: alpha(palette.primary.main, 0.08),
@@ -122,11 +131,12 @@ const createComponents = (palette: any) => ({
     styleOverrides: {
       root: {
         "& .MuiOutlinedInput-root": {
-          background: palette.background.paper,
+          background:
+            palette.mode === "dark" ? palette.background.paper : "#ffffff",
           backdropFilter: "blur(10px)",
           borderRadius: 12,
           "& fieldset": {
-            border: `1px solid ${alpha(palette.divider, 0.5)}`,
+            border: `1px solid ${palette.mode === "dark" ? alpha(palette.divider, 0.5) : "#d1d5db"}`,
           },
           "&:hover fieldset": {
             border: `1px solid ${palette.primary.main}`,
@@ -143,14 +153,44 @@ const createComponents = (palette: any) => ({
   MuiChip: {
     styleOverrides: {
       root: {
-        background: palette.background.paper,
+        background:
+          palette.mode === "dark" ? palette.background.paper : "#f1f5f9",
         backdropFilter: "blur(10px)",
-        border: `1px solid ${alpha(palette.divider, 0.5)}`,
+        border: `1px solid ${palette.mode === "dark" ? alpha(palette.divider, 0.5) : "#d1d5db"}`,
         borderRadius: 20,
         transition: "all 0.3s ease",
         "&:hover": {
           transform: "translateY(-1px)",
           boxShadow: `0 4px 15px ${alpha(palette.primary.main, 0.2)}`,
+        },
+      },
+    },
+  },
+
+  MuiAvatar: {
+    styleOverrides: {
+      root: {
+        backgroundColor:
+          palette.mode === "dark"
+            ? baseColors.neutral[700]
+            : baseColors.neutral[200],
+        color:
+          palette.mode === "dark"
+            ? baseColors.neutral[300]
+            : baseColors.neutral[600],
+      },
+    },
+  },
+
+  MuiIconButton: {
+    styleOverrides: {
+      root: {
+        color:
+          palette.mode === "dark"
+            ? palette.text.secondary
+            : baseColors.neutral[500],
+        "&:hover": {
+          backgroundColor: alpha(palette.primary.main, 0.08),
         },
       },
     },

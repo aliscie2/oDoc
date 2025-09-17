@@ -47,7 +47,7 @@ const JobCompletionProgress: React.FC<JobCompletionProgressProps> = ({
 
   const getProgressColor = () => {
     if (percentage >= 80) return theme.palette.success.main;
-    if (percentage >= 60) return theme.palette.warning.main;
+    if (percentage >= 60) return theme.palette.info.main; // Replace orange with professional blue
     return theme.palette.error.main;
   };
 
@@ -60,23 +60,16 @@ const JobCompletionProgress: React.FC<JobCompletionProgressProps> = ({
             display: "flex",
             alignItems: "center",
             gap: 1,
-            opacity: 0.6,
-            filter: "grayscale(0.8)",
+            opacity: 0.5,
+            filter: "grayscale(0.9)",
           }}
         >
-          <Typography
-            variant="caption"
-            color="textSecondary"
-            sx={{ minWidth: "fit-content" }}
-          >
-            Profile Inactive
-          </Typography>
           <Box
             sx={{
               flex: 1,
-              height: 6,
-              borderRadius: 3,
-              backgroundColor: theme.palette.grey[300],
+              height: 3, // Thinner for inactive state too
+              borderRadius: 2,
+              backgroundColor: theme.palette.grey[200],
               position: "relative",
               overflow: "hidden",
             }}
@@ -118,13 +111,7 @@ const JobCompletionProgress: React.FC<JobCompletionProgressProps> = ({
            `}
           </style>
         </Box>
-        <Typography
-          variant="caption"
-          color="textSecondary"
-          sx={{ mt: 1, fontSize: "0.75rem" }}
-        >
-          This job is currently inactive and not visible to candidates
-        </Typography>
+
       </Box>
     );
   }
@@ -139,33 +126,27 @@ const JobCompletionProgress: React.FC<JobCompletionProgressProps> = ({
           gap: 1,
         }}
       >
-        <Typography
-          variant="caption"
-          color="textSecondary"
-          sx={{ minWidth: "fit-content" }}
-        >
-          Profile Completion
-        </Typography>
         <LinearProgress
           variant="determinate"
           value={percentage}
           sx={{
             flex: 1,
-            height: 6,
-            borderRadius: 3,
-            backgroundColor: theme.palette.grey[200],
+            height: 3, // Thinner progress bar
+            borderRadius: 2,
+            backgroundColor: theme.palette.grey[100],
             "& .MuiLinearProgress-bar": {
               backgroundColor: getProgressColor(),
-              borderRadius: 3,
+              borderRadius: 2,
             },
           }}
         />
         <Typography
           variant="caption"
           sx={{
-            color: getProgressColor(),
-            fontWeight: 500,
+            color: theme.palette.text.secondary, // More muted color
+            fontWeight: 400, // Less prominent weight
             minWidth: "fit-content",
+            fontSize: "0.7rem", // Smaller text
           }}
         >
           {Math.round(percentage)}%

@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import compressImage from "@/DataProcessing/compressImage";
+import { useAuth } from "@/hooks/useAuth";
+import { Add } from "@mui/icons-material";
 import {
   Avatar,
   Box,
@@ -8,14 +10,11 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { Add } from "@mui/icons-material";
 import { useSnackbar } from "notistack";
-import { backendActor } from "../../utils/backendUtils";
-import { RegisterUser } from "../../../declarations/backend/backend.did";
-import compressImage from "@/DataProcessing/compressImage";
+import React, { useState } from "react";
 import { useLocation } from "react-router-dom";
-import RunawayJellyfish from "../creature/runAeayJellyFish";
-import { useAuth } from "@/hooks/useAuth";
+import { RegisterUser } from "../../../declarations/backend/backend.did";
+import { backendActor } from "../../utils/backendUtils";
 
 // Utility function to convert File to Uint8Array
 const fileToUint8Array = (file: File): Promise<Uint8Array> => {
@@ -44,7 +43,7 @@ interface FormValues {
 const RegistrationForm: React.FC = () => {
   const { cleanUp } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
-  // Using direct backendActor import
+  const location = useLocation();
 
   const [formValues, setFormValues] = useState<FormValues>({
     username: "",
@@ -65,15 +64,12 @@ const RegistrationForm: React.FC = () => {
   const handleUploadPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const image = e.target.files?.[0];
     if (image) {
-      // const sizeInMB = image.size / (1024 * 1024);
       try {
         const compressedImage = await compressImage(image);
-        // const compressedSizeInMB = compressedImage.size / (1024 * 1024);
-        // console.log(`Compressed photo size: ${compressedSizeInMB.toFixed(2)} MB`);
         setPhoto(compressedImage);
       } catch (error) {
         console.error("Error compressing image:", error);
-        setPhoto(image); // Fallback to original if compression fails
+        setPhoto(image);
       }
     }
   };
@@ -85,9 +81,7 @@ const RegistrationForm: React.FC = () => {
     }
 
     setLoading(true);
-
     try {
-      // Convert photo to Uint8Array if it exists
       let photoBytes: Uint8Array | null = null;
       if (photo) {
         photoBytes = await fileToUint8Array(photo);
@@ -100,9 +94,7 @@ const RegistrationForm: React.FC = () => {
         email: formValues.email ? [formValues.email] : [],
       };
 
-      const affiliateId = "";
-      console.log({ affiliateId: "xxx" });
-      const result = await backendActor.register(affiliateId, input);
+      const result = await backendActor.register("", input);
 
       if (result?.Ok) {
         enqueueSnackbar(`Welcome ${result.Ok.name}, to Odoc`, {
@@ -113,101 +105,82 @@ const RegistrationForm: React.FC = () => {
         enqueueSnackbar(result.Err, { variant: "error" });
       }
     } catch (error) {
-      alert("Somethigng went wrong please try again in a second");
+      alert("Something went wrong please try again in a second");
       await cleanUp();
     } finally {
       setLoading(false);
     }
   };
 
-  const location = useLocation();
-
   return (
-    <Box sx={{ maxWidth: 400, mx: "auto", p: 3 }}>
-      <Typography
-        key={location.pathname}
-        hidden={location.pathname == "/"}
-        color="warning"
-        variant="h5"
-        align="center"
-        sx={{ mb: 1, fontWeight: 300 }}
-      >
-        Please, register first.
-      </Typography>
-      <Typography variant="h5" align="center" sx={{ mb: 1, fontWeight: 300 }}>
-        Welcome to Odoc
-      </Typography>
+    <Box sx={{ width: "100%", maxWidth: "100vw", px: 2, py: 3 }}>
+      <Box sx={{ maxWidth: 380, mx: "auto" }}>
+        {location.pathname !== "/" && (
+          <Typography
+            color="warning"
+            variant="h6"
+            align="center"
+            sx={{ mb: 1 }}
+          >
+            Please, register first.
+          </Typography>
+        )}
+        <Typography variant="h5" align="center" sx={{ mb: 1, fontWeight: 300 }}>
+          Welcome to {window.location.hostname}
+        </Typography>
+        <Typography
+          variant="body2"
+          align="center"
+          color="text.secondary"
+          sx={{ mb: 3 }}
+        >
+          Complete your profile to get started
+        </Typography>
 
-      <Typography
-        variant="body2"
-        align="center"
-        color="text.secondary"
-        sx={{ mb: 4 }}
-      >
-        Complete your profile to get started
-      </Typography>
-      <RunawayJellyfish runaway={true} />
+        <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
+          <input
+            accept="image/*"
+            id="photo"
+            type="file"
+            style={{ display: "none" }}
+            onChange={handleUploadPhoto}
+          />
+          <label htmlFor="photo">
+            <IconButton component="span" sx={{ p: 0 }}>
+              <Avatar
+                src={photo ? URL.createObjectURL(photo) : undefined}
+                sx={{
+                  width: 70,
+                  height: 70,
+                  bgcolor: "action.hover",
+                  border: "2px solid",
+                  borderColor: "divider",
+                  "&:hover": { borderColor: "primary.main" },
+                }}
+              >
+                {!photo && <Add sx={{ fontSize: 20 }} />}
+              </Avatar>
+            </IconButton>
+          </label>
+        </Box>
 
-      <Box sx={{ display: "flex", justifyContent: "center", mb: 4 }}>
-        <input
-          accept="image/*"
-          id="photo"
-          type="file"
-          style={{ display: "none" }}
-          onChange={handleUploadPhoto}
-        />
-        <label htmlFor="photo">
-          <IconButton component="span" sx={{ p: 0 }}>
-            <Avatar
-              src={photo ? URL.createObjectURL(photo) : undefined}
-              sx={{
-                width: 80,
-                height: 80,
-                bgcolor: "action.hover",
-                border: "2px solid",
-                borderColor: "divider",
-                transition: "all 0.2s ease",
-                "&:hover": {
-                  borderColor: "primary.main",
-                  transform: "scale(1.02)",
-                },
-              }}
-            >
-              {!photo && <Add sx={{ fontSize: 24, color: "text.secondary" }} />}
-            </Avatar>
-          </IconButton>
-        </label>
-      </Box>
-
-      <Stack spacing={3}>
-        <TextField
-          required
-          id="username"
-          label="Username"
-          fullWidth
-          value={formValues.username}
-          onChange={handleChange}
-          variant="outlined"
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              borderRadius: 2,
-            },
-          }}
-        />
-
-        <Stack direction="row" spacing={2}>
+        <Stack spacing={2.5}>
+          <TextField
+            required
+            id="username"
+            label="Username"
+            fullWidth
+            value={formValues.username}
+            onChange={handleChange}
+            size="small"
+          />
           <TextField
             id="first_name"
             label="First Name"
             fullWidth
             value={formValues.first_name}
             onChange={handleChange}
-            variant="outlined"
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                borderRadius: 2,
-              },
-            }}
+            size="small"
           />
           <TextField
             id="last_name"
@@ -215,58 +188,39 @@ const RegistrationForm: React.FC = () => {
             fullWidth
             value={formValues.last_name}
             onChange={handleChange}
-            variant="outlined"
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                borderRadius: 2,
-              },
-            }}
+            size="small"
           />
+          <TextField
+            id="email"
+            label="Email"
+            type="email"
+            fullWidth
+            value={formValues.email}
+            onChange={handleChange}
+            size="small"
+          />
+          <TextField
+            id="bio"
+            required
+            fullWidth
+            multiline
+            rows={3}
+            label="Bio"
+            value={formValues.bio}
+            onChange={handleChange}
+            size="small"
+          />
+          <Button
+            disabled={loading}
+            fullWidth
+            variant="contained"
+            onClick={handleRegister}
+            sx={{ mt: 1 }}
+          >
+            {loading ? "..." : "Complete Registration"}
+          </Button>
         </Stack>
-
-        <TextField
-          id="email"
-          label="Email"
-          type="email"
-          fullWidth
-          value={formValues.email}
-          onChange={handleChange}
-          variant="outlined"
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              borderRadius: 2,
-            },
-          }}
-        />
-
-        <TextField
-          id="bio"
-          name="bio"
-          required
-          fullWidth
-          multiline
-          rows={3}
-          aria-label="Bio"
-          label="Bio"
-          value={formValues.bio}
-          onChange={handleChange}
-          variant="outlined"
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              borderRadius: 2,
-            },
-          }}
-        />
-        <Button
-          disabled={loading}
-          fullWidth
-          variant="contained"
-          onClick={handleRegister}
-          id="submitButton"
-        >
-          {loading ? "..." : "Complete Registration"}
-        </Button>
-      </Stack>
+      </Box>
     </Box>
   );
 };

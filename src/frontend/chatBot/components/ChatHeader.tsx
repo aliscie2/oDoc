@@ -1,8 +1,7 @@
-import { Box, IconButton, Typography } from "@mui/material";
 import { Close } from "@mui/icons-material";
-import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
-import AICreditsComponent from "./AICreditsCompnent";
+import { Box, IconButton, Typography } from "@mui/material";
 import { useThemeStyles } from "../hooks/useThemeStyles";
+import AICreditsComponent from "./AICreditsCompnent";
 
 interface ChatHeaderProps {
   assistantName: string;
@@ -44,13 +43,6 @@ export const ChatHeader = ({
         </Typography>
       </Box>
       <Box display="flex" alignItems="center" gap={0.5}>
-        <Box sx={{ height: 24, overflow: "hidden" }}>
-          <RunawayJellyfish
-            die={credits === 0}
-            thinking={isLoading}
-            runaway={true}
-          />
-        </Box>
         <IconButton
           size="small"
           onClick={onMinimize}
