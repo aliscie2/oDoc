@@ -380,15 +380,6 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
                       : setEditingCoverLetter(true)
                   }
                   disabled={saving}
-                  sx={{
-                    color: "white",
-                    borderColor: "white",
-                    fontSize: { xs: "0.7rem", sm: "0.875rem" },
-                    "&:hover": {
-                      borderColor: "white",
-                      backgroundColor: "rgba(255,255,255,0.1)",
-                    },
-                  }}
                 >
                   {saving ? "Saving..." : editingCoverLetter ? "Save" : "Edit"}
                 </Button>

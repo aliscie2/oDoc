@@ -7,6 +7,7 @@ import MarkdownMessage from "../markDownMessageRdnder";
 
 export const MessageBubble = ({
   msg,
+  isLatestMessage,
   onTypingComplete,
   onTypingProgress,
 }: MessageBubbleProps) => {
@@ -47,7 +48,7 @@ export const MessageBubble = ({
       }}
     >
       <Box sx={bubbleStyles}>
-        {msg.type === "ai" ? (
+        {msg.type === "ai" && isLatestMessage ? (
           <TypingMarkdownMessage
             text={msg.message}
             onComplete={() => onTypingComplete(msg.id)}

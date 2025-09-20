@@ -39,6 +39,7 @@ export interface ThemeStyles {
 
 export interface MessageBubbleProps {
   msg: ChatMessage;
+  isLatestMessage?: boolean;
   onTypingComplete: (id: string | number) => void;
   onTypingProgress?: () => void;
 }

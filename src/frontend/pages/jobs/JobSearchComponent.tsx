@@ -25,7 +25,6 @@ import {
   DialogTitle,
   IconButton,
   Typography,
-  Divider,
   Stack,
 } from "@mui/material";
 import React, { useState, useMemo } from "react";
@@ -64,19 +63,63 @@ const JobSearchComponent: React.FC = React.memo(() => {
   const { loading, error, findMatches } = useJobMatching(currentJob);
 
   const sortedMatches: ProcessedMatch[] = useMemo(() => {
-    if (!currentJob?.matches || !matchingJobs) return [];
+    if (!currentJob?.matches || !matchingJobs) {
+      console.log("Debug: No matches or matching jobs", {
+        hasCurrentJob: !!currentJob,
+        hasMatches: !!currentJob?.matches,
+        matchesLength: currentJob?.matches?.length || 0,
+        hasMatchingJobs: !!matchingJobs,
+        matchingJobsLength: matchingJobs?.length || 0,
+      });
+      return [];
+    }
 
-    return currentJob.matches
-      .filter((match): match is Match =>
-        Boolean(match?.job_id && match.job_id !== currentJobId),
-      )
+    console.log("Debug: Processing matches", {
+      currentJobId,
+      totalMatches: currentJob.matches.length,
+      matchingJobsCount: matchingJobs.length,
+      matches: currentJob.matches.map((m) => ({
+        job_id: m.job_id,
+        score: m.score,
+      })),
+    });
+
+    const filteredMatches = currentJob.matches.filter((match): match is Match =>
+      Boolean(match?.job_id && match.job_id !== currentJobId),
+    );
+
+    console.log("Debug: After filtering out current job", {
+      filteredCount: filteredMatches.length,
+      filtered: filteredMatches.map((m) => ({
+        job_id: m.job_id,
+        score: m.score,
+      })),
+    });
+
+    const processedMatches = filteredMatches
       .map((match) => {
         const job = matchingJobs.find((j: Job) => j?.id === match.job_id);
-        if (!job) return null;
+        if (!job) {
+          console.log("Debug: No matching job found for match", {
+            matchJobId: match.job_id,
+            availableJobIds: matchingJobs.map((j) => j.id),
+          });
+          return null;
+        }
         return { job, match, score: Math.round((match.score || 0) * 100) };
       })
-      .filter((item): item is ProcessedMatch => Boolean(item))
-      .sort((a, b) => b.score - a.score);
+      .filter((item): item is ProcessedMatch => Boolean(item));
+
+    console.log("Debug: Final processed matches", {
+      processedCount: processedMatches.length,
+      processed: processedMatches.map((m) => ({
+        jobId: m.job.id,
+        score: m.score,
+        title: m.job.job_titles?.[0] || "No title",
+      })),
+    });
+
+    return processedMatches.sort((a, b) => b.score - a.score);
   }, [currentJob?.matches, matchingJobs, currentJobId]);
 
   const MatchCard = React.memo(({ job, match, score }: ProcessedMatch) => {
@@ -257,50 +300,6 @@ const JobSearchComponent: React.FC = React.memo(() => {
 
   return (
     <Box sx={{ py: 2 }}>
-      {/* Header Section with Job Info */}
-      <Box sx={{ mb: 3 }}>
-        <Stack
-          direction="row"
-          justifyContent="space-between"
-          alignItems="center"
-          sx={{ mb: 2 }}
-        >
-          <Box>
-            <Typography variant="h6" color="text.primary" gutterBottom>
-              Job Matches for &quot;
-              {truncateTitle(currentJob.job_titles?.[0] || "Your Job", 4)}&quot;
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {sortedMatches.length} compatible{" "}
-              {sortedMatches.length === 1 ? "opportunity" : "opportunities"}{" "}
-              found
-            </Typography>
-          </Box>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              p: 2,
-              bgcolor: "primary.50",
-              borderRadius: 2,
-              border: "1px solid",
-              borderColor: "primary.200",
-            }}
-          >
-            <Chat sx={{ color: "primary.main", fontSize: 20 }} />
-            <Typography
-              variant="caption"
-              color="primary.main"
-              sx={{ fontWeight: 500 }}
-            >
-              Need another job? Just ask me in chat!
-            </Typography>
-          </Box>
-        </Stack>
-        <Divider />
-      </Box>
-
       {sortedMatches.length === 0 ? (
         <Box data-testid="no-matches-found" sx={{ textAlign: "center", py: 6 }}>
           <TrendingUp sx={{ fontSize: 48, color: "primary.main", mb: 2 }} />

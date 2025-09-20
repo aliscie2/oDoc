@@ -28,14 +28,14 @@ interface MessageFilters {
 
 export class MessageRulesService {
   private JOB_DETAILS =
-    "\n\nI can help you optimize job postings and provide hiring insights based on your data.";
+    "\n\nI can help you build and optimize your professional profile to attract the right opportunities.";
   private TALENT_DETAILS =
-    "\n\nI can analyze market trends, suggest skill improvements, and help optimize your freelance strategy.";
+    "\n\nI can help you create a compelling profile, showcase your skills, and provide consultation on career development.";
   private GENERAL_DETAILS =
-    "\n\nI can provide recruitment analytics, market insights, and workflow optimization recommendations.";
+    "\n\nI can help you build your professional profile job or talent, and provide personalized consultations to enhance your career prospects.";
 
   constructor(
-    private jobs: any[],
+    private jobs: unknown[],
     private calendar: unknown,
     private jobSearchStage: number,
     private currentJobId: string | null,
@@ -55,10 +55,10 @@ export class MessageRulesService {
         message: () => {
           const userType = localStorage.getItem("UserType");
           if (userType === "TALENT")
-            return `📊 Hiring Intelligence Assistant ready.${this.TALENT_DETAILS}`;
+            return `� AI Pnrofile Builder ready to help!${this.TALENT_DETAILS}`;
           if (userType === "JOB")
-            return `📊 Hiring Intelligence Assistant ready.${this.JOB_DETAILS}`;
-          return `📊 Hiring Intelligence Assistant ready.${this.GENERAL_DETAILS}`;
+            return `� AI Pnrofile Builder ready to help!${this.JOB_DETAILS}`;
+          return `� AI Profile Builder ready to help!${this.GENERAL_DETAILS}`;
         },
 
         actionType: "WELCOME_MESSAGE",
@@ -112,7 +112,7 @@ export class MessageRulesService {
         priority: 2,
         condition: () => this.jobs.length > 0 && !this.currentJobId,
         message:
-          "📈 Ready to analyze a new position? I can help optimize job requirements and predict candidate quality.",
+          "� RReady to build a new profile? I can help you create a compelling professional profile and provide consultation on how to make it stand out.",
         actionType: "NEW_PROFILE_MESSAGE",
         canUndo: false,
         canRetry: false,
@@ -130,7 +130,7 @@ export class MessageRulesService {
               (sum, job) => sum + (job.matches?.length || 0),
               0,
             ) / this.jobs.length;
-          return `💡 Hiring Insights: Average ${Math.round(avgMatches)} candidates per position. I can analyze trends and suggest optimization strategies.`;
+          return `💡 Profile Insights: You have ${this.jobs.length} profiles with an average of ${Math.round(avgMatches)} connections each. I can provide consultation on how to improve your profile visibility and engagement.`;
         },
         actionType: "HIRING_INSIGHTS",
         canUndo: false,

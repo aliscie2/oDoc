@@ -45,21 +45,25 @@ export const ChatHistory = ({
         },
       }}
     >
-      {chatHistory.map((msg, idx) => (
-        <Box key={`${msg.id}-${idx}`}>
-          <MessageBubble
-            msg={msg}
-            onTypingComplete={onTypingComplete}
-            onTypingProgress={scrollToBottom}
-          />
-          <MessageActions
-            msg={msg}
-            onUndo={onUndoMessage}
-            onRedo={onRedoMessage}
-            onRetry={onRetry}
-          />
-        </Box>
-      ))}
+      {chatHistory.map((msg, idx) => {
+        const isLatestMessage = idx === chatHistory.length - 1;
+        return (
+          <Box key={`${msg.id}-${idx}`}>
+            <MessageBubble
+              msg={msg}
+              isLatestMessage={isLatestMessage}
+              onTypingComplete={onTypingComplete}
+              onTypingProgress={scrollToBottom}
+            />
+            <MessageActions
+              msg={msg}
+              onUndo={onUndoMessage}
+              onRedo={onRedoMessage}
+              onRetry={onRetry}
+            />
+          </Box>
+        );
+      })}
     </Box>
   );
 };

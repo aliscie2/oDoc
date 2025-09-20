@@ -3,7 +3,7 @@ import { Button, CircularProgress } from "@mui/material";
 import { useSnackbar } from "notistack";
 import { useDispatch, useSelector } from "react-redux";
 import { backendActor } from "@/utils/backendUtils";
-import { Calendar, Job, Match } from "$/declarations/backend/backend.did";
+import { Job, Match } from "$/declarations/backend/backend.did";
 import UserAvatarMenu from "@/components/MainComponents/UserAvatarMenu";
 import sendEmail from "@/utils/sendEmail";
 
@@ -16,19 +16,21 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({
   jobId,
   matchingJob,
 }) => {
-  const { calendar } = useSelector((state: any) => state.calendarState);
+  const { calendar } = useSelector((state: unknown) => state.calendarState);
   // Using direct backendActor import
 
-  const { currentJobId, jobs } = useSelector((state: any) => state.jobState);
-  const currentJob: Job = jobs?.find((job: any) => job.id === currentJobId);
-  const match: Match = currentJob.matches?.find(
-    (match: any) => match.job_id === jobId,
+  const { currentJobId, jobs } = useSelector(
+    (state: unknown) => state.jobState,
+  );
+  const currentJob: Job = jobs?.find((job: Job) => job.id === currentJobId);
+  const match: Match | undefined = currentJob?.matches?.find(
+    (match: Match) => match.job_id === jobId,
   );
 
   const dispatch = useDispatch();
   const [connecting, setConnecting] = useState(false);
 
-  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  const { enqueueSnackbar } = useSnackbar();
   const bookEvent = `${window.location.origin}/calendar?id=${calendar.id}&jobid=${currentJob.id}`;
   const category = Object.keys(currentJob.category)[0];
   const message =
@@ -39,7 +41,17 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({
   const handleConnect = async (e: React.MouseEvent) => {
     setConnecting(true);
     e.stopPropagation();
-    if (match?.score <= 0.6) {
+
+    // Check if match exists
+    if (!match) {
+      enqueueSnackbar("Match not found. Please try again.", {
+        variant: "error",
+      });
+      setConnecting(false);
+      return;
+    }
+
+    if (match.score <= 0.6) {
       // Changed to 0-1 scale (0.6 = 60%)
       if (
         !window.confirm(
@@ -51,44 +63,90 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({
       }
     }
 
-    const res: [Calendar] = await backendActor.get_calendar_by_author(
-      matchingJob.user_id,
-    );
-    const calendar = res[0];
-    const emails = calendar?.google_ids || [];
-    emails.push(...matchingJob.emails);
-    if (emails.length == 0) {
-      alert("User did not set thier email yet, try to contact them via oDoc.");
-    }
-    for (const email of emails) {
-      const jobData = {
-        job: { ...currentJob, category },
-        match: { ...match, score: match?.score * 100 }, // Convert to percentage for email display
-        bookEvent,
-      };
-      const isEmailSent = await sendEmail(
-        "oDoc AI job matcher",
-        message,
-        [email],
-        jobData,
-        "odoc_job_match",
+    try {
+      const res = await backendActor.get_calendar_by_author(
+        matchingJob.user_id,
       );
 
-      if (isEmailSent == true) {
-        dispatch({
-          type: "UPDATE_MATCHES",
-          matches: [{ ...match, is_connected: true }],
-        });
-
-        enqueueSnackbar("Email sent.", {
-          variant: "success",
-        });
-        break;
+      // Handle case where no calendar is returned
+      if (!res || res.length === 0) {
+        enqueueSnackbar(
+          "User calendar not found. Try to contact them via oDoc.",
+          {
+            variant: "error",
+          },
+        );
+        setConnecting(false);
+        return;
       }
+
+      const calendar = res[0];
+      const emails = [...(calendar?.google_ids || []), ...matchingJob.emails];
+
+      // Check if emails are available
+      if (emails.length === 0) {
+        enqueueSnackbar(
+          "User has not provided their email yet. Try to contact them via oDoc.",
+          {
+            variant: "error",
+          },
+        );
+        setConnecting(false);
+        return;
+      }
+
+      let emailSent = false;
+
+      // Try to send email to each available email address
+      for (const email of emails) {
+        const jobData = {
+          job: { ...currentJob, category },
+          match: { ...match, score: match.score * 100 }, // Convert to percentage for email display
+          bookEvent,
+        };
+
+        const isEmailSent = await sendEmail(
+          "oDoc AI job matcher",
+          message,
+          [email],
+          jobData,
+          "odoc_job_match",
+        );
+
+        if (isEmailSent) {
+          // Update only the specific match's connection status while preserving all other matches
+          dispatch({
+            type: "UPDATE_MATCHES",
+            matches: [{ ...match, is_connected: true }],
+          });
+
+          enqueueSnackbar("Email sent successfully.", {
+            variant: "success",
+          });
+          emailSent = true;
+          break;
+        }
+      }
+
+      // If no email was sent successfully
+      if (!emailSent) {
+        enqueueSnackbar(
+          "Failed to send email. Try to contact them manually by viewing their contacts in the job post, or send them a friend request.",
+          {
+            variant: "error",
+          },
+        );
+      }
+    } catch (error) {
+      console.error("Error connecting:", error);
+      enqueueSnackbar(
+        "An error occurred while trying to connect. Please try again.",
+        {
+          variant: "error",
+        },
+      );
     }
-    // !connected && enqueueSnackbar("Email not sent. Try to contact them manilly by viaing thier contacts in the job post, or thier profile send them friend request.", {
-    //   variant:'error',
-    // })
+
     setConnecting(false);
   };
 
@@ -103,12 +161,14 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({
         color={match?.is_connected ? "success" : "primary"}
         size="small"
         onClick={handleConnect}
-        disabled={connecting || match?.is_connected}
+        disabled={connecting || match?.is_connected || !match}
         sx={{ minWidth: "100px" }}
       >
         {connecting ? (
           <CircularProgress size={24} />
-        ) : match?.is_connected ? (
+        ) : !match ? (
+          "No Match"
+        ) : match.is_connected ? (
           "Connected"
         ) : (
           "Connect"
