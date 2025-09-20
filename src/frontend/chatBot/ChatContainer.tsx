@@ -73,6 +73,7 @@ const ChatContainer = () => {
           onRedoMessage={handleRedoMessage}
           onRetry={handleRetry}
           onTypingComplete={handleTypingComplete}
+          onSendMessage={handleChatSend}
         />
       )}
       <AIInput

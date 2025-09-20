@@ -141,7 +141,7 @@ const StatsSection = () => {
     },
     {
       value: stats.activeUsers,
-      label: "Active Users",
+      label: "Trading Users",
       icon: (
         <TrendingUp
           sx={{ color: "success.main", fontSize: "1.2rem", mb: 0.5 }}
@@ -150,7 +150,7 @@ const StatsSection = () => {
     },
     {
       value: stats.totalDeposit,
-      label: "Total Deposits",
+      label: "Canister baalnce", 
       prefix: "$",
       icon: (
         <Payment sx={{ color: "warning.main", fontSize: "1.2rem", mb: 0.5 }} />

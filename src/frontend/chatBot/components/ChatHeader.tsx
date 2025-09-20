@@ -1,5 +1,6 @@
 import { Close } from "@mui/icons-material";
 import { Box, IconButton, Typography } from "@mui/material";
+import { useLocation } from "react-router-dom";
 import { useThemeStyles } from "../hooks/useThemeStyles";
 import AICreditsComponent from "./AICreditsCompnent";
 
@@ -19,6 +20,21 @@ export const ChatHeader = ({
   onMinimize,
 }: ChatHeaderProps) => {
   const { theme, isDark } = useThemeStyles();
+  const location = useLocation();
+
+  const getTitle = () => {
+    const path = location.pathname.toLowerCase();
+    
+    if (path === "" || path === "/") {
+      return "📊 Hiring Intelligence";
+    } else if (path.includes("calendar")) {
+      return "📅 Calendar Assistant";
+    } else if (path.includes("contract")) {
+      return "📋 Contract Assistant";
+    } else {
+      return "📊 Hiring Intelligence";
+    }
+  };
 
   return (
     <Box
@@ -39,7 +55,7 @@ export const ChatHeader = ({
             fontSize: "0.8rem",
           }}
         >
-          {assistantName} ({chatHistoryLength})
+          {getTitle()} ({chatHistoryLength})
         </Typography>
       </Box>
       <Box display="flex" alignItems="center" gap={0.5}>

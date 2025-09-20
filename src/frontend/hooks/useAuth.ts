@@ -3,12 +3,12 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   login as loginUtil,
   logout as logoutUtil,
-  BackendUtils,
 } from "../utils/backendUtils";
 import { selectAuthStatus } from "../redux/selectors";
-import { backendActor } from "../utils/backendUtils";
 import type { AuthStatus } from "../redux/types/uiTypes";
 import { Principal } from "@dfinity/principal";
+import { IdentityManager } from "../utils/identityManager";
+import { ActorFactory } from "../utils/actorFactory";
 
 export const useAuth = () => {
   const dispatch = useDispatch();
@@ -25,23 +25,33 @@ export const useAuth = () => {
     setAuthStatus("loading");
 
     try {
-      const client = await BackendUtils.getAuthClient();
-      const isAuthenticated = await client.isAuthenticated();
+      // Use validated identity instead of raw auth client
+      const identity = await IdentityManager.getValidatedIdentity();
 
-      if (!isAuthenticated) {
+      if (!identity) {
         setAuthStatus("anonymous");
         return false;
       }
 
       try {
-        const identity = client.getIdentity();
         const principal: Principal = identity.getPrincipal();
-        const profile = await backendActor.get_user_profile(principal);
-        const hasProfile = profile && "Ok" in profile && profile.Ok?.id;
+        
+        // Use ActorFactory for reliable actor calls
+        const { canisterId, idlFactory } = await import("$/declarations/backend");
+        const profile = await ActorFactory.executeWithRecovery(
+          {
+            canisterId,
+            idlFactory,
+            actorType: 'backend'
+          },
+          (actor) => actor.get_user_profile(principal)
+        );
 
+        const hasProfile = profile && "Ok" in profile && profile.Ok?.id;
         setAuthStatus(hasProfile ? "registered" : "authenticated");
         return true;
       } catch (error) {
+        console.warn("Profile check failed, but identity is valid:", error);
         setAuthStatus("authenticated");
         return true;
       }
@@ -82,12 +92,12 @@ export const useAuth = () => {
   }, [setAuthStatus]);
 
   const register = useCallback(
-    async (profileData: any) => {
+    async (_profileData: unknown) => {
       try {
         setAuthStatus("registered");
         return true;
-      } catch (error) {
-        console.error("Registration failed:", error);
+      } catch (_error) {
+        console.error("Registration failed:", _error);
         return false;
       }
     },
@@ -95,33 +105,22 @@ export const useAuth = () => {
   );
 
   const cleanUp = useCallback(async () => {
-    localStorage.clear();
-    // clear indexdb storage
-    const indexedDB = window.indexedDB;
-    if (indexedDB) {
-      const openRequest = indexedDB.open("dfinity-studio", 1);
-      openRequest.onsuccess = (event) => {
-        const db = openRequest.result;
-        const transaction = db.transaction(["canister"], "readwrite");
-        const objectStore = transaction.objectStore("canister");
-        objectStore.clear();
-        transaction.oncomplete = () => {
-          console.log("IndexedDB storage cleared successfully");
-        };
-        transaction.onerror = (event) => {
-          console.error(
-            "Error clearing IndexedDB storage:",
-            event.target.error,
-          );
-        };
-      };
-      openRequest.onerror = (event) => {
-        console.error("Error opening IndexedDB:", event.target.error);
-      };
+    try {
+      // Use enhanced cleanup from IdentityManager
+      await IdentityManager.forceRefresh();
+      
+      // Clear actor factory cache
+      ActorFactory.clearCache();
+      
+      // Perform logout
+      await logout();
+    } catch (error) {
+      console.error("Cleanup failed:", error);
+      // Force cleanup even if logout fails
+      await IdentityManager.forceRefresh();
+      ActorFactory.clearCache();
     }
-
-    await logout();
-  }, [setAuthStatus]);
+  }, [logout]);
 
   return {
     isLoggedIn: authStatus === "registered",

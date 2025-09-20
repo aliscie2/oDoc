@@ -30,11 +30,9 @@ import {
 import RunawayJellyfish from "./components/creature/runAeayJellyFish";
 import { RootState } from "./redux/reducers";
 import useSocket from "./websocket/use_socket";
+import GoogleCalendarOnboarding from "./components/userBadges/connectGoogleCalendar";
 
-// Lazy load heavy components
-const GoogleCalendarOnboarding = React.lazy(
-  () => import("@/components/userBadges/coonectGoogleCalendar"),
-);
+
 const ChatContainer = React.lazy(() => import("./chatBot/ChatContainer"));
 const MainContent = styled(Box)(({ theme }) => ({
   display: "flex",

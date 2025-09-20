@@ -110,7 +110,7 @@ export const AIInput = ({
               setIsExpanded(false);
             }}
             placeholder={
-              isLoading ? "🤔 AI is thinking..." : "Ask AI anything..."
+              isLoading ? "📊 Analyzing data..." : "Ask about candidates, metrics, or hiring insights..."
             }
             sx={{
               "& .MuiOutlinedInput-root": {

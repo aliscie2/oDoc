@@ -12,11 +12,9 @@ export const initializeApp = createAsyncThunk(
         // Return a signal that initialization is already complete
         return { alreadyInitialized: true };
       }
-
       const [initialRes] = await Promise.allSettled([
         backendActor.get_initial_data(),
       ]);
-      console.log({ initialRes });
 
       if (initialRes.status === "fulfilled" && "Ok" in initialRes.value) {
         const workspaces = await backendActor.get_work_spaces().catch(() => []);

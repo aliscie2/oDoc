@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 
 interface TimeZoneSelectorProps {
-  onTimeZoneChange: (newTimeZone: string) => void;
+  onTimeZoneChange?: (newTimeZone: string) => void;
 }
 
-const TimeZoneSelector: React.FC<TimeZoneSelectorProps> = ({}) => {
+const TimeZoneSelector: React.FC<TimeZoneSelectorProps> = ({ onTimeZoneChange }) => {
   const [currentTime, setCurrentTime] = useState("");
 
   useEffect(() => {
@@ -47,7 +47,9 @@ const TimeZoneSelector: React.FC<TimeZoneSelectorProps> = ({}) => {
   //   />
   // );
   return (
-    <> {currentTime + " " + Intl.DateTimeFormat().resolvedOptions().timeZone}</>
+    <span style={{ fontSize: "0.875rem", color: "text.secondary" }}>
+      {currentTime} {Intl.DateTimeFormat().resolvedOptions().timeZone}
+    </span>
   );
 };
 

@@ -4,7 +4,13 @@ import {
   selectMatchingJobs,
   selectCurrentJob,
 } from "@/redux/selectors";
-import { Visibility, Warning } from "@mui/icons-material";
+import {
+  Visibility,
+  TrendingUp,
+  WorkOutline,
+  Refresh,
+  Chat,
+} from "@mui/icons-material";
 import {
   Alert,
   Box,
@@ -19,6 +25,8 @@ import {
   DialogTitle,
   IconButton,
   Typography,
+  Divider,
+  Stack,
 } from "@mui/material";
 import React, { useState, useMemo } from "react";
 import { useSelector } from "react-redux";
@@ -52,6 +60,7 @@ const JobSearchComponent: React.FC = React.memo(() => {
   const currentJob = useSelector(selectCurrentJob);
 
   const [openDialogId, setOpenDialogId] = useState<string | null>(null);
+  const [isSearched, setSearched] = useState(false);
   const { loading, error, findMatches } = useJobMatching(currentJob);
 
   const sortedMatches: ProcessedMatch[] = useMemo(() => {
@@ -171,6 +180,8 @@ const JobSearchComponent: React.FC = React.memo(() => {
     );
   });
 
+  MatchCard.displayName = "MatchCard";
+
   if (loading) {
     return (
       <Box
@@ -193,9 +204,41 @@ const JobSearchComponent: React.FC = React.memo(() => {
   if (!currentJobId || !currentJob) {
     return (
       <Box data-testid="no-job-selected" sx={{ textAlign: "center", py: 8 }}>
-        <Typography variant="h6" color="text.secondary">
-          Select a job to view matches
+        <WorkOutline sx={{ fontSize: 64, color: "primary.main", mb: 2 }} />
+        <Typography variant="h6" color="text.primary" gutterBottom>
+          Ready to find your perfect match?
         </Typography>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ mb: 4, maxWidth: 400, mx: "auto" }}
+        >
+          Select a job from your list to discover compatible opportunities and
+          connect with potential matches.
+        </Typography>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 1,
+            p: 3,
+            bgcolor: "primary.50",
+            borderRadius: 2,
+            border: "1px solid",
+            borderColor: "primary.200",
+          }}
+        >
+          <Chat sx={{ color: "primary.main" }} />
+          <Typography
+            variant="body2"
+            color="primary.main"
+            sx={{ fontWeight: 500 }}
+          >
+            Want to create a new job? Just chat with me! Tell me about the
+            position you&apos;d like to post.
+          </Typography>
+        </Box>
       </Box>
     );
   }
@@ -214,37 +257,149 @@ const JobSearchComponent: React.FC = React.memo(() => {
 
   return (
     <Box sx={{ py: 2 }}>
-      {sortedMatches.length === 0 ? (
-        <Box data-testid="no-matches-found" sx={{ textAlign: "center", py: 8 }}>
-          <Warning sx={{ fontSize: 48, color: "text.secondary", mb: 2 }} />
-          <Typography variant="h6" color="text.secondary" gutterBottom>
-            No matches found
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Try adjusting your job criteria or check back later
-          </Typography>
-          <Button
-            variant="outlined"
-            onClick={findMatches}
-            data-testid="refresh-matches-button"
+      {/* Header Section with Job Info */}
+      <Box sx={{ mb: 3 }}>
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          sx={{ mb: 2 }}
+        >
+          <Box>
+            <Typography variant="h6" color="text.primary" gutterBottom>
+              Job Matches for &quot;
+              {truncateTitle(currentJob.job_titles?.[0] || "Your Job", 4)}&quot;
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {sortedMatches.length} compatible{" "}
+              {sortedMatches.length === 1 ? "opportunity" : "opportunities"}{" "}
+              found
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              p: 2,
+              bgcolor: "primary.50",
+              borderRadius: 2,
+              border: "1px solid",
+              borderColor: "primary.200",
+            }}
           >
-            Refresh Matches
-          </Button>
+            <Chat sx={{ color: "primary.main", fontSize: 20 }} />
+            <Typography
+              variant="caption"
+              color="primary.main"
+              sx={{ fontWeight: 500 }}
+            >
+              Need another job? Just ask me in chat!
+            </Typography>
+          </Box>
+        </Stack>
+        <Divider />
+      </Box>
+
+      {sortedMatches.length === 0 ? (
+        <Box data-testid="no-matches-found" sx={{ textAlign: "center", py: 6 }}>
+          <TrendingUp sx={{ fontSize: 48, color: "primary.main", mb: 2 }} />
+          <Typography variant="h6" color="text.primary" gutterBottom>
+            No matches found yet
+          </Typography>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ mb: 3, maxWidth: 400, mx: "auto" }}
+          >
+            We will notify you by email when we find a good match. Stay tuned!
+          </Typography>
+          {!isSearched && (
+            <Button
+              variant="contained"
+              onClick={() => {
+                setSearched(true);
+                findMatches();
+              }}
+              startIcon={<Refresh />}
+              data-testid="refresh-matches-button"
+              sx={{ px: 3, py: 1, textTransform: "none" }}
+            >
+              Search Again
+            </Button>
+          )}
         </Box>
       ) : (
-        <Box
-          data-testid="job-matches-list"
-          sx={{
-            maxHeight: "400px",
-            overflowY: "auto",
-            display: "grid",
-            gap: 1.5,
-            pr: 1,
-          }}
-        >
-          {sortedMatches.map((match) => (
-            <MatchCard key={match.job.id} {...match} />
-          ))}
+        <Box>
+          {/* Match Quality Overview */}
+          <Box sx={{ mb: 3, p: 2, bgcolor: "grey.50", borderRadius: 2 }}>
+            <Typography variant="subtitle2" color="text.primary" gutterBottom>
+              Match Quality Distribution
+            </Typography>
+            <Stack direction="row" spacing={3} alignItems="center">
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Box
+                  sx={{
+                    width: 12,
+                    height: 12,
+                    bgcolor: "#4caf50",
+                    borderRadius: "50%",
+                  }}
+                />
+                <Typography variant="caption">
+                  Excellent ({sortedMatches.filter((m) => m.score >= 70).length}
+                  )
+                </Typography>
+              </Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Box
+                  sx={{
+                    width: 12,
+                    height: 12,
+                    bgcolor: "#ff9800",
+                    borderRadius: "50%",
+                  }}
+                />
+                <Typography variant="caption">
+                  Good (
+                  {
+                    sortedMatches.filter((m) => m.score >= 30 && m.score < 70)
+                      .length
+                  }
+                  )
+                </Typography>
+              </Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Box
+                  sx={{
+                    width: 12,
+                    height: 12,
+                    bgcolor: "#f44336",
+                    borderRadius: "50%",
+                  }}
+                />
+                <Typography variant="caption">
+                  Potential ({sortedMatches.filter((m) => m.score < 30).length})
+                </Typography>
+              </Box>
+            </Stack>
+          </Box>
+
+          {/* Matches List */}
+          <Box
+            data-testid="job-matches-list"
+            sx={{
+              maxHeight: "400px",
+              overflowY: "auto",
+              display: "grid",
+              gap: 1.5,
+              pr: 1,
+            }}
+          >
+            {sortedMatches.map((match) => (
+              <MatchCard key={match.job.id} {...match} />
+            ))}
+          </Box>
         </Box>
       )}
 

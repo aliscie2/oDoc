@@ -1,3 +1,4 @@
+import { canisterId, idlFactory } from "$/declarations/backend";
 import compressImage from "@/DataProcessing/compressImage";
 import { useAuth } from "@/hooks/useAuth";
 import { Add } from "@mui/icons-material";
@@ -14,7 +15,7 @@ import { useSnackbar } from "notistack";
 import React, { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { RegisterUser } from "../../../declarations/backend/backend.did";
-import { backendActor } from "../../utils/backendUtils";
+import { ActorFactory } from "../../utils/actorFactory";
 
 // Utility function to convert File to Uint8Array
 const fileToUint8Array = (file: File): Promise<Uint8Array> => {
@@ -94,15 +95,25 @@ const RegistrationForm: React.FC = () => {
         email: formValues.email ? [formValues.email] : [],
       };
 
-      const result = await backendActor.register("", input);
+      const result = await ActorFactory.executeWithRecovery(
+        {
+          canisterId,
+          idlFactory,
+          actorType: "backend",
+        },
+        (actor) =>
+          actor.register(localStorage.getItem("affiliateId") || "", input),
+      );
 
-      if (result?.Ok) {
+      if (result && "Ok" in result) {
         enqueueSnackbar(`Welcome ${result.Ok.name}, to Odoc`, {
           variant: "success",
         });
         window.location.href = window.location.origin;
-      } else if (result?.Err) {
+      } else if (result && "Err" in result) {
         enqueueSnackbar(result.Err, { variant: "error" });
+      } else {
+        throw new Error("Registration failed - no result returned");
       }
     } catch (error) {
       alert("Something went wrong please try again in a second");

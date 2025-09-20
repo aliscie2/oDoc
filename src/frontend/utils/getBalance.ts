@@ -15,7 +15,7 @@ const getckUsdcBalance = async (ckUSDCActor, userPrincipal) => {
     return balanceResult;
   } catch (error) {
     console.error("Error getting user balance:", error);
-    throw error;
+    // throw error;
   }
 };
 

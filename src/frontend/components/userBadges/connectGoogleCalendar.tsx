@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -12,12 +12,21 @@ import {
   CalendarToday as CalendarIcon,
 } from "@mui/icons-material";
 import { useSelector } from "react-redux";
-
 import { useGoogleCalendar } from "@/pages/calendar/googleAccounts/useGoogleCalendar";
+
+interface RootState {
+  jobState: {
+    jobs: Array<{
+      active?: boolean;
+    }>;
+  };
+}
 
 const GoogleCalendarOnboarding = () => {
   const [hasTriedToClose, setHasTriedToClose] = useState(false);
-  const { jobs } = useSelector((state) => state.jobState);
+  const [open, setOpen] = useState(false);
+  
+  const { jobs } = useSelector((state: RootState) => state.jobState);
   const {
     emailCompleted,
     availabilityCompleted,
@@ -25,9 +34,8 @@ const GoogleCalendarOnboarding = () => {
     loading,
   } = useGoogleCalendar();
 
-  const hasActiveJobs = jobs.some((job) => job.active);
+  const hasActiveJobs = jobs.some((job: any) => job.active);
   const shouldShow = hasActiveJobs && availabilityCompleted && !emailCompleted;
-  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     if (shouldShow && !hasTriedToClose) {
@@ -37,13 +45,10 @@ const GoogleCalendarOnboarding = () => {
   }, [shouldShow, hasTriedToClose]);
 
   useEffect(() => {
-    const handleBeforeUnload = (e) => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (shouldShow && !emailCompleted) {
         e.preventDefault();
-        e.returnValue =
-          "You have unsaved changes. Are you sure you want to leave?";
         setOpen(true);
-        return "You have unsaved changes. Are you sure you want to leave?";
       }
     };
 
@@ -68,33 +73,70 @@ const GoogleCalendarOnboarding = () => {
   if (!shouldShow) return null;
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+    <Dialog 
+      open={open} 
+      onClose={handleClose} 
+      maxWidth="sm" 
+      fullWidth
+      PaperProps={{
+        sx: { borderRadius: 2 }
+      }}
+    >
       <IconButton
         onClick={handleClose}
-        sx={{ position: "absolute", top: 8, right: 8, zIndex: 1 }}
+        sx={{ 
+          position: "absolute", 
+          top: 12, 
+          right: 12, 
+          zIndex: 1,
+          backgroundColor: "action.hover",
+          "&:hover": { backgroundColor: "action.selected" }
+        }}
+        size="small"
       >
-        <CloseIcon />
+        <CloseIcon fontSize="small" />
       </IconButton>
 
       <DialogContent sx={{ p: 4, textAlign: "center" }}>
-        <CalendarIcon sx={{ fontSize: 48, mb: 2, opacity: 0.7 }} />
+        <CalendarIcon 
+          sx={{ 
+            fontSize: 64, 
+            mb: 2, 
+            color: "primary.main",
+            opacity: 0.8 
+          }} 
+        />
 
-        <Typography variant="h6" fontWeight="bold" gutterBottom>
+        <Typography variant="h5" fontWeight="600" gutterBottom>
           Connect Google Calendar
         </Typography>
 
-        <Typography variant="body2" sx={{ mb: 3, opacity: 0.7 }}>
-          Prevent double bookings and sync appointments
+        <Typography 
+          variant="body1" 
+          sx={{ 
+            mb: 3, 
+            color: "text.secondary",
+            lineHeight: 1.6 
+          }}
+        >
+          Prevent double bookings and automatically sync your appointments
         </Typography>
 
         <Button
           variant="contained"
           size="large"
           fullWidth
-          startIcon={loading ? null : <GoogleIcon />}
+          startIcon={loading ? undefined : <GoogleIcon />}
           onClick={handleGoogleConnect}
           disabled={loading}
-          sx={{ py: 1.5, fontWeight: "bold" }}
+          sx={{ 
+            py: 1.5, 
+            fontWeight: 600,
+            fontSize: "1rem",
+            backgroundColor: "#4285F4",
+            "&:hover": { backgroundColor: "#3367D6" },
+            "&:disabled": { opacity: 0.7 }
+          }}
         >
           {loading ? "Connecting..." : "Connect Google Calendar"}
         </Button>
@@ -102,4 +144,5 @@ const GoogleCalendarOnboarding = () => {
     </Dialog>
   );
 };
+
 export default GoogleCalendarOnboarding;

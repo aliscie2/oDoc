@@ -27,13 +27,16 @@ interface MessageFilters {
 }
 
 export class MessageRulesService {
-  private JOB_DETAILS = "\n\nDescribe your ideal candidate - role, skills, experience level, and requirements!";
-private TALENT_DETAILS = "\n\nTell me about your goals, preferred roles, skills, and experience!";
-private GENERAL_DETAILS = "\n\nTell me your goals, skills, and what you're looking for!";
+  private JOB_DETAILS =
+    "\n\nI can help you optimize job postings and provide hiring insights based on your data.";
+  private TALENT_DETAILS =
+    "\n\nI can analyze market trends, suggest skill improvements, and help optimize your freelance strategy.";
+  private GENERAL_DETAILS =
+    "\n\nI can provide recruitment analytics, market insights, and workflow optimization recommendations.";
 
   constructor(
     private jobs: any[],
-    private calendar: any,
+    private calendar: unknown,
     private jobSearchStage: number,
     private currentJobId: string | null,
   ) {}
@@ -49,12 +52,14 @@ private GENERAL_DETAILS = "\n\nTell me your goals, skills, and what you're looki
         type: "immediate",
         priority: 1,
         condition: () => this.jobs.length === 0,
-          message: () => {
-    const userType = localStorage.getItem("UserType");
-    if (userType === "TALENT") return `👋 Ready to find your next role?${this.TALENT_DETAILS}`;
-    if (userType === "JOB") return `👋 Need to hire?${this.JOB_DETAILS}`;
-    return `👋 Looking for talent or your next job?${this.GENERAL_DETAILS}`;
-  },
+        message: () => {
+          const userType = localStorage.getItem("UserType");
+          if (userType === "TALENT")
+            return `📊 Hiring Intelligence Assistant ready.${this.TALENT_DETAILS}`;
+          if (userType === "JOB")
+            return `📊 Hiring Intelligence Assistant ready.${this.JOB_DETAILS}`;
+          return `📊 Hiring Intelligence Assistant ready.${this.GENERAL_DETAILS}`;
+        },
 
         actionType: "WELCOME_MESSAGE",
         canUndo: false,
@@ -106,11 +111,31 @@ private GENERAL_DETAILS = "\n\nTell me your goals, skills, and what you're looki
         type: "immediate",
         priority: 2,
         condition: () => this.jobs.length > 0 && !this.currentJobId,
-        message: "🚀 Ready for a new post? Give me the details!",
+        message:
+          "📈 Ready to analyze a new position? I can help optimize job requirements and predict candidate quality.",
         actionType: "NEW_PROFILE_MESSAGE",
         canUndo: false,
         canRetry: false,
         metadata: { showOnce: false },
+      },
+
+      {
+        id: "hiring_insights",
+        type: "contextual",
+        priority: 2,
+        condition: () => this.jobs.length >= 3,
+        message: () => {
+          const avgMatches =
+            this.jobs.reduce(
+              (sum, job) => sum + (job.matches?.length || 0),
+              0,
+            ) / this.jobs.length;
+          return `💡 Hiring Insights: Average ${Math.round(avgMatches)} candidates per position. I can analyze trends and suggest optimization strategies.`;
+        },
+        actionType: "HIRING_INSIGHTS",
+        canUndo: false,
+        canRetry: false,
+        metadata: { showOnce: true },
       },
     ];
   }

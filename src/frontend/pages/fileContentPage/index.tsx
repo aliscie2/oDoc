@@ -2,6 +2,7 @@ import ViewListIcon from "@mui/icons-material/ViewList";
 import {
   alpha,
   Box,
+  CircularProgress,
   Collapse,
   IconButton,
   Input,
@@ -194,8 +195,11 @@ function FileContentPage() {
     );
   }
 
-  // Check for 404 case - only show 404 if initialization is complete, not fetching, and file is still not found
-  if (!currentFile || (inited && !fetchingFromBackend)) {
+  if (fetchingFromBackend){
+      return <CircularProgress/>
+    }
+  if ( !currentFile) {
+    
     return (
       <Box
         display="flex"
@@ -208,13 +212,13 @@ function FileContentPage() {
     );
   }
 
-  const editable =
-    currentFile?.author === profile?.id ||
-    Object.keys(currentFile.permission)[0] === "CanUpdate" ||
-    currentFile.users_permissions.some(
-      ([userId, permissions]: [string, any]) =>
-        userId === profile.id && permissions.CanUpdate,
-    );
+  // const editable =
+  //   currentFile?.author === profile?.id ||
+  //   Object.keys(currentFile.permission)[0] === "CanUpdate" ||
+  //   currentFile.users_permissions.some(
+  //     ([userId, permissions]: [string, any]) =>
+  //       userId === profile.id && permissions.CanUpdate,
+  //   );
 
   const isAuthor = currentFile?.author === profile?.id;
 

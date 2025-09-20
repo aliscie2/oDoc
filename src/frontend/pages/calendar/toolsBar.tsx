@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -9,11 +10,10 @@ import {
   Stack,
   Typography,
   useMediaQuery,
+  useTheme,
 } from "@mui/material";
-import { useState } from "react";
 import { useSelector } from "react-redux";
 import CalendarManagement from "./AvailabilityComonent";
-
 import CopyButton from "@/components/MuiComponents/copyButton";
 import {
   MoreVert,
@@ -21,17 +21,39 @@ import {
   NavigateNext,
   Today,
 } from "@mui/icons-material";
-import GmailConnection from "./GmailConnection";
-import GoogleCalendarIntegration from "./googleAccounts";
+import GoogleAccountManager from "./GoogleAccountManager";
 import TimeZoneSelector from "./timezone";
 
-const CustomToolbar = ({ onNavigate, onView, label, view, views }) => {
-  const { calendar } = useSelector((state) => state.calendarState);
-  const isMobile = useMediaQuery((theme) => theme.breakpoints.down("sm"));
+interface CustomToolbarProps {
+  onNavigate: (action: string) => void;
+  onView: (view: string) => void;
+  label: string;
+  view: string;
+  views: string[];
+}
 
-  const [menuAnchor, setMenuAnchor] = useState(null);
+interface RootState {
+  calendarState: {
+    calendar: {
+      id: string;
+    } | null;
+  };
+}
 
-  const handleNavigate = (action) => {
+const CustomToolbar: React.FC<CustomToolbarProps> = ({ 
+  onNavigate, 
+  onView, 
+  label, 
+  view, 
+  views 
+}) => {
+  const { calendar } = useSelector((state: RootState) => state.calendarState);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
+
+  const handleNavigate = (action: string) => {
     onNavigate(action);
     setMenuAnchor(null);
   };
@@ -46,123 +68,193 @@ const CustomToolbar = ({ onNavigate, onView, label, view, views }) => {
       anchorEl={menuAnchor}
       open={Boolean(menuAnchor)}
       onClose={() => setMenuAnchor(null)}
-      PaperProps={{ sx: { mt: 0.5, borderRadius: 1, minWidth: 160 } }}
+      slotProps={{
+        paper: {
+          sx: { 
+            mt: 0.5, 
+            borderRadius: 1, 
+            minWidth: 200,
+            maxHeight: 400,
+          }
+        }
+      }}
     >
-      <MenuItem sx={{ py: 0.5 }}>
-        <TimeZoneSelector />
+      <MenuItem sx={{ py: 1.5 }}>
+        <GoogleAccountManager />
       </MenuItem>
       <Divider />
-      {!isShareCalendarPage && (
-        <MenuItem sx={{ py: 0.5 }}>
-          <CopyButton title="Share" value={shareLink} />
-        </MenuItem>
-      )}
-      <MenuItem sx={{ py: 0.5 }}>
+      <MenuItem sx={{ py: 1 }}>
         <CalendarManagement />
       </MenuItem>
-      <MenuItem sx={{ py: 0.5 }}>
-        <GoogleCalendarIntegration />
-      </MenuItem>
-      <MenuItem sx={{ py: 0.5 }}>
-        <GmailConnection />
+      {!isShareCalendarPage && (
+        <MenuItem sx={{ py: 1 }}>
+          <CopyButton title="Share Calendar" value={shareLink} />
+        </MenuItem>
+      )}
+      <Divider />
+      <MenuItem sx={{ py: 1 }}>
+        <TimeZoneSelector onTimeZoneChange={() => {}} />
       </MenuItem>
     </Menu>
   );
 
   if (isMobile) {
     return (
-      <Box sx={{ borderBottom: 1, borderColor: "divider", px: 1, py: 0.5 }}>
-        <Stack
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-        >
+      <Box sx={{ 
+        borderBottom: 1, 
+        borderColor: "divider", 
+        px: 2, 
+        py: 1,
+        backgroundColor: "background.paper",
+      }}>
+        <Stack direction="row" alignItems="center" justifyContent="space-between">
           <IconButton
             onClick={(e) => setMenuAnchor(e.currentTarget)}
             size="small"
+            sx={{ 
+              border: 1, 
+              borderColor: "divider",
+              "&:hover": { backgroundColor: "action.hover" }
+            }}
           >
             <MoreVert fontSize="small" />
           </IconButton>
 
-          <Stack direction="row" alignItems="center" spacing={0.5}>
-            <IconButton onClick={() => handleNavigate("PREV")} size="small">
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <IconButton 
+              onClick={() => handleNavigate("PREV")} 
+              size="small"
+              sx={{ "&:hover": { backgroundColor: "action.hover" } }}
+            >
               <NavigateBefore fontSize="small" />
             </IconButton>
+            
             <Typography
-              variant="subtitle2"
-              sx={{ minWidth: 120, textAlign: "center" }}
+              variant="subtitle1"
+              sx={{ 
+                minWidth: 140, 
+                textAlign: "center",
+                fontWeight: 500,
+              }}
             >
               {label}
             </Typography>
-            <IconButton onClick={() => handleNavigate("NEXT")} size="small">
+            
+            <IconButton 
+              onClick={() => handleNavigate("NEXT")} 
+              size="small"
+              sx={{ "&:hover": { backgroundColor: "action.hover" } }}
+            >
               <NavigateNext fontSize="small" />
             </IconButton>
           </Stack>
 
-          <IconButton
+          <Button
             onClick={() => handleNavigate("TODAY")}
             size="small"
-            sx={{ bgcolor: "primary.main", color: "primary.contrastText" }}
+            variant="contained"
+            sx={{ 
+              minWidth: 60,
+              textTransform: "none",
+              fontWeight: 500,
+            }}
           >
-            <Today fontSize="small" />
-          </IconButton>
-
-          <ActionMenu />
+            Today
+          </Button>
         </Stack>
+        <ActionMenu />
       </Box>
     );
   }
 
   return (
-    <Box sx={{ borderBottom: 1, borderColor: "divider", px: 2, py: 0.5 }}>
+    <Box sx={{ 
+      borderBottom: 1, 
+      borderColor: "divider", 
+      px: 3, 
+      py: 1.5,
+      backgroundColor: "background.paper",
+      boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+    }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between">
-        <Stack direction="row" spacing={0.5}>
+        {/* Left Section - Actions */}
+        <Stack direction="row" spacing={1.5} alignItems="center">
+          <GoogleAccountManager size="small" />
+          <CalendarManagement />
           {!isShareCalendarPage && (
-            <CopyButton title="Share" value={shareLink} size="small" />
+            <CopyButton title="Share Calendar" value={shareLink} />
           )}
-          <CalendarManagement size="small" />
-          <GoogleCalendarIntegration size="small" />
-          <GmailConnection size="small" />
         </Stack>
 
-        <Stack direction="row" spacing={1} alignItems="center">
-          <ButtonGroup size="small">
+        {/* Center Section - Navigation */}
+        <Stack direction="row" spacing={2} alignItems="center">
+          <ButtonGroup 
+            size="small" 
+            variant="outlined"
+            sx={{ 
+              "& .MuiButton-root": { 
+                minWidth: 40,
+                "&:hover": { backgroundColor: "action.hover" }
+              }
+            }}
+          >
             <IconButton onClick={() => handleNavigate("PREV")} size="small">
               <NavigateBefore fontSize="small" />
             </IconButton>
-            <IconButton onClick={() => handleNavigate("TODAY")} size="small">
-              <Today fontSize="small" />
-            </IconButton>
+            <Button 
+              onClick={() => handleNavigate("TODAY")}
+              sx={{ 
+                textTransform: "none",
+                fontWeight: 500,
+                minWidth: 60,
+              }}
+            >
+              Today
+            </Button>
             <IconButton onClick={() => handleNavigate("NEXT")} size="small">
               <NavigateNext fontSize="small" />
             </IconButton>
           </ButtonGroup>
 
           <Typography
-            variant="subtitle1"
-            sx={{ minWidth: 150, textAlign: "center" }}
+            variant="h6"
+            sx={{ 
+              minWidth: 200, 
+              textAlign: "center",
+              fontWeight: 600,
+              color: "text.primary",
+            }}
           >
             {label}
           </Typography>
         </Stack>
 
-        <Stack direction="row" spacing={0.5} alignItems="center">
+        {/* Right Section - Views & Settings */}
+        <Stack direction="row" spacing={1.5} alignItems="center">
           {views.length > 1 && (
-            <ButtonGroup size="small">
-              {views.map((name) => (
+            <ButtonGroup 
+              size="small"
+              sx={{
+                "& .MuiButton-root": {
+                  textTransform: "capitalize",
+                  fontWeight: 500,
+                  minWidth: 65,
+                  px: 1.5,
+                }
+              }}
+            >
+              {views.map((name: string) => (
                 <Button
                   key={name}
                   onClick={() => onView(name)}
                   variant={view === name ? "contained" : "outlined"}
-                  sx={{ textTransform: "capitalize", py: 0.25, px: 1 }}
-                  size="small"
                 >
                   {name}
                 </Button>
               ))}
             </ButtonGroup>
           )}
-          <TimeZoneSelector size="small" />
+          <TimeZoneSelector onTimeZoneChange={() => {}} />
         </Stack>
       </Stack>
     </Box>

@@ -2,12 +2,34 @@ import { useState, useEffect } from "react";
 import { serlizeEeventToGooggleEvent } from "./eventConverter";
 import { useDispatch, useSelector } from "react-redux";
 import { backendActor } from "@/utils/backendUtils";
+import sendEmail from "@/utils/sendEmail";
 const accessToken = "";
 
+interface RootState {
+  filesState: {
+    profile: any;
+  };
+  calendarState: {
+    calendar: {
+      id: string;
+      google_ids?: string[];
+      availabilities?: any[];
+    } | null;
+  };
+  jobState: {
+    currentJobId: string;
+    jobs: Array<{
+      id: string;
+      emails?: string[];
+      active?: boolean;
+    }>;
+  };
+}
+
 export const useGoogleCalendar = () => {
-  const { profile } = useSelector((state) => state.filesState);
-  const { calendar } = useSelector((state) => state.calendarState);
-  const { currentJobId, jobs } = useSelector((state) => state.jobState);
+  const { profile } = useSelector((state: RootState) => state.filesState);
+  const { calendar } = useSelector((state: RootState) => state.calendarState);
+  const { currentJobId, jobs } = useSelector((state: RootState) => state.jobState);
   // Using direct backendActor import
   const dispatch = useDispatch();
 
@@ -21,6 +43,10 @@ export const useGoogleCalendar = () => {
   const [emails, setEmails] = useState(calendar?.google_ids || []);
 
   const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  // OAuth scopes for Google Calendar integration:
+  // - email profile: Get user's email and basic profile info
+  // - calendar: Full calendar access (read/write events)
+  // - calendar.events: Manage calendar events
   const SCOPES =
     "email profile https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events";
 
@@ -30,7 +56,13 @@ export const useGoogleCalendar = () => {
   const availabilityCompleted = (calendar?.availabilities || []).length > 0;
 
   useEffect(() => {
-    if (accessToken) setIsConnected(true);
+    const token = localStorage.getItem("googleCalendarToken");
+    if (token) {
+      accessToken = token;
+      setIsConnected(true);
+    } else {
+      setIsConnected(false);
+    }
     const script = document.createElement("script");
     script.src = "https://accounts.google.com/gsi/client";
     script.async = script.defer = true;
@@ -49,7 +81,7 @@ export const useGoogleCalendar = () => {
     if (calendar?.google_ids) setEmails(calendar.google_ids);
   }, [calendar?.google_ids]);
 
-  const storeTokens = (token, calId) => {
+  const storeTokens = (token: string, calId: string) => {
     localStorage.setItem("googleCalendarToken", token);
     localStorage.setItem("googleCalendarId", calId);
     accessToken = token;
@@ -72,13 +104,37 @@ export const useGoogleCalendar = () => {
     setLoading(false);
   };
 
-  const addEmailToBackend = async (email) => {
-    const result = await backendActor.add_google_calendar_id(calendar.id, [
-      email,
-    ]);
-    if ("Err" in result) throw new Error("Error adding google calendar id");
-    setEmails((prev) => [...prev, email]);
-    dispatch({ type: "ADD_CALENDAR_EMAIL", id: result.Ok, email });
+  const addEmailToBackend = async (email: string) => {
+    try {
+      // If no calendar exists, get the user's calendar first
+      let currentCalendar = calendar;
+      if (!currentCalendar?.id) {
+        console.log("No calendar found, fetching user calendar...");
+        const calendarResult = await backendActor.get_my_calendar();
+        currentCalendar = calendarResult;
+        dispatch({ type: "SET_CALENDAR", calendar: currentCalendar });
+      }
+
+      if (!currentCalendar?.id) {
+        console.error("Still no calendar available after fetching");
+        throw new Error("No calendar available");
+      }
+      
+      const result = await backendActor.add_google_calendar_id(currentCalendar.id, [
+        email,
+      ]);
+      if ("Err" in result) {
+        console.error("Backend error adding email:", result.Err);
+        throw new Error("Error adding google calendar id");
+      }
+      
+      setEmails((prev) => [...prev, email]);
+      dispatch({ type: "ADD_CALENDAR_EMAIL", id: result.Ok, email });
+      console.log("Successfully added email to backend:", email);
+    } catch (error) {
+      console.error("Failed to add email to backend:", error);
+      throw error;
+    }
   };
 
   const connectCalendar = () => {
@@ -116,24 +172,48 @@ export const useGoogleCalendar = () => {
       .requestAccessToken();
   };
 
-  const disConnectCalendar = () => clearTokens();
+  const disConnectCalendar = () => {
+    // Clear all stored tokens for all connected accounts
+    emails.forEach(email => {
+      localStorage.removeItem(`googleCalendarToken_${email}`);
+      localStorage.removeItem(`googleCalendarId_${email}`);
+    });
+    
+    // Clear main tokens
+    clearTokens();
+    setEmails([]);
+    
+    // Clear any backend calendar data
+    dispatch({ type: "CLEAR_GOOGLE_CALENDAR" });
+  };
 
   const connectGoogleCalendar = () =>
     new Promise((resolve, reject) => {
-      if (!window.google)
+      // Clear any previous errors
+      setError("");
+      setLoading(true);
+      
+      if (!window.google) {
+        setLoading(false);
         return reject(new Error("Google OAuth not available"));
+      }
 
+      // Force account selection for multiple accounts
+      // This ensures users can choose which Google account to connect
       window.google.accounts.oauth2
         .initTokenClient({
           client_id: CLIENT_ID,
           scope: SCOPES,
+          // Force account picker for multi-account support
+          hint: "", // This forces the account picker
           callback: async (response) => {
-            if (!response.access_token)
-              return reject(new Error("No access token"));
+            if (!response.access_token) {
+              setLoading(false);
+              return reject(new Error("No access token received"));
+            }
 
             try {
-              storeTokens(response.access_token, "");
-
+              // Get user info and calendar data
               const [userRes, calRes] = await Promise.all([
                 fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
                   headers: { Authorization: `Bearer ${response.access_token}` },
@@ -148,15 +228,39 @@ export const useGoogleCalendar = () => {
                 ),
               ]);
 
+              if (!userRes.ok || !calRes.ok) {
+                throw new Error("Failed to fetch user information or calendar data");
+              }
+
               const [userInfo, calData] = await Promise.all([
                 userRes.json(),
                 calRes.json(),
               ]);
+
+              // Check if this email is already connected
+              if (emails.includes(userInfo.email)) {
+                setLoading(false);
+                setError("This Google account is already connected");
+                return reject(new Error("Account already connected"));
+              }
+
               const primaryCalendar =
-                calData.items.find((cal) => cal.primary) || calData.items[0];
+                calData.items?.find((cal) => cal.primary) || calData.items?.[0];
 
-              localStorage.setItem("googleCalendarId", primaryCalendar.id);
+              if (!primaryCalendar) {
+                throw new Error("No calendar found for this account");
+              }
 
+              // Store token with email-specific key for multi-account support
+              localStorage.setItem(`googleCalendarToken_${userInfo.email}`, response.access_token);
+              localStorage.setItem(`googleCalendarId_${userInfo.email}`, primaryCalendar.id);
+              
+              // If this is the first account, also store as default
+              if (emails.length === 0) {
+                storeTokens(response.access_token, primaryCalendar.id);
+              }
+
+              // Set up calendar permissions (optional, for sharing)
               try {
                 await fetch(
                   `https://www.googleapis.com/calendar/v3/calendars/${primaryCalendar.id}/acl`,
@@ -173,27 +277,52 @@ export const useGoogleCalendar = () => {
                   },
                 );
               } catch (aclErr) {
-                console.warn("ACL already exists:", aclErr);
+                console.warn("ACL setup failed (may already exist):", aclErr);
               }
 
+              // Add email to backend
               await addEmailToBackend(userInfo.email);
+              
+              setLoading(false);
               resetDialog();
               resolve({
                 email: userInfo.email,
                 calendarId: primaryCalendar.id,
               });
             } catch (err) {
-              setError("Failed to get user information");
+              console.error("Connection failed:", err);
+              setLoading(false);
+              
+              // Set appropriate error message
+              if (err.message?.includes("No calendar available") || 
+                  err.message?.includes("Error adding google calendar id")) {
+                setError("Failed to complete connection. Please try again.");
+              } else if (err.message?.includes("Account already connected")) {
+                setError("This Google account is already connected");
+              } else {
+                setError("Failed to connect Google account. Please try again.");
+              }
               reject(err);
             }
           },
-          error_callback: (error) =>
-            reject(new Error(`OAuth failed: ${error.type}`)),
+          error_callback: (error) => {
+            setLoading(false);
+            console.error("OAuth error:", error);
+            
+            if (error.type === "popup_closed") {
+              setError("Connection cancelled");
+            } else if (error.type === "access_denied") {
+              setError("Access denied. Calendar permissions are required.");
+            } else {
+              setError("Authentication failed. Please try again.");
+            }
+            reject(new Error(`OAuth failed: ${error.type}`));
+          },
         })
         .requestAccessToken();
     });
 
-  const executeGoogleAction = async (action) => {
+  const executeGoogleAction = async (action: any) => {
     if (!isConnected || !accessToken) return false;
 
     const headers = {
@@ -274,45 +403,101 @@ export const useGoogleCalendar = () => {
     }
   };
 
-  const setDefaultEmail = (email) =>
+  const setDefaultEmail = (email: string) => {
     setEmails((prev) => [email, ...prev.filter((e) => e !== email)]);
-  const removeEmail = (email) =>
-    setEmails((prev) => prev.filter((e) => e !== email));
+    
+    // Update the main stored token to the new default
+    const emailToken = localStorage.getItem(`googleCalendarToken_${email}`);
+    const emailCalendarId = localStorage.getItem(`googleCalendarId_${email}`);
+    if (emailToken && emailCalendarId) {
+      storeTokens(emailToken, emailCalendarId);
+    }
+  };
+
+  const removeEmail = async (email: string) => {
+    try {
+      // Remove from backend first
+      if (calendar?.id) {
+        const result = await backendActor.remove_google_calendar_id(calendar.id, email);
+        if ("Err" in result) {
+          console.error("Backend error removing email:", result.Err);
+          throw new Error("Failed to remove email from backend");
+        }
+      }
+
+      // Remove stored tokens for this email
+      localStorage.removeItem(`googleCalendarToken_${email}`);
+      localStorage.removeItem(`googleCalendarId_${email}`);
+      
+      // Update local state
+      setEmails((prev) => {
+        const newEmails = prev.filter((e) => e !== email);
+        
+        // If we removed the default email, set a new default
+        if (prev[0] === email && newEmails.length > 0) {
+          const newDefaultEmail = newEmails[0];
+          const newDefaultToken = localStorage.getItem(`googleCalendarToken_${newDefaultEmail}`);
+          const newDefaultCalendarId = localStorage.getItem(`googleCalendarId_${newDefaultEmail}`);
+          if (newDefaultToken && newDefaultCalendarId) {
+            storeTokens(newDefaultToken, newDefaultCalendarId);
+          }
+        }
+        
+        // If no emails left, clear all tokens
+        if (newEmails.length === 0) {
+          clearTokens();
+          setIsConnected(false);
+        }
+        
+        return newEmails;
+      });
+
+      dispatch({ type: "REMOVE_CALENDAR_EMAIL", email });
+    } catch (error) {
+      console.error("Failed to remove email:", error);
+      setError("Failed to remove account. Please try again.");
+    }
+  };
 
   const connectCal = async () => {
-    // First try to use existing access token
-    const currentAccessToken =
-      accessToken || localStorage.getItem("googleCalendarToken");
-
-    if (!currentAccessToken) {
-      console.error(
-        "No access token available. Please connect calendar first.",
-      );
+    if (!emails || emails.length === 0) {
+      console.log("No connected Google accounts found");
       return;
     }
 
     try {
       const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const emails = calendar?.google_ids;
       const now = new Date().toISOString();
       const allEvents = [];
 
       for (const email of emails) {
         try {
-          const x = localStorage.getItem("googleCalendarToken" + email);
+          // Use the new email-specific token storage
+          const emailToken = localStorage.getItem(`googleCalendarToken_${email}`);
+          const emailCalendarId = localStorage.getItem(`googleCalendarId_${email}`) || email;
+
+          if (!emailToken) {
+            console.warn(`No token found for ${email}, skipping...`);
+            continue;
+          }
 
           const eventsRes = await fetch(
-            `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(email)}/events?timeMin=${now}&maxResults=50&singleEvents=true&orderBy=startTime&timeZone=${userTimeZone}`,
+            `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(emailCalendarId)}/events?timeMin=${now}&maxResults=50&singleEvents=true&orderBy=startTime&timeZone=${userTimeZone}`,
             {
-              headers: { Authorization: `Bearer ${x}` },
+              headers: { Authorization: `Bearer ${emailToken}` },
             },
           );
 
-          // If token expired, try to refresh or reconnect
+          // If token expired for this specific account
           if (eventsRes.status === 401) {
-            console.log("Token expired, need to reconnect");
-            disConnectCalendar();
-            return;
+            console.log(`Token expired for ${email}, removing from connected accounts`);
+            await removeEmail(email);
+            continue;
+          }
+
+          if (!eventsRes.ok) {
+            console.error(`Failed to fetch events for ${email}:`, eventsRes.status);
+            continue;
           }
 
           const eventsData = await eventsRes.json();
@@ -328,15 +513,18 @@ export const useGoogleCalendar = () => {
             description: event.description || "",
             created_by: email,
             isGoogleEvent: true,
+            googleCalendarId: emailCalendarId,
           }));
 
           allEvents.push(...processedEvents);
+          console.log(`Successfully fetched ${processedEvents.length} events for ${email}`);
         } catch (emailErr) {
           console.error(`Error fetching events for ${email}:`, emailErr);
         }
       }
 
       dispatch({ type: "SET_GOOGLE_CALENDAR", events: allEvents });
+      console.log(`Total events fetched: ${allEvents.length}`);
     } catch (err) {
       console.error("Error fetching calendar data:", err);
     }
