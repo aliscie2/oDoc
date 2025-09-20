@@ -153,16 +153,24 @@ const createComponents = (palette: any) => ({
   MuiChip: {
     styleOverrides: {
       root: {
-        background:
-          palette.mode === "dark" ? palette.background.paper : "#f1f5f9",
-        backdropFilter: "blur(10px)",
-        border: `1px solid ${palette.mode === "dark" ? alpha(palette.divider, 0.5) : "#d1d5db"}`,
         borderRadius: 20,
         transition: "all 0.3s ease",
         "&:hover": {
           transform: "translateY(-1px)",
           boxShadow: `0 4px 15px ${alpha(palette.primary.main, 0.2)}`,
         },
+      },
+      filled: {
+        background:
+          palette.mode === "dark" ? palette.background.paper : "#f1f5f9",
+        color: palette.text.primary,
+        backdropFilter: "blur(10px)",
+        border: `1px solid ${palette.mode === "dark" ? alpha(palette.divider, 0.5) : "#d1d5db"}`,
+      },
+      outlined: {
+        background: "transparent",
+        color: palette.text.primary,
+        border: `1px solid ${palette.mode === "dark" ? alpha(palette.divider, 0.5) : "#d1d5db"}`,
       },
     },
   },
