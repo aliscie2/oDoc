@@ -122,13 +122,13 @@ export const useJobMatching = (currentJob: Job | null) => {
         if (!aiResponse || "Err" in aiResponse) {
           throw new Error(
             aiResponse && "Err" in aiResponse
-              ? aiResponse.Err
+              ? String(aiResponse.Err)
               : "AI returned no response",
           );
         }
 
-        const responseText = aiResponse.Ok.response;
-        const remainingCredits = aiResponse.Ok.remaining_credits;
+        const responseText = "Ok" in aiResponse ? aiResponse.Ok.response : "";
+        const remainingCredits = "Ok" in aiResponse ? aiResponse.Ok.remaining_credits : 0;
 
         // Update credits after AI call
         dispatch({
@@ -157,7 +157,7 @@ export const useJobMatching = (currentJob: Job | null) => {
           active: [] as [] | [boolean],
           required_match_score: [],
           category: [],
-          matches: [processedMatches],
+          matches: processedMatches.length > 0 ? [processedMatches] : [],
         };
         const saveResult = await backendActor.update_job(
           [jobUpdate],

@@ -6,7 +6,6 @@ import {
 } from "$/declarations/backend/backend.did";
 import { createIdentity } from "@dfinity/pic";
 import { registerUser } from "../utils";
-import exp from "constants";
 
 // Helper functions
 async function createUser(id: string) {
@@ -154,11 +153,11 @@ describe("Comprehensive Job Matching System", () => {
     }
 
     // Step 3: Process matches in batches
-    let allSavedMatches: Match[] = [];
+    const allSavedMatches: Match[] = [];
 
     for (let i = 1; i <= 3; i++) {
       // Get matches
-      let { jobMatches: matches } = await getInitJobs(jobProfile.id);
+      const { jobMatches: matches } = await getInitJobs(jobProfile.id);
 
       expect(matches.length).toBe(10);
 
@@ -179,20 +178,17 @@ describe("Comprehensive Job Matching System", () => {
     }
 
     // Step 4: Verify no more matches available
-    let { jobMatches: noMoreMatches, userJobs } = await getInitJobs(
+    const { jobMatches: noMoreMatches } = await getInitJobs(
       jobProfile.id,
     );
     expect(noMoreMatches.length).toBe(0);
-
-    // Verify the workflow completed successfully
-    // expect(allSavedMatches.length).toBe(30);
 
     // --------- test get updated talent
 
     globalThis.testActor.setIdentity(talentsUsers[0].user);
     await makeRandomTalentUpdate(talentsUsers[0].talentId);
     globalThis.testActor.setIdentity(jobCreator);
-    let { jobMatches: noMoreMatches2, userJobs: userJobs2 } = await getInitJobs(
+    const { jobMatches: noMoreMatches2 } = await getInitJobs(
       jobProfile.id,
     );
     expect(noMoreMatches2.length).toBe(1);
