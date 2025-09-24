@@ -22,6 +22,7 @@ pub struct FEFriend {
     pub description: String,
     pub photo: Vec<u8>,
     pub is_sender: bool,
+    pub confirmed: bool,
 }
 
 fn convert_friends_to_fe_friends(friends: Vec<Friend>) -> Vec<FEFriend> {
@@ -57,6 +58,7 @@ fn convert_friends_to_fe_friends(friends: Vec<Friend>) -> Vec<FEFriend> {
                 description: user_data.description.clone(),
                 photo,
                 is_sender,
+                confirmed: friend.confirmed,
             })
         })
         .collect()

@@ -7,6 +7,15 @@ import { useDispatch, useSelector } from "react-redux";
 interface FEFriend {
   id: string;
   is_sender: boolean;
+  confirmed: boolean;
+  name: string;
+  description: string;
+  email: string;
+  photo: Uint8Array | number[];
+}
+
+interface User {
+  id: string;
   name: string;
   description: string;
   email: string;
@@ -14,15 +23,15 @@ interface FEFriend {
 }
 
 interface FriendshipButtonProps {
-  profile: any;
-  user: any;
+  profile?: User;
+  user: User;
   friends: FEFriend[];
 }
 
 const FriendshipButton: React.FC<FriendshipButtonProps> = ({ user }) => {
   const dispatch = useDispatch();
 
-  const { profile, friends } = useSelector((state: any) => state.filesState);
+  const { profile, friends } = useSelector((state: { filesState: { profile: User; friends: FEFriend[] } }) => state.filesState);
   // Using direct backendActor import
   const [isLoading, setIsLoading] = useState(false);
 
@@ -31,7 +40,7 @@ const FriendshipButton: React.FC<FriendshipButtonProps> = ({ user }) => {
   const { enqueueSnackbar } = useSnackbar();
 
   const handleAction = async (
-    action: () => Promise<any>,
+    action: () => Promise<{ Ok?: User; Err?: string }>,
     updateFunction: () => void,
   ) => {
     if (!backendActor || isLoading) return;
@@ -59,6 +68,7 @@ const FriendshipButton: React.FC<FriendshipButtonProps> = ({ user }) => {
           const friend = {
             id: res.Ok.id,
             is_sender: true,
+            confirmed: false,
             name: res.Ok.name,
             description: res.Ok.description,
             email: res.Ok.email,
@@ -72,6 +82,7 @@ const FriendshipButton: React.FC<FriendshipButtonProps> = ({ user }) => {
         const newFriend = {
           id: user.id,
           is_sender: true,
+          confirmed: false,
           name: user.name,
           description: user.description,
           email: user.email,
@@ -89,7 +100,7 @@ const FriendshipButton: React.FC<FriendshipButtonProps> = ({ user }) => {
       () => {
         setLocalFriends(
           localFriends.map((friend: FEFriend) =>
-            friend.id === user.id ? { ...friend, is_sender: false } : friend,
+            friend.id === user.id ? { ...friend, confirmed: true } : friend,
           ),
         );
       },
@@ -138,13 +149,14 @@ const FriendshipButton: React.FC<FriendshipButtonProps> = ({ user }) => {
     (friend: FEFriend) => friend.id === user.id,
   );
 
-  // With FEFriend, we need to determine the relationship status differently
-  // If friend exists and is_sender is false, it means we are friends (confirmed)
-  // If friend exists and is_sender is true, it means we sent a request (pending)
+  // Determine the relationship status based on confirmed and is_sender fields
+  // If friend exists and confirmed is true, we are friends
+  // If friend exists, confirmed is false, and is_sender is true, we sent a pending request
+  // If friend exists, confirmed is false, and is_sender is false, we received a pending request
   // If no friend relation exists, we can send a request
-  const isFriend = friendRelation && !friendRelation.is_sender;
-  const isRequestSender = friendRelation && friendRelation.is_sender;
-  const isRequestReceiver = false; // This would need to be determined differently with FEFriend
+  const isFriend = friendRelation && friendRelation.confirmed;
+  const isRequestSender = friendRelation && !friendRelation.confirmed && friendRelation.is_sender;
+  const isRequestReceiver = friendRelation && !friendRelation.confirmed && !friendRelation.is_sender;
 
   const buttonStyle = {
     padding: "8px 16px",
@@ -206,14 +218,14 @@ const FriendshipButton: React.FC<FriendshipButtonProps> = ({ user }) => {
           style={primaryButton}
           disabled={isLoading}
         >
-          {isLoading ? "Processing..." : "Accept Request"}
+          {isLoading ? "Processing..." : "Confirm"}
         </button>
         <button
           onClick={handleRejectRequest}
           style={secondaryButton}
           disabled={isLoading}
         >
-          {isLoading ? "Processing..." : "Reject Request"}
+          {isLoading ? "Processing..." : "Cancel"}
         </button>
       </div>
     );
