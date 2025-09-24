@@ -13,7 +13,7 @@ const dfxJson = JSON.parse(
   readFileSync(path.resolve(__dirname, "dfx.json"), "utf8"),
 );
 
-let localCanisters: any, prodCanisters: any, canisters;
+let localCanisters: unknown, prodCanisters: unknown, canisters;
 let localEnv = true;
 let network = "local";
 
@@ -54,6 +54,9 @@ export default defineConfig({
     rollupOptions: { 
       external: ["@excalidraw/excalidraw"] 
     },
+  },
+  ssr: {
+    noExternal: ['react-helmet-async']
   },
   server: {
     host: true,
@@ -100,7 +103,7 @@ export default defineConfig({
   define: {
     global: "globalThis",
     ...Object.entries(canisters || {}).reduce(
-      (acc, [key, val]: [string, any]) => ({
+      (acc, [key, val]: [string, unknown]) => ({
         ...acc,
         [`process.env.${key.toUpperCase()}_CANISTER_ID`]: JSON.stringify(
           isDevelopment ? val.local : val.ic,

@@ -746,6 +746,7 @@ export interface _SERVICE {
   'rate_user' : ActorMethod<[Principal, Rating], Result_3>,
   'register' : ActorMethod<[string, RegisterUser], Result>,
   'reject_friend_request' : ActorMethod<[string], Result>,
+  'remove_google_calendar_id' : ActorMethod<[string, string], Result_1>,
   'remove_owner' : ActorMethod<[AddOwnerArgs], Result_2>,
   'remove_swap' : ActorMethod<[RemoveSwapArgs], Result_2>,
   'save_post' : ActorMethod<[Post], Result_3>,

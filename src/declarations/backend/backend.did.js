@@ -824,6 +824,11 @@ export const idlFactory = ({ IDL }) => {
     'rate_user' : IDL.Func([IDL.Principal, Rating], [Result_3], []),
     'register' : IDL.Func([IDL.Text, RegisterUser], [Result], []),
     'reject_friend_request' : IDL.Func([IDL.Text], [Result], []),
+    'remove_google_calendar_id' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [Result_1],
+        [],
+      ),
     'remove_owner' : IDL.Func([AddOwnerArgs], [Result_2], []),
     'remove_swap' : IDL.Func([RemoveSwapArgs], [Result_2], []),
     'save_post' : IDL.Func([Post], [Result_3], []),

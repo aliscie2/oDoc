@@ -1,4 +1,4 @@
-import { Job, Match } from "$/declarations/backend/backend.did";
+import { Category, Job, Match } from "$/declarations/backend/backend.did";
 import { backendActor } from "@/utils/backendUtils";
 import { RootState } from "@/redux/reducers";
 import { useCallback, useEffect, useState, useRef } from "react";
@@ -28,9 +28,10 @@ export const useJobMatching = (currentJob: Job | null) => {
   const [error, setError] = useState<string | null>(null);
   const processedJobIdsRef = useRef(new Set<string>());
 
-  const getLookingForCategory = (job: Job) => {
-    const categoryKey = Object.keys(job?.category || {})[0];
-    return categoryKey === "Job" ? { Talent: null } : { Job: null };
+  const getLookingForCategory = (job: Job) : Category => {
+    const categoryKey = Object.keys(job?.category || {})[0].toLocaleLowerCase();
+    console.log({categoryKey})
+    return categoryKey === "job" ? { Talent: null } : { Job: null };
   };
 
   const processAIMatches = useCallback(

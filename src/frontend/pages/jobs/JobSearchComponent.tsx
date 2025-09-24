@@ -57,67 +57,28 @@ const JobSearchComponent: React.FC = React.memo(() => {
   const currentJobId = useSelector(selectCurrentJobId);
   const matchingJobs = useSelector(selectMatchingJobs);
   const currentJob = useSelector(selectCurrentJob);
-
   const [openDialogId, setOpenDialogId] = useState<string | null>(null);
   const [isSearched, setSearched] = useState(false);
   const { loading, error, findMatches } = useJobMatching(currentJob);
 
   const sortedMatches: ProcessedMatch[] = useMemo(() => {
     if (!currentJob?.matches || !matchingJobs) {
-      console.log("Debug: No matches or matching jobs", {
-        hasCurrentJob: !!currentJob,
-        hasMatches: !!currentJob?.matches,
-        matchesLength: currentJob?.matches?.length || 0,
-        hasMatchingJobs: !!matchingJobs,
-        matchingJobsLength: matchingJobs?.length || 0,
-      });
       return [];
     }
-
-    console.log("Debug: Processing matches", {
-      currentJobId,
-      totalMatches: currentJob.matches.length,
-      matchingJobsCount: matchingJobs.length,
-      matches: currentJob.matches.map((m) => ({
-        job_id: m.job_id,
-        score: m.score,
-      })),
-    });
 
     const filteredMatches = currentJob.matches.filter((match): match is Match =>
       Boolean(match?.job_id && match.job_id !== currentJobId),
     );
 
-    console.log("Debug: After filtering out current job", {
-      filteredCount: filteredMatches.length,
-      filtered: filteredMatches.map((m) => ({
-        job_id: m.job_id,
-        score: m.score,
-      })),
-    });
-
     const processedMatches = filteredMatches
       .map((match) => {
         const job = matchingJobs.find((j: Job) => j?.id === match.job_id);
         if (!job) {
-          console.log("Debug: No matching job found for match", {
-            matchJobId: match.job_id,
-            availableJobIds: matchingJobs.map((j) => j.id),
-          });
           return null;
         }
         return { job, match, score: Math.round((match.score || 0) * 100) };
       })
       .filter((item): item is ProcessedMatch => Boolean(item));
-
-    console.log("Debug: Final processed matches", {
-      processedCount: processedMatches.length,
-      processed: processedMatches.map((m) => ({
-        jobId: m.job.id,
-        score: m.score,
-        title: m.job.job_titles?.[0] || "No title",
-      })),
-    });
 
     return processedMatches.sort((a, b) => b.score - a.score);
   }, [currentJob?.matches, matchingJobs, currentJobId]);

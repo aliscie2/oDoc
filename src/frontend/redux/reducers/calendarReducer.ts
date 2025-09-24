@@ -363,6 +363,28 @@ export function calendarReducer(state = initialState, action: any): any {
         },
       };
 
+    case "REMOVE_CALENDAR_EMAIL":
+      return {
+        ...state,
+        calendar: {
+          ...state.calendar,
+          google_ids: (state.calendar.google_ids || []).filter(
+            (email: string) => email !== action.email
+          ),
+        },
+      };
+
+    case "CLEAR_GOOGLE_CALENDAR":
+      return {
+        ...state,
+        is_google_connected: false,
+        google_events: [],
+        calendar: {
+          ...state.calendar,
+          google_ids: [],
+        },
+      };
+
     default:
       return state;
   }

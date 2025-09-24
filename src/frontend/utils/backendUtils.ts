@@ -1,4 +1,4 @@
-import { ActorSubclass, HttpAgent, Identity, Actor } from "@dfinity/agent";
+import { ActorSubclass, Actor } from "@dfinity/agent";
 import { AuthClient } from "@dfinity/auth-client";
 import { canisterId, idlFactory } from "$/declarations/backend";
 import { backend } from "$/declarations/backend";

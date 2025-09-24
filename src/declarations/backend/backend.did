@@ -664,6 +664,7 @@ service : () -> {
   rate_user : (principal, Rating) -> (Result_3);
   register : (text, RegisterUser) -> (Result);
   reject_friend_request : (text) -> (Result);
+  remove_google_calendar_id : (text, text) -> (Result_1);
   remove_owner : (AddOwnerArgs) -> (Result_2);
   remove_swap : (RemoveSwapArgs) -> (Result_2);
   save_post : (Post) -> (Result_3);

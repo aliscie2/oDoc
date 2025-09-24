@@ -163,7 +163,7 @@ function applyFieldUpdates(
           "feedback",
         ].includes(field)
       ) {
-        (updatedJob as any)[field] =
+        (updatedJob as unknown)[field] =
           cleanedValues.length > 0 ? cleanedValues[0] : "";
       }
     });
@@ -173,6 +173,8 @@ function applyFieldUpdates(
 
   return updatedJob;
 }
+
+
 
 export function jobReducer(
   state: JobState = initialState,
@@ -313,7 +315,7 @@ export function jobReducer(
     case "IS_LOOKING_NEW_MATCHES":
       return { ...state, jobSearchStage: action.stage };
 
-    case "UPDATE_MATCHING_JOBS":
+    case "UPDATE_MATCHING_JOBS": {
       // Check if we actually need to update anything
       const currentJob = state.jobs.find((j) => j.id === state.currentJobId);
       if (!currentJob) return state;
@@ -358,7 +360,7 @@ export function jobReducer(
             .concat(action.matchingJobs)
         : state.matchingJobs;
 
-      return {
+      const newState = {
         ...state,
         jobs: hasMatchChanges
           ? state.jobs.map((j) =>
@@ -376,7 +378,7 @@ export function jobReducer(
             : [
                 ...state.jobChanges,
                 {
-                  id: state.currentJobId,
+                  id: state.currentJobId!,
                   active: [],
                   matches: [newMatches2],
                   updates: [],
@@ -387,6 +389,11 @@ export function jobReducer(
           : state.jobChanges,
         isChanged: hasMatchChanges ? true : state.isChanged,
       };
+
+
+
+      return newState;
+    }
 
     case "UPDATE_MATCHES": {
       const existingJobChange = state.jobChanges.find(
@@ -430,6 +437,8 @@ export function jobReducer(
           required_match_score: [],
         };
       }
+
+
 
       return {
         ...state,

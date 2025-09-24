@@ -32,7 +32,7 @@ export class MessageRulesService {
   private TALENT_DETAILS =
     "\n\nI can help you create a compelling profile, showcase your skills, and provide consultation on career development.";
   private GENERAL_DETAILS =
-    "\n\nI can help you build your professional profile job or talent, and provide personalized consultations to enhance your career prospects.";
+    "\nWhat are you looking for Job or Talent? Tell me in details.";
 
   constructor(
     private jobs: unknown[],
@@ -70,8 +70,16 @@ export class MessageRulesService {
         id: "calendar",
         type: "immediate",
         priority: 1,
-        condition: () =>
-          this.jobs.length > 0 && !this.calendar?.availabilities?.length,
+        condition: () => {
+          const hasJobs = this.jobs.length > 0;
+          const noCalendarAvailabilities =
+            !this.calendar?.availabilities?.length;
+          const hasHighCompletionJob = this.jobs.some((job: any) => {
+            const percentage = job.profile_completion || 0;
+            return percentage >= 0.9;
+          });
+          return hasJobs && noCalendarAvailabilities && hasHighCompletionJob;
+        },
         message: () =>
           `📅 For others to book an interview with you, you can say, for example: "I am available every day except Fridays, from 9 AM to 3 PM."`,
         actionType: "WELCOME_MESSAGE",

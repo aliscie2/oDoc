@@ -5,6 +5,7 @@ import {
   Typography,
   Button,
   IconButton,
+  Alert,
 } from "@mui/material";
 import {
   Google as GoogleIcon,
@@ -20,6 +21,11 @@ interface RootState {
       active?: boolean;
     }>;
   };
+  calendarState: {
+    calendar: {
+      google_ids?: string[];
+    } | null;
+  };
 }
 
 const GoogleCalendarOnboarding = () => {
@@ -27,15 +33,18 @@ const GoogleCalendarOnboarding = () => {
   const [open, setOpen] = useState(false);
   
   const { jobs } = useSelector((state: RootState) => state.jobState);
+  const { calendar } = useSelector((state: RootState) => state.calendarState);
   const {
-    emailCompleted,
+    emails,
     availabilityCompleted,
     connectGoogleCalendar,
     loading,
+    error,
   } = useGoogleCalendar();
 
-  const hasActiveJobs = jobs.some((job: any) => job.active);
-  const shouldShow = hasActiveJobs && availabilityCompleted && !emailCompleted;
+  const hasActiveJobs = jobs.some((job) => job.active);
+  const hasGoogleIds = (calendar?.google_ids?.length || 0) > 0 || emails.length > 0;
+  const shouldShow = hasActiveJobs && availabilityCompleted && !hasGoogleIds;
 
   useEffect(() => {
     if (shouldShow && !hasTriedToClose) {
@@ -46,7 +55,7 @@ const GoogleCalendarOnboarding = () => {
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (shouldShow && !emailCompleted) {
+      if (shouldShow && !hasGoogleIds) {
         e.preventDefault();
         setOpen(true);
       }
@@ -54,7 +63,7 @@ const GoogleCalendarOnboarding = () => {
 
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [shouldShow, emailCompleted]);
+  }, [shouldShow, hasGoogleIds]);
 
   const handleClose = () => {
     setOpen(false);
@@ -67,6 +76,7 @@ const GoogleCalendarOnboarding = () => {
       setOpen(false);
     } catch (error) {
       console.error("Google auth failed:", error);
+      // Error will be shown via the error state from the hook
     }
   };
 
@@ -78,8 +88,10 @@ const GoogleCalendarOnboarding = () => {
       onClose={handleClose} 
       maxWidth="sm" 
       fullWidth
-      PaperProps={{
-        sx: { borderRadius: 2 }
+      slotProps={{
+        paper: {
+          sx: { borderRadius: 2 }
+        }
       }}
     >
       <IconButton
@@ -133,13 +145,22 @@ const GoogleCalendarOnboarding = () => {
             py: 1.5, 
             fontWeight: 600,
             fontSize: "1rem",
-            backgroundColor: "#4285F4",
-            "&:hover": { backgroundColor: "#3367D6" },
+            backgroundColor: error ? "#f44336" : "#4285F4",
+            "&:hover": { backgroundColor: error ? "#d32f2f" : "#3367D6" },
             "&:disabled": { opacity: 0.7 }
           }}
         >
-          {loading ? "Connecting..." : "Connect Google Calendar"}
+          {loading ? "Connecting..." : error ? "Retry Connection" : "Connect Google Calendar"}
         </Button>
+
+        {error && (
+          <Alert 
+            severity="error" 
+            sx={{ mt: 2, fontSize: "0.875rem" }}
+          >
+            {error}
+          </Alert>
+        )}
       </DialogContent>
     </Dialog>
   );

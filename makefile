@@ -127,3 +127,7 @@ dummy_deposit:
 
 generate_icons:
 	npx pwa-asset-generator ./public/logo.jpg ./public/icons --background "#000000" --manifest ./public/manifest.json --index ./index.html
+
+testing_thumbnails:
+	cloudflared tunnel --url http://localhost:5173
+# 	addd this in vite.config.ts allowedHosts: [ ".trycloudflare.com"],

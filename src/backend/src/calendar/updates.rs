@@ -259,3 +259,26 @@ fn add_google_calendar_id(calendar_id: String, ids: Vec<String>) -> Result<Strin
     calendar.save()?;
     Ok(calendar.id)
 }
+
+#[update]
+fn remove_google_calendar_id(calendar_id: String, id: String) -> Result<String, String> {
+    if caller() == Principal::anonymous() {
+        return Err("Unauthorized".to_string());
+    }
+
+    let caller_id = caller().to_text();
+    let mut calendar = Calendar::get_calendar(&calendar_id)?;
+
+    // Only calendar owner can remove google calendar IDs
+    if caller_id != calendar.owner {
+        return Err(
+            "Permission denied: Only calendar owner can remove Google calendar IDs".to_string(),
+        );
+    }
+
+    // Remove the ID if it exists
+    calendar.google_ids.retain(|existing_id| existing_id != &id);
+
+    calendar.save()?;
+    Ok(calendar.id)
+}

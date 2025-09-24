@@ -380,7 +380,7 @@ const AchievementPage: React.FC = () => {
       title: "Email Connected",
       description: "Successfully connected your email for calendar integration",
       icon: "📧",
-      category: "setup" as any,
+      category: "setup" as const,
       unlocked: emailCompleted,
       videoUrl: emailCompleted
         ? undefined
@@ -392,7 +392,7 @@ const AchievementPage: React.FC = () => {
       description:
         "Configured your availability schedule for optimal scheduling",
       icon: "📅",
-      category: "setup" as any,
+      category: "setup" as const,
       unlocked: availabilityCompleted,
       videoUrl: availabilityCompleted
         ? undefined

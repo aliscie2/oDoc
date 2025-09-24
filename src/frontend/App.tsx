@@ -32,7 +32,6 @@ import { RootState } from "./redux/reducers";
 import useSocket from "./websocket/use_socket";
 import GoogleCalendarOnboarding from "./components/userBadges/connectGoogleCalendar";
 
-
 const ChatContainer = React.lazy(() => import("./chatBot/ChatContainer"));
 const MainContent = styled(Box)(({ theme }) => ({
   display: "flex",
@@ -128,7 +127,7 @@ const useAppInitialization = () => {
         }
 
         // Single dispatch for initialization - let the thunk handle success/fallback logic
-        dispatch(initializeApp(backendActor) as any);
+        dispatch(initializeApp(backendActor) as unknown);
 
         setInitState((prev) => ({
           ...prev,
@@ -281,7 +280,7 @@ const useAppInitialization = () => {
 };
 
 const App: React.FC = () => {
-  const { profile, friends } = useSelector((state: any) => state.filesState);
+  const { profile, friends } = useSelector((state: unknown) => state.filesState);
   const { authStatus, isLoggedIn } = useAuth();
   const navigate = useNavigate();
 

@@ -31,14 +31,15 @@ root.render(
       <BrowserRouter>
         <HelmetProvider>
           <Helmet>
-            {["twitter:image", "og:image"].map((property: string) => {
-              const imageName = window.location.hostname.includes("icpjobs.com")
-                ? window.location.hostname + "/thumnail.png"
-                : window.location.hostname + "/thumnail.png";
-              return (
-                <meta key={property} property={property} content={imageName} />
-              );
-            })}
+            {/* Default meta tags - will be overridden by page-specific Helmet components */}
+            <meta
+              property="og:image"
+              content="https://raw.githubusercontent.com/aliscie2/oDoc/refs/heads/dev2/public/thumnail.png"
+            />
+            <meta
+              property="twitter:image"
+              content="https://raw.githubusercontent.com/aliscie2/oDoc/refs/heads/dev2/public/thumnail.png"
+            />
           </Helmet>
 
           <ThemeProvider>
