@@ -245,6 +245,7 @@ type FEFriend = record {
   description : text;
   email : text;
   photo : blob;
+  confirmed : bool;
 };
 type FileIndexing = record { id : text; new_index : nat64; parent : opt text };
 type FileNode = record {

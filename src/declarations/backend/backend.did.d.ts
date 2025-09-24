@@ -262,6 +262,7 @@ export interface FEFriend {
   'description' : string,
   'email' : string,
   'photo' : Uint8Array | number[],
+  'confirmed' : boolean,
 }
 export interface FileIndexing {
   'id' : string,

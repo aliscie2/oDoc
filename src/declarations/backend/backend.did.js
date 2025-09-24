@@ -388,6 +388,7 @@ export const idlFactory = ({ IDL }) => {
     'description' : IDL.Text,
     'email' : IDL.Text,
     'photo' : IDL.Vec(IDL.Nat8),
+    'confirmed' : IDL.Bool,
   });
   const InitialData = IDL.Record({
     'contracts' : IDL.Vec(IDL.Tuple(IDL.Text, StoredContract)),
