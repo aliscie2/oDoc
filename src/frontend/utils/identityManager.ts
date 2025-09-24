@@ -1,4 +1,4 @@
-import { Identity, HttpAgent, ActorSubclass } from "@dfinity/agent";
+import { Identity, HttpAgent } from "@dfinity/agent";
 import { AuthClient } from "@dfinity/auth-client";
 import { EnvironmentManager } from "./environmentConfig";
 

@@ -19,7 +19,6 @@ import {
   MoreVert,
   NavigateBefore,
   NavigateNext,
-  Today,
 } from "@mui/icons-material";
 import GoogleAccountManager from "./GoogleAccountManager";
 import TimeZoneSelector from "./timezone";

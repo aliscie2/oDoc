@@ -137,7 +137,6 @@ pub async fn ask_ai(
     })
 }
 
-
 #[query]
 fn transform(raw: TransformArgs) -> HttpResponse {
     // Simple transform that removes non-deterministic headers

@@ -4,7 +4,6 @@ import PropTypes from "prop-types";
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { useSearchParams } from "react-router-dom";
-import { convertToBlobLink } from "../DataProcessing/imageToVec";
 import { backendActor } from "../utils/backendUtils";
 import { jobSEO } from "../components/jobSeoComponent";
 import JobDetails from "./jobs/JobDetails";
