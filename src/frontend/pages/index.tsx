@@ -28,6 +28,7 @@ const AchievementPage = React.lazy(() => import("@/components/userBadges"));
 const WalletPage = React.lazy(() => import("./walletPage"));
 const JobPage = React.lazy(() => import("./jobPage"));
 const Posts = React.lazy(() => import("./posts/posts"));
+const PrivacyPage = React.lazy(() => import("./privacy"));
 
 // Loading component
 const PageLoader = () => (
@@ -43,7 +44,7 @@ const PageLoader = () => (
 
 const Pages = React.memo(() => {
   const { profile, profile_history, wallet, friends } = useSelector(
-    (state: any) => state.filesState,
+    (state: unknown) => state.filesState,
   );
 
   const { isLoggedIn } = useAuth();
@@ -90,6 +91,7 @@ const Pages = React.memo(() => {
         <Route path="/achievementCard" element={<AchievementPage />} />
         <Route path="/posts" element={<Posts />} />
         <Route path="/jobs*" element={<JobPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/f*" element={<AffiliateRedirect />} />
       </Routes>
     </Suspense>

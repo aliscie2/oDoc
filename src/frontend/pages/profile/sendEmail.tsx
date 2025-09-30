@@ -146,7 +146,6 @@ const EmailComposer = () => {
             <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
               <button
                 onClick={handleSendEmail}
-                disabled={isSending || !subject.trim() || !htmlContent.trim()}
                 style={{
                   padding: "10px 20px",
                   border: "1px solid currentColor",

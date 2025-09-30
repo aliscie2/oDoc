@@ -1,5 +1,5 @@
-import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
 import LoginButton from "@/components/MainComponents/topNavBar/loginButton";
+import AIJobMatchingFlow from "@/components/AIJobMatching";
 import {
   CheckCircle as CheckCircleIcon,
   Email,
@@ -9,6 +9,16 @@ import {
   People,
   Shield,
   YouTube,
+  TrendingUp,
+  PersonAdd,
+  Payment,
+  Assignment,
+  Star,
+  WorkOutline,
+  CalendarMonth,
+  Security,
+  Search,
+  Work,
 } from "@mui/icons-material";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import {
@@ -18,7 +28,6 @@ import {
   Button,
   Card,
   Chip,
-  CircularProgress,
   Container,
   Divider,
   Fade,
@@ -27,10 +36,398 @@ import {
   SvgIcon,
   Typography,
   useTheme,
+  Grid2,
+  useMediaQuery,
 } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router";
+import getckUsdcBalance from "@/utils/getBalance";
+import { canisterId } from "$/declarations/backend";
+import { backendActor, ckUSDCActor } from "@/utils/backendUtils";
+
+// Button styles for cleaner code
+const getButtonStyles = (theme, variant = "contained") => ({
+  contained: {
+    px: 4,
+    py: 1.5,
+    fontSize: "1rem",
+    fontWeight: 600,
+    background:
+      theme.palette.mode === "dark"
+        ? `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`
+        : `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.light})`,
+    borderRadius: "28px",
+    textTransform: "none",
+    color: "#ffffff",
+    border: "none",
+    boxShadow:
+      theme.palette.mode === "dark"
+        ? `0 4px 16px ${theme.palette.primary.main}40`
+        : `0 2px 12px ${theme.palette.primary.main}25`,
+    "&:hover": {
+      background:
+        theme.palette.mode === "dark"
+          ? `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.primary.main})`
+          : `linear-gradient(135deg, ${theme.palette.primary.dark}, ${theme.palette.primary.main})`,
+      transform: "translateY(-1px)",
+      boxShadow:
+        theme.palette.mode === "dark"
+          ? `0 6px 20px ${theme.palette.primary.main}50`
+          : `0 4px 16px ${theme.palette.primary.main}35`,
+    },
+    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+  },
+  outlined: {
+    px: 4,
+    py: 1.5,
+    fontSize: "1rem",
+    fontWeight: 600,
+    background:
+      theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.05)" : "#ffffff",
+    borderRadius: "28px",
+    textTransform: "none",
+    color:
+      theme.palette.mode === "dark"
+        ? theme.palette.text.primary
+        : theme.palette.primary.main,
+    border:
+      theme.palette.mode === "dark"
+        ? `2px solid ${theme.palette.divider}`
+        : `2px solid ${theme.palette.primary.main}30`,
+    backdropFilter: "blur(10px)",
+    boxShadow:
+      theme.palette.mode === "dark"
+        ? "0 2px 8px rgba(0, 0, 0, 0.1)"
+        : "0 2px 8px rgba(37, 99, 235, 0.08)",
+    "&:hover": {
+      background:
+        theme.palette.mode === "dark"
+          ? "rgba(255, 255, 255, 0.1)"
+          : theme.palette.primary.main,
+      color:
+        theme.palette.mode === "dark" ? theme.palette.text.primary : "#ffffff",
+      borderColor:
+        theme.palette.mode === "dark"
+          ? theme.palette.primary.main
+          : theme.palette.primary.main,
+      transform: "translateY(-1px)",
+      boxShadow:
+        theme.palette.mode === "dark"
+          ? `0 4px 12px ${theme.palette.primary.main}30`
+          : `0 4px 12px ${theme.palette.primary.main}25`,
+    },
+    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+  },
+});
+
+// Hero Section with Real-time Stats (Google-themed)
+const HeroSection = ({ isMobile, state }) => {
+  const theme = useTheme();
+  const buttonStyles = getButtonStyles(theme);
+  const [stats, setStats] = useState({
+    users: 0,
+    activeUsers: 0,
+    totalDeposit: 0,
+    jobsCount: 0,
+    talentsCount: 0,
+  });
+  const [isVisible, setIsVisible] = useState(false);
+  const statsRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsVisible(entry.isIntersecting),
+      { threshold: 0.3 },
+    );
+    if (statsRef.current) observer.observe(statsRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!isVisible) return;
+
+    const animateCount = (target, setter) => {
+      let current = 0;
+      const increment = target / 50;
+      const timer = setInterval(() => {
+        current += increment;
+        if (current >= target) {
+          setter(Math.floor(target));
+          clearInterval(timer);
+        } else {
+          setter(Math.floor(current));
+        }
+      }, 30);
+    };
+
+    const fetchStats = async () => {
+      try {
+        const [snsResponse, balance] = await Promise.all([
+          backendActor.get_sns_status(),
+          getckUsdcBalance(ckUSDCActor, canisterId),
+        ]);
+
+        if (snsResponse.Ok) {
+          const { number_users, active_users, jobs_count, talents_count } =
+            snsResponse.Ok;
+          animateCount(number_users, (val) =>
+            setStats((prev) => ({ ...prev, users: val })),
+          );
+          animateCount(active_users, (val) =>
+            setStats((prev) => ({ ...prev, activeUsers: val })),
+          );
+          animateCount(Number(balance) / 1000000, (val) =>
+            setStats((prev) => ({ ...prev, totalDeposit: val })),
+          );
+          animateCount(jobs_count, (val) =>
+            setStats((prev) => ({ ...prev, jobsCount: val })),
+          );
+          animateCount(talents_count, (val) =>
+            setStats((prev) => ({ ...prev, talentsCount: val })),
+          );
+        }
+      } catch (error) {
+        console.error("Failed to fetch stats:", error);
+      }
+    };
+
+    fetchStats();
+  }, [isVisible]);
+
+  const statsData = [
+    {
+      value: stats.users,
+      label: "Total Users",
+      icon: <PersonAdd sx={{ fontSize: "2rem", color: "primary.main" }} />,
+    },
+    {
+      value: stats.activeUsers,
+      label: "Active Users",
+      icon: <TrendingUp sx={{ fontSize: "2rem", color: "success.main" }} />,
+    },
+    {
+      value: stats.totalDeposit,
+      label: "Total Value",
+      prefix: "$",
+      icon: <Payment sx={{ fontSize: "2rem", color: "warning.main" }} />,
+    },
+    {
+      value: stats.jobsCount,
+      label: "Jobs Posted",
+      icon: <Assignment sx={{ fontSize: "2rem", color: "info.main" }} />,
+    },
+    {
+      value: stats.talentsCount,
+      label: "Talents",
+      icon: <Star sx={{ fontSize: "2rem", color: "secondary.main" }} />,
+    },
+  ];
+
+  return (
+    <Box
+      ref={statsRef}
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        background: `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.background.paper} 100%)`,
+        position: "relative",
+        overflow: "hidden",
+        "&::before": {
+          content: '""',
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `radial-gradient(circle at 30% 20%, ${theme.palette.primary.main}08 0%, transparent 50%)`,
+          pointerEvents: "none",
+        },
+      }}
+    >
+      <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }}>
+        <Grid2 container spacing={6} alignItems="center">
+          {/* Left Content */}
+          <Grid2 xs={12} md={6}>
+            <Box sx={{ textAlign: { xs: "center", md: "left" } }}>
+              <Typography
+                variant="h1"
+                sx={{
+                  fontSize: { xs: "2.5rem", sm: "3.5rem", md: "4rem" },
+                  fontWeight: 400,
+                  mb: 3,
+                  color: theme.palette.text.primary,
+                  lineHeight: 1.2,
+                  fontFamily:
+                    "Google Sans, -apple-system, BlinkMacSystemFont, sans-serif",
+                }}
+              >
+                Find the perfect
+                <br />
+                <Box
+                  component="span"
+                  sx={{ color: theme.palette.primary.main, fontWeight: 500 }}
+                >
+                  job match
+                </Box>
+              </Typography>
+
+              <Typography
+                variant="h5"
+                sx={{
+                  mb: 4,
+                  color: theme.palette.text.secondary,
+                  fontWeight: 400,
+                  lineHeight: 1.6,
+                  maxWidth: 500,
+                  mx: { xs: "auto", md: 0 },
+                  fontSize: { xs: "1.1rem", md: "1.25rem" },
+                }}
+              >
+                AI-powered matching connects you with opportunities that fit
+                your skills perfectly. Simple, fast, and built for the modern
+                workforce.
+              </Typography>
+
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={2}
+                sx={{
+                  mb: 6,
+                  justifyContent: { xs: "center", md: "flex-start" },
+                }}
+              >
+                <LoginButton
+                  variant="contained"
+                  size="large"
+                  onClick={() => localStorage.setItem("UserType", "JOB")}
+                  sx={buttonStyles.contained}
+                  isMobile={isMobile}
+                >
+                  <Search sx={{ mr: 1, fontSize: "1.2rem" }} />
+                  Find Talent
+                </LoginButton>
+
+                <LoginButton
+                  variant="outlined"
+                  size="large"
+                  onClick={() => localStorage.setItem("UserType", "TALENT")}
+                  sx={buttonStyles.outlined}
+                  isMobile={isMobile}
+                >
+                  <Work sx={{ mr: 1, fontSize: "1.2rem" }} />
+                  Find Job
+                </LoginButton>
+              </Stack>
+            </Box>
+          </Grid2>
+
+          {/* Right Content - Hero Image */}
+          <Grid2 xs={12} md={6}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: { xs: "center", md: "flex-end" },
+                alignItems: "center",
+                height: "100%",
+              }}
+            >
+              <Box
+                sx={{
+                  position: "relative",
+                  width: { xs: "280px", sm: "350px", md: "400px" },
+                  maxWidth: "100%",
+                  cursor: "pointer",
+                  "&:hover .hover-text": {
+                    opacity: 1,
+                    transform: "translateX(-50%) translateY(-10px) scale(1)",
+                  },
+                  "&:hover img": {
+                    transform: "scale(1.02)",
+                  },
+                }}
+              >
+                <Box
+                  component="img"
+                  src="/relaxed-person.png"
+                  alt="Relaxed person working"
+                  sx={{
+                    width: "100%",
+                    height: "auto",
+                    borderRadius: "12px",
+                    boxShadow: `0 8px 32px ${theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.3)" : "rgba(0, 0, 0, 0.1)"}`,
+                    transition: "transform 0.3s ease",
+                  }}
+                />
+
+                {/* Hover Text - Appears on top */}
+                <Box
+                  className="hover-text"
+                  sx={{
+                    position: "absolute",
+                    top: { xs: "-50px", sm: "-60px", md: "-80px" },
+                    left: "50%",
+                    right: "auto",
+                    transform: "translateX(-50%) translateY(10px) scale(0.9)",
+                    opacity: 0,
+                    transition: "all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                    zIndex: 10,
+                    textAlign: "center",
+                    minHeight: { xs: "40px", sm: "50px", md: "60px" },
+                    width: "max-content",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  {/* Main Title */}
+                  <Typography
+                    variant="h2"
+                    sx={{
+                      background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      backgroundClip: "text",
+                      fontWeight: 800,
+                      fontSize: { xs: "1.4rem", sm: "2rem", md: "2.6rem" },
+                      fontFamily: "Google Sans, sans-serif",
+                      letterSpacing: "0.02em",
+                      lineHeight: 1,
+                      mb: { xs: 0.3, sm: 0.5 },
+                      filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.15))",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    AI + BLOCKCHAIN
+                  </Typography>
+
+                  {/* Subtitle */}
+                  <Typography
+                    variant="h5"
+                    sx={{
+                      color: theme.palette.text.primary,
+                      fontWeight: 500,
+                      fontSize: { xs: "0.75rem", sm: "0.9rem", md: "1.1rem" },
+                      fontFamily: "Google Sans, sans-serif",
+                      opacity: 0.85,
+                      letterSpacing: "0.03em",
+                      textShadow: `0 2px 4px ${theme.palette.mode === "dark" ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.8)"}`,
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Automates Everything
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+          </Grid2>
+        </Grid2>
+      </Container>
+    </Box>
+  );
+};
 
 // Social Media Sharing Component
 const SocialMediaShare = () => {
@@ -88,286 +485,214 @@ const SocialMediaShare = () => {
           </IconButton>
         ))}
       </Stack>
-
-      <Typography variant="body2" sx={{ mt: 2, opacity: 0.6 }}>
-        Click any icon to share on social media
-      </Typography>
     </Box>
   );
 };
 
-const XIcon = (props: any) => (
+const XIcon = (props: unknown) => (
   <SvgIcon {...props}>
     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
   </SvgIcon>
 );
 
-// Typing Animation Hook for other components
-const useTypingAnimation = (texts: string[], speed = 50) => {
-  const [currentTextIndex, setCurrentTextIndex] = useState(0);
-  const [currentText, setCurrentText] = useState("");
-  const [isTyping, setIsTyping] = useState(true);
-
-  useEffect(() => {
-    let timeout: NodeJS.Timeout;
-
-    if (isTyping) {
-      const targetText = texts[currentTextIndex];
-      if (currentText.length < targetText.length) {
-        timeout = setTimeout(() => {
-          setCurrentText(targetText.slice(0, currentText.length + 1));
-        }, speed);
-      } else {
-        timeout = setTimeout(() => {
-          setIsTyping(false);
-        }, 2000);
-      }
-    } else {
-      if (currentText.length > 0) {
-        timeout = setTimeout(() => {
-          // Delete from left to right by removing the first character
-          setCurrentText(currentText.slice(1));
-        }, speed / 2);
-      } else {
-        setCurrentTextIndex((prev) => (prev + 1) % texts.length);
-        setIsTyping(true);
-      }
-    }
-
-    return () => clearTimeout(timeout);
-  }, [currentText, currentTextIndex, isTyping, texts, speed]);
-
-  return currentText;
-};
-
-// Step 1: AI Conversation Component
-const AIConversationStep = () => {
-  const texts = [
-    "I am rust developer looking for small startup",
-    "I am building new startup looking for marketing expert",
+// A to Z System Funnel Overview
+const FunnelOverviewSection = () => {
+  const theme = useTheme();
+  const services = [
+    {
+      title: "Ai Job Match",
+      description:
+        "AI-powered matching connects you with opportunities that perfectly align with your skills",
+      icon: <WorkOutline sx={{ fontSize: "2rem", color: "primary.main" }} />,
+    },
+    {
+      title: "Smart Calendar",
+      description:
+        "Smart scheduling system coordinates interviews and meetings at optimal times",
+      icon: <CalendarMonth sx={{ fontSize: "2rem", color: "primary.main" }} />,
+    },
+    {
+      title: "Crypto agreements",
+      description:
+        "Secure platform handles project,team, tasks, payments, and contracts management",
+      icon: <HandshakeIcon sx={{ fontSize: "2rem", color: "primary.main" }} />,
+    },
   ];
-  const typedText = useTypingAnimation(texts);
 
   return (
     <Box
-      sx={{ minHeight: "100vh", display: "flex", alignItems: "center", py: 8 }}
-    >
-      <Container maxWidth="md">
-        <Box sx={{ textAlign: "center", mb: 6 }}>
-          <Typography variant="h3" sx={{ mb: 2, fontWeight: 600 }}>
-            1. Talk to AI
-          </Typography>
-          <Typography
-            variant="h5"
-            sx={{
-              mb: 4,
-              opacity: 0.8,
-              maxWidth: 600,
-              mx: "auto",
-            }}
-          >
-            No manual work anymore. Ask, and it is done.
-          </Typography>
-        </Box>
-
-        <RunawayJellyfish />
-        <Box
-          sx={{
-            width: "100%",
-            minHeight: "56px",
-            border: "1px solid",
-            borderColor: "divider",
-            borderRadius: 1,
-            padding: "16px 14px",
-            fontSize: "1.1rem",
-            fontFamily: "monospace",
-            display: "flex",
-            alignItems: "center",
-            backgroundColor: "background.paper",
-            "&:hover": {
-              borderColor: "text.primary",
-            },
-            "&:focus-within": {
-              borderColor: "primary.main",
-              borderWidth: "2px",
-              padding: "15px 13px", // Adjust padding to account for thicker border
-            },
-          }}
-        >
-          <Box
-            component="span"
-            sx={{
-              whiteSpace: "pre-wrap",
-              wordBreak: "break-word",
-              overflowWrap: "anywhere",
-            }}
-          >
-            {typedText || (
-              <Box component="span" sx={{ color: "text.secondary" }}>
-                Describe your needs...
-              </Box>
-            )}
-          </Box>
-          <Box
-            sx={{
-              width: 2,
-              height: 20,
-              bgcolor: "primary.main",
-              animation: "blink 1s infinite",
-              marginLeft: "2px",
-              "@keyframes blink": {
-                "0%, 50%": { opacity: 1 },
-                "51%, 100%": { opacity: 0 },
-              },
-            }}
-          />
-        </Box>
-      </Container>
-    </Box>
-  );
-};
-
-// Step 2: Job Matching Component
-const JobMatchingStep = () => {
-  const [matchScore, setMatchScore] = useState(70);
-  const [currentTitleIndex, setCurrentTitleIndex] = useState(0);
-  const [showButton, setShowButton] = useState(true);
-
-  const titles = [
-    "Looking ICP canisters developer",
-    "I am Looking for mature company for full time job",
-    "Seeking AI/ML Engineer for startup",
-    "Frontend Developer needed for Web3 project",
-    "Looking for co-founder with business experience",
-  ];
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setMatchScore((prev) => (prev === 70 ? 87 : 70));
-      setCurrentTitleIndex((prev) => (prev + 1) % titles.length);
-      setShowButton((prev) => !prev);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <Box
-      sx={{ minHeight: "100vh", display: "flex", alignItems: "center", py: 8 }}
+      sx={{
+        py: { xs: 4, md: 5 },
+        background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.background.default} 100%)`,
+      }}
     >
       <Container maxWidth="lg">
+        <Box sx={{ textAlign: "center", mb: { xs: 3, md: 4 } }}>
+          <Typography
+            variant="h4"
+            sx={{
+              mb: 2,
+              fontWeight: 400,
+              color: theme.palette.text.primary,
+              fontFamily: "Google Sans, sans-serif",
+              fontSize: { xs: "1.75rem", md: "2.125rem" },
+            }}
+          >
+            We offer A to Z system.
+          </Typography>
+        </Box>
+
+        {/* Desktop layout with arrows */}
         <Box
           sx={{
-            display: "flex",
+            display: { xs: "none", md: "flex" },
             alignItems: "center",
-            gap: { xs: 4, md: 8 },
-            flexDirection: { xs: "column", md: "row" },
+            justifyContent: "center",
+            gap: 3,
+            maxWidth: "1000px",
+            mx: "auto",
           }}
         >
-          <Box sx={{ flex: 1 }}>
-            <Typography
-              variant="h3"
-              sx={{
-                fontWeight: 700,
-                mb: 2,
-                fontSize: { xs: "2rem", md: "3rem" },
-              }}
-            >
-              2. Job Matching
-            </Typography>
-            <Typography
-              variant="h5"
-              sx={{ mb: 4, fontWeight: 400, lineHeight: 1.4, opacity: 0.9 }}
-            >
-              Stop hunting for jobs, let AI do it for you.
-            </Typography>
-          </Box>
-
-          <Box sx={{ flex: 1, display: "flex", justifyContent: "center" }}>
-            <Card sx={{ p: 4, borderRadius: 3, maxWidth: 400, width: "100%" }}>
+          {services.map((service, index) => (
+            <Box key={index} sx={{ display: "flex", alignItems: "center" }}>
               <Box
-                sx={{ display: "flex", alignItems: "center", gap: 3, mb: 3 }}
+                sx={{
+                  textAlign: "center",
+                  p: 2.5,
+                  borderRadius: "12px",
+                  background: theme.palette.background.paper,
+                  backdropFilter: "blur(10px)",
+                  border: `1px solid ${theme.palette.divider}`,
+                  boxShadow: `0 2px 12px ${theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.3)" : "rgba(0, 0, 0, 0.06)"}`,
+                  minWidth: "240px",
+                  maxWidth: "280px",
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    transform: "translateY(-2px)",
+                    boxShadow: `0 4px 20px ${theme.palette.primary.main}12`,
+                  },
+                }}
               >
-                <Box sx={{ position: "relative" }}>
-                  <CircularProgress
-                    variant="determinate"
-                    value={matchScore}
-                    size={80}
-                    thickness={6}
-                    sx={{
-                      color: matchScore > 80 ? "success.main" : "warning.main",
-                      transition: "all 0.8s ease",
-                    }}
-                  />
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      inset: 0,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Typography variant="h6" fontWeight="bold">
-                      {matchScore}%
-                    </Typography>
-                  </Box>
-                </Box>
-
-                <Box sx={{ flex: 1 }}>
-                  <Fade in={true} key={currentTitleIndex} timeout={600}>
-                    <Typography
-                      variant="h6"
-                      fontWeight="bold"
-                      sx={{
-                        minHeight: "3rem",
-                        display: "flex",
-                        alignItems: "center",
-                      }}
-                    >
-                      {titles[currentTitleIndex]}
-                    </Typography>
-                  </Fade>
-                  <Typography variant="body2" sx={{ opacity: 0.7 }}>
-                    Web3 Company • Remote
-                  </Typography>
-                </Box>
-              </Box>
-
-              <Stack direction="row" spacing={1} sx={{ mb: 3 }}>
-                {["Rust", "TypeScript", "ICP"].map((skill) => (
-                  <Chip key={skill} label={skill} size="small" />
-                ))}
-              </Stack>
-
-              <Fade in={showButton} timeout={500}>
-                <Button
-                  variant="contained"
-                  fullWidth
+                <Box
                   sx={{
-                    transition: "all 0.3s ease",
-                    transform: showButton ? "scale(1)" : "scale(0.95)",
+                    mb: 1.5,
+                    display: "flex",
+                    justifyContent: "center",
                   }}
                 >
-                  {(() => {
-                    switch (currentTitleIndex) {
-                      case 0:
-                        return "Apply for Job";
-                      case 1:
-                        return "Contact Talent";
-                      case 2:
-                        return "Join Startup";
-                      case 3:
-                        return "View Project";
-                      case 4:
-                        return "Connect with Founder";
-                      default:
-                        return "Apply for Job";
-                    }
-                  })()}
-                </Button>
-              </Fade>
-            </Card>
-          </Box>
+                  {service.icon}
+                </Box>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 500,
+                    color: theme.palette.text.primary,
+                    mb: 1,
+                    fontFamily: "Google Sans, sans-serif",
+                    fontSize: "1.1rem",
+                  }}
+                >
+                  {service.title}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: theme.palette.text.secondary,
+                    lineHeight: 1.4,
+                    fontSize: "0.875rem",
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
+                  }}
+                >
+                  {service.description}
+                </Typography>
+              </Box>
+
+              {index < services.length - 1 && (
+                <Box
+                  sx={{
+                    mx: 2,
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      fontSize: "1.5rem",
+                      color: theme.palette.primary.main,
+                      fontWeight: "bold",
+                    }}
+                  >
+                    →
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          ))}
+        </Box>
+
+        {/* Mobile layout without arrows */}
+        <Box
+          sx={{
+            display: { xs: "flex", md: "none" },
+            flexDirection: "column",
+            gap: 2,
+            maxWidth: "400px",
+            mx: "auto",
+          }}
+        >
+          {services.map((service, index) => (
+            <Box
+              key={index}
+              sx={{
+                textAlign: "center",
+                p: 2,
+                borderRadius: "12px",
+                background: theme.palette.background.paper,
+                backdropFilter: "blur(10px)",
+                border: `1px solid ${theme.palette.divider}`,
+                boxShadow: `0 2px 8px ${theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.3)" : "rgba(0, 0, 0, 0.05)"}`,
+              }}
+            >
+              <Box
+                sx={{
+                  mb: 1,
+                  display: "flex",
+                  justifyContent: "center",
+                }}
+              >
+                {service.icon}
+              </Box>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 500,
+                  color: theme.palette.text.primary,
+                  mb: 0.5,
+                  fontFamily: "Google Sans, sans-serif",
+                  fontSize: "1rem",
+                }}
+              >
+                {service.title}
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: theme.palette.text.secondary,
+                  lineHeight: 1.4,
+                  fontSize: "0.8rem",
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
+                }}
+              >
+                {service.description}
+              </Typography>
+            </Box>
+          ))}
         </Box>
       </Container>
     </Box>
@@ -425,86 +750,23 @@ const EmailInboxItem = ({
   );
 };
 
-// Step 3: Email Notifications Component
+// Step 3: Email Notifications Component - Minimal Professional Design
 const EmailNotificationsStep = () => {
+  const theme = useTheme();
   const emails = [
     {
-      from: `alert@${window.location.hostname}`,
-      subject: "Looking for AI agents developer",
+      subject: "AI Developer Position Match",
       preview:
-        "New job match found! A startup is seeking an experienced AI developer for their autonomous agent platform...",
-      time: "2 min ago",
+        "Perfect match found! A startup needs an AI developer for autonomous agents...",
+      time: "2m",
     },
     {
-      from: `alert@${window.location.hostname}`,
-      subject: "Looking for farming co-founder",
+      subject: "Co-founder Opportunity",
       preview:
-        "Perfect match alert! An agricultural tech startup needs a co-founder with your background...",
-      time: "1 hour ago",
+        "Agricultural tech startup seeking co-founder with your expertise...",
+      time: "1h",
     },
   ];
-
-  return (
-    <Box
-      sx={{ minHeight: "100vh", display: "flex", alignItems: "center", py: 8 }}
-    >
-      <Container maxWidth="md">
-        <Box sx={{ textAlign: "center", mb: 6 }}>
-          <Typography variant="h3" sx={{ mb: 2, fontWeight: 600 }}>
-            3. Email Notifications
-          </Typography>
-          <Typography variant="body1" sx={{ opacity: 0.7 }}>
-            If you don't like current matches, wait for an email alert when a
-            good match is found.
-          </Typography>
-        </Box>
-
-        <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
-          <Badge
-            badgeContent={2}
-            sx={{
-              "& .MuiBadge-badge": {
-                backgroundColor: "#f44336",
-                color: "white",
-                fontWeight: "bold",
-                fontSize: "0.75rem",
-                minWidth: "20px",
-                height: "20px",
-                borderRadius: "10px",
-              },
-              mr: 2,
-            }}
-          >
-            <Email sx={{ fontSize: 32, color: "primary.main" }} />
-          </Badge>
-          <Typography variant="h6">Inbox</Typography>
-        </Box>
-
-        <Box>
-          {emails.map((email, index) => (
-            <EmailInboxItem
-              key={index}
-              from={email.from}
-              subject={email.subject}
-              preview={email.preview}
-              time={email.time}
-            />
-          ))}
-        </Box>
-
-        <Box sx={{ textAlign: "center", mt: 3 }}>
-          <Typography variant="body2" sx={{ opacity: 0.6 }}>
-            {emails.length} messages
-          </Typography>
-        </Box>
-      </Container>
-    </Box>
-  );
-};
-
-// Call to Action Section
-const CallToActionStep = () => {
-  const theme = useTheme();
 
   return (
     <Box
@@ -512,126 +774,174 @@ const CallToActionStep = () => {
         minHeight: "100vh",
         display: "flex",
         alignItems: "center",
-        py: 8,
+        py: { xs: 6, md: 8 },
+        background: theme.palette.background.default,
       }}
     >
       <Container maxWidth="lg">
-        <Box sx={{ textAlign: "center", mb: 6 }}>
-          <Typography variant="h3" sx={{ mb: 2, fontWeight: 600 }}>
-            Ready to Get Started?
-          </Typography>
-          <Typography variant="body1" sx={{ opacity: 0.7 }}>
-            Choose your path and join the future of work
-          </Typography>
-        </Box>
+        <Grid2 container spacing={{ xs: 4, md: 8 }} alignItems="center">
+          {/* Left Side - Title & Subtitle */}
+          <Grid2 xs={12} md={5}>
+            <Box sx={{ textAlign: { xs: "center", md: "left" } }}>
+              <Typography
+                variant="h2"
+                sx={{
+                  mb: 2,
+                  fontWeight: 300,
+                  color: theme.palette.text.primary,
+                  fontFamily: "Google Sans, sans-serif",
+                  fontSize: { xs: "2.25rem", md: "2.75rem" },
+                  lineHeight: 1.2,
+                }}
+              >
+                Email Notifications
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{
+                  color: theme.palette.text.secondary,
+                  fontWeight: 400,
+                  lineHeight: 1.6,
+                  fontSize: { xs: "1rem", md: "1.1rem" },
+                  maxWidth: { xs: "100%", md: "400px" },
+                }}
+              >
+                You do not like current matches? No problem. Get email alerts
+                when new opportunities match your profile.
+              </Typography>
+            </Box>
+          </Grid2>
 
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
-            gap: 4,
-            maxWidth: 900,
-            mx: "auto",
-          }}
-        >
-          {/* Job Seeker Card */}
-          <Card
-            sx={{
-              p: 6,
-              borderRadius: 3,
-              textAlign: "center",
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              color: "white",
-              cursor: "pointer",
-              transition: "all 0.3s ease",
-              border: "none",
-              "&:hover": {
-                transform: "translateY(-8px)",
-                boxShadow: "0 20px 40px rgba(102, 126, 234, 0.3)",
-              },
-            }}
-          >
-            <Typography variant="h4" sx={{ mb: 3, fontWeight: 700 }}>
-              Find Your Perfect Gig
-            </Typography>
-            <Typography variant="body1" sx={{ mb: 4, opacity: 0.9 }}>
-              Join thousands of developers finding their dream jobs in the Web3
-              ecosystem
-            </Typography>
-
-            <LoginButton
-              onMouseDown={() => localStorage.setItem("UserType", "TALENT")}
+          {/* Right Side - Email Book with Icon */}
+          <Grid2 xs={12} md={7}>
+            <Box
               sx={{
-                width: "100%",
-                backgroundColor: "rgba(255, 255, 255, 0.2)",
-                backdropFilter: "blur(10px)",
-                border: "1px solid rgba(255, 255, 255, 0.3)",
-                "&:hover": {
-                  backgroundColor: "rgba(255, 255, 255, 0.3)",
-                  transform: "none",
-                },
+                display: "flex",
+                justifyContent: { xs: "center", md: "flex-end" },
               }}
             >
-              Get Started as Job Seeker
-            </LoginButton>
+              <Box
+                sx={{
+                  width: { xs: "100%", sm: "400px", md: "420px" },
+                  maxWidth: "420px",
+                  background: theme.palette.background.paper,
+                  borderRadius: "8px",
+                  boxShadow: `0 2px 12px ${theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.3)" : "rgba(0, 0, 0, 0.08)"}`,
+                  border: `1px solid ${theme.palette.divider}`,
+                  overflow: "hidden",
+                }}
+              >
+                {/* Email Header with Icon */}
+                <Box
+                  sx={{
+                    px: 3,
+                    py: 2.5,
+                    borderBottom: `1px solid ${theme.palette.divider}`,
+                    background: theme.palette.background.paper,
+                  }}
+                >
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                    <Badge
+                      badgeContent={2}
+                      sx={{
+                        "& .MuiBadge-badge": {
+                          backgroundColor: theme.palette.error.main,
+                          color: theme.palette.error.contrastText,
+                          fontWeight: "500",
+                          fontSize: "0.7rem",
+                          minWidth: "16px",
+                          height: "16px",
+                          borderRadius: "8px",
+                        },
+                      }}
+                    >
+                      <Email
+                        sx={{ fontSize: 20, color: theme.palette.primary.main }}
+                      />
+                    </Badge>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontWeight: 500,
+                        color: theme.palette.text.primary,
+                        fontSize: "0.9rem",
+                      }}
+                    >
+                      Job Alerts
+                    </Typography>
+                  </Box>
+                </Box>
 
-            <Typography
-              variant="caption"
-              sx={{ display: "block", mt: 3, opacity: 0.8 }}
-            >
-              Free to start • AI-powered matching
-            </Typography>
-          </Card>
-
-          {/* Employer Card */}
-          <Card
-            sx={{
-              p: 6,
-              borderRadius: 3,
-              textAlign: "center",
-              background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-              color: "white",
-              cursor: "pointer",
-              transition: "all 0.3s ease",
-              border: "none",
-              "&:hover": {
-                transform: "translateY(-8px)",
-                boxShadow: "0 20px 40px rgba(240, 147, 251, 0.3)",
-              },
-            }}
-          >
-            <Typography variant="h4" sx={{ mb: 3, fontWeight: 700 }}>
-              Find Perfect Talent
-            </Typography>
-            <Typography variant="body1" sx={{ mb: 4, opacity: 0.9 }}>
-              Connect with top-tier developers and specialists for your next big
-              project
-            </Typography>
-
-            <LoginButton
-              onMouseDown={() => localStorage.setItem("UserType", "JOB")}
-              sx={{
-                width: "100%",
-                backgroundColor: "rgba(255, 255, 255, 0.2)",
-                backdropFilter: "blur(10px)",
-                border: "1px solid rgba(255, 255, 255, 0.3)",
-                "&:hover": {
-                  backgroundColor: "rgba(255, 255, 255, 0.3)",
-                  transform: "none",
-                },
-              }}
-            >
-              Get Started as Employer
-            </LoginButton>
-
-            <Typography
-              variant="caption"
-              sx={{ display: "block", mt: 3, opacity: 0.8 }}
-            >
-              Post projects • Smart contracts • Team management
-            </Typography>
-          </Card>
-        </Box>
+                {/* Email List */}
+                <Box>
+                  {emails.map((email, index) => (
+                    <Box
+                      key={index}
+                      sx={{
+                        py: 2,
+                        px: 3,
+                        borderBottom:
+                          index < emails.length - 1
+                            ? `1px solid ${theme.palette.divider}`
+                            : "none",
+                        "&:hover": {
+                          backgroundColor: theme.palette.action.hover,
+                        },
+                        transition: "background-color 0.2s ease",
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "flex-start",
+                          mb: 0.5,
+                        }}
+                      >
+                        <Typography
+                          variant="body1"
+                          sx={{
+                            fontWeight: 500,
+                            color: theme.palette.text.primary,
+                            fontSize: "0.95rem",
+                            lineHeight: 1.3,
+                          }}
+                        >
+                          {email.subject}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: theme.palette.text.secondary,
+                            fontSize: "0.75rem",
+                            ml: 2,
+                            flexShrink: 0,
+                          }}
+                        >
+                          {email.time}
+                        </Typography>
+                      </Box>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: theme.palette.text.secondary,
+                          fontSize: "0.85rem",
+                          lineHeight: 1.4,
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                        }}
+                      >
+                        {email.preview}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+            </Box>
+          </Grid2>
+        </Grid2>
       </Container>
     </Box>
   );
@@ -738,8 +1048,7 @@ const CalendarStep = () => {
                 color: theme.palette.text.primary,
               }}
             >
-              After finding your perfect match, automatically schedule meetings
-              with AI precision
+              After finding your perfect match, auto-schedule meetings.
             </Typography>
 
             <Box sx={{ display: "flex", gap: 4, flexWrap: "wrap", mb: 4 }}>
@@ -1115,7 +1424,7 @@ const CryptoAgreementStep = () => {
                         Conditions
                       </Typography>
                       <Typography variant="body1" sx={{ fontStyle: "italic" }}>
-                        "Build AI job match ICP canister in 30 days"
+                        &quot;Build AI job match ICP canister in 30 days&quot;
                       </Typography>
                     </Box>
                   </Fade>
@@ -1610,6 +1919,202 @@ const ProjectManagementStep = () => {
   );
 };
 
+// Live Platform Stats Section
+const LivePlatformStatsSection = () => {
+  const theme = useTheme();
+  const [stats, setStats] = useState({
+    users: 0,
+    activeUsers: 0,
+    totalDeposit: 0,
+    jobsCount: 0,
+    talentsCount: 0,
+  });
+  const [isVisible, setIsVisible] = useState(false);
+  const statsRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsVisible(entry.isIntersecting),
+      { threshold: 0.3 },
+    );
+    if (statsRef.current) observer.observe(statsRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!isVisible) return;
+
+    const animateCount = (target, setter) => {
+      let current = 0;
+      const increment = target / 50;
+      const timer = setInterval(() => {
+        current += increment;
+        if (current >= target) {
+          setter(Math.floor(target));
+          clearInterval(timer);
+        } else {
+          setter(Math.floor(current));
+        }
+      }, 30);
+    };
+
+    const fetchStats = async () => {
+      try {
+        const [snsResponse, balance] = await Promise.all([
+          backendActor.get_sns_status(),
+          getckUsdcBalance(ckUSDCActor, canisterId),
+        ]);
+
+        if (snsResponse.Ok) {
+          const { number_users, active_users, jobs_count, talents_count } =
+            snsResponse.Ok;
+          animateCount(number_users, (val) =>
+            setStats((prev) => ({ ...prev, users: val })),
+          );
+          animateCount(active_users, (val) =>
+            setStats((prev) => ({ ...prev, activeUsers: val })),
+          );
+          animateCount(Number(balance) / 1000000, (val) =>
+            setStats((prev) => ({ ...prev, totalDeposit: val })),
+          );
+          animateCount(jobs_count, (val) =>
+            setStats((prev) => ({ ...prev, jobsCount: val })),
+          );
+          animateCount(talents_count, (val) =>
+            setStats((prev) => ({ ...prev, talentsCount: val })),
+          );
+        }
+      } catch (error) {
+        console.error("Failed to fetch stats:", error);
+      }
+    };
+
+    fetchStats();
+  }, [isVisible]);
+
+  const statsData = [
+    {
+      value: stats.users,
+      label: "Total Users",
+      icon: <PersonAdd sx={{ fontSize: "3rem", color: "primary.main" }} />,
+      color: theme.palette.primary.main,
+    },
+    {
+      value: stats.activeUsers,
+      label: "Active Users",
+      icon: <TrendingUp sx={{ fontSize: "3rem", color: "success.main" }} />,
+      color: theme.palette.success.main,
+    },
+    {
+      value: stats.totalDeposit,
+      label: "Total Value",
+      prefix: "$",
+      icon: <Payment sx={{ fontSize: "3rem", color: "warning.main" }} />,
+      color: theme.palette.warning.main,
+    },
+    {
+      value: stats.jobsCount,
+      label: "Jobs Posted",
+      icon: <Assignment sx={{ fontSize: "3rem", color: "info.main" }} />,
+      color: theme.palette.info.main,
+    },
+    {
+      value: stats.talentsCount,
+      label: "Talents",
+      icon: <Star sx={{ fontSize: "3rem", color: "secondary.main" }} />,
+      color: theme.palette.secondary.main,
+    },
+  ];
+
+  return (
+    <Box
+      ref={statsRef}
+      sx={{
+        py: 8,
+        background: `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.background.paper} 100%)`,
+        position: "relative",
+        overflow: "hidden",
+        "&::before": {
+          content: '""',
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `radial-gradient(circle at 70% 80%, ${theme.palette.primary.main}08 0%, transparent 50%)`,
+          pointerEvents: "none",
+        },
+      }}
+    >
+      <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }}>
+        <Box sx={{ textAlign: "center", mb: 6 }}>
+          <Typography
+            variant="h3"
+            sx={{
+              mb: 3,
+              fontWeight: 400,
+              color: theme.palette.text.primary,
+              fontFamily:
+                "Google Sans, -apple-system, BlinkMacSystemFont, sans-serif",
+              fontSize: { xs: "2rem", md: "2.5rem" },
+            }}
+          >
+            Live Platform Stats
+          </Typography>
+        </Box>
+
+        <Grid2 container spacing={4} justifyContent="center">
+          {statsData.map((stat, i) => (
+            <Grid2 xs={12} sm={6} md={2.4} key={i}>
+              <Card
+                sx={{
+                  p: 4,
+                  textAlign: "center",
+                  background: theme.palette.background.paper,
+                  backdropFilter: "blur(20px)",
+                  borderRadius: "16px",
+                  border: `1px solid ${theme.palette.divider}`,
+                  boxShadow: `0 4px 16px ${theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.3)" : "rgba(0, 0, 0, 0.08)"}`,
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    transform: "translateY(-4px)",
+                    boxShadow: `0 8px 25px ${stat.color}20`,
+                  },
+                }}
+              >
+                <Box sx={{ mb: 2 }}>{stat.icon}</Box>
+                <Typography
+                  variant="h3"
+                  sx={{
+                    fontWeight: 600,
+                    color: stat.color,
+                    mb: 1,
+                    fontFamily: "Google Sans, sans-serif",
+                    fontSize: { xs: "2rem", md: "2.5rem" },
+                  }}
+                >
+                  {stat.prefix || ""}
+                  {stat.value.toLocaleString()}
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    color: theme.palette.text.secondary,
+                    fontWeight: 500,
+                    fontSize: { xs: "0.9rem", md: "1rem" },
+                  }}
+                >
+                  {stat.label}
+                </Typography>
+              </Card>
+            </Grid2>
+          ))}
+        </Grid2>
+      </Container>
+    </Box>
+  );
+};
+
 // Enhanced Footer Component
 const SimpleFooter = () => {
   const socialLinks = [
@@ -1680,44 +2185,6 @@ const SimpleFooter = () => {
               textAlign: { xs: "center", md: "left" },
             }}
           >
-            {/* <Box>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-                Platform
-              </Typography>
-              <Stack spacing={1}>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    opacity: 0.7,
-                    cursor: "pointer",
-                    "&:hover": { opacity: 1 },
-                  }}
-                >
-                  Find Jobs
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    opacity: 0.7,
-                    cursor: "pointer",
-                    "&:hover": { opacity: 1 },
-                  }}
-                >
-                  Find Talent
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    opacity: 0.7,
-                    cursor: "pointer",
-                    "&:hover": { opacity: 1 },
-                  }}
-                >
-                  AI Matching
-                </Typography>
-              </Stack>
-            </Box> */}
-
             <Box>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
                 Resources
@@ -1735,26 +2202,6 @@ const SimpleFooter = () => {
                 >
                   white paper
                 </Typography>
-                {/* <Typography
-                  variant="body2"
-                  sx={{
-                    opacity: 0.7,
-                    cursor: "pointer",
-                    "&:hover": { opacity: 1 },
-                  }}
-                >
-                  API
-                </Typography> */}
-                {/* <Typography
-                  variant="body2"
-                  sx={{
-                    opacity: 0.7,
-                    cursor: "pointer",
-                    "&:hover": { opacity: 1 },
-                  }}
-                >
-                  Support
-                </Typography> */}
               </Stack>
             </Box>
 
@@ -1807,7 +2254,7 @@ const SimpleFooter = () => {
             reserved.
           </Typography>
 
-          {/* <Box sx={{ display: "flex", gap: 3 }}>
+          <Box sx={{ display: "flex", gap: 3 }}>
             <Typography
               variant="body2"
               sx={{
@@ -1815,20 +2262,12 @@ const SimpleFooter = () => {
                 cursor: "pointer",
                 "&:hover": { opacity: 1 },
               }}
+              component={Link}
+              to="/privacy"
             >
               Privacy Policy
             </Typography>
-            <Typography
-              variant="body2"
-              sx={{
-                opacity: 0.6,
-                cursor: "pointer",
-                "&:hover": { opacity: 1 },
-              }}
-            >
-              Terms of Service
-            </Typography>
-          </Box> */}
+          </Box>
         </Box>
       </Container>
     </Box>
@@ -1968,67 +2407,33 @@ const FAQSection = () => {
 
 // Main Landing Page Component
 const LandingPage = () => {
-  const texts = [
-    "AI Workforce Copilot",
-    "ICP Job Matching",
-    "Blockchain Careers",
-    "Web3 Talent Hub",
-    "DeFinity Jobs",
-    "Smart Contracts",
-  ];
-  const typedText = useTypingAnimation(texts, 100);
+  const isMobile = useMediaQuery("(max-width:900px)");
+  const [state] = useState({ isMobile });
 
   return (
     <Box sx={{ position: "relative" }}>
-      <SEOComponent />
-      <FAQSection />
+      <Helmet>
+        <title>AI Job Matching - Find Perfect Talent & Jobs</title>
+        <meta
+          name="description"
+          content="AI-powered job matching platform connecting talent with opportunities. Real-time stats, smart agreements, and seamless collaboration."
+        />
+      </Helmet>
 
-      {/* Hero Section */}
-      <Box
-        sx={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          textAlign: "center",
-          py: 8,
-        }}
-      >
-        <Container maxWidth="md">
-          <Typography
-            variant="h1"
-            sx={{
-              mb: 3,
-              fontWeight: 700,
-              fontSize: { xs: "2.5rem", md: "3.5rem" },
-              minHeight: { xs: "3.5rem", md: "4.5rem" },
-            }}
-          >
-            {typedText}
-          </Typography>
-          <Typography
-            variant="h5"
-            sx={{ mb: 4, opacity: 0.8, maxWidth: 600, mx: "auto" }}
-          >
-            Find ICP developers, blockchain engineers, and Web3 talent.
-            AI-powered job matching for DeFinity ecosystem with smart contract
-            agreements.
-          </Typography>
-          <Typography variant="body1" sx={{ mb: 6, opacity: 0.7 }}>
-            Connect top blockchain developers with innovative projects. From
-            Rust canister development to full-stack Web3 applications.
-          </Typography>
-        </Container>
-      </Box>
+      {/* New Google-themed Hero Section with Real Data */}
+      <HeroSection isMobile={isMobile} state={state} />
 
-      <AIConversationStep />
-      <JobMatchingStep />
+      {/* A to Z System Overview */}
+      <FunnelOverviewSection />
+
+      <AIJobMatchingFlow />
       <EmailNotificationsStep />
-      <CallToActionStep />
       <CalendarStep />
       <CryptoAgreementStep />
       <CryptoAgreementProofsStep />
       <ProjectManagementStep />
       <SocialMediaShare />
+      <LivePlatformStatsSection />
       <SimpleFooter />
     </Box>
   );

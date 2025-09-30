@@ -37,13 +37,6 @@ const LoginButton: React.FC<LoginButtonProps> = ({
       variant="contained"
       onMouseDown={onMouseDown}
       onMouseUp={login}
-      startIcon={
-        <img
-          src={DfnIcon}
-          alt="Internet Identity"
-          style={{ width: 20, height: 20 }}
-        />
-      }
       sx={{
         fontWeight: 600,
         textTransform: "none",

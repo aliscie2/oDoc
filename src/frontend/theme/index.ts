@@ -64,7 +64,7 @@ function createPalette(isDarkMode: boolean) {
   };
 }
 
-const createComponents = (palette: any) => ({
+const createComponents = (palette: ReturnType<typeof createPalette>) => ({
   MuiCssBaseline: {
     styleOverrides: {
       body: {
@@ -220,12 +220,13 @@ export function createTheme(isDarkMode: boolean) {
         textTransform: "none",
       },
     },
-    shadows: Array(25)
-      .fill("none")
-      .map((_, i) =>
-        i === 0
-          ? "none"
-          : `0 ${i * 2}px ${i * 4}px ${alpha("#000", isDarkMode ? 0.3 : 0.08)}`,
-      ),
+    shadows: [
+      "none",
+      ...Array(24)
+        .fill(null)
+        .map((_, i) =>
+          `0 ${(i + 1) * 2}px ${(i + 1) * 4}px ${alpha("#000", isDarkMode ? 0.3 : 0.08)}`
+        ),
+    ] as any,
   });
 }

@@ -13,6 +13,7 @@ import {
   useTheme,
   useMediaQuery,
   Stack,
+  Button,
 } from "@mui/material";
 import {
   Analytics,
@@ -57,8 +58,10 @@ import { canisterId } from "$/declarations/backend";
 import { backendActor, ckUSDCActor } from "@/utils/backendUtils";
 import { Helmet } from "react-helmet-async";
 import ProgressiveTutorialMobile from "./promiseTutorial";
+import LoginButton from "@/components/MainComponents/topNavBar/loginButton";
 
-const StatsSection = () => {
+// Hero Section with Real-time Stats
+const HeroSection = ({ isMobile }) => {
   const [stats, setStats] = useState({
     users: 0,
     activeUsers: 0,
@@ -72,7 +75,7 @@ const StatsSection = () => {
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => setIsVisible(entry.isIntersecting),
-      { threshold: 0.5 },
+      { threshold: 0.3 },
     );
     if (statsRef.current) observer.observe(statsRef.current);
     return () => observer.disconnect();
@@ -133,42 +136,28 @@ const StatsSection = () => {
     {
       value: stats.users,
       label: "Total Users",
-      icon: (
-        <PersonAdd
-          sx={{ color: "primary.main", fontSize: "1.2rem", mb: 0.5 }}
-        />
-      ),
+      icon: <PersonAdd sx={{ fontSize: "2rem", color: "primary.main" }} />,
     },
     {
       value: stats.activeUsers,
-      label: "Trading Users",
-      icon: (
-        <TrendingUp
-          sx={{ color: "success.main", fontSize: "1.2rem", mb: 0.5 }}
-        />
-      ),
+      label: "Active Users",
+      icon: <TrendingUp sx={{ fontSize: "2rem", color: "success.main" }} />,
     },
     {
       value: stats.totalDeposit,
-      label: "Canister baalnce", 
+      label: "Total Value",
       prefix: "$",
-      icon: (
-        <Payment sx={{ color: "warning.main", fontSize: "1.2rem", mb: 0.5 }} />
-      ),
+      icon: <Payment sx={{ fontSize: "2rem", color: "warning.main" }} />,
     },
     {
       value: stats.jobsCount,
-      label: "Jobs",
-      icon: (
-        <Assignment sx={{ color: "info.main", fontSize: "1.2rem", mb: 0.5 }} />
-      ),
+      label: "Jobs Posted",
+      icon: <Assignment sx={{ fontSize: "2rem", color: "info.main" }} />,
     },
     {
       value: stats.talentsCount,
       label: "Talents",
-      icon: (
-        <Star sx={{ color: "secondary.main", fontSize: "1.2rem", mb: 0.5 }} />
-      ),
+      icon: <Star sx={{ fontSize: "2rem", color: "secondary.main" }} />,
     },
   ];
 
@@ -176,32 +165,189 @@ const StatsSection = () => {
     <Box
       ref={statsRef}
       sx={{
-        width: "100%",
-        p: 2,
-        mb: 3,
-        borderRadius: 2,
-        background:
-          "linear-gradient(135deg, rgba(25,118,210,0.1) 0%, rgba(156,39,176,0.1) 100%)",
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        background: "linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(147, 51, 234, 0.05) 100%)",
+        position: "relative",
+        overflow: "hidden",
+        "&::before": {
+          content: '""',
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: "radial-gradient(circle at 30% 20%, rgba(37, 99, 235, 0.1) 0%, transparent 50%)",
+          pointerEvents: "none",
+        },
       }}
     >
-      <Grid container spacing={2} textAlign="center">
-        {statsData.map((stat, i) => (
-          <Grid item xs={2.4} key={i}>
-            {stat.icon}
-            <Typography variant="h5" fontWeight="bold" color="primary">
-              {stat.prefix || ""}
-              {stat.value.toLocaleString()}
-            </Typography>
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ whiteSpace: "nowrap" }}
-            >
-              {stat.label}
-            </Typography>
+      <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }}>
+        <Grid container spacing={6} alignItems="center">
+          {/* Left Content */}
+          <Grid item xs={12} md={6}>
+            <Box sx={{ textAlign: { xs: "center", md: "left" } }}>
+              <Typography
+                variant="h1"
+                sx={{
+                  fontSize: { xs: "2.5rem", sm: "3.5rem", md: "4rem" },
+                  fontWeight: 800,
+                  mb: 3,
+                  background: "linear-gradient(135deg, #2563eb 0%, #9333ea 100%)",
+                  backgroundClip: "text",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  lineHeight: 1.1,
+                }}
+              >
+                The Future of
+                <br />
+                Freelance Work
+              </Typography>
+              
+              <Typography
+                variant="h5"
+                sx={{
+                  mb: 4,
+                  color: "text.secondary",
+                  fontWeight: 400,
+                  lineHeight: 1.6,
+                  maxWidth: 500,
+                  mx: { xs: "auto", md: 0 },
+                }}
+              >
+                AI-powered job matching, crypto agreements, and seamless collaboration. 
+                All in one decentralized platform.
+              </Typography>
+
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                spacing={2}
+                sx={{ mb: 6, justifyContent: { xs: "center", md: "flex-start" } }}
+              >
+                <LoginButton
+                  isMobile={isMobile}
+                  sx={{
+                    px: 4,
+                    py: 1.5,
+                    fontSize: "1.1rem",
+                    background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
+                    "&:hover": {
+                      background: "linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)",
+                      transform: "translateY(-2px)",
+                      boxShadow: "0 8px 25px rgba(37, 99, 235, 0.4)",
+                    },
+                  }}
+                >
+                  Get Started Free
+                </LoginButton>
+                
+                <Button
+                  variant="outlined"
+                  size="large"
+                  sx={{
+                    px: 4,
+                    py: 1.5,
+                    fontSize: "1.1rem",
+                    borderColor: "primary.main",
+                    color: "primary.main",
+                    "&:hover": {
+                      backgroundColor: "rgba(37, 99, 235, 0.05)",
+                      borderColor: "primary.dark",
+                    },
+                  }}
+                >
+                  Watch Demo
+                </Button>
+              </Stack>
+
+              <Stack direction="row" spacing={1} sx={{ justifyContent: { xs: "center", md: "flex-start" }, flexWrap: "wrap", gap: 1 }}>
+                {["Open Source", "Decentralized", "AI-Powered", "Crypto Native"].map((label) => (
+                  <Chip
+                    key={label}
+                    label={label}
+                    size="small"
+                    variant="outlined"
+                    sx={{
+                      borderColor: "primary.main",
+                      color: "primary.main",
+                      "&:hover": {
+                        backgroundColor: "rgba(37, 99, 235, 0.05)",
+                      },
+                    }}
+                  />
+                ))}
+              </Stack>
+            </Box>
           </Grid>
-        ))}
-      </Grid>
+
+          {/* Right Content - Logo & Stats */}
+          <Grid item xs={12} md={6}>
+            <Box sx={{ textAlign: "center", position: "relative" }}>
+              {/* Logo Animation */}
+              <Box sx={{ mb: 4 }}>
+                <RunawayJellyfish
+                  LogoSvg={LOGOSVG}
+                  jellyfishOffsetX={-135}
+                  jellyfishOffsetY={5}
+                  scale={isMobile ? 1 : 1.5}
+                />
+              </Box>
+
+              {/* Real-time Stats Grid */}
+              <Box
+                sx={{
+                  background: "rgba(255, 255, 255, 0.8)",
+                  backdropFilter: "blur(20px)",
+                  borderRadius: 3,
+                  p: 3,
+                  border: "1px solid rgba(255, 255, 255, 0.2)",
+                  boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{ mb: 3, fontWeight: 600, color: "text.primary" }}
+                >
+                  Live Platform Stats
+                </Typography>
+                
+                <Grid container spacing={3}>
+                  {statsData.map((stat, i) => (
+                    <Grid item xs={6} sm={4} md={6} lg={4} key={i}>
+                      <Box sx={{ textAlign: "center" }}>
+                        {stat.icon}
+                        <Typography
+                          variant="h4"
+                          sx={{
+                            fontWeight: 700,
+                            color: "primary.main",
+                            mt: 1,
+                            mb: 0.5,
+                          }}
+                        >
+                          {stat.prefix || ""}
+                          {stat.value.toLocaleString()}
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            color: "text.secondary",
+                            fontWeight: 500,
+                          }}
+                        >
+                          {stat.label}
+                        </Typography>
+                      </Box>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Box>
+            </Box>
+          </Grid>
+        </Grid>
+      </Container>
     </Box>
   );
 };
@@ -314,57 +460,6 @@ export default function OdocLandingPage() {
   }, []);
 
   const features = [
-    {
-      title: "Streamline your work flow.",
-      reversed: true,
-      icon: (
-        <Box sx={{ textAlign: "center", py: 4 }}>
-          <RunawayJellyfish
-            LogoSvg={LOGOSVG}
-            jellyfishOffsetX={-135}
-            jellyfishOffsetY={5}
-            scale={1.3}
-          />
-          <Typography
-            variant="h3"
-            component="h1"
-            sx={{ mb: 1.5, fontWeight: 600, mt: 2 }}
-          >
-            oDoc Crypto Agreement
-          </Typography>
-          <Typography
-            variant="h6"
-            sx={{ mb: 3, opacity: 0.7, fontWeight: 400 }}
-          >
-            Work tool kit for freelancers & online workers
-          </Typography>
-          <Stack
-            direction="row"
-            spacing={1}
-            sx={{ justifyContent: "center", flexWrap: "wrap", gap: 1 }}
-          >
-            {["Open Source", "Decentralized", "All-in-One"].map((label) => (
-              <Chip key={label} label={label} size="small" variant="outlined" />
-            ))}
-          </Stack>
-        </Box>
-      ),
-      children: (
-        <>
-          <Typography
-            variant="h6"
-            paragraph
-            color="text.secondary"
-            sx={{ mb: 3 }}
-          >
-            oDoc is a decentralized freelance crypto agreement platform,
-            designed to obviate the need for middlemen, spreadsheets, documents,
-            or task managers. Powered by AI and ICP blockchain.
-          </Typography>
-          <StatsSection />
-        </>
-      ),
-    },
     {
       title: "AI Job Matching System",
       icon: (
@@ -845,6 +940,10 @@ export default function OdocLandingPage() {
         <title>ODOC.app</title>
         <link rel="icon" type="image/png" href={"/small_logo.png"} />
       </Helmet>
+      
+      {/* Hero Section */}
+      <HeroSection isMobile={isMobile} />
+      
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <ProgressiveTutorialMobile />
         {features.map((feature, index) => (
