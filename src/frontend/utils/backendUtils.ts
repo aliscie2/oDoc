@@ -24,9 +24,9 @@ export class BackendUtils {
       {
         canisterId,
         idlFactory,
-        actorType: 'backend'
+        actorType: "backend",
       },
-      backend // Fallback to default backend
+      backend, // Fallback to default backend
     );
   }
 
@@ -41,7 +41,7 @@ export class BackendUtils {
       return await getLedgerActor(agent);
     } catch (error) {
       console.warn("Failed to create ckUSDC actor:", error);
-      
+
       // Try recovery if it's a signature error
       if (IdentityManager.isSignatureError(error)) {
         await IdentityManager.forceRefresh();
@@ -50,7 +50,7 @@ export class BackendUtils {
           return await getLedgerActor(retryAgent);
         }
       }
-      
+
       return null;
     }
   }
@@ -74,7 +74,6 @@ export class BackendUtils {
       ActorFactory.clearCache();
     }
   }
-
 }
 
 // Initialize smart actors with enhanced identity management
@@ -84,7 +83,7 @@ export const initializeSmartActors = async (): Promise<void> => {
     const actor = await ActorFactory.getActor<_SERVICE>({
       canisterId,
       idlFactory,
-      actorType: 'backend'
+      actorType: "backend",
     });
 
     if (actor) {
@@ -109,22 +108,25 @@ export const backendActor = new Proxy({} as ActorSubclass<_SERVICE>, {
   get(_target, prop) {
     if (smartBackendActor) {
       const method = smartBackendActor[prop as keyof ActorSubclass<_SERVICE>];
-      
+
       // Wrap methods with error recovery
-      if (typeof method === 'function') {
+      if (typeof method === "function") {
         return async (...args: unknown[]) => {
           try {
             return await method.apply(smartBackendActor, args);
           } catch (error) {
             // If signature error, try to recover and retry
             if (IdentityManager.isSignatureError(error)) {
-              console.log("Signature error in backendActor, attempting recovery");
+              console.log(
+                "Signature error in backendActor, attempting recovery",
+              );
               await initializeSmartActors();
-              
+
               // Retry with fresh actor
               if (smartBackendActor) {
-                const retryMethod = smartBackendActor[prop as keyof ActorSubclass<_SERVICE>];
-                if (typeof retryMethod === 'function') {
+                const retryMethod =
+                  smartBackendActor[prop as keyof ActorSubclass<_SERVICE>];
+                if (typeof retryMethod === "function") {
                   return await retryMethod.apply(smartBackendActor, args);
                 }
               }
@@ -133,7 +135,7 @@ export const backendActor = new Proxy({} as ActorSubclass<_SERVICE>, {
           }
         };
       }
-      
+
       return method;
     }
     return backend[prop as keyof ActorSubclass<_SERVICE>];
@@ -144,22 +146,24 @@ export const ckUSDCActor = new Proxy({} as unknown, {
   get(_target, prop) {
     if (smartCkUSDCActor) {
       const method = smartCkUSDCActor[prop as string];
-      
+
       // Wrap methods with error recovery
-      if (typeof method === 'function') {
+      if (typeof method === "function") {
         return async (...args: unknown[]) => {
           try {
             return await method.apply(smartCkUSDCActor, args);
           } catch (error) {
             // If signature error, try to recover and retry
             if (IdentityManager.isSignatureError(error)) {
-              console.log("Signature error in ckUSDCActor, attempting recovery");
+              console.log(
+                "Signature error in ckUSDCActor, attempting recovery",
+              );
               await initializeSmartActors();
-              
+
               // Retry with fresh actor
               if (smartCkUSDCActor) {
                 const retryMethod = smartCkUSDCActor[prop as string];
-                if (typeof retryMethod === 'function') {
+                if (typeof retryMethod === "function") {
                   return await retryMethod.apply(smartCkUSDCActor, args);
                 }
               }
@@ -168,7 +172,7 @@ export const ckUSDCActor = new Proxy({} as unknown, {
           }
         };
       }
-      
+
       return method;
     }
     return undefined;
@@ -180,9 +184,9 @@ export const login = async (): Promise<boolean> => {
   try {
     // Clear any stale cache first
     await IdentityManager.forceRefresh();
-    
+
     const client = await BackendUtils.getAuthClient();
-    
+
     // Check if already authenticated with valid identity
     const validIdentity = await IdentityManager.getValidatedIdentity();
     if (validIdentity) {
@@ -204,7 +208,7 @@ export const login = async (): Promise<boolean> => {
             if (!newIdentity) {
               throw new Error("Login succeeded but identity validation failed");
             }
-            
+
             await initializeSmartActors();
             resolve(true);
           } catch (error) {

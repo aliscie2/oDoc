@@ -11,7 +11,6 @@ import { AIInput } from "./components/AIInput";
 
 // ===== MAIN COMPONENT =====
 const ChatContainer = () => {
-  console.log(".......tst");
   const {
     assistantName,
     chatHistory,

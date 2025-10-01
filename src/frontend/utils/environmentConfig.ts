@@ -34,7 +34,7 @@ export class EnvironmentManager {
       : import.meta.env.VITE_IC_HOST || `http://localhost:${port}`;
 
     const identityProvider = isProduction
-      ? "https://identity.ic0.app/#authorize"
+      ? "https://id.ai"
       : `http://rdmx6-jaaaa-aaaaa-aaadq-cai.localhost:${port}`;
 
     const derivationOrigin = isProduction

@@ -18,7 +18,6 @@ interface Props {
 }
 
 function EditorComponent(props: Props) {
-  logger({ EditorComponent: props.content });
   const dispatch = useDispatch();
 
   const { all_friends, profile } = useSelector(
