@@ -5,15 +5,12 @@ export const textToJson = (response: string) => {
   let displayResponse = response;
   let extractedData = null;
 
-  // Extract all potential JSON candidates from the text
   const jsonCandidates = extractJsonCandidates(response);
 
-  // Try to parse each candidate with multiple strategies
   for (const candidate of jsonCandidates) {
     const parsed = parseWithFallbacks(candidate);
     if (parsed) {
       extractedData = parsed;
-      // Remove the JSON from display response
       displayResponse = response.replace(candidate, "").trim();
       break;
     }
@@ -95,7 +92,7 @@ function extractBalancedJson(
 }
 
 // Try multiple parsing strategies with fallbacks
-function parseWithFallbacks(jsonText: string): any {
+function parseWithFallbacks(jsonText: string): unknown {
   const strategies = [
     // 1. Standard JSON.parse
     () => JSON.parse(jsonText),
@@ -153,7 +150,7 @@ function cleanJsonText(text: string): string {
 function cleanDisplayResponse(text: string): string {
   return text
     .replace(/```json[\s\S]*?```/g, "") // Remove JSON code blocks
-    .replace(/[\[\]{}]/g, "") // Remove stray brackets
+    .replace(/[[\]{}]/g, "") // Remove stray brackets
     .replace(/^\s*[,.:;]\s*/, "") // Remove leading punctuation
     .replace(/\s+/g, " ") // Normalize whitespace
     .trim();

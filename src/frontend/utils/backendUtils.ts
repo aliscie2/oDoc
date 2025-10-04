@@ -1,4 +1,4 @@
-import { ActorSubclass } from "@dfinity/agent";
+import { ActorSubclass, HttpAgent, Actor } from "@dfinity/agent";
 import { AuthClient } from "@dfinity/auth-client";
 import { canisterId, idlFactory } from "$/declarations/backend";
 import { backend } from "$/declarations/backend";
@@ -7,11 +7,16 @@ import getLedgerActor from "./ckudc_ledger_actor";
 import { IdentityManager } from "./identityManager";
 import { ActorFactory } from "./actorFactory";
 import { EnvironmentManager } from "./environmentConfig";
+import {
+  canisterId as ckUSDCCanisterId,
+  idlFactory as ckUSDCIdlFactory,
+} from "$/declarations/ckusdc_ledger";
+import { _SERVICE as CkUSDC_SERVICE } from "$/declarations/ckusdc_ledger/ckusdc_ledger.did";
 import "./identityHealthMonitor"; // Import to start monitoring
 
 // Create a smart backend actor that works with both yarn start and dfx deploy
 let smartBackendActor: ActorSubclass<_SERVICE> | null = null;
-let smartCkUSDCActor: unknown = null;
+let smartCkUSDCActor: ActorSubclass<CkUSDC_SERVICE> | null = null;
 
 // Enhanced backend utilities with identity lifecycle management
 export class BackendUtils {
@@ -30,27 +35,42 @@ export class BackendUtils {
     );
   }
 
-  static async getCkUSDCActor(): Promise<unknown> {
+  static async getCkUSDCActor(): Promise<ActorSubclass<CkUSDC_SERVICE> | null> {
+    // Try to get authenticated agent first
     const agent = await IdentityManager.createValidatedAgent();
-    if (!agent) {
-      console.warn("No validated agent available for ckUSDC actor");
-      return null;
-    }
+    
+    if (agent) {
+      try {
+        return await getLedgerActor(agent);
+      } catch (error) {
+        console.warn("Failed to create authenticated ckUSDC actor:", error);
 
-    try {
-      return await getLedgerActor(agent);
-    } catch (error) {
-      console.warn("Failed to create ckUSDC actor:", error);
-
-      // Try recovery if it's a signature error
-      if (IdentityManager.isSignatureError(error)) {
-        await IdentityManager.forceRefresh();
-        const retryAgent = await IdentityManager.createValidatedAgent();
-        if (retryAgent) {
-          return await getLedgerActor(retryAgent);
+        // Try recovery if it's a signature error
+        if (IdentityManager.isSignatureError(error)) {
+          await IdentityManager.forceRefresh();
+          const retryAgent = await IdentityManager.createValidatedAgent();
+          if (retryAgent) {
+            return await getLedgerActor(retryAgent);
+          }
         }
       }
+    }
 
+    // Fall back to anonymous actor for read-only operations
+    try {
+      const config = EnvironmentManager.getConfig();
+      const anonymousAgent = new HttpAgent({ host: config.host });
+
+      if (!config.isProduction) {
+        await anonymousAgent.fetchRootKey();
+      }
+
+      return Actor.createActor<CkUSDC_SERVICE>(ckUSDCIdlFactory, {
+        agent: anonymousAgent,
+        canisterId: ckUSDCCanisterId,
+      });
+    } catch (error) {
+      console.error("Failed to create anonymous ckUSDC actor:", error);
       return null;
     }
   }
@@ -142,40 +162,52 @@ export const backendActor = new Proxy({} as ActorSubclass<_SERVICE>, {
   },
 });
 
-export const ckUSDCActor = new Proxy({} as unknown, {
+export const ckUSDCActor = new Proxy({} as ActorSubclass<CkUSDC_SERVICE>, {
   get(_target, prop) {
-    if (smartCkUSDCActor) {
-      const method = smartCkUSDCActor[prop as string];
+    // Lazy initialization - create actor on first access if not available
+    if (!smartCkUSDCActor) {
+      // Return a promise that initializes and calls the method
+      return async (...args: unknown[]) => {
+        await initializeSmartActors();
+        if (smartCkUSDCActor) {
+          const method = smartCkUSDCActor[prop as keyof ActorSubclass<CkUSDC_SERVICE>];
+          if (typeof method === "function") {
+            return await (method as (...args: unknown[]) => Promise<unknown>).apply(smartCkUSDCActor, args);
+          }
+        }
+        throw new Error(`ckUSDC actor not available for method: ${String(prop)}`);
+      };
+    }
 
-      // Wrap methods with error recovery
-      if (typeof method === "function") {
-        return async (...args: unknown[]) => {
-          try {
-            return await method.apply(smartCkUSDCActor, args);
-          } catch (error) {
-            // If signature error, try to recover and retry
-            if (IdentityManager.isSignatureError(error)) {
-              console.log(
-                "Signature error in ckUSDCActor, attempting recovery",
-              );
-              await initializeSmartActors();
+    const method = smartCkUSDCActor[prop as keyof ActorSubclass<CkUSDC_SERVICE>];
 
-              // Retry with fresh actor
-              if (smartCkUSDCActor) {
-                const retryMethod = smartCkUSDCActor[prop as string];
-                if (typeof retryMethod === "function") {
-                  return await retryMethod.apply(smartCkUSDCActor, args);
-                }
+    // Wrap methods with error recovery
+    if (typeof method === "function") {
+      return async (...args: unknown[]) => {
+        try {
+          return await (method as (...args: unknown[]) => Promise<unknown>).apply(smartCkUSDCActor, args);
+        } catch (error) {
+          // If signature error, try to recover and retry
+          if (IdentityManager.isSignatureError(error)) {
+            console.log(
+              "Signature error in ckUSDCActor, attempting recovery",
+            );
+            await initializeSmartActors();
+
+            // Retry with fresh actor
+            if (smartCkUSDCActor) {
+              const retryMethod = smartCkUSDCActor[prop as keyof ActorSubclass<CkUSDC_SERVICE>];
+              if (typeof retryMethod === "function") {
+                return await (retryMethod as (...args: unknown[]) => Promise<unknown>).apply(smartCkUSDCActor, args);
               }
             }
-            throw error;
           }
-        };
-      }
-
-      return method;
+          throw error;
+        }
+      };
     }
-    return undefined;
+
+    return method;
   },
 });
 
@@ -229,9 +261,9 @@ export const login = async (): Promise<boolean> => {
 };
 
 // Convenience functions for direct use
-export const getBackendActor = () => BackendUtils.getBackendActor();
-export const getCkUSDCActor = () => BackendUtils.getCkUSDCActor();
-export const logout = () => BackendUtils.logout();
+export const getBackendActor = (): Promise<ActorSubclass<_SERVICE>> => BackendUtils.getBackendActor();
+export const getCkUSDCActor = (): Promise<ActorSubclass<CkUSDC_SERVICE> | null> => BackendUtils.getCkUSDCActor();
+export const logout = (): Promise<void> => BackendUtils.logout();
 
 // Initialize smart actors on module load
 initializeSmartActors().catch(console.error);

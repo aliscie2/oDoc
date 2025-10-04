@@ -99,6 +99,7 @@ const HeroSection = ({ isMobile }) => {
     };
 
     const fetchStats = async () => {
+      console.log({ ckUSDCActor });
       try {
         const [snsResponse, balance] = await Promise.all([
           backendActor.get_sns_status(),

@@ -1,6 +1,4 @@
-import {
-  CheckCircle as CheckCircleIcon,
-} from "@mui/icons-material";
+import { CheckCircle as CheckCircleIcon } from "@mui/icons-material";
 import {
   Avatar,
   Box,
