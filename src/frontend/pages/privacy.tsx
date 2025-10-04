@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Box,
   Container,
@@ -11,6 +10,7 @@ import {
   ListItemIcon,
   Chip,
   useTheme,
+  Link,
 } from "@mui/material";
 import {
   Security,
@@ -20,7 +20,9 @@ import {
   CalendarMonth,
   Shield,
   Info,
+  Telegram,
 } from "@mui/icons-material";
+import XIcon from "@mui/icons-material/X";
 import { Helmet } from "react-helmet-async";
 
 const PrivacyPage = () => {
@@ -175,8 +177,10 @@ const PrivacyPage = () => {
                   </ListItemIcon>
                   <ListItemText
                     primary={item}
-                    primaryTypographyProps={{
-                      variant: "body2",
+                    slotProps={{
+                      primary: {
+                        variant: "body2",
+                      },
                     }}
                   />
                 </ListItem>
@@ -229,9 +233,11 @@ const PrivacyPage = () => {
                       </ListItemIcon>
                       <ListItemText
                         primary={item}
-                        primaryTypographyProps={{
-                          variant: "body1",
-                          lineHeight: 1.6,
+                        slotProps={{
+                          primary: {
+                            variant: "body1",
+                            lineHeight: 1.6,
+                          },
                         }}
                       />
                     </ListItem>
@@ -249,7 +255,6 @@ const PrivacyPage = () => {
               mt: 6,
               textAlign: "center",
               borderRadius: "16px",
-              bgcolor: "success.light",
               bgcolor:
                 theme.palette.mode === "dark"
                   ? "success.dark"
@@ -270,8 +275,54 @@ const PrivacyPage = () => {
             </Typography>
             <Typography variant="body1" sx={{ lineHeight: 1.7, mb: 3 }}>
               If you have any questions about this privacy policy or how we
-              handle your data, please don't hesitate to contact us.
+              handle your data, please don&apos;t hesitate to contact us.
             </Typography>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                gap: 3,
+                mb: 3,
+                flexWrap: "wrap",
+              }}
+            >
+              <Link
+                href="https://t.me/odoc_ic"
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  textDecoration: "none",
+                  color: "primary.main",
+                  "&:hover": {
+                    textDecoration: "underline",
+                  },
+                }}
+              >
+                <Telegram />
+                <Typography variant="body1">Join our Telegram group</Typography>
+              </Link>
+              <Link
+                href="https://x.com/odoc_ic"
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  textDecoration: "none",
+                  color: "primary.main",
+                  "&:hover": {
+                    textDecoration: "underline",
+                  },
+                }}
+              >
+                <XIcon />
+                <Typography variant="body1">Ask us on X</Typography>
+              </Link>
+            </Box>
             <Typography
               variant="body2"
               sx={{ color: "text.secondary", fontStyle: "italic" }}

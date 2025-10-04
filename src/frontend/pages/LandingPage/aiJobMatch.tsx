@@ -1,11 +1,9 @@
 import LoginButton from "@/components/MainComponents/topNavBar/loginButton";
-import AIJobMatchingFlow from "@/components/AIJobMatching";
+
 import {
   CheckCircle as CheckCircleIcon,
   Email,
-  Facebook,
   Handshake as HandshakeIcon,
-  LinkedIn,
   People,
   Shield,
   YouTube,
@@ -26,7 +24,10 @@ import {
   Lock,
   BarChart,
   Notifications,
+  Telegram,
+  Instagram,
 } from "@mui/icons-material";
+import DiscordIcon from "@mui/icons-material/Forum";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import {
   Avatar,
@@ -52,6 +53,147 @@ import { Link } from "react-router";
 import getckUsdcBalance from "@/utils/getBalance";
 import { canisterId } from "$/declarations/backend";
 import { backendActor, ckUSDCActor } from "@/utils/backendUtils";
+import AIJobMatchingFlow from "@/components/landingPageAnimations";
+
+
+
+const CalendarStep = () => {
+  const theme = useTheme();
+  const [phase, setPhase] = useState(0);
+  const [typedText, setTypedText] = useState("");
+
+  const phases = [
+    { type: "availability", text: "I am Available Mon-Fri 9 AM - 1 PM" },
+    { type: "event", text: "Find me a good time to meet Sarah tomorrow." }
+  ];
+
+  useEffect(() => {
+    const currentPhase = phases[phase % 2];
+    const targetText = currentPhase.text;
+    
+    if (typedText.length < targetText.length) {
+      const timer = setTimeout(() => {
+        setTypedText(targetText.slice(0, typedText.length + 1));
+      }, 50);
+      return () => clearTimeout(timer);
+    } else {
+      const timer = setTimeout(() => {
+        setTypedText("");
+        setPhase(prev => prev + 1);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [typedText, phase]);
+
+  const currentPhase = phases[phase % 2];
+  const isComplete = typedText === currentPhase.text;
+
+  const calendarSlots = [
+    { day: "Mon", hours: "9-1" },
+    { day: "Tue", hours: "9-1" },
+    { day: "Wed", hours: "9-1" },
+    { day: "Thu", hours: "9-1" },
+    { day: "Fri", hours: "9-1" },
+  ];
+
+  return (
+    <Box sx={{ minHeight: "100vh", display: "flex", alignItems: "center", py: 8 }}>
+      <Container maxWidth="lg">
+        <Grid2 container spacing={6} alignItems="flex-start">
+          <Grid2 xs={12} md={6}>
+            <Typography variant="h3" sx={{ mb: 2, fontWeight: 600, fontSize: { xs: "2rem", md: "2.5rem" } }}>
+              Talk to Your Calendar
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 4, opacity: 0.8, lineHeight: 1.6 }}>
+              Set availability and schedule events through simple chat commands
+            </Typography>
+          </Grid2>
+
+          <Grid2 xs={12} md={6}>
+            <Card sx={{ 
+              p: 3, 
+              borderRadius: 3, 
+              bgcolor: theme.palette.background.paper,
+              border: `1px solid ${theme.palette.divider}`,
+              boxShadow: theme.palette.mode === "dark" 
+                ? "0 4px 12px rgba(0, 0, 0, 0.3)" 
+                : "0 4px 12px rgba(0, 0, 0, 0.08)",
+              minHeight: 380
+            }}>
+              <Box sx={{ 
+                mb: 3, 
+                p: 2, 
+                bgcolor: theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.05)" : "grey.100", 
+                borderRadius: 2, 
+                minHeight: 60, 
+                display: "flex", 
+                alignItems: "center" 
+              }}>
+                <Typography variant="body1" sx={{ fontFamily: "monospace" }}>
+                  {typedText}
+                  <Box component="span" sx={{ 
+                    display: "inline-block", 
+                    width: 2, 
+                    height: 20, 
+                    bgcolor: "primary.main", 
+                    ml: 0.5, 
+                    animation: "blink 1s infinite", 
+                    "@keyframes blink": { "0%, 50%": { opacity: 1 }, "51%, 100%": { opacity: 0 } } 
+                  }} />
+                </Typography>
+              </Box>
+
+              <Box sx={{ minHeight: 240 }}>
+                {isComplete && (
+                  <Fade in={true} timeout={600}>
+                    <Box>
+                      {currentPhase.type === "availability" ? (
+                        <Stack spacing={1}>
+                          {calendarSlots.map((slot, i) => (
+                            <Box key={i} sx={{ 
+                              display: "flex", 
+                              alignItems: "center", 
+                              gap: 2, 
+                              p: 1.5, 
+                              bgcolor: theme.palette.mode === "dark" 
+                                ? `rgba(76, 175, 80, ${0.1 + (i * 0.1)})` 
+                                : `rgba(76, 175, 80, ${0.15 + (i * 0.08)})`,
+                              borderRadius: 1, 
+                              color: theme.palette.mode === "dark" ? "success.light" : "success.dark",
+                              border: `1px solid ${theme.palette.success.main}40`
+                            }}>
+                              <Typography variant="body2" sx={{ fontWeight: 600, minWidth: 40 }}>{slot.day}</Typography>
+                              <Typography variant="body2">{slot.hours}</Typography>
+                            </Box>
+                          ))}
+                        </Stack>
+                      ) : (
+                        <Box sx={{ 
+                          p: 2, 
+                          bgcolor: theme.palette.mode === "dark" 
+                            ? `${theme.palette.primary.dark}90` 
+                            : `${theme.palette.primary.main}`,
+                          borderRadius: 2, 
+                          color: "white" 
+                        }}>
+                          <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>Tomorrow • 10:00 AM</Typography>
+                          <Typography variant="body2">Meeting with Sarah</Typography>
+                        </Box>
+                      )}
+                    </Box>
+                  </Fade>
+                )}
+              </Box>
+            </Card>
+          </Grid2>
+        </Grid2>
+      </Container>
+    </Box>
+  );
+};
+
+
+
 
 // Button styles for cleaner code
 const getButtonStyles = (theme, variant = "contained") => ({
@@ -342,90 +484,22 @@ const HeroSection = ({ isMobile, state }) => {
               <Box
                 sx={{
                   position: "relative",
-                  width: { xs: "280px", sm: "350px", md: "400px" },
+                  width: { xs: "240px", sm: "280px", md: "320px" },
                   maxWidth: "100%",
-                  cursor: "pointer",
-                  "&:hover .hover-text": {
-                    opacity: 1,
-                    transform: "translateX(-50%) translateY(-10px) scale(1)",
-                  },
-                  "&:hover img": {
-                    transform: "scale(1.02)",
-                  },
                 }}
               >
                 <Box
                   component="img"
                   src="/relaxed-person.png"
-                  alt="Relaxed person working"
+                  alt="AI-powered work automation"
                   sx={{
                     width: "100%",
                     height: "auto",
-                    borderRadius: "12px",
-                    boxShadow: `0 8px 32px ${theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.3)" : "rgba(0, 0, 0, 0.1)"}`,
-                    transition: "transform 0.3s ease",
+                    borderRadius: "8px",
+                    boxShadow: `0 4px 16px ${theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.2)" : "rgba(0, 0, 0, 0.08)"}`,
+                    opacity: 0.95,
                   }}
                 />
-
-                {/* Hover Text - Appears on top */}
-                <Box
-                  className="hover-text"
-                  sx={{
-                    position: "absolute",
-                    top: { xs: "-50px", sm: "-60px", md: "-80px" },
-                    left: "50%",
-                    right: "auto",
-                    transform: "translateX(-50%) translateY(10px) scale(0.9)",
-                    opacity: 0,
-                    transition: "all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
-                    zIndex: 10,
-                    textAlign: "center",
-                    minHeight: { xs: "40px", sm: "50px", md: "60px" },
-                    width: "max-content",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  {/* Main Title */}
-                  <Typography
-                    variant="h2"
-                    sx={{
-                      background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-                      WebkitBackgroundClip: "text",
-                      WebkitTextFillColor: "transparent",
-                      backgroundClip: "text",
-                      fontWeight: 800,
-                      fontSize: { xs: "1.4rem", sm: "2rem", md: "2.6rem" },
-                      fontFamily: "Google Sans, sans-serif",
-                      letterSpacing: "0.02em",
-                      lineHeight: 1,
-                      mb: { xs: 0.3, sm: 0.5 },
-                      filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.15))",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    AI + BLOCKCHAIN
-                  </Typography>
-
-                  {/* Subtitle */}
-                  <Typography
-                    variant="h5"
-                    sx={{
-                      color: theme.palette.text.primary,
-                      fontWeight: 500,
-                      fontSize: { xs: "0.75rem", sm: "0.9rem", md: "1.1rem" },
-                      fontFamily: "Google Sans, sans-serif",
-                      opacity: 0.85,
-                      letterSpacing: "0.03em",
-                      textShadow: `0 2px 4px ${theme.palette.mode === "dark" ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.8)"}`,
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    A To Z Automation
-                  </Typography>
-                </Box>
               </Box>
             </Box>
           </Grid2>
@@ -457,37 +531,78 @@ const SocialMediaShare = () => {
   };
 
   return (
-    <Box sx={{ textAlign: "center", py: 4 }}>
-      <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
-        Share with Friends
-      </Typography>
-      <Typography variant="body1" sx={{ mb: 4, opacity: 0.8 }}>
-        Spread the word about this modern online work platform
+    <Box sx={{ textAlign: "center", py: 3 }}>
+      <Typography variant="h6" sx={{ mb: 2, fontWeight: 500 }}>
+        Join Our Community
       </Typography>
 
       <Stack
         direction="row"
-        spacing={2}
+        spacing={1.5}
         justifyContent="center"
         flexWrap="wrap"
+        alignItems="center"
       >
         {[
-          { key: "facebook", icon: Facebook, color: "#1877F2" },
-          { key: "twitter", icon: XIcon, color: "#000000" },
-          { key: "linkedin", icon: LinkedIn, color: "#0A66C2" },
-        ].map(({ key, icon: Icon, color }) => (
+          {
+            key: "telegram",
+            icon: Telegram,
+            color: "#0088cc",
+            url: "https://t.me/odoc_ic",
+            primary: true,
+          },
+          {
+            key: "x",
+            icon: XIcon,
+            color: "#000000",
+            url: "https://x.com/odoc_ic",
+            primary: true,
+          },
+          {
+            key: "discord",
+            icon: DiscordIcon,
+            color: "#5865F2",
+            url: "https://discord.gg/HbaFQXDD",
+            primary: true,
+          },
+          {
+            key: "youtube",
+            icon: YouTube,
+            color: "#FF0000",
+            url: "https://www.youtube.com/@odoc_ic",
+            primary: false,
+          },
+          {
+            key: "instagram",
+            icon: Instagram,
+            color: "#E4405F",
+            url: "https://www.instagram.com/odoc_ic",
+            primary: false,
+          },
+          {
+            key: "tiktok",
+            icon: TikTokIcon,
+            color: "#000000",
+            url: "https://www.tiktok.com/@odoc.app",
+            primary: false,
+          },
+        ].map(({ key, icon: Icon, color, url, primary }) => (
           <IconButton
             key={key}
-            onClick={() => handleShare(key)}
+            onClick={() => window.open(url, "_blank")}
             sx={{
-              bgcolor: color,
-              color: "white",
-              "&:hover": { opacity: 0.9 },
-              width: 56,
-              height: 56,
+              bgcolor: primary ? color : "transparent",
+              color: primary ? "white" : color,
+              border: primary ? "none" : `2px solid ${color}`,
+              "&:hover": {
+                bgcolor: primary ? color : `${color}15`,
+                opacity: primary ? 0.85 : 1,
+              },
+              width: primary ? 44 : 38,
+              height: primary ? 44 : 38,
             }}
           >
-            <Icon sx={{ fontSize: 28 }} />
+            <Icon sx={{ fontSize: primary ? 22 : 20 }} />
           </IconButton>
         ))}
       </Stack>
@@ -498,6 +613,12 @@ const SocialMediaShare = () => {
 const XIcon = (props: unknown) => (
   <SvgIcon {...props}>
     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+  </SvgIcon>
+);
+
+const TikTokIcon = (props: unknown) => (
+  <SvgIcon {...props}>
+    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
   </SvgIcon>
 );
 
@@ -953,349 +1074,7 @@ const EmailNotificationsStep = () => {
   );
 };
 
-const CalendarStep = () => {
-  const theme = useTheme();
-  const [selectedDate, setSelectedDate] = useState(15);
-  const [currentStep, setCurrentStep] = useState(0);
-  const [showConfirmation, setShowConfirmation] = useState(false);
 
-  const meetingTypes = [
-    {
-      title: "Technical Interview",
-      participant: "Sarah Chen",
-      role: "Senior Rust Developer",
-      time: "2:00 PM - 3:00 PM",
-      type: "Video Call",
-      agenda: ["Code review", "Architecture discussion", "Team fit"],
-      avatar:
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
-    },
-    {
-      title: "Founder Meeting",
-      participant: "Alex Rodriguez",
-      role: "Startup Founder",
-      time: "10:00 AM - 11:00 AM",
-      type: "Coffee Chat",
-      agenda: ["Vision alignment", "Equity discussion", "Growth plans"],
-      avatar:
-        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-    },
-  ];
-
-  const currentMeeting = meetingTypes[currentStep];
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (showConfirmation) {
-        setShowConfirmation(false);
-        setCurrentStep((prev) => (prev + 1) % meetingTypes.length);
-        setSelectedDate((prev) => (prev === 15 ? 22 : 15));
-      } else {
-        setShowConfirmation(true);
-      }
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [showConfirmation]);
-
-  return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        backgroundColor:
-          theme.palette.mode === "dark"
-            ? "rgba(0,0,0,0.3)"
-            : "rgba(0,0,0,0.05)",
-        color: theme.palette.text.primary,
-        position: "relative",
-        "&::before": {
-          content: '""',
-          position: "absolute",
-          left: 0,
-          top: 0,
-          right: 0,
-          bottom: 0,
-          background: showConfirmation
-            ? `linear-gradient(135deg, ${theme.palette.success.main}08, transparent)`
-            : `linear-gradient(135deg, ${theme.palette.primary.main}08, transparent)`,
-          transition: "background 0.8s ease",
-        },
-      }}
-    >
-      <Container maxWidth="lg">
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: { xs: 4, md: 8 },
-            flexDirection: { xs: "column", md: "row" },
-          }}
-        >
-          <Box sx={{ flex: 1 }}>
-            <Typography
-              variant="h3"
-              sx={{
-                fontWeight: 700,
-                mb: 2,
-                fontSize: { xs: "2rem", md: "3rem" },
-              }}
-            >
-              Smart Meeting Scheduler
-            </Typography>
-            <Typography
-              variant="h5"
-              sx={{
-                mb: 4,
-                fontWeight: 400,
-                lineHeight: 1.4,
-                opacity: 0.9,
-                fontSize: { xs: "1.25rem", md: "1.5rem" },
-                color: theme.palette.text.primary,
-              }}
-            >
-              After finding your perfect match, auto-schedule meetings.
-            </Typography>
-
-            <Box sx={{ display: "flex", gap: 4, flexWrap: "wrap", mb: 4 }}>
-              {[
-                {
-                  icon: (
-                    <SmartToy
-                      sx={{
-                        fontSize: "1.75rem",
-                        color: theme.palette.primary.main,
-                      }}
-                    />
-                  ),
-                  text: "AI scheduling",
-                },
-                {
-                  icon: (
-                    <Sync
-                      sx={{
-                        fontSize: "1.75rem",
-                        color: theme.palette.primary.main,
-                      }}
-                    />
-                  ),
-                  text: "Auto-sync",
-                },
-                {
-                  icon: (
-                    <Chat
-                      sx={{
-                        fontSize: "1.75rem",
-                        color: theme.palette.primary.main,
-                      }}
-                    />
-                  ),
-                  text: "Chat integration",
-                },
-                {
-                  icon: (
-                    <Description
-                      sx={{
-                        fontSize: "1.75rem",
-                        color: theme.palette.primary.main,
-                      }}
-                    />
-                  ),
-                  text: "Follow-ups",
-                },
-              ].map((feature, index) => (
-                <Box
-                  key={index}
-                  sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                >
-                  {feature.icon}
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      opacity: 0.7,
-                      fontWeight: 500,
-                      color: theme.palette.text.secondary,
-                    }}
-                  >
-                    {feature.text}
-                  </Typography>
-                </Box>
-              ))}
-            </Box>
-          </Box>
-
-          <Box
-            sx={{
-              flex: 1,
-              display: "flex",
-              justifyContent: "center",
-              transform: showConfirmation ? "scale(1.02)" : "scale(1)",
-              transition: "transform 0.5s ease",
-            }}
-          >
-            <Card
-              sx={{
-                p: 4,
-                borderRadius: 3,
-                maxWidth: 400,
-                width: "100%",
-                background:
-                  theme.palette.mode === "dark"
-                    ? "rgba(255, 255, 255, 0.05)"
-                    : "rgba(255, 255, 255, 0.8)",
-                backdropFilter: "blur(10px)",
-                border: showConfirmation
-                  ? `2px solid ${theme.palette.success.main}30`
-                  : `2px solid ${theme.palette.primary.main}30`,
-                transition: "all 0.5s ease",
-              }}
-            >
-              <Box
-                sx={{ display: "flex", alignItems: "center", mb: 3, gap: 1 }}
-              >
-                <People
-                  sx={{ fontSize: 24, color: theme.palette.primary.main }}
-                />
-                <Typography
-                  variant="h6"
-                  sx={{ color: theme.palette.text.primary, fontWeight: 600 }}
-                >
-                  Meeting Details
-                </Typography>
-              </Box>
-
-              <Fade in={true} key={currentStep} timeout={600}>
-                <Box>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 2,
-                      mb: 3,
-                    }}
-                  >
-                    <Avatar
-                      sx={{ width: 50, height: 50 }}
-                      src={currentMeeting.avatar}
-                    >
-                      {currentMeeting.participant
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </Avatar>
-                    <Box>
-                      <Typography
-                        variant="h6"
-                        sx={{
-                          fontWeight: 600,
-                          color: theme.palette.text.primary,
-                        }}
-                      >
-                        {currentMeeting.participant}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          opacity: 0.7,
-                          color: theme.palette.text.secondary,
-                        }}
-                      >
-                        {currentMeeting.role}
-                      </Typography>
-                    </Box>
-                  </Box>
-
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      mb: 2,
-                      fontWeight: 600,
-                      color: theme.palette.text.primary,
-                    }}
-                  >
-                    {currentMeeting.title}
-                  </Typography>
-
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      mb: 3,
-                      opacity: 0.8,
-                      color: theme.palette.text.primary,
-                    }}
-                  >
-                    📅 Dec {selectedDate} • 🕐 {currentMeeting.time}
-                    <br />
-                    💻 {currentMeeting.type}
-                  </Typography>
-
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      mb: 3,
-                      opacity: 0.7,
-                      color: theme.palette.text.secondary,
-                    }}
-                  >
-                    <strong>Agenda:</strong> {currentMeeting.agenda.join(" • ")}
-                  </Typography>
-
-                  {showConfirmation ? (
-                    <Box
-                      sx={{
-                        textAlign: "center",
-                        py: 3,
-                        background: `${theme.palette.success.main}10`,
-                        borderRadius: 2,
-                        border: `1px solid ${theme.palette.success.main}30`,
-                      }}
-                    >
-                      <Typography
-                        variant="h6"
-                        sx={{
-                          color: theme.palette.success.main,
-                          mb: 1,
-                          fontWeight: 600,
-                        }}
-                      >
-                        ✅ Meeting Scheduled!
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          opacity: 0.7,
-                          color: theme.palette.text.secondary,
-                        }}
-                      >
-                        Calendar invite sent
-                      </Typography>
-                    </Box>
-                  ) : (
-                    <Button
-                      variant="contained"
-                      fullWidth
-                      sx={{
-                        py: 1.5,
-                        background: theme.palette.primary.main,
-                        fontWeight: 600,
-                        fontSize: "1rem",
-                        "&:hover": {
-                          background: theme.palette.primary.dark,
-                        },
-                      }}
-                    >
-                      Schedule Meeting
-                    </Button>
-                  )}
-                </Box>
-              </Fade>
-            </Card>
-          </Box>
-        </Box>
-      </Container>
-    </Box>
-  );
-};
 
 const CryptoAgreementStep = () => {
   const [visibleFields, setVisibleFields] = useState(1);
@@ -2070,32 +1849,32 @@ const LivePlatformStatsSection = () => {
     {
       value: stats.users,
       label: "Total Users",
-      icon: <PersonAdd sx={{ fontSize: "3rem", color: "primary.main" }} />,
+      icon: <PersonAdd sx={{ fontSize: "2rem", color: "primary.main" }} />,
       color: theme.palette.primary.main,
     },
     {
       value: stats.activeUsers,
       label: "Active Users",
-      icon: <TrendingUp sx={{ fontSize: "3rem", color: "success.main" }} />,
+      icon: <TrendingUp sx={{ fontSize: "2rem", color: "success.main" }} />,
       color: theme.palette.success.main,
     },
     {
       value: stats.totalDeposit,
       label: "Total Value",
       prefix: "$",
-      icon: <Payment sx={{ fontSize: "3rem", color: "warning.main" }} />,
+      icon: <Payment sx={{ fontSize: "2rem", color: "warning.main" }} />,
       color: theme.palette.warning.main,
     },
     {
       value: stats.jobsCount,
       label: "Jobs Posted",
-      icon: <Assignment sx={{ fontSize: "3rem", color: "info.main" }} />,
+      icon: <Assignment sx={{ fontSize: "2rem", color: "info.main" }} />,
       color: theme.palette.info.main,
     },
     {
       value: stats.talentsCount,
       label: "Talents",
-      icon: <Star sx={{ fontSize: "3rem", color: "secondary.main" }} />,
+      icon: <Star sx={{ fontSize: "2rem", color: "secondary.main" }} />,
       color: theme.palette.secondary.main,
     },
   ];
@@ -2104,78 +1883,63 @@ const LivePlatformStatsSection = () => {
     <Box
       ref={statsRef}
       sx={{
-        py: 8,
-        background: `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.background.paper} 100%)`,
-        position: "relative",
-        overflow: "hidden",
-        "&::before": {
-          content: '""',
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: `radial-gradient(circle at 70% 80%, ${theme.palette.primary.main}08 0%, transparent 50%)`,
-          pointerEvents: "none",
-        },
+        py: 5,
+        background: theme.palette.background.default,
       }}
     >
-      <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }}>
-        <Box sx={{ textAlign: "center", mb: 6 }}>
+      <Container maxWidth="lg">
+        <Box sx={{ textAlign: "center", mb: 3 }}>
           <Typography
-            variant="h3"
+            variant="h5"
             sx={{
-              mb: 3,
-              fontWeight: 400,
+              fontWeight: 500,
               color: theme.palette.text.primary,
-              fontFamily:
-                "Google Sans, -apple-system, BlinkMacSystemFont, sans-serif",
-              fontSize: { xs: "2rem", md: "2.5rem" },
+              fontFamily: "Google Sans, sans-serif",
+              fontSize: { xs: "1.5rem", md: "1.75rem" },
             }}
           >
-            Live Platform Stats
+            Live Platform Status
           </Typography>
         </Box>
 
-        <Grid2 container spacing={4} justifyContent="center">
+        <Grid2 container spacing={2} justifyContent="center">
           {statsData.map((stat, i) => (
-            <Grid2 xs={12} sm={6} md={2.4} key={i}>
+            <Grid2 xs={6} sm={4} md={2.4} key={i}>
               <Card
                 sx={{
-                  p: 4,
+                  p: 2,
                   textAlign: "center",
                   background: theme.palette.background.paper,
-                  backdropFilter: "blur(20px)",
-                  borderRadius: "16px",
+                  borderRadius: "12px",
                   border: `1px solid ${theme.palette.divider}`,
-                  boxShadow: `0 4px 16px ${theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.3)" : "rgba(0, 0, 0, 0.08)"}`,
-                  transition: "all 0.3s ease",
+                  boxShadow: `0 2px 8px ${theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.2)" : "rgba(0, 0, 0, 0.05)"}`,
+                  transition: "all 0.2s ease",
                   "&:hover": {
-                    transform: "translateY(-4px)",
-                    boxShadow: `0 8px 25px ${stat.color}20`,
+                    transform: "translateY(-2px)",
+                    boxShadow: `0 4px 12px ${stat.color}15`,
                   },
                 }}
               >
-                <Box sx={{ mb: 2 }}>{stat.icon}</Box>
+                <Box sx={{ mb: 1 }}>{stat.icon}</Box>
                 <Typography
-                  variant="h3"
+                  variant="h4"
                   sx={{
                     fontWeight: 600,
                     color: stat.color,
-                    mb: 1,
+                    mb: 0.5,
                     fontFamily: "Google Sans, sans-serif",
-                    fontSize: { xs: "2rem", md: "2.5rem" },
+                    fontSize: { xs: "1.5rem", md: "1.75rem" },
                   }}
                 >
                   {stat.prefix || ""}
                   {stat.value.toLocaleString()}
                 </Typography>
                 <Typography
-                  variant="body1"
+                  variant="body2"
                   sx={{
                     color: theme.palette.text.secondary,
-                    fontWeight: 500,
-                    fontSize: { xs: "0.9rem", md: "1rem" },
+                    fontWeight: 400,
+                    fontSize: { xs: "0.75rem", md: "0.85rem" },
                   }}
                 >
                   {stat.label}
@@ -2205,22 +1969,11 @@ const SimpleFooter = () => {
     <Box
       component="footer"
       sx={{
-        mt: 12,
-        py: 8,
+        mt: 8,
+        py: 4,
         backgroundColor: "background.paper",
-        borderTop: "2px solid",
+        borderTop: "1px solid",
         borderColor: "divider",
-        position: "relative",
-        "&::before": {
-          content: '""',
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: "1px",
-          background:
-            "linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)",
-        },
       }}
     >
       <Container maxWidth="lg">
@@ -2230,22 +1983,19 @@ const SimpleFooter = () => {
             flexDirection: { xs: "column", md: "row" },
             justifyContent: "space-between",
             alignItems: { xs: "center", md: "flex-start" },
-            gap: 4,
-            mb: 6,
+            gap: 3,
+            mb: 3,
           }}
         >
           {/* Brand Section */}
           <Box sx={{ textAlign: { xs: "center", md: "left" } }}>
-            <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold" }}>
+            <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
               {window.location.hostname}
             </Typography>
             <Typography
-              variant="body1"
-              sx={{ mb: 2, opacity: 0.8, maxWidth: 300 }}
+              variant="body2"
+              sx={{ opacity: 0.7, maxWidth: 280, fontSize: "0.875rem" }}
             >
-              The complete online work toolkit for the Web3 era.
-            </Typography>
-            <Typography variant="body2" sx={{ opacity: 0.6 }}>
               AI-powered job matching • Smart contracts • Team management
             </Typography>
           </Box>
@@ -2254,36 +2004,40 @@ const SimpleFooter = () => {
           <Box
             sx={{
               display: "flex",
-              flexDirection: { xs: "column", sm: "row" },
-              gap: { xs: 3, sm: 6 },
+              gap: 4,
               textAlign: { xs: "center", md: "left" },
             }}
           >
             <Box>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+              <Typography
+                variant="body2"
+                sx={{ mb: 1, fontWeight: 500, fontSize: "0.875rem" }}
+              >
                 Resources
               </Typography>
-              <Stack spacing={1}>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    opacity: 0.7,
-                    cursor: "pointer",
-                    "&:hover": { opacity: 1 },
-                  }}
-                  component={Link}
-                  to="/white_paper"
-                >
-                  white paper
-                </Typography>
-              </Stack>
+              <Typography
+                variant="body2"
+                sx={{
+                  opacity: 0.6,
+                  cursor: "pointer",
+                  "&:hover": { opacity: 1 },
+                  fontSize: "0.8rem",
+                }}
+                component={Link}
+                to="/white_paper"
+              >
+                White Paper
+              </Typography>
             </Box>
 
             <Box>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+              <Typography
+                variant="body2"
+                sx={{ mb: 1, fontWeight: 500, fontSize: "0.875rem" }}
+              >
                 Community
               </Typography>
-              <Stack spacing={1}>
+              <Stack spacing={0.5}>
                 {socialLinks.map((social) => {
                   const Icon = social.icon;
                   return (
@@ -2292,16 +2046,17 @@ const SimpleFooter = () => {
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        gap: 1,
+                        gap: 0.5,
                         cursor: "pointer",
-                        opacity: 0.7,
+                        opacity: 0.6,
                         "&:hover": { opacity: 1 },
-                        justifyContent: { xs: "center", md: "flex-start" },
                       }}
                       onClick={() => window.open(social.url, "_blank")}
                     >
-                      <Icon sx={{ fontSize: 16 }} />
-                      <Typography variant="body2">{social.name}</Typography>
+                      <Icon sx={{ fontSize: 14 }} />
+                      <Typography variant="body2" sx={{ fontSize: "0.8rem" }}>
+                        {social.name}
+                      </Typography>
                     </Box>
                   );
                 })}
@@ -2311,7 +2066,7 @@ const SimpleFooter = () => {
         </Box>
 
         {/* Bottom Section */}
-        <Divider sx={{ mb: 4, opacity: 0.3 }} />
+        <Divider sx={{ mb: 2, opacity: 0.2 }} />
 
         <Box
           sx={{
@@ -2319,29 +2074,27 @@ const SimpleFooter = () => {
             flexDirection: { xs: "column", sm: "row" },
             justifyContent: "space-between",
             alignItems: "center",
-            gap: 2,
+            gap: 1,
             textAlign: { xs: "center", sm: "left" },
           }}
         >
-          <Typography variant="body2" sx={{ opacity: 0.6 }}>
-            © {new Date().getFullYear()} Made by oDoc.app team. All rights
-            reserved.
+          <Typography variant="body2" sx={{ opacity: 0.5, fontSize: "0.75rem" }}>
+            © {new Date().getFullYear()} oDoc.app. All rights reserved.
           </Typography>
 
-          <Box sx={{ display: "flex", gap: 3 }}>
-            <Typography
-              variant="body2"
-              sx={{
-                opacity: 0.6,
-                cursor: "pointer",
-                "&:hover": { opacity: 1 },
-              }}
-              component={Link}
-              to="/privacy"
-            >
-              Privacy Policy
-            </Typography>
-          </Box>
+          <Typography
+            variant="body2"
+            sx={{
+              opacity: 0.5,
+              cursor: "pointer",
+              "&:hover": { opacity: 1 },
+              fontSize: "0.75rem",
+            }}
+            component={Link}
+            to="/privacy"
+          >
+            Privacy Policy
+          </Typography>
         </Box>
       </Container>
     </Box>
