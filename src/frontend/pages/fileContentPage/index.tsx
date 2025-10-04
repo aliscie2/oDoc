@@ -195,11 +195,10 @@ function FileContentPage() {
     );
   }
 
-  if (fetchingFromBackend){
-      return <CircularProgress/>
-    }
-  if ( !currentFile) {
-    
+  if (fetchingFromBackend) {
+    return <CircularProgress />;
+  }
+  if (!currentFile) {
     return (
       <Box
         display="flex"

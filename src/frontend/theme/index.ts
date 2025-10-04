@@ -71,11 +71,11 @@ const createComponents = (palette: ReturnType<typeof createPalette>) => ({
         minHeight: "100vh",
         background: palette.background.default,
       },
-      '@keyframes pulse': {
-        '0%, 100%': {
+      "@keyframes pulse": {
+        "0%, 100%": {
           opacity: 1,
         },
-        '50%': {
+        "50%": {
           opacity: 0.5,
         },
       },
@@ -224,8 +224,9 @@ export function createTheme(isDarkMode: boolean) {
       "none",
       ...Array(24)
         .fill(null)
-        .map((_, i) =>
-          `0 ${(i + 1) * 2}px ${(i + 1) * 4}px ${alpha("#000", isDarkMode ? 0.3 : 0.08)}`
+        .map(
+          (_, i) =>
+            `0 ${(i + 1) * 2}px ${(i + 1) * 4}px ${alpha("#000", isDarkMode ? 0.3 : 0.08)}`,
         ),
     ] as any,
   });

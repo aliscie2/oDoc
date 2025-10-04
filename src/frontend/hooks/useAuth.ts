@@ -35,16 +35,18 @@ export const useAuth = () => {
 
       try {
         const principal: Principal = identity.getPrincipal();
-        
+
         // Use ActorFactory for reliable actor calls
-        const { canisterId, idlFactory } = await import("$/declarations/backend");
+        const { canisterId, idlFactory } = await import(
+          "$/declarations/backend"
+        );
         const profile = await ActorFactory.executeWithRecovery(
           {
             canisterId,
             idlFactory,
-            actorType: 'backend'
+            actorType: "backend",
           },
-          (actor) => actor.get_user_profile(principal)
+          (actor) => actor.get_user_profile(principal),
         );
 
         const hasProfile = profile && "Ok" in profile && profile.Ok?.id;
@@ -108,10 +110,10 @@ export const useAuth = () => {
     try {
       // Use enhanced cleanup from IdentityManager
       await IdentityManager.forceRefresh();
-      
+
       // Clear actor factory cache
       ActorFactory.clearCache();
-      
+
       // Perform logout
       await logout();
     } catch (error) {

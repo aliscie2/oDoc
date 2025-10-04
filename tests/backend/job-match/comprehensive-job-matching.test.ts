@@ -178,9 +178,7 @@ describe("Comprehensive Job Matching System", () => {
     }
 
     // Step 4: Verify no more matches available
-    const { jobMatches: noMoreMatches } = await getInitJobs(
-      jobProfile.id,
-    );
+    const { jobMatches: noMoreMatches } = await getInitJobs(jobProfile.id);
     expect(noMoreMatches.length).toBe(0);
 
     // --------- test get updated talent
@@ -188,9 +186,7 @@ describe("Comprehensive Job Matching System", () => {
     globalThis.testActor.setIdentity(talentsUsers[0].user);
     await makeRandomTalentUpdate(talentsUsers[0].talentId);
     globalThis.testActor.setIdentity(jobCreator);
-    const { jobMatches: noMoreMatches2 } = await getInitJobs(
-      jobProfile.id,
-    );
+    const { jobMatches: noMoreMatches2 } = await getInitJobs(jobProfile.id);
     expect(noMoreMatches2.length).toBe(1);
   }, 60000); // 60 second timeout for this comprehensive test
 });

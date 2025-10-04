@@ -37,11 +37,17 @@ interface JobDetailsProps {
 }
 
 const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
-  const [expandedSection, setExpandedSection] = React.useState<string | false>("basic");
+  const [expandedSection, setExpandedSection] = React.useState<string | false>(
+    "basic",
+  );
   const [editingCoverLetter, setEditingCoverLetter] = React.useState(false);
-  const [coverLetterText, setCoverLetterText] = React.useState<string>(match?.cover_letter || "");
+  const [coverLetterText, setCoverLetterText] = React.useState<string>(
+    match?.cover_letter || "",
+  );
   const [saving, setSaving] = React.useState(false);
-  const [localScore, setLocalScore] = React.useState<number>(Math.round((job.required_match_score || 0.6) * 100));
+  const [localScore, setLocalScore] = React.useState<number>(
+    Math.round((job.required_match_score || 0.6) * 100),
+  );
   const [showTooltip, setShowTooltip] = React.useState<boolean>(false);
 
   // Sync local state when job prop changes
@@ -50,9 +56,10 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
   }, [job.required_match_score]);
 
   const { profile } = useSelector(
-    (state: { filesState: { profile: { id: string } | null } }) => state.filesState,
+    (state: { filesState: { profile: { id: string } | null } }) =>
+      state.filesState,
   );
-  
+
   const canEdit = Object.keys(job.category)[0] !== "Talent";
   const dispatch = useDispatch();
 
@@ -149,9 +156,25 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
   };
 
   const EmailsList = () => (
-    <Card sx={{ mb: 3, borderRadius: 2, border: "1px solid", borderColor: "divider" }}>
+    <Card
+      sx={{
+        mb: 3,
+        borderRadius: 2,
+        border: "1px solid",
+        borderColor: "divider",
+      }}
+    >
       <CardContent sx={{ p: 3 }}>
-        <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, display: "flex", alignItems: "center", gap: 1 }}>
+        <Typography
+          variant="h6"
+          sx={{
+            mb: 2,
+            fontWeight: 600,
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+          }}
+        >
           <EmailIcon color="info" />
           Contact Information
         </Typography>
@@ -185,9 +208,27 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
             </Box>
           ))}
         </Stack>
-        <Box sx={{ mt: 2, p: 2, bgcolor: "action.hover", borderRadius: 1, border: "1px solid", borderColor: "divider" }}>
-          <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 500, display: "block", lineHeight: 1.4 }}>
-            🔒 Privacy Protected: We will not share your emails with other users. We will only contact you when finding good matches.
+        <Box
+          sx={{
+            mt: 2,
+            p: 2,
+            bgcolor: "action.hover",
+            borderRadius: 1,
+            border: "1px solid",
+            borderColor: "divider",
+          }}
+        >
+          <Typography
+            variant="caption"
+            sx={{
+              color: "text.secondary",
+              fontWeight: 500,
+              display: "block",
+              lineHeight: 1.4,
+            }}
+          >
+            🔒 Privacy Protected: We will not share your emails with other
+            users. We will only contact you when finding good matches.
           </Typography>
         </Box>
       </CardContent>
@@ -226,7 +267,11 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
         <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
           <Chip
             icon={job.active ? <CheckCircleIcon /> : <PauseCircleIcon />}
-            label={job.active ? `Active ${Object.keys(job.category)[0]}` : `Inactive ${Object.keys(job.category)[0]}`}
+            label={
+              job.active
+                ? `Active ${Object.keys(job.category)[0]}`
+                : `Inactive ${Object.keys(job.category)[0]}`
+            }
             color={job.active ? "success" : "default"}
             size="small"
             sx={{ fontWeight: 600 }}
@@ -262,13 +307,38 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
 
       {/* Job Description */}
       {job.description && (
-        <Card sx={{ mb: 3, borderRadius: 2, border: "1px solid", borderColor: "divider" }}>
+        <Card
+          sx={{
+            mb: 3,
+            borderRadius: 2,
+            border: "1px solid",
+            borderColor: "divider",
+          }}
+        >
           <CardContent sx={{ p: 3 }}>
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, display: "flex", alignItems: "center", gap: 1 }}>
+            <Typography
+              variant="h6"
+              sx={{
+                mb: 2,
+                fontWeight: 600,
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+              }}
+            >
               <DescriptionIcon color="primary" />
               Job Description
             </Typography>
-            <Box sx={{ pl: 2, borderLeft: "3px solid", borderColor: "primary.main", bgcolor: "action.hover", borderRadius: 1, p: 2 }}>
+            <Box
+              sx={{
+                pl: 2,
+                borderLeft: "3px solid",
+                borderColor: "primary.main",
+                bgcolor: "action.hover",
+                borderRadius: 1,
+                p: 2,
+              }}
+            >
               <MarkdownMessage message={job.description} isUser={false} />
             </Box>
           </CardContent>
@@ -280,10 +350,30 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
 
       {/* Cover Letter */}
       {match && (match.cover_letter || canEdit) && (
-        <Card sx={{ mb: 3, borderRadius: 2, border: "1px solid", borderColor: "divider" }}>
+        <Card
+          sx={{
+            mb: 3,
+            borderRadius: 2,
+            border: "1px solid",
+            borderColor: "divider",
+          }}
+        >
           <CardContent sx={{ p: 3 }}>
-            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-              <Typography variant="h6" sx={{ fontWeight: 600, display: "flex", alignItems: "center", gap: 1 }}>
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+              sx={{ mb: 2 }}
+            >
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 600,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                }}
+              >
                 <EmailIcon color="secondary" />
                 Cover Letter
               </Typography>
@@ -291,7 +381,11 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
                 <Button
                   variant={editingCoverLetter ? "contained" : "outlined"}
                   size="small"
-                  onClick={() => editingCoverLetter ? handleSaveCoverLetter() : setEditingCoverLetter(true)}
+                  onClick={() =>
+                    editingCoverLetter
+                      ? handleSaveCoverLetter()
+                      : setEditingCoverLetter(true)
+                  }
                   disabled={saving}
                 >
                   {saving ? "Saving..." : editingCoverLetter ? "Save" : "Edit"}
@@ -309,8 +403,20 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
                 variant="outlined"
               />
             ) : (
-              <Box sx={{ pl: 2, borderLeft: "3px solid", borderColor: "secondary.main", bgcolor: "action.hover", borderRadius: 1, p: 2 }}>
-                <MarkdownMessage message={match.cover_letter || "No cover letter written yet."} isUser={false} />
+              <Box
+                sx={{
+                  pl: 2,
+                  borderLeft: "3px solid",
+                  borderColor: "secondary.main",
+                  bgcolor: "action.hover",
+                  borderRadius: 1,
+                  p: 2,
+                }}
+              >
+                <MarkdownMessage
+                  message={match.cover_letter || "No cover letter written yet."}
+                  isUser={false}
+                />
               </Box>
             )}
           </CardContent>
@@ -319,14 +425,43 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
 
       {/* Trust & Verification */}
       {job.trust_note && (
-        <Card sx={{ mb: 3, borderRadius: 2, border: "2px solid", borderColor: "success.main", bgcolor: "action.hover" }}>
+        <Card
+          sx={{
+            mb: 3,
+            borderRadius: 2,
+            border: "2px solid",
+            borderColor: "success.main",
+            bgcolor: "action.hover",
+          }}
+        >
           <CardContent sx={{ p: 3 }}>
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: "success.dark", display: "flex", alignItems: "center", gap: 1 }}>
+            <Typography
+              variant="h6"
+              sx={{
+                mb: 2,
+                fontWeight: 600,
+                color: "success.dark",
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+              }}
+            >
               <SecurityIcon />
               Verified & Trusted
             </Typography>
-            <Box sx={{ bgcolor: "background.paper", borderRadius: 1, p: 2, border: "1px solid", borderColor: "divider" }}>
-              <Typography variant="body1" sx={{ lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
+            <Box
+              sx={{
+                bgcolor: "background.paper",
+                borderRadius: 1,
+                p: 2,
+                border: "1px solid",
+                borderColor: "divider",
+              }}
+            >
+              <Typography
+                variant="body1"
+                sx={{ lineHeight: 1.6, whiteSpace: "pre-wrap" }}
+              >
                 {job.trust_note}
               </Typography>
             </Box>
@@ -336,16 +471,46 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
 
       {/* Position Details & Requirements */}
       {basicInfoFields.length > 0 && (
-        <Card sx={{ mb: 3, borderRadius: 2, border: "1px solid", borderColor: "divider" }}>
+        <Card
+          sx={{
+            mb: 3,
+            borderRadius: 2,
+            border: "1px solid",
+            borderColor: "divider",
+          }}
+        >
           <CardContent sx={{ p: 3 }}>
-            <Typography variant="h6" sx={{ mb: 3, fontWeight: 600, display: "flex", alignItems: "center", gap: 1 }}>
+            <Typography
+              variant="h6"
+              sx={{
+                mb: 3,
+                fontWeight: 600,
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+              }}
+            >
               <TrendingUpIcon color="info" />
               Position Details & Requirements
             </Typography>
 
             {/* Match Score Section */}
-            <Box sx={{ mb: 3, p: 2, bgcolor: "action.hover", borderRadius: 2, border: "1px solid", borderColor: "divider" }}>
-              <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
+            <Box
+              sx={{
+                mb: 3,
+                p: 2,
+                bgcolor: "action.hover",
+                borderRadius: 2,
+                border: "1px solid",
+                borderColor: "divider",
+              }}
+            >
+              <Stack
+                direction="row"
+                alignItems="center"
+                spacing={2}
+                sx={{ mb: 2 }}
+              >
                 <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
                   Match Score Requirement
                 </Typography>
@@ -353,7 +518,11 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
 
               {!job.user_id || profile?.id === job.user_id ? (
                 <>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 1 }}
+                  >
                     Required Match Score: {localScore}%
                   </Typography>
                   <Tooltip
@@ -367,11 +536,14 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
                         min="60"
                         max="100"
                         value={localScore}
-                        onChange={(e) => handleScoreChange(parseInt(e.target.value))}
+                        onChange={(e) =>
+                          handleScoreChange(parseInt(e.target.value))
+                        }
                         style={{
                           width: "100%",
                           height: "6px",
-                          background: "linear-gradient(to right, #1976d2, #42a5f5)",
+                          background:
+                            "linear-gradient(to right, #1976d2, #42a5f5)",
                           borderRadius: "3px",
                           outline: "none",
                           WebkitAppearance: "none",
@@ -382,7 +554,8 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
                 </>
               ) : (
                 <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                  Required Match Score: {Math.round((job.required_match_score || 0.6) * 100)}%
+                  Required Match Score:{" "}
+                  {Math.round((job.required_match_score || 0.6) * 100)}%
                 </Typography>
               )}
             </Box>
@@ -390,7 +563,11 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
             <Box
               sx={{
                 display: "grid",
-                gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", md: "repeat(3, 1fr)" },
+                gridTemplateColumns: {
+                  xs: "1fr",
+                  sm: "repeat(2, 1fr)",
+                  md: "repeat(3, 1fr)",
+                },
                 gap: 2,
               }}
             >
@@ -407,17 +584,27 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
                       border: "1px solid",
                       borderColor: "divider",
                       transition: "all 0.2s ease",
-                      "&:hover": { bgcolor: "action.selected", borderColor: "primary.main" },
+                      "&:hover": {
+                        bgcolor: "action.selected",
+                        borderColor: "primary.main",
+                      },
                     }}
                   >
                     <Typography
                       variant="caption"
                       color="text.secondary"
-                      sx={{ fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}
+                      sx={{
+                        fontWeight: 600,
+                        textTransform: "uppercase",
+                        letterSpacing: 0.5,
+                      }}
                     >
                       {formatFieldName(key)}
                     </Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5, wordBreak: "break-word" }}>
+                    <Typography
+                      variant="h6"
+                      sx={{ fontWeight: 600, mt: 0.5, wordBreak: "break-word" }}
+                    >
                       {String(value)}
                     </Typography>
                   </Box>
@@ -468,19 +655,34 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
                 <Typography variant="h6" sx={{ fontWeight: 600 }}>
                   {formatFieldName(fieldName)}
                 </Typography>
-                <Chip label={fieldValue.length} size="small" color="primary" sx={{ fontWeight: 600 }} />
+                <Chip
+                  label={fieldValue.length}
+                  size="small"
+                  color="primary"
+                  sx={{ fontWeight: 600 }}
+                />
               </Stack>
             </AccordionSummary>
             <AccordionDetails sx={{ p: 3, bgcolor: "background.paper" }}>
-              {fieldName === "skills" || fieldName === "technologies" || fieldName === "tags" ? (
-                <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", gap: 1.5 }}>
+              {fieldName === "skills" ||
+              fieldName === "technologies" ||
+              fieldName === "tags" ? (
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  sx={{ flexWrap: "wrap", gap: 1.5 }}
+                >
                   {fieldValue.map((item, index) => (
                     <Chip
                       key={index}
                       label={item}
                       variant="outlined"
                       color="primary"
-                      sx={{ fontWeight: 500, borderRadius: 2, "&:hover": { bgcolor: "action.selected" } }}
+                      sx={{
+                        fontWeight: 500,
+                        borderRadius: 2,
+                        "&:hover": { bgcolor: "action.selected" },
+                      }}
                     />
                   ))}
                 </Stack>
@@ -496,10 +698,16 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
                         border: "1px solid",
                         borderColor: "divider",
                         transition: "all 0.2s ease",
-                        "&:hover": { bgcolor: "action.selected", borderColor: "primary.main" },
+                        "&:hover": {
+                          bgcolor: "action.selected",
+                          borderColor: "primary.main",
+                        },
                       }}
                     >
-                      <Typography variant="body1" sx={{ fontWeight: 500, lineHeight: 1.6 }}>
+                      <Typography
+                        variant="body1"
+                        sx={{ fontWeight: 500, lineHeight: 1.6 }}
+                      >
                         {item}
                       </Typography>
                     </Box>

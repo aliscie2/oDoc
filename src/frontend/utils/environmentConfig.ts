@@ -29,7 +29,7 @@ export class EnvironmentManager {
     const port = import.meta.env.VITE_DFX_PORT || "4943";
     const version = import.meta.env.VITE_APP_VERSION || "1.0.0";
 
-    const host = isProduction 
+    const host = isProduction
       ? "https://ic0.app"
       : import.meta.env.VITE_IC_HOST || `http://localhost:${port}`;
 
@@ -49,18 +49,20 @@ export class EnvironmentManager {
       identityProvider,
       derivationOrigin,
       cacheKey,
-      isProduction
+      isProduction,
     };
   }
 
   /**
    * Check if current environment has changed from cached config
    */
-  static hasEnvironmentChanged(cachedConfig?: Partial<EnvironmentConfig>): boolean {
+  static hasEnvironmentChanged(
+    cachedConfig?: Partial<EnvironmentConfig>,
+  ): boolean {
     if (!cachedConfig) return true;
 
     const current = this.getConfig();
-    
+
     return (
       cachedConfig.network !== current.network ||
       cachedConfig.host !== current.host ||

@@ -26,12 +26,12 @@ export class IdentityManager {
    */
   private static getReplicaFingerprint(): ReplicaFingerprint {
     const config = EnvironmentManager.getConfig();
-    
+
     return {
       network: config.network,
       host: config.host,
       timestamp: Date.now(),
-      version: config.cacheKey
+      version: config.cacheKey,
     };
   }
 
@@ -69,19 +69,19 @@ export class IdentityManager {
   private static async clearStaleCache(): Promise<void> {
     if (this.isEnvironmentStale()) {
       console.log("Environment change detected, clearing stale cache");
-      
+
       // Clear localStorage
       localStorage.removeItem(this.CACHE_KEY);
       localStorage.removeItem("ic-identity");
       localStorage.removeItem("ic-delegation");
-      
+
       // Clear sessionStorage
       sessionStorage.clear();
 
       // Clear IndexedDB auth databases
       if (typeof window !== "undefined" && window.indexedDB) {
         const dbsToDelete = ["authClientDB", "dfinity-studio", "ic-keyval"];
-        
+
         for (const dbName of dbsToDelete) {
           try {
             await new Promise<void>((resolve, reject) => {
@@ -117,10 +117,10 @@ export class IdentityManager {
 
       // Test signature with a lightweight call
       const agent = await this.createHttpAgent(identity);
-      
+
       // Try to get the replica status - this will fail if signature is invalid
       await agent.status();
-      
+
       return true;
     } catch (error) {
       console.warn("Identity validation failed:", error);
@@ -146,11 +146,14 @@ export class IdentityManager {
 
       // Update cache fingerprint
       this.currentFingerprint = this.getReplicaFingerprint();
-      localStorage.setItem(this.CACHE_KEY, JSON.stringify({
-        fingerprint: this.currentFingerprint,
-        timestamp: Date.now(),
-        isValid: true
-      } as CachedIdentity));
+      localStorage.setItem(
+        this.CACHE_KEY,
+        JSON.stringify({
+          fingerprint: this.currentFingerprint,
+          timestamp: Date.now(),
+          isValid: true,
+        } as CachedIdentity),
+      );
     }
 
     return this.authClient;
@@ -189,10 +192,10 @@ export class IdentityManager {
    */
   static async forceRefresh(): Promise<void> {
     console.log("Forcing identity refresh");
-    
+
     // Clear all caches
     await this.clearStaleCache();
-    
+
     // Reset client
     this.authClient = null;
     this.currentFingerprint = null;
@@ -212,10 +215,10 @@ export class IdentityManager {
   private static async createHttpAgent(identity: Identity): Promise<HttpAgent> {
     const config = EnvironmentManager.getConfig();
 
-    const agent = new HttpAgent({ 
-      identity, 
+    const agent = new HttpAgent({
+      identity,
       host: config.host,
-      retryTimes: 3
+      retryTimes: 3,
     });
 
     // Fetch root key for local development
@@ -249,10 +252,11 @@ export class IdentityManager {
    */
   static isSignatureError(error: unknown): boolean {
     if (!error || typeof error !== "object") return false;
-    
+
     const errorStr = error.toString().toLowerCase();
-    const errorMessage = "message" in error ? String(error.message).toLowerCase() : "";
-    
+    const errorMessage =
+      "message" in error ? String(error.message).toLowerCase() : "";
+
     const signatureErrorPatterns = [
       "signature verification failed",
       "invalid signature",
@@ -260,11 +264,11 @@ export class IdentityManager {
       "unauthorized",
       "invalid delegation",
       "delegation expired",
-      "certificate verification failed"
+      "certificate verification failed",
     ];
 
-    return signatureErrorPatterns.some(pattern => 
-      errorStr.includes(pattern) || errorMessage.includes(pattern)
+    return signatureErrorPatterns.some(
+      (pattern) => errorStr.includes(pattern) || errorMessage.includes(pattern),
     );
   }
 }

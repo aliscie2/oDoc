@@ -31,7 +31,10 @@ interface FriendshipButtonProps {
 const FriendshipButton: React.FC<FriendshipButtonProps> = ({ user }) => {
   const dispatch = useDispatch();
 
-  const { profile, friends } = useSelector((state: { filesState: { profile: User; friends: FEFriend[] } }) => state.filesState);
+  const { profile, friends } = useSelector(
+    (state: { filesState: { profile: User; friends: FEFriend[] } }) =>
+      state.filesState,
+  );
   // Using direct backendActor import
   const [isLoading, setIsLoading] = useState(false);
 
@@ -155,8 +158,10 @@ const FriendshipButton: React.FC<FriendshipButtonProps> = ({ user }) => {
   // If friend exists, confirmed is false, and is_sender is false, we received a pending request
   // If no friend relation exists, we can send a request
   const isFriend = friendRelation && friendRelation.confirmed;
-  const isRequestSender = friendRelation && !friendRelation.confirmed && friendRelation.is_sender;
-  const isRequestReceiver = friendRelation && !friendRelation.confirmed && !friendRelation.is_sender;
+  const isRequestSender =
+    friendRelation && !friendRelation.confirmed && friendRelation.is_sender;
+  const isRequestReceiver =
+    friendRelation && !friendRelation.confirmed && !friendRelation.is_sender;
 
   const buttonStyle = {
     padding: "8px 16px",

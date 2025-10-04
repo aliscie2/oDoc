@@ -8,9 +8,6 @@ import { backendActor } from "../utils/backendUtils";
 import { jobSEO } from "../components/jobSeoComponent";
 import JobDetails from "./jobs/JobDetails";
 
-
-
-
 // SEO Component for Job Page
 interface JobPageSEOProps {
   job: Job | null;
@@ -57,7 +54,9 @@ const JobPageSEO: React.FC<JobPageSEOProps> = ({ job, user, thumbnailUrl }) => {
       <meta property="og:description" content={truncatedDescription} />
       <meta property="og:type" content="article" />
       <meta property="og:url" content={window.location.href} />
-      {thumbnailUrl && <meta key="og:image" property="og:image" content={thumbnailUrl} />}
+      {thumbnailUrl && (
+        <meta key="og:image" property="og:image" content={thumbnailUrl} />
+      )}
       <meta property="og:site_name" content="ICPJobs" />
 
       {/* Twitter Card tags */}
@@ -90,7 +89,8 @@ const JobPageSEO: React.FC<JobPageSEOProps> = ({ job, user, thumbnailUrl }) => {
           },
           employmentType: jobCategory,
           skills: jobSkills.length > 0 ? jobSkills.join(", ") : undefined,
-          qualifications: jobEducation.length > 0 ? jobEducation.join(", ") : undefined,
+          qualifications:
+            jobEducation.length > 0 ? jobEducation.join(", ") : undefined,
           url: window.location.href,
           identifier: {
             "@type": "PropertyValue",
@@ -141,18 +141,22 @@ const JobPage = () => {
 
             // Generate SEO-friendly thumbnail
             const jobTitle = currentJob.job_titles?.[0] || "Job Opportunity";
-            const jobDescription = currentJob.description || "Explore this job opportunity on ICPJobs";
+            const jobDescription =
+              currentJob.description ||
+              "Explore this job opportunity on ICPJobs";
             const jobSkills = currentJob.skills || [];
 
             // Setup complete SEO for the job page
-            const generateThumbnail = async (userPhoto?: Uint8Array | number[]) => {
+            const generateThumbnail = async (
+              userPhoto?: Uint8Array | number[],
+            ) => {
               try {
                 // Use the consolidated SEO component
-                const thumbnailUrl = await jobSEO.setupJobSEO(
-                  currentJob,
-                  { ...user, photo: userPhoto }
-                );
-                
+                const thumbnailUrl = await jobSEO.setupJobSEO(currentJob, {
+                  ...user,
+                  photo: userPhoto,
+                });
+
                 setThumbnailUrl(complexThumbnailUrl || simpleThumbnailUrl);
 
                 // Set the thumbnail URL for display
@@ -164,7 +168,9 @@ const JobPage = () => {
             };
 
             if (currentJob.user_id) {
-              const userResponse = await backendActor.get_user(currentJob.user_id);
+              const userResponse = await backendActor.get_user(
+                currentJob.user_id,
+              );
               if ("Ok" in userResponse) {
                 setUser(userResponse.Ok);
                 await generateThumbnail(userResponse.Ok.photo);

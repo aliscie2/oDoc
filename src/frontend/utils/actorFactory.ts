@@ -20,9 +20,11 @@ export class ActorFactory {
   /**
    * Get or create an actor with automatic identity validation and recovery
    */
-  static async getActor<T>(config: ActorConfig<T>): Promise<ActorSubclass<T> | null> {
-    const cacheKey = `${config.canisterId}_${config.actorType || 'default'}`;
-    
+  static async getActor<T>(
+    config: ActorConfig<T>,
+  ): Promise<ActorSubclass<T> | null> {
+    const cacheKey = `${config.canisterId}_${config.actorType || "default"}`;
+
     // Check if we have a valid cached actor
     const cached = this.actors.get(cacheKey);
     if (cached && this.isActorValid(cached)) {
@@ -37,8 +39,8 @@ export class ActorFactory {
    * Create a new actor with validated identity
    */
   private static async createFreshActor<T>(
-    config: ActorConfig<T>, 
-    cacheKey: string
+    config: ActorConfig<T>,
+    cacheKey: string,
   ): Promise<ActorSubclass<T> | null> {
     try {
       const agent = await IdentityManager.createValidatedAgent();
@@ -58,19 +60,19 @@ export class ActorFactory {
         this.actors.set(cacheKey, {
           actor,
           identity,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         });
       }
 
       return actor;
     } catch (error) {
       console.error("Failed to create actor:", error);
-      
+
       // If it's a signature error, try to recover
       if (IdentityManager.isSignatureError(error)) {
         console.log("Signature error detected, attempting recovery");
         await this.recoverFromSignatureError();
-        
+
         // Retry once after recovery
         try {
           const agent = await IdentityManager.createValidatedAgent();
@@ -84,7 +86,7 @@ export class ActorFactory {
           console.error("Actor creation failed after recovery:", retryError);
         }
       }
-      
+
       return null;
     }
   }
@@ -102,7 +104,10 @@ export class ActorFactory {
     // Check if identity is still the same
     try {
       const currentPrincipal = cached.identity.getPrincipal().toString();
-      return !cached.identity.getPrincipal().isAnonymous() && currentPrincipal.length > 0;
+      return (
+        !cached.identity.getPrincipal().isAnonymous() &&
+        currentPrincipal.length > 0
+      );
     } catch {
       return false;
     }
@@ -113,7 +118,7 @@ export class ActorFactory {
    */
   static async executeWithRecovery<T, R>(
     config: ActorConfig<T>,
-    fn: (actor: ActorSubclass<T>) => Promise<R>
+    fn: (actor: ActorSubclass<T>) => Promise<R>,
   ): Promise<R | null> {
     try {
       const actor = await this.getActor(config);
@@ -124,13 +129,13 @@ export class ActorFactory {
       return await fn(actor);
     } catch (error) {
       console.error("Actor call failed:", error);
-      
+
       // If it's a signature error, try to recover and retry
       if (IdentityManager.isSignatureError(error)) {
         console.log("Signature error detected, attempting recovery and retry");
-        
+
         await this.recoverFromSignatureError();
-        
+
         // Retry once after recovery
         try {
           const actor = await this.getActor(config);
@@ -141,7 +146,7 @@ export class ActorFactory {
           console.error("Retry failed after recovery:", retryError);
         }
       }
-      
+
       throw error;
     }
   }
@@ -151,10 +156,10 @@ export class ActorFactory {
    */
   private static async recoverFromSignatureError(): Promise<void> {
     console.log("Recovering from signature error");
-    
+
     // Clear all cached actors
     this.actors.clear();
-    
+
     // Force identity refresh
     await IdentityManager.forceRefresh();
   }
@@ -171,19 +176,19 @@ export class ActorFactory {
    */
   static async getActorWithFallback<T>(
     config: ActorConfig<T>,
-    fallbackActor?: ActorSubclass<T>
+    fallbackActor?: ActorSubclass<T>,
   ): Promise<ActorSubclass<T>> {
     const actor = await this.getActor(config);
-    
+
     if (actor) {
       return actor;
     }
-    
+
     if (fallbackActor) {
       console.log("Using fallback actor");
       return fallbackActor;
     }
-    
+
     throw new Error("No actor available and no fallback provided");
   }
 }

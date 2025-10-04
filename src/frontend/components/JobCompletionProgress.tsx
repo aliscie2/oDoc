@@ -111,7 +111,6 @@ const JobCompletionProgress: React.FC<JobCompletionProgressProps> = ({
            `}
           </style>
         </Box>
-
       </Box>
     );
   }

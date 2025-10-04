@@ -1,4 +1,4 @@
-const useCalendarStyles = (isDark) => {
+const useCalendarStyles = (isDark: boolean, isMobile?: boolean) => {
   const borderColor = isDark
     ? "rgba(75, 75, 75, 0.3)"
     : "rgba(210, 210, 210, 0.8)";
@@ -216,6 +216,26 @@ const useCalendarStyles = (isDark) => {
       {
         borderLeft: `1px solid ${borderColor}`,
       },
+
+    // Pulse animation for pending events
+    "@keyframes pulse": {
+      "0%": {
+        opacity: 0.6,
+      },
+      "50%": {
+        opacity: 0.8,
+      },
+      "100%": {
+        opacity: 0.6,
+      },
+    },
+
+    // Pending event styles
+    ".rbc-event.pending": {
+      animation: "pulse 2s infinite",
+      border: "1px dashed rgba(255,255,255,0.5)",
+      opacity: 0.6,
+    },
   };
 };
 

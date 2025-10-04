@@ -3,7 +3,6 @@ import { useSelector } from "react-redux";
 import { Button, LinearProgress } from "@mui/material";
 import { RootState } from "@/redux/reducers";
 import { useAuth } from "@/hooks/useAuth";
-import DfnIcon from "@/assets/dfn.svg";
 
 interface LoginButtonProps {
   isMobile?: boolean;

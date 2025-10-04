@@ -17,7 +17,6 @@ import {
   Storage,
   Share,
   Delete,
-  Update,
   CalendarMonth,
   Shield,
   Info,

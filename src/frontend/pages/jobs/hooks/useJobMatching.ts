@@ -28,9 +28,9 @@ export const useJobMatching = (currentJob: Job | null) => {
   const [error, setError] = useState<string | null>(null);
   const processedJobIdsRef = useRef(new Set<string>());
 
-  const getLookingForCategory = (job: Job) : Category => {
+  const getLookingForCategory = (job: Job): Category => {
     const categoryKey = Object.keys(job?.category || {})[0].toLocaleLowerCase();
-    console.log({categoryKey})
+    console.log({ categoryKey });
     return categoryKey === "job" ? { Talent: null } : { Job: null };
   };
 
@@ -128,7 +128,8 @@ export const useJobMatching = (currentJob: Job | null) => {
         }
 
         const responseText = "Ok" in aiResponse ? aiResponse.Ok.response : "";
-        const remainingCredits = "Ok" in aiResponse ? aiResponse.Ok.remaining_credits : 0;
+        const remainingCredits =
+          "Ok" in aiResponse ? aiResponse.Ok.remaining_credits : 0;
 
         // Update credits after AI call
         dispatch({

@@ -4,7 +4,9 @@ interface TimeZoneSelectorProps {
   onTimeZoneChange?: (newTimeZone: string) => void;
 }
 
-const TimeZoneSelector: React.FC<TimeZoneSelectorProps> = ({ onTimeZoneChange }) => {
+const TimeZoneSelector: React.FC<TimeZoneSelectorProps> = ({
+  onTimeZoneChange,
+}) => {
   const [currentTime, setCurrentTime] = useState("");
 
   useEffect(() => {

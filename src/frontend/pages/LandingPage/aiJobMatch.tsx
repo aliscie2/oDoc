@@ -16,9 +16,16 @@ import {
   Star,
   WorkOutline,
   CalendarMonth,
-  Security,
   Search,
   Work,
+  SmartToy,
+  Sync,
+  Chat,
+  Description,
+  AttachMoney,
+  Lock,
+  BarChart,
+  Notifications,
 } from "@mui/icons-material";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import {
@@ -263,13 +270,13 @@ const HeroSection = ({ isMobile, state }) => {
                     "Google Sans, -apple-system, BlinkMacSystemFont, sans-serif",
                 }}
               >
-                Find the perfect
+                Your AI
                 <br />
                 <Box
                   component="span"
                   sx={{ color: theme.palette.primary.main, fontWeight: 500 }}
                 >
-                  job match
+                  Personal Secrety
                 </Box>
               </Typography>
 
@@ -285,9 +292,8 @@ const HeroSection = ({ isMobile, state }) => {
                   fontSize: { xs: "1.1rem", md: "1.25rem" },
                 }}
               >
-                AI-powered matching connects you with opportunities that fit
-                your skills perfectly. Simple, fast, and built for the modern
-                workforce.
+                The first and the only AI personal Secretary on web3. Find
+                jobs/talents, schedule meetings, manage teams & payments.
               </Typography>
 
               <Stack
@@ -417,7 +423,7 @@ const HeroSection = ({ isMobile, state }) => {
                       whiteSpace: "nowrap",
                     }}
                   >
-                    Automates Everything
+                    A To Z Automation
                   </Typography>
                 </Box>
               </Box>
@@ -1035,7 +1041,7 @@ const CalendarStep = () => {
                 fontSize: { xs: "2rem", md: "3rem" },
               }}
             >
-              4. Smart Meeting Scheduler
+              Smart Meeting Scheduler
             </Typography>
             <Typography
               variant="h5"
@@ -1053,16 +1059,56 @@ const CalendarStep = () => {
 
             <Box sx={{ display: "flex", gap: 4, flexWrap: "wrap", mb: 4 }}>
               {[
-                { icon: "🤖", text: "AI scheduling" },
-                { icon: "🔄", text: "Auto-sync" },
-                { icon: "💬", text: "Chat integration" },
-                { icon: "📝", text: "Follow-ups" },
+                {
+                  icon: (
+                    <SmartToy
+                      sx={{
+                        fontSize: "1.75rem",
+                        color: theme.palette.primary.main,
+                      }}
+                    />
+                  ),
+                  text: "AI scheduling",
+                },
+                {
+                  icon: (
+                    <Sync
+                      sx={{
+                        fontSize: "1.75rem",
+                        color: theme.palette.primary.main,
+                      }}
+                    />
+                  ),
+                  text: "Auto-sync",
+                },
+                {
+                  icon: (
+                    <Chat
+                      sx={{
+                        fontSize: "1.75rem",
+                        color: theme.palette.primary.main,
+                      }}
+                    />
+                  ),
+                  text: "Chat integration",
+                },
+                {
+                  icon: (
+                    <Description
+                      sx={{
+                        fontSize: "1.75rem",
+                        color: theme.palette.primary.main,
+                      }}
+                    />
+                  ),
+                  text: "Follow-ups",
+                },
               ].map((feature, index) => (
                 <Box
                   key={index}
                   sx={{ display: "flex", alignItems: "center", gap: 1 }}
                 >
-                  <Typography variant="h5">{feature.icon}</Typography>
+                  {feature.icon}
                   <Typography
                     variant="body1"
                     sx={{
@@ -1304,7 +1350,7 @@ const CryptoAgreementStep = () => {
                 fontSize: { xs: "2rem", md: "3rem" },
               }}
             >
-              5. Create Crypto Agreement
+              Create Crypto Agreement
             </Typography>
             <Typography
               variant="h5"
@@ -1446,22 +1492,22 @@ const CryptoAgreementProofsStep = () => {
     {
       title: "Proof of Existence",
       subtitle: "Deposit funds before making promises",
-      icon: "💰",
+      icon: <AttachMoney sx={{ fontSize: "2.5rem", color: "primary.main" }} />,
     },
     {
       title: "Proof of Stake",
       subtitle: "Build trust with upfront staking",
-      icon: "🔒",
+      icon: <Lock sx={{ fontSize: "2.5rem", color: "primary.main" }} />,
     },
     {
       title: "Proof of Cap",
       subtitle: "Smart limits prevent oversized commitments",
-      icon: "📊",
+      icon: <BarChart sx={{ fontSize: "2.5rem", color: "primary.main" }} />,
     },
     {
       title: "Proof of Reputation",
       subtitle: "Your track record shows transparently",
-      icon: "⭐",
+      icon: <Star sx={{ fontSize: "2.5rem", color: "primary.main" }} />,
     },
   ];
 
@@ -1678,7 +1724,7 @@ const ProjectManagementStep = () => {
           {/* Left: Text Content */}
           <Box>
             <Typography variant="h3" sx={{ mb: 2, fontWeight: 600 }}>
-              7. Project Management
+              Project Management
             </Typography>
             <Typography variant="body1" sx={{ opacity: 0.7, mb: 4 }}>
               Manage team tasks, payments, and contracts A-Z with help of AI
@@ -1696,16 +1742,44 @@ const ProjectManagementStep = () => {
               }}
             >
               {[
-                { icon: "🤖", text: "Smart task allocation" },
-                { icon: "💰", text: "Automated payment tracking" },
-                { icon: "📊", text: "Progress analytics" },
-                { icon: "🔔", text: "Real-time notifications" },
+                {
+                  icon: (
+                    <SmartToy
+                      sx={{ fontSize: "1.75rem", color: "primary.main" }}
+                    />
+                  ),
+                  text: "Smart task allocation",
+                },
+                {
+                  icon: (
+                    <AttachMoney
+                      sx={{ fontSize: "1.75rem", color: "primary.main" }}
+                    />
+                  ),
+                  text: "Automated payment tracking",
+                },
+                {
+                  icon: (
+                    <BarChart
+                      sx={{ fontSize: "1.75rem", color: "primary.main" }}
+                    />
+                  ),
+                  text: "Progress analytics",
+                },
+                {
+                  icon: (
+                    <Notifications
+                      sx={{ fontSize: "1.75rem", color: "primary.main" }}
+                    />
+                  ),
+                  text: "Real-time notifications",
+                },
               ].map((feature, index) => (
                 <Box
                   key={index}
                   sx={{ display: "flex", alignItems: "center", gap: 2 }}
                 >
-                  <Typography variant="h5">{feature.icon}</Typography>
+                  {feature.icon}
                   <Typography variant="body2" sx={{ opacity: 0.7 }}>
                     {feature.text}
                   </Typography>

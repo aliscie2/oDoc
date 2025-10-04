@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import LandingPage from "./LandingPage";
 import ICPJobsLandingPage from "./LandingPage/aiJobMatch";
 import AffiliateRedirect from "./affiliateRedirect";
+import CalendarView from "./calendar";
 
 // Lazy imports for heavy components
 const JobsPage = React.lazy(() => import("./jobs"));
@@ -23,7 +24,7 @@ const SNSVoting = React.lazy(() => import("./white_paper"));
 const DummyShares = React.lazy(() => import("./sharesContract"));
 const AffiliateDashboard = React.lazy(() => import("./affiliate"));
 const ContractPage = React.lazy(() => import("./contracts/ContractPage"));
-const CalendarView = React.lazy(() => import("./calendar/calendar"));
+// const CalendarView = React.lazy(() => import("./calendar/calendar"));
 const AchievementPage = React.lazy(() => import("@/components/userBadges"));
 const WalletPage = React.lazy(() => import("./walletPage"));
 const JobPage = React.lazy(() => import("./jobPage"));
@@ -101,3 +102,15 @@ const Pages = React.memo(() => {
 Pages.displayName = "Pages";
 
 export default Pages;
+
+// // Calendar module exports
+// export { default as EventDialog } from "./eventDialog";
+// export { default as AvailabilityComponent } from "./AvailabilityComonent";
+// export { default as TimePicker } from "./timePicker";
+// export { default as ToolsBar } from "./toolsBar";
+// export { default as AddEventToGoogleCalendar } from "./addEventToGoogleCalenar";
+// // AI Calendar functionality is handled by the main chatbot system
+// export * from "./calendarLogic";
+// export * from "./serializers";
+// export * from "./timezone";
+// export * from "./style";

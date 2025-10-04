@@ -168,7 +168,8 @@ const HeroSection = ({ isMobile }) => {
         minHeight: "100vh",
         display: "flex",
         alignItems: "center",
-        background: "linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(147, 51, 234, 0.05) 100%)",
+        background:
+          "linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(147, 51, 234, 0.05) 100%)",
         position: "relative",
         overflow: "hidden",
         "&::before": {
@@ -178,7 +179,8 @@ const HeroSection = ({ isMobile }) => {
           left: 0,
           right: 0,
           bottom: 0,
-          background: "radial-gradient(circle at 30% 20%, rgba(37, 99, 235, 0.1) 0%, transparent 50%)",
+          background:
+            "radial-gradient(circle at 30% 20%, rgba(37, 99, 235, 0.1) 0%, transparent 50%)",
           pointerEvents: "none",
         },
       }}
@@ -194,7 +196,8 @@ const HeroSection = ({ isMobile }) => {
                   fontSize: { xs: "2.5rem", sm: "3.5rem", md: "4rem" },
                   fontWeight: 800,
                   mb: 3,
-                  background: "linear-gradient(135deg, #2563eb 0%, #9333ea 100%)",
+                  background:
+                    "linear-gradient(135deg, #2563eb 0%, #9333ea 100%)",
                   backgroundClip: "text",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
@@ -205,7 +208,7 @@ const HeroSection = ({ isMobile }) => {
                 <br />
                 Freelance Work
               </Typography>
-              
+
               <Typography
                 variant="h5"
                 sx={{
@@ -217,14 +220,17 @@ const HeroSection = ({ isMobile }) => {
                   mx: { xs: "auto", md: 0 },
                 }}
               >
-                AI-powered job matching, crypto agreements, and seamless collaboration. 
-                All in one decentralized platform.
+                AI-powered job matching, crypto agreements, and seamless
+                collaboration. All in one decentralized platform.
               </Typography>
 
               <Stack
                 direction={{ xs: "column", sm: "row" }}
                 spacing={2}
-                sx={{ mb: 6, justifyContent: { xs: "center", md: "flex-start" } }}
+                sx={{
+                  mb: 6,
+                  justifyContent: { xs: "center", md: "flex-start" },
+                }}
               >
                 <LoginButton
                   isMobile={isMobile}
@@ -232,9 +238,11 @@ const HeroSection = ({ isMobile }) => {
                     px: 4,
                     py: 1.5,
                     fontSize: "1.1rem",
-                    background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
+                    background:
+                      "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
                     "&:hover": {
-                      background: "linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)",
+                      background:
+                        "linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)",
                       transform: "translateY(-2px)",
                       boxShadow: "0 8px 25px rgba(37, 99, 235, 0.4)",
                     },
@@ -242,7 +250,7 @@ const HeroSection = ({ isMobile }) => {
                 >
                   Get Started Free
                 </LoginButton>
-                
+
                 <Button
                   variant="outlined"
                   size="large"
@@ -262,8 +270,21 @@ const HeroSection = ({ isMobile }) => {
                 </Button>
               </Stack>
 
-              <Stack direction="row" spacing={1} sx={{ justifyContent: { xs: "center", md: "flex-start" }, flexWrap: "wrap", gap: 1 }}>
-                {["Open Source", "Decentralized", "AI-Powered", "Crypto Native"].map((label) => (
+              <Stack
+                direction="row"
+                spacing={1}
+                sx={{
+                  justifyContent: { xs: "center", md: "flex-start" },
+                  flexWrap: "wrap",
+                  gap: 1,
+                }}
+              >
+                {[
+                  "Open Source",
+                  "Decentralized",
+                  "AI-Powered",
+                  "Crypto Native",
+                ].map((label) => (
                   <Chip
                     key={label}
                     label={label}
@@ -312,7 +333,7 @@ const HeroSection = ({ isMobile }) => {
                 >
                   Live Platform Stats
                 </Typography>
-                
+
                 <Grid container spacing={3}>
                   {statsData.map((stat, i) => (
                     <Grid item xs={6} sm={4} md={6} lg={4} key={i}>
@@ -940,10 +961,10 @@ export default function OdocLandingPage() {
         <title>ODOC.app</title>
         <link rel="icon" type="image/png" href={"/small_logo.png"} />
       </Helmet>
-      
+
       {/* Hero Section */}
       <HeroSection isMobile={isMobile} />
-      
+
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <ProgressiveTutorialMobile />
         {features.map((feature, index) => (

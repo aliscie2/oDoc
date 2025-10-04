@@ -174,8 +174,6 @@ function applyFieldUpdates(
   return updatedJob;
 }
 
-
-
 export function jobReducer(
   state: JobState = initialState,
   action: JobAction,
@@ -390,8 +388,6 @@ export function jobReducer(
         isChanged: hasMatchChanges ? true : state.isChanged,
       };
 
-
-
       return newState;
     }
 
@@ -406,17 +402,22 @@ export function jobReducer(
       // Fix: Preserve all existing matches and only update specific ones
       // Previously this was replacing ALL matches with just the updated ones,
       // causing other matches to disappear when connecting to a job
-      const updatedMatches = currentJob.matches?.map((existingMatch) => {
-        const updateMatch = action.matches.find(
-          (m) => m.job_id === existingMatch.job_id,
-        );
-        return updateMatch ? { ...existingMatch, ...updateMatch } : existingMatch;
-      }) || [];
+      const updatedMatches =
+        currentJob.matches?.map((existingMatch) => {
+          const updateMatch = action.matches.find(
+            (m) => m.job_id === existingMatch.job_id,
+          );
+          return updateMatch
+            ? { ...existingMatch, ...updateMatch }
+            : existingMatch;
+        }) || [];
 
       // Add any completely new matches that don't exist yet
       const newMatches = action.matches.filter(
         (newMatch) =>
-          !updatedMatches.some((existing) => existing.job_id === newMatch.job_id),
+          !updatedMatches.some(
+            (existing) => existing.job_id === newMatch.job_id,
+          ),
       );
       const finalMatches = [...updatedMatches, ...newMatches];
 
@@ -437,8 +438,6 @@ export function jobReducer(
           required_match_score: [],
         };
       }
-
-
 
       return {
         ...state,

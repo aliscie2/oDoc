@@ -20,7 +20,7 @@ export class IdentityHealthMonitor {
     this.isMonitoring = true;
 
     this.monitoringInterval = setInterval(() => {
-      this.performHealthCheck().catch(error => {
+      this.performHealthCheck().catch((error) => {
         console.error("Health check failed:", error);
       });
     }, this.CHECK_INTERVAL);
@@ -47,7 +47,7 @@ export class IdentityHealthMonitor {
   private static async performHealthCheck(): Promise<void> {
     try {
       const identity = await IdentityManager.getValidatedIdentity();
-      
+
       if (!identity) {
         console.log("No valid identity found during health check");
         return;
@@ -55,7 +55,7 @@ export class IdentityHealthMonitor {
 
       // Test signature with lightweight call
       const isHealthy = await this.testIdentitySignature();
-      
+
       if (!isHealthy) {
         console.warn("Identity signature test failed, triggering refresh");
         await IdentityManager.forceRefresh();
@@ -63,13 +63,14 @@ export class IdentityHealthMonitor {
       } else {
         console.log("Identity health check passed");
       }
-
     } catch (error) {
       console.error("Health check error:", error);
-      
+
       // If it's a signature error, force refresh
       if (IdentityManager.isSignatureError(error)) {
-        console.log("Signature error detected in health check, forcing refresh");
+        console.log(
+          "Signature error detected in health check, forcing refresh",
+        );
         await IdentityManager.forceRefresh();
         ActorFactory.clearCache();
       }

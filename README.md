@@ -108,16 +108,24 @@ chatBot/
 ## ✨ Complete Freelance Workflow
 
 ### 🔍 Job Discovery & Applications
-- **AI Job Matcher** - Intelligent opportunity matching with scoring
+- **AI Job Matcher** - Intelligent opportunity matching with configurable scoring (60%-100%)
+- **Enhanced Filtering** - Advanced inverted index prevents low-score matches
 - **Automated Applications** - Resume analysis and cover letter generation  
 - **Quality Filtering** - Remove low-value opportunities automatically
 - **Market Intelligence** - Salary insights and demand analytics
+- **Profile Progress Tracking** - Visual indicators for profile completion
 
 ### 📅 Scheduling & Communication
 - **Voice Calendar** - "Book client call tomorrow 2pm"
+- **Google Calendar Integration** - Seamless two-way sync without duplication
+- **Smart Event Creation** - Auto-populate from job data
 - **Availability Management** - "Available weekdays 9-5"
 - **Interview Automation** - Smart scheduling and reminders
 - **Client Communication** - Integrated messaging and video calls
+- **Optimistic Updates** - Zero-delay event creation with instant UI feedback
+- **Multi-Account Support** - Handle multiple Google Calendar accounts per user
+
+> 📖 **Calendar System Guide**: See [`src/frontend/pages/calendar/CALENDAR_SYSTEM_GUIDE.md`](src/frontend/pages/calendar/CALENDAR_SYSTEM_GUIDE.md) for complete implementation details, bug fixes, and best practices.
 
 ### 💼 Project Management
 - **Smart Contracts** - Blockchain-based project agreements
@@ -154,13 +162,31 @@ While providing centralized convenience, built on blockchain for:
 - **Transparent Payments** - Immutable payment and contract history
 
 ## 🛠️ Development Commands
-You can already find the staging website on by visiting [aliscie2.github.io/oDoc/](https://aliscie2.github.io/oDoc/)
-but becareful everytime reloading the page make sure to go to `/odoc/` to get odoc.
+
+### Live Deployments
+- **Production**: [icpjobs.com](https://icpjobs.com) - Main platform
+- **Development**: [odoc.app](https://odoc.app) - Feature testing
+- **Staging**: [aliscie2.github.io/oDoc/](https://aliscie2.github.io/oDoc/) - GitHub Pages
+
+### Daily Development Workflow
 ```bash
-# Daily development workflow
-dfx start  --background --host 127.0.0.1:4943 
+# Start local development
+dfx start --background --host 127.0.0.1:4943 
 make deploy-all
 yarn start
+
+# Development utilities
+make diagnose    # Check canister status, cycles, WASM sizes
+make first-run   # Initial setup for new developers
+make test-all    # Run complete test suite
+```
+
+### PWA Development
+```bash
+# Test PWA functionality
+yarn build
+yarn preview
+# Install as PWA from browser for testing
 ```
 # Run oisy wallet
 - only if you want to test it, u should not need this step otherways
@@ -188,10 +214,21 @@ yarn playwright test --project=chromium
 
 # Generate new tests
 yarn playwright codegen http://localhost:5173/
+
+# Unit testing with Pocket IC
+yarn test
+
+# Run specific test suites
+yarn test:unit
+yarn test:integration
 ```
 
-## Pocket ic testig
-... the new version not working.
+## Pocket IC Testing
+Comprehensive unit testing framework for Internet Computer canisters:
+- Backend canister testing with mocked environments
+- ckUSDT deposit/withdrawal simulation
+- Contract lifecycle testing
+- GitHub Actions CI integration
 
 ## 🐛 Troubleshooting
 Look at the make file it may help,
@@ -248,19 +285,25 @@ yarn start
 ## 🗺️ Roadmap
 
 ### Phase 1: Core Workflow (Current)
-- [x] AI job matching algorithm
-- [x] Tolk to your calendar  
-- [x] Blockchain payment system
-- [x] Promise escrow contract
-- [X] Karma scoring system
+- [x] AI job matching algorithm with configurable scoring (60%-100%)
+- [x] Voice-activated calendar with Google Calendar integration
+- [x] Blockchain payment system with ckUSDT support
+- [x] Promise escrow contract with automated confirmations
+- [x] Karma scoring system with profile progress tracking
+- [x] PWA support for mobile installation
+- [x] Real-time event synchronization (prevents Google Calendar duplication)
 
 ### Phase 2: Advanced Automation
+- [x] Enhanced inverted index for improved job matching
+- [x] Interactive UI tutorials for onboarding
+- [x] Automated development workflows with bash scripts
 - [ ] AI project managers
-- [ ] Automated client onboarding
 - [ ] Smart contract templates
 - [ ] Advanced analytics dashboard
 
 ### Phase 3: Ecosystem Growth
+- [x] Multi-domain deployment (odoc.app, icpjobs.com)
+- [x] GitHub CI/CD with automated testing
 - [ ] Plugin marketplace
 - [ ] Multi-blockchain support
 - [ ] DAO governance

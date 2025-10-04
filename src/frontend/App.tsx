@@ -1,6 +1,5 @@
 import React, { Suspense, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import Pages from "./pages";
 
 import { Principal } from "@dfinity/principal";
@@ -28,9 +27,9 @@ import {
 } from "./pages/calendar/serializers";
 
 import RunawayJellyfish from "./components/creature/runAeayJellyFish";
+import GoogleCalendarOnboarding from "./components/userBadges/connectGoogleCalendar";
 import { RootState } from "./redux/reducers";
 import useSocket from "./websocket/use_socket";
-import GoogleCalendarOnboarding from "./components/userBadges/connectGoogleCalendar";
 
 const ChatContainer = React.lazy(() => import("./chatBot/ChatContainer"));
 const MainContent = styled(Box)(({ theme }) => ({
@@ -280,9 +279,7 @@ const useAppInitialization = () => {
 };
 
 const App: React.FC = () => {
-  const { profile, friends } = useSelector((state: unknown) => state.filesState);
-  const { authStatus, isLoggedIn } = useAuth();
-  const navigate = useNavigate();
+  const { authStatus } = useAuth();
 
   useAppInitialization();
   useSocket();
