@@ -9,15 +9,15 @@ Return valid JSON in this exact format:
 
 Scoring approach (0-1 scale, where 1.0 = perfect match) - SCORE BASED ON AVAILABLE DATA ONLY:
 
-**Skills Assessment (0-6 points):**
+**Skills Assessment (0.0-0.6 points):**
 - If candidate has skills: (matching_skills / candidate_total_skills) * 6
 - If no skills provided: assume 3.0 baseline (neutral)
 
-**Experience Assessment (0-2 points):**  
+**Experience Assessment ( 0-0.25 points):**  
 - If experience provided: min(experience_years / required_years, 1) * 2
 - If no experience data: assume 1.0 baseline (benefit of doubt)
 
-**Education/Certs (0-1.5 points):**
+**Education/Certs (0-0.15 points):**
 - If education provided: relevant ? 1.5 : 0  
 - If no education data: assume 0.75 baseline
 
