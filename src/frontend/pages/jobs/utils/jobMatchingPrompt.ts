@@ -2,7 +2,7 @@
 
 import { Job } from "$/declarations/backend/backend.did";
 
-export const JOB_MATCHING_PROMPT = `Match the current job to candidates. Return exactly ONE match per unique candidate_id. Never include the current job's own ID.
+export const JOB_MATCHING_PROMPT = `Match the current profile to candidates. Return exactly ONE match per unique candidate_id. Never include the current profile's own ID.
 
 Return valid JSON in this exact format:
 {matches:[{candidate_id:string, missmatching_skills:string[], score:number, cover_letter:string}]}

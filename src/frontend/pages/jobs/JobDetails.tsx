@@ -206,6 +206,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
             </Typography>
           </Box>
         ))}
+         
       </Stack>
       <Box
         sx={{
@@ -215,6 +216,9 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
           borderRadius: 1,
         }}
       >
+        <Typography variant="caption" sx={{ color: "text.secondary" }}>
+          We will only contact you when finding good matches. 
+        </Typography>
         <Typography variant="caption" sx={{ color: "text.secondary" }}>
           🔒 Privacy Protected: We will not share your emails with other users.
         </Typography>

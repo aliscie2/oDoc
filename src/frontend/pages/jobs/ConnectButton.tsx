@@ -96,10 +96,16 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({ jobId, matchingJob, showA
       };
 
       if (emails.length === 0) {
-        await sendFallbackMessage();
-        enqueueSnackbar("Message sent.", { variant: "success" });
+        try {
+          await sendFallbackMessage();
+          enqueueSnackbar("Message sent.", { variant: "success" });
+        } catch (err) {
+          console.error("Failed to send fallback message:", err);
+          enqueueSnackbar("Something went wrong, contact x.com/odoc_ic.", { variant: "error" });
+        }
+        
       } else {
-        const category = Object.keys(currentJob.category)[0];
+        const category = Object.keys(currentJob?.category||{"Job":null})[0];
         const jobData = {
           job: { ...currentJob, category },
           match: { ...match, score: match.score * 100 },
@@ -132,7 +138,7 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({ jobId, matchingJob, showA
     <>
       {showAvatar && <UserAvatarMenu user_id={matchingJob?.user_id} />}
       <Button
-        variant={match?.is_connected ? "outlined" : "contained"}
+        variant={ "contained"}
         color="primary"
         size="small"
         onClick={handleConnect}
