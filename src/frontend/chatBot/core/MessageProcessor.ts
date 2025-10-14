@@ -1439,38 +1439,55 @@ Provide a helpful and accurate answer based only on the documentation provided. 
   /**
    * Handles other message types (QUESTIONS, LOCAL_HELP, etc.)
    */
-  private async handleOtherCases(
-    parsed: unknown,
-    message: string,
-    abortSignal?: AbortSignal,
-  ): Promise<ProcessedMessage> {
-    if (parsed.type === "GENERAL_QUERY") {
-      return await this.processGeneralQuery(message, abortSignal);
-    } else if (parsed.type === "QUESTIONS") {
-      return {
-        action_type: "QUESTIONS",
-        feedback: "Questions functionality with RAG will be implemented soon",
-        actions: [],
-        done: true,
-      };
-    } else if (parsed.feedback?.includes("locally")) {
-      return {
-        action_type: "LOCAL_HELP",
-        feedback:
-          "Locally you can make commands like:\n- Calendar: `calendar//aa>title>09:00>17:00>1,2,3,4,5>false`\n- Job: `Job//as>skill1,skill2` (add skills)",
-        actions: [],
-        done: true,
-      };
-    } else {
-      return {
-        action_type: "OTHER",
-        feedback: parsed.feedback || "Unable to process request",
-        actions: [],
-        done: true,
-      };
-    }
+private async handleOtherCases(
+  parsed: unknown,
+  message: string,
+  abortSignal?: AbortSignal,
+): Promise<ProcessedMessage> {
+  if (parsed.type === "GENERAL_QUERY") {
+    return await this.processGeneralQuery(message, abortSignal);
+  } else if (parsed.type === "QUESTIONS") {
+    return {
+      action_type: "QUESTIONS",
+      feedback: "Questions functionality with RAG will be implemented soon",
+      actions: [],
+      done: true,
+    };
+  } else if (parsed.feedback?.includes("locally")) {
+    return {
+      action_type: "LOCAL_HELP",
+      feedback:
+        "Locally you can make commands like:\n- Calendar: `calendar//aa>title>09:00>17:00>1,2,3,4,5>false`\n- Job: `Job//as>skill1,skill2` (add skills)",
+      actions: [],
+      done: true,
+    };
   }
 
+  // Fallback: determine type based on current path
+  const pathname = this.navigation.location.pathname;
+  let inferredType = "JOB";
+  
+  if (pathname === "/calendar") {
+    inferredType = "CALENDAR";
+  } else if (pathname === "/contract" || pathname === "/contracts") {
+    inferredType = "CONTRACT";
+  }
+
+  const matchingCase = this.aiCases.aiCases.find(
+    (c) => c.class === inferredType,
+  );
+
+  if (matchingCase) {
+    return await this.processAICase(matchingCase, message, abortSignal);
+  }
+
+  return {
+    action_type: inferredType,
+    feedback: "",
+    actions: [],
+    done: true,
+  };
+}
   /**
    * Auto-saves calendar changes to backend
    */

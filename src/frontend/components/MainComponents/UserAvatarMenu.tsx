@@ -71,9 +71,7 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
           setUser(foundUser);
         } else {
           const response = await backendActor.get_user(user_id);
-          if ("Ok" in response) {
-            setUser(response.Ok);
-          }
+          if ("Ok" in response) setUser(response.Ok);
         }
         setLoading(false);
         setCalled(true);
@@ -81,9 +79,7 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
     })();
   }, [isCalled, user_id, all_friends]);
 
-  if (isLoading) {
-    return <CircularProgress />;
-  }
+  if (isLoading) return <CircularProgress />;
 
   if (!user) {
     return (
@@ -94,13 +90,9 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
   }
 
   const getUserPhoto = () => {
-    if (user.photo && user.photo.length > 0) {
-      return user.photo;
-    }
+    if (user.photo?.length > 0) return user.photo;
     const userPost = posts.find((p) => p.creator.id === user.id);
-    return userPost?.creator.photo?.length > 0
-      ? userPost.creator.photo
-      : null;
+    return userPost?.creator.photo?.length > 0 ? userPost.creator.photo : null;
   };
 
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -108,61 +100,57 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
     setAnchorEl(event.currentTarget);
   };
 
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
+  const handleClose = () => setAnchorEl(null);
 
   const handleProfile = () => {
     navigate(`/user?id=${user.id}`);
     handleClose();
   };
-  
-const handleMessage = async () => {
-  handleClose();
-  
-  if (onMessageClick && user) {
-    onMessageClick(user);
-    return;
-  }
 
-  try {
-    let existingChat = chats.find((chat) =>
-      chat.name === "private_chat" && chat.members.some((member) => member.toString() === user.id)
-    );
-
-    if (existingChat) {
-      dispatch({ type: "OPEN_CHAT", chatId: existingChat.id });
-    } else {
-      const tempChatId = `temp_${randomString()}`;
-      const newChat = {
-        id: tempChatId,
-        name: "private_chat",
-        messages: [],
-        members: [Principal.fromText(profile.id), Principal.fromText(user.id)],
-        admins: [Principal.fromText(profile.id), Principal.fromText(user.id)],
-        creator: Principal.fromText(profile.id),
-        workspaces: currentWorkspace?.name !== "default" ? [currentWorkspace.id] : [],
-      };
-
-      dispatch({ type: "ADD_CHAT", chat: newChat });
-      dispatch({ type: "OPEN_CHAT", chatId: tempChatId });
-
-      const result = await backendActor.make_new_chat_room(newChat);
-      if ("Ok" in result) {
-        const realChatId = result.Ok.id || tempChatId;
-        dispatch({ type: "UPDATE_CHAT", chat: { ...newChat, id: realChatId } });
-        enqueueSnackbar("Chat created successfully", { variant: "success" });
-      } else {
-        dispatch({ type: "DELETE_CHAT", chat_id: tempChatId });
-        enqueueSnackbar("Failed to create chat", { variant: "error" });
-      }
+  const handleMessage = async () => {
+    handleClose();
+    
+    if (onMessageClick && user) {
+      onMessageClick(user);
+      return;
     }
-  } catch {
-    enqueueSnackbar("Failed to create chat", { variant: "error" });
-  }
-};
 
-;
+    try {
+      let existingChat = chats.find((chat) =>
+        chat.name === "private_chat" && chat.members.some((member) => member.toString() === user.id)
+      );
+
+      if (existingChat) {
+        dispatch({ type: "OPEN_CHAT", chatId: existingChat.id });
+      } else {
+        const tempChatId = `temp_${randomString()}`;
+        const newChat = {
+          id: tempChatId,
+          name: "private_chat",
+          messages: [],
+          members: [Principal.fromText(profile.id), Principal.fromText(user.id)],
+          admins: [Principal.fromText(profile.id), Principal.fromText(user.id)],
+          creator: Principal.fromText(profile.id),
+          workspaces: currentWorkspace?.name !== "default" ? [currentWorkspace.id] : [],
+        };
+
+        dispatch({ type: "ADD_CHAT", chat: newChat });
+        dispatch({ type: "OPEN_CHAT", chatId: tempChatId });
+
+        const result = await backendActor.make_new_chat_room(newChat);
+        if ("Ok" in result) {
+          const realChatId = result.Ok.id || tempChatId;
+          dispatch({ type: "UPDATE_CHAT", chat: { ...newChat, id: realChatId } });
+          enqueueSnackbar("Chat created successfully", { variant: "success" });
+        } else {
+          dispatch({ type: "DELETE_CHAT", chat_id: tempChatId });
+          enqueueSnackbar("Failed to create chat", { variant: "error" });
+        }
+      }
+    } catch {
+      enqueueSnackbar("Failed to create chat", { variant: "error" });
+    }
+  };
 
   const handleReviewClick = () => {
     setReviewOpen(true);
@@ -175,8 +163,8 @@ const handleMessage = async () => {
       const userPrincipal = Principal.fromText(user.id);
       const ratingData: Rating = {
         id: randomString(),
-        rating: rating,
-        comment: comment,
+        rating,
+        comment,
         date: Date.now() * 1e6,
         user_id: Principal.fromText(user.id),
       };
@@ -184,16 +172,12 @@ const handleMessage = async () => {
       const result = await backendActor?.rate_user(userPrincipal, ratingData);
 
       if (result && "Ok" in result) {
-        enqueueSnackbar("Review submitted successfully", {
-          variant: "success",
-        });
+        enqueueSnackbar("Review submitted successfully", { variant: "success" });
       } else if (result && "Err" in result) {
         enqueueSnackbar(result.Err, { variant: "error" });
       }
     } catch (error) {
-      enqueueSnackbar("Failed to submit review " + (error as Error).message, {
-        variant: "error",
-      });
+      enqueueSnackbar("Failed to submit review " + (error as Error).message, { variant: "error" });
     } finally {
       setIsSubmitting(false);
       setReviewOpen(false);
@@ -214,85 +198,131 @@ const handleMessage = async () => {
         </Avatar>
       </IconButton>
 
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-        {/* User Info Header */}
-        <Box sx={{ px: 2, py: 1.5, borderBottom: 1, borderColor: "divider" }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
+      <Menu 
+        anchorEl={anchorEl} 
+        open={Boolean(anchorEl)} 
+        onClose={handleClose}
+        PaperProps={{
+          elevation: 3,
+          sx: {
+            minWidth: 280,
+            maxWidth: 320,
+            mt: 1,
+            borderRadius: 2,
+            overflow: 'visible',
+            '&:before': {
+              content: '""',
+              display: 'block',
+              position: 'absolute',
+              top: 0,
+              right: 14,
+              width: 10,
+              height: 10,
+              bgcolor: 'background.paper',
+              transform: 'translateY(-50%) rotate(45deg)',
+              zIndex: 0,
+            },
+          },
+        }}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+      >
+        <Box sx={{ p: 2.5 }}>
+          <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2, mb: 1.5 }}>
             <Avatar
               src={getUserPhoto() || undefined}
               alt={user.name}
-              sx={{ width: 40, height: 40 }}
+              sx={{ width: 56, height: 56, border: '3px solid', borderColor: 'divider' }}
             >
               {user.name?.charAt(0) || "A"}
             </Avatar>
             <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography
-                variant="subtitle2"
-                sx={{ fontWeight: 600, lineHeight: 1.3 }}
-              >
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5, fontSize: '1.1rem' }}>
                 {user.name || "Anonymous"}
               </Typography>
+              {user.description && (
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{
+                    fontSize: "0.875rem",
+                    lineHeight: 1.5,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
+                  }}
+                >
+                  {user.description}
+                </Typography>
+              )}
             </Box>
           </Box>
 
-          {user.description && (
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{
-                fontSize: "0.813rem",
-                lineHeight: 1.4,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                display: "-webkit-box",
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: "vertical",
-              }}
-            >
-              {user.description}
-            </Typography>
+          {user && profile && user.id !== profile.id && (
+            <Box sx={{ mt: 2 }}>
+              <FriendshipButton user={user} profile={profile} friends={friends || []} />
+            </Box>
           )}
         </Box>
 
-        {/* Friend Request Button */}
-        {user && profile && user.id !== profile.id && (
-          <Box sx={{ px: 2, py: 1.5, borderBottom: 1, borderColor: "divider" }}>
-            <FriendshipButton
-              user={user}
-              profile={profile}
-              friends={friends || []}
-            />
-          </Box>
-        )}
-
-        {/* Menu Items */}
-        {!hide.includes("Profile") && (
-          <MenuItem onClick={handleProfile}>
-            <Person sx={{ mr: 1.5, fontSize: 20 }} />
-            <Typography variant="body2">View Profile</Typography>
-          </MenuItem>
-        )}
-        {!hide.includes("Message") && (
-          <MenuItem onClick={handleMessage}>
-            <MessageIcon sx={{ mr: 1.5, fontSize: 20 }} />
-            <Typography variant="body2">Send Message</Typography>
-          </MenuItem>
-        )}
-        {!hide.includes("Review") && (
-          <MenuItem onClick={handleReviewClick}>
-            <Star sx={{ mr: 1.5, fontSize: 20 }} />
-            <Typography variant="body2">Write Review</Typography>
-          </MenuItem>
-        )}
+        <Box sx={{ borderTop: 1, borderColor: 'divider', py: 1 }}>
+          {!hide.includes("Profile") && (
+            <MenuItem 
+              onClick={handleProfile}
+              sx={{ 
+                px: 2.5, 
+                py: 1.25,
+                '&:hover': { bgcolor: 'action.hover' }
+              }}
+            >
+              <Person sx={{ mr: 2, fontSize: 22, color: 'text.secondary' }} />
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>View Profile</Typography>
+            </MenuItem>
+          )}
+          {!hide.includes("Message") && (
+            <MenuItem 
+              onClick={handleMessage}
+              sx={{ 
+                px: 2.5, 
+                py: 1.25,
+                '&:hover': { bgcolor: 'action.hover' }
+              }}
+            >
+              <MessageIcon sx={{ mr: 2, fontSize: 22, color: 'text.secondary' }} />
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>Send Message</Typography>
+            </MenuItem>
+          )}
+          {!hide.includes("Review") && (
+            <MenuItem 
+              onClick={handleReviewClick}
+              sx={{ 
+                px: 2.5, 
+                py: 1.25,
+                '&:hover': { bgcolor: 'action.hover' }
+              }}
+            >
+              <Star sx={{ mr: 2, fontSize: 22, color: 'text.secondary' }} />
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>Write Review</Typography>
+            </MenuItem>
+          )}
+        </Box>
       </Menu>
 
-      <Dialog open={reviewOpen} onClose={() => setReviewOpen(false)}>
-        <DialogTitle>Review {user.name}</DialogTitle>
-        <DialogContent>
-          <Typography component="legend">Rating</Typography>
+      <Dialog 
+        open={reviewOpen} 
+        onClose={() => setReviewOpen(false)}
+        PaperProps={{ sx: { borderRadius: 2, minWidth: 400 } }}
+      >
+        <DialogTitle sx={{ pb: 1 }}>Review {user.name}</DialogTitle>
+        <DialogContent sx={{ pt: 2 }}>
+          <Typography component="legend" sx={{ mb: 1, fontWeight: 500 }}>Rating</Typography>
           <UiRating
             value={rating}
             onChange={(_, newValue) => setRating(newValue || 0)}
+            size="large"
+            sx={{ mb: 2 }}
           />
           <TextField
             autoFocus
@@ -303,15 +333,17 @@ const handleMessage = async () => {
             rows={4}
             value={comment}
             onChange={(e) => setComment(e.target.value)}
+            sx={{ mt: 1 }}
           />
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ px: 3, pb: 2.5 }}>
           <Button onClick={() => setReviewOpen(false)} disabled={isSubmitting}>
             Cancel
           </Button>
           <Button
             onClick={handleReviewSubmit}
             disabled={isSubmitting}
+            variant="contained"
             startIcon={isSubmitting ? <CircularProgress size={20} /> : null}
           >
             {isSubmitting ? "Submitting..." : "Submit Review"}
@@ -321,5 +353,6 @@ const handleMessage = async () => {
     </>
   );
 };
+
 
 export default UserAvatarMenu;
