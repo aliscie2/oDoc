@@ -136,7 +136,7 @@ job.matches = validated_matches; // Replaces entire array
 - [ ] Corrupted AI response → error shown, no save to backend
 - [ ] sometimes I face this issue which is part of the validation that we should add to the AI response, Failed to load matches
 A state mutation was detected between dispatches, in the path 'jobState.jobChanges.0.updates.4.values.0'. This may cause incorrect behavior. (https://redux.js.org/style-guide/style-guide#do-not-mutate-state)
-- [ ] we must add our comprehensive council locks and remove the old ones to have a very clear understanding of what is going on using the council logs
+- [ ] we must add our comprehensive console logs and remove the old ones to have a very clear understanding of what is going on using the console logs
 - [ ] I already made some changes so some of the issues are mentioned here in this file could be solved by now double check do not want something that is already fixed
 ## Additional Context Needed
 
