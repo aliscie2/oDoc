@@ -434,14 +434,15 @@ export default function TopNavBar() {
   
   const MobileNav = () => {
   const mobileNavButtonSx = { minWidth: 0, flex: 1 };
- const imgStyles = { 
-  width: 32, 
-  height: 32, 
-  objectFit: "contain",
-  filter: state.theme.palette.mode === 'dark' 
-    ? 'brightness(0.9) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5))' 
-    : 'drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25))'
-};
+   const imgStyles = { 
+    width: 32, 
+    height: 32, 
+    objectFit: "contain",
+    filter: state?.theme?.palette?.mode === 'dark'  // Safe access
+      ? 'brightness(0.9) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5))' 
+      : 'drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25))'
+  };
+
   
   const getMobileNavButtons = () => {
     const buttons = [
@@ -514,12 +515,11 @@ const DesktopNav = () => {
     width: 28, 
     height: 28, 
     objectFit: "contain", 
-    filter: state.theme.palette.mode === 'dark' 
+    filter: state?.theme?.palette?.mode === 'dark'  // Safe access
       ? 'brightness(0.9) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5))' 
       : 'drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3))',
     transition: 'all 0.2s ease'
   };
-  
   return (
     <Toolbar
       sx={{
