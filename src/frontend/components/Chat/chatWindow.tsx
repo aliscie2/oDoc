@@ -114,7 +114,7 @@ export const ChatWindow = memo<ChatWindowProps>(({ chat, onClose }) => {
         // Array format: [newest, ..., oldest]
         const newMessage = {
           id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          date: BigInt(Date.now() * 1e6),
+          date: BigInt(Date.now()) * BigInt(1e6),
           sender: profile.id,
           seen_by: [profile.id],
           message: messageText,

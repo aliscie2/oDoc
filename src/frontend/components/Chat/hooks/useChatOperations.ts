@@ -25,7 +25,7 @@ export const useChatOperations = ({
       try {
         const newMessage: Message = {
           id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          date: BigInt(Date.now() * 1e6),
+          date: BigInt(Date.now()) * BigInt(1e6),
           sender: Principal.fromText(senderId),
           seen_by: [Principal.fromText(senderId)],
           message: messageText,

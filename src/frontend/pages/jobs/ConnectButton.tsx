@@ -53,7 +53,7 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({ jobId, matchingJob, showA
         const chatId = `${currentJob.user_id}_${matchingJob.user_id}_${currentJob.id}_${jobId}`;
         const newMessage = {
           id: `msg_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
-          date: BigInt(Date.now() * 1e6),
+          date: BigInt(Date.now()) * BigInt(1e6),
           sender: Principal.fromText(currentJob.user_id),
           seen_by: [Principal.fromText(currentJob.user_id)],
           message: baseMessage + (includeEmailError ? emailErrorMsg : contactMsg),
