@@ -18,6 +18,7 @@ import Friends from "./friends";
 import { useSelector } from "react-redux";
 
 import UserAvatarMenu from "../../components/MainComponents/UserAvatarMenu";
+import UserLevelBadge from "../../components/MainComponents/topNavBar/UserLevelBadge";
 
 import { formatRelativeTime } from "../../utils/time";
 import EditProfile from "./editeProfile";
@@ -165,7 +166,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   const founderOfOdoc =
     "tgwpc-6xuon-k3a6y-ey7lt-xksjs-qx22h-ikhbt-4yp3a-6stco-rymbe-pqe";
 
-  console.log({ safeProfile });
   if (!profile) {
     return <CircularProgress />;
   }
@@ -175,110 +175,178 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
       {currentUser?.id == founderOfOdoc && <EmailComposer />}
 
       {/* User Header - Mobile Friendly */}
-      <Card sx={{ mb: 4 }}>
-        <CardContent>
-          <Stack spacing={3}>
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: { xs: "column", sm: "row" },
-                alignItems: { xs: "center", sm: "flex-start" },
-                gap: { xs: 2, sm: 3 },
-                textAlign: { xs: "center", sm: "left" },
-                ...(isEditing && {
-                  px: { xs: 0, sm: 3 },
-                  gap: { xs: 0, sm: 3 },
-                  alignItems: { xs: "stretch", sm: "flex-start" },
-                }),
+      
+      <Card 
+  sx={{ 
+    mb: 4,
+    background: isDarkMode 
+      ? 'linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%)'
+      : 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+    boxShadow: isDarkMode
+      ? '0 8px 32px rgba(0, 0, 0, 0.3)'
+      : '0 8px 32px rgba(0, 0, 0, 0.08)',
+    borderRadius: 2,
+  }}
+>
+  <CardContent sx={{ p: { xs: 3, sm: 4, md: 5 } }}>
+    <Stack spacing={4}>
+      {/* Avatar & Basic Info Section */}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
+          alignItems: { xs: "center", sm: "flex-start" },
+          gap: { xs: 3, sm: 4 },
+        }}
+      >
+        {profile && !isEditing && (
+          <Box
+            sx={{
+              flexShrink: 0,
+              position: 'relative',
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                inset: -4,
+                border: `3px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                borderRadius: '50%',
+              }
+            }}
+          >
+            <UserAvatarMenu
+              hide={["Profile"]}
+              sx={{ 
+                width: { xs: 100, sm: 120 }, 
+                height: { xs: 100, sm: 120 },
+                position: 'relative',
+                zIndex: 1,
               }}
-            >
-              {profile && !isEditing && (
-                <UserAvatarMenu
-                  hide={["Profile"]}
-                  sx={{ width: { xs: 80, sm: 96 }, height: { xs: 80, sm: 96 } }}
-                  user={profile}
-                />
-              )}
+              user={profile}
+            />
+          </Box>
+        )}
 
-              <Box
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          {isEditing ? (
+            <EditProfile
+              setIsEditing={setIsEditing}
+              profile={safeProfile}
+              onCancel={() => setIsEditing(false)}
+            />
+          ) : (
+            <Stack spacing={1.5}>
+              <Typography
+                variant="h3"
                 sx={{
-                  flex: 1,
-                  minWidth: 0,
-                  ...(isEditing && { width: "100%" }),
+                  fontSize: { xs: "1.75rem", sm: "2.5rem" },
+                  fontWeight: 700,
+                  letterSpacing: -0.5,
                 }}
               >
-                {isEditing ? (
-                  <EditProfile
-                    setIsEditing={setIsEditing}
-                    profile={safeProfile}
-                    onCancel={() => setIsEditing(false)}
-                  />
-                ) : (
-                  <Stack spacing={1}>
-                    <Typography
-                      variant="h4"
-                      sx={{ fontSize: { xs: "1.5rem", sm: "2rem" } }}
-                    >
-                      {name}
-                    </Typography>
-                    <Typography
-                      variant="h6"
-                      sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }}
-                    >
-                      {email}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ wordBreak: "break-all" }}
-                    >
-                      {id}
-                    </Typography>
-                    <Typography variant="body1" color="text.secondary">
-                      {description}
-                    </Typography>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        flexDirection: { xs: "column", sm: "row" },
-                        gap: 1,
-                        mt: 2,
-                      }}
-                    >
-                      {friendButton}
-                      <CopyButton
-                        title="Copy Profile Link"
-                        value={`${window.location.host}/user?id=${profile?.id}`}
-                      />
-                    </Box>
-                  </Stack>
-                )}
-              </Box>
-            </Box>
-
-            {canEdit && !isEditing && (
-              <Box
+                {name}
+              </Typography>
+              <Typography
+                variant="body1"
                 sx={{
-                  display: "flex",
-                  justifyContent: { xs: "center", sm: "flex-end" },
+                  fontSize: { xs: "0.95rem", sm: "1.1rem" },
+                  opacity: 0.85,
+                  fontWeight: 500,
                 }}
               >
-                <Button
-                  startIcon={<Edit />}
-                  onClick={() => setIsEditing(true)}
-                  variant="outlined"
-                  size="small"
+                {email}
+              </Typography>
+              {description && (
+                <Typography
+                  variant="body2"
+                  sx={{
+                    opacity: 0.75,
+                    lineHeight: 1.6,
+                    mt: 1,
+                  }}
                 >
-                  Edit Profile
-                </Button>
-              </Box>
-            )}
-          </Stack>
-        </CardContent>
-      </Card>
+                  {description}
+                </Typography>
+              )}
+              <Typography
+                variant="caption"
+                sx={{
+                  opacity: 0.6,
+                  wordBreak: "break-all",
+                  fontFamily: 'monospace',
+                  fontSize: '0.8rem',
+                }}
+              >
+                {id}
+              </Typography>
+            </Stack>
+          )}
+        </Box>
+      </Box>
+
+      {/* Action Buttons */}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
+          gap: 2,
+          pt: 2,
+          borderTop: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+        }}
+      >
+        {friendButton}
+        <CopyButton
+          title="Copy Profile Link"
+          value={`${window.location.host}/user?id=${profile?.id}`}
+        />
+        {canEdit && !isEditing && (
+          <Button
+            startIcon={<Edit />}
+            onClick={() => setIsEditing(true)}
+            variant="contained"
+            size="small"
+            sx={{ ml: 'auto' }}
+          >
+            Edit Profile
+          </Button>
+        )}
+      </Box>
+    </Stack>
+  </CardContent>
+</Card>
+
+
 
       {/* Stats Overview */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
+        {/* User Level Badge */}
+        <Grid item xs={12} sm={6} md={3}>
+          <Card
+            sx={{
+              height: "100%",
+              borderLeft: 4,
+              borderColor: "primary.main",
+            }}
+          >
+            <CardContent sx={{ textAlign: "center", py: 3 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{
+                  mb: 2,
+                  textTransform: "uppercase",
+                  fontSize: "0.75rem",
+                  fontWeight: 600,
+                }}
+              >
+                🏆 User Level
+              </Typography>
+              <Box sx={{ display: "flex", justifyContent: "center" }}>
+                <UserLevelBadge actions_rate={actions_rate} size={100} />
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
         {[
           {
             title: "Trust Score",

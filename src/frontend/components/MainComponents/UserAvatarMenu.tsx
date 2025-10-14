@@ -1,69 +1,62 @@
-import React, { useState, useEffect } from "react";
+import { Rating, User } from "$/declarations/backend/backend.did";
+import { Principal } from "@dfinity/principal";
+import { Message as MessageIcon, Person, Star } from "@mui/icons-material";
+import PersonIcon from "@mui/icons-material/Person";
 import {
   Avatar,
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   IconButton,
   Menu,
   MenuItem,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
   TextField,
   Typography,
   Rating as UiRating,
 } from "@mui/material";
-import ChatWindow from "../../components/Chat/chatWindow";
-import { useNavigate } from "react-router-dom";
-import { Person, Star } from "@mui/icons-material";
-import { Message as MessageIcon } from "@mui/icons-material";
 import CircularProgress from "@mui/material/CircularProgress";
-import { backendActor } from "../../utils/backendUtils";
 import { useSnackbar } from "notistack";
-import { Principal } from "@dfinity/principal";
-import { Rating, Message, User } from "$/declarations/backend/backend.did";
-import { useSelector } from "react-redux";
-import { RootState } from "../../redux/reducers";
-import { randomString } from "../../DataProcessing/dataSamples";
-import { convertToBlobLink } from "@/DataProcessing/imageToVec";
-import PersonIcon from "@mui/icons-material/Person";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { randomString } from "@/DataProcessing/dataSamples";
+import { RootState } from "@/redux/reducers";
+import { backendActor } from "@/utils/backendUtils";
+import FriendshipButton from "../FriendshipButton";
+
 interface UserAvatarMenuProps {
-  user?: {
-    id: string;
-    name: string;
-    photo?: Uint8Array;
-  };
-  onMessageClick?: () => void;
-  sx?: any;
+  user?: User;
+  sx?: unknown;
   hide?: string[];
   user_id?: string;
+  onMessageClick?: (user: User) => void;
 }
 
 const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
   user: initialUser,
-  onMessageClick,
   sx,
   hide = [],
   user_id,
+  onMessageClick,
 }) => {
-  // Using direct backendActor import
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
   const { chats } = useSelector((state: RootState) => state.chatsState);
-  const { profile, posts } = useSelector(
-    (state: RootState) => state.filesState,
-  );
+  const { profile, posts, friends, all_friends, currentWorkspace } =
+    useSelector((state: RootState) => state.filesState);
 
-  const [user, setUser] = useState<User>(initialUser);
+  const [user, setUser] = useState<User | undefined>(initialUser);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [rating, setRating] = useState<number>(0);
   const [comment, setComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [activeChat, setActiveChat] = useState<any>(null);
   const [isCalled, setCalled] = useState(false);
   const [isLoading, setLoading] = useState(false);
-  const { all_friends } = useSelector((state: RootState) => state.filesState);
 
   useEffect(() => {
     setUser(initialUser);
@@ -73,23 +66,20 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
     (async () => {
       if (user_id && !isCalled) {
         setLoading(true);
-        const foundUser = all_friends.find((f) => f.id == user_id);
-        console.log({ foundUser });
+        const foundUser = all_friends?.find((f) => f.id === user_id);
         if (foundUser) {
           setUser(foundUser);
         } else {
           const response = await backendActor.get_user(user_id);
-          setLoading(false);
           if ("Ok" in response) {
             setUser(response.Ok);
           }
         }
-
         setLoading(false);
         setCalled(true);
       }
     })();
-  }, [isCalled, user_id]);
+  }, [isCalled, user_id, all_friends]);
 
   if (isLoading) {
     return <CircularProgress />;
@@ -105,16 +95,16 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
 
   const getUserPhoto = () => {
     if (user.photo && user.photo.length > 0) {
-      return convertToBlobLink(user.photo);
+      return user.photo;
     }
     const userPost = posts.find((p) => p.creator.id === user.id);
     return userPost?.creator.photo?.length > 0
-      ? convertToBlobLink(userPost.creator.photo)
+      ? userPost.creator.photo
       : null;
   };
 
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    event.stopPropagation(); // Add this line
+  const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
     setAnchorEl(event.currentTarget);
   };
 
@@ -126,81 +116,53 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
     navigate(`/user?id=${user.id}`);
     handleClose();
   };
+  
+const handleMessage = async () => {
+  handleClose();
+  
+  if (onMessageClick && user) {
+    onMessageClick(user);
+    return;
+  }
 
-  const handleMessage = () => {
-    const existingChat = chats.find((chat) =>
-      chat.members.some((member) => member.toString() === user.id),
+  try {
+    let existingChat = chats.find((chat) =>
+      chat.name === "private_chat" && chat.members.some((member) => member.toString() === user.id)
     );
 
-    if (!activeChat && existingChat) {
-      const filteredMessages = existingChat.messages.filter((message) => {
-        const senderId = message.sender.toString();
-        const isCurrentUser = senderId === profile?.id;
-        return !isCurrentUser || message.seen_by?.length > 0;
-      });
-
-      setActiveChat({
-        ...existingChat,
-        messages: filteredMessages,
-      });
-    } else if (!activeChat) {
-      const chatId = `chat-${user.id}`;
+    if (existingChat) {
+      dispatch({ type: "OPEN_CHAT", chatId: existingChat.id });
+    } else {
+      const tempChatId = `temp_${randomString()}`;
       const newChat = {
-        id: chatId,
-        name: user.name,
+        id: tempChatId,
+        name: "private_chat",
         messages: [],
-        members: [user.id],
-        admins: [user.id],
+        members: [Principal.fromText(profile.id), Principal.fromText(user.id)],
+        admins: [Principal.fromText(profile.id), Principal.fromText(user.id)],
+        creator: Principal.fromText(profile.id),
+        workspaces: currentWorkspace?.name !== "default" ? [currentWorkspace.id] : [],
       };
 
-      setActiveChat(newChat);
-    }
+      dispatch({ type: "ADD_CHAT", chat: newChat });
+      dispatch({ type: "OPEN_CHAT", chatId: tempChatId });
 
-    handleClose();
-  };
-
-  const handleCloseChat = () => {
-    setActiveChat(null);
-  };
-
-  const handleSendMessage = async (chatId: string, message: string) => {
-    try {
-      if (onMessageClick) {
-        await onMessageClick();
+      const result = await backendActor.make_new_chat_room(newChat);
+      if ("Ok" in result) {
+        const realChatId = result.Ok.id || tempChatId;
+        dispatch({ type: "UPDATE_CHAT", chat: { ...newChat, id: realChatId } });
+        enqueueSnackbar("Chat created successfully", { variant: "success" });
+      } else {
+        dispatch({ type: "DELETE_CHAT", chat_id: tempChatId });
+        enqueueSnackbar("Failed to create chat", { variant: "error" });
       }
-
-      const newMessage: Message = {
-        id: randomString(),
-        date: BigInt(Date.now() * 1e6),
-        sender: Principal.fromText(profile.id),
-        seen_by: [],
-        message,
-        chat_id: chatId,
-      };
-
-      const result = await backendActor?.send_message(
-        [Principal.fromText(user.id)],
-        newMessage,
-      );
-      if (result && "Ok" in result) {
-        setActiveChat((prev: any) => {
-          if (!prev) return null;
-          return {
-            ...prev,
-            messages: [...prev.messages, newMessage],
-          };
-        });
-        enqueueSnackbar("Message sent successfully", { variant: "success" });
-      } else if (result && "Err" in result) {
-        throw new Error(result.Err);
-      }
-    } catch (error) {
-      console.error("Error sending message:", error);
-      enqueueSnackbar(error.message || "Failed to send message", {
-        variant: "error",
-      });
     }
-  };
+  } catch {
+    enqueueSnackbar("Failed to create chat", { variant: "error" });
+  }
+};
+
+;
 
   const handleReviewClick = () => {
     setReviewOpen(true);
@@ -211,7 +173,6 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
     setIsSubmitting(true);
     try {
       const userPrincipal = Principal.fromText(user.id);
-
       const ratingData: Rating = {
         id: randomString(),
         rating: rating,
@@ -243,26 +204,84 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
 
   return (
     <>
-      <IconButton disabled={user.id === profile?.id} onClick={handleClick}>
+      <IconButton
+        disabled={user.id === profile?.id}
+        onMouseEnter={handleOpen}
+        onClick={handleOpen}
+      >
         <Avatar src={getUserPhoto() || undefined} alt={user.name} sx={sx}>
           {user.name?.charAt(0) || "A"}
         </Avatar>
       </IconButton>
 
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+        {/* User Info Header */}
+        <Box sx={{ px: 2, py: 1.5, borderBottom: 1, borderColor: "divider" }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
+            <Avatar
+              src={getUserPhoto() || undefined}
+              alt={user.name}
+              sx={{ width: 40, height: 40 }}
+            >
+              {user.name?.charAt(0) || "A"}
+            </Avatar>
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography
+                variant="subtitle2"
+                sx={{ fontWeight: 600, lineHeight: 1.3 }}
+              >
+                {user.name || "Anonymous"}
+              </Typography>
+            </Box>
+          </Box>
+
+          {user.description && (
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{
+                fontSize: "0.813rem",
+                lineHeight: 1.4,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+              }}
+            >
+              {user.description}
+            </Typography>
+          )}
+        </Box>
+
+        {/* Friend Request Button */}
+        {user && profile && user.id !== profile.id && (
+          <Box sx={{ px: 2, py: 1.5, borderBottom: 1, borderColor: "divider" }}>
+            <FriendshipButton
+              user={user}
+              profile={profile}
+              friends={friends || []}
+            />
+          </Box>
+        )}
+
+        {/* Menu Items */}
         {!hide.includes("Profile") && (
           <MenuItem onClick={handleProfile}>
-            <Person sx={{ mr: 1 }} /> Profile
+            <Person sx={{ mr: 1.5, fontSize: 20 }} />
+            <Typography variant="body2">View Profile</Typography>
           </MenuItem>
         )}
         {!hide.includes("Message") && (
           <MenuItem onClick={handleMessage}>
-            <MessageIcon sx={{ mr: 1 }} /> Message
+            <MessageIcon sx={{ mr: 1.5, fontSize: 20 }} />
+            <Typography variant="body2">Send Message</Typography>
           </MenuItem>
         )}
         {!hide.includes("Review") && (
           <MenuItem onClick={handleReviewClick}>
-            <Star sx={{ mr: 1 }} /> Review
+            <Star sx={{ mr: 1.5, fontSize: 20 }} />
+            <Typography variant="body2">Write Review</Typography>
           </MenuItem>
         )}
       </Menu>
@@ -299,16 +318,6 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
           </Button>
         </DialogActions>
       </Dialog>
-
-      {activeChat && (
-        <ChatWindow
-          user={user}
-          chat={activeChat}
-          onClose={handleCloseChat}
-          dialog={true}
-          onSendMessage={handleSendMessage}
-        />
-      )}
     </>
   );
 };

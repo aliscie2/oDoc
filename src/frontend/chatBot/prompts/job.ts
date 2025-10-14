@@ -103,7 +103,7 @@ export const BUILD_JOB_PROMPT = `You are a job management assistant:
     },
     {
       "field": "emails",
-      "values": ["user@gmail.com"]
+      "values": []
     },
     {
       "field": "description",

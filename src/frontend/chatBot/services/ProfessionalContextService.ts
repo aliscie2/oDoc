@@ -30,22 +30,22 @@ Please provide a professional, data-driven response focused on recruitment/hirin
     const lowerMessage = message.toLowerCase();
 
     if (lowerMessage.includes("analyze")) {
-      return "🔍 ANALYSIS REQUEST - Provide detailed analytical insights with specific metrics and recommendations.";
+      return "ANALYSIS REQUEST - Provide detailed analytical insights with specific metrics and recommendations.";
     }
 
     if (lowerMessage.includes("suggest") || lowerMessage.includes("improve")) {
-      return "💡 OPTIMIZATION REQUEST - Focus on actionable improvements and best practices.";
+      return "OPTIMIZATION REQUEST - Focus on actionable improvements and best practices.";
     }
 
     if (lowerMessage.includes("trend") || lowerMessage.includes("market")) {
-      return "📈 MARKET INTELLIGENCE - Provide industry trends and competitive insights.";
+      return "MARKET INTELLIGENCE - Provide industry trends and competitive insights.";
     }
 
     if (lowerMessage.includes("candidate") || lowerMessage.includes("talent")) {
-      return "👥 TALENT ANALYSIS - Focus on candidate-related insights and recommendations.";
+      return "TALENT ANALYSIS - Focus on candidate-related insights and recommendations.";
     }
 
-    return "📊 HIRING INTELLIGENCE - Provide professional recruitment insights.";
+    return "HIRING INTELLIGENCE - Provide professional recruitment insights.";
   }
 
   private getProfessionalContext(): string {

@@ -92,7 +92,6 @@ const NavBar = (props: any) => {
   );
   const dispatch = useDispatch();
   const { isNavOpen, isDarkMode } = useSelector((state: any) => state.uiState);
-  console.log({ isNavOpen });
   const { isLoggedIn } = useAuth();
   const [defaultItems, setDefaultItems] = useState([]);
 
@@ -104,14 +103,12 @@ const NavBar = (props: any) => {
     },
     { label: "Social posts", to: "/posts", icon: <ForumIcon /> },
     { label: "About Us", to: "/about", icon: <InfoIcon /> },
-    // { label: "Discover", to: "/discover", icon: <ExploreIcon /> },
     {
       label: "Subscriptions",
       to: "/subscriptions",
       icon: <WorkspacePremiumIcon />,
     },
     { label: "White Paper", to: "/white_paper", icon: <ReceiptIcon /> },
-    // { label: "Vote", to: "/vote", icon: <HowToVoteIcon /> },
   ];
 
   const handleNavClose = () => {
@@ -178,18 +175,18 @@ const NavBar = (props: any) => {
         PaperProps={{
           className: "sidenav card bg-blur",
           sx: {
-            width: isMobile ? "100%" : "200px",
-            // outline:"red 10px",
+            width: isMobile ? "100%" : "250px",
             zIndex: Z_INDEX_SIDE_NAVBAR,
           },
         }}
         ModalProps={{
-          keepMounted: true, // Better mobile performance
+          keepMounted: true,
         }}
       >
         <StyledDrawerPaper>
           <ContentWrapper>
-            <List>
+            <Box sx={{ height: "64px" }} />
+            <List sx={{ px: 1 }}>
               {navLinks.map((link) => (
                 <StyledListItemButton
                   key={link.label}
@@ -200,18 +197,25 @@ const NavBar = (props: any) => {
                   component={Link}
                   to={link.to}
                   sx={{
-                    padding: "2px 6px", // Further reduced padding
-                    minHeight: "28px", // Further reduced height
-                    margin: "2px 0", // Reduced margin between items
+                    padding: "10px 16px",
+                    minHeight: "44px",
+                    margin: "4px 0",
+                    borderRadius: "8px",
+                    transition: "all 0.2s ease",
+                    "&:hover": {
+                      backgroundColor: theme.palette.action.hover,
+                      transform: "translateX(4px)",
+                    },
                   }}
                 >
                   {link.icon && (
                     <Box
                       sx={{
-                        fontSize: "0.8rem", // Even smaller icon
-                        minWidth: "20px", // Further reduced icon width
+                        fontSize: "1.25rem",
+                        minWidth: "32px",
                         display: "flex",
                         alignItems: "center",
+                        color: theme.palette.text.secondary,
                       }}
                     >
                       {link.icon}
@@ -220,11 +224,11 @@ const NavBar = (props: any) => {
                   <ListItemText
                     primary={link.label}
                     sx={{
-                      marginLeft: "6px", // Further reduced margin
+                      marginLeft: "12px",
                       "& .MuiTypography-root": {
-                        fontSize: isMobile ? "0.8rem" : "0.825rem", // Even smaller font
+                        fontSize: "0.95rem",
+                        fontWeight: 500,
                         color: theme.palette.text.primary,
-                        lineHeight: 1.2, // Tighter line height
                       },
                     }}
                   />
@@ -234,13 +238,21 @@ const NavBar = (props: any) => {
 
             {isLoggedIn && (
               <>
-                <Divider sx={{ my: 2 }} />
+                <Divider sx={{ my: 3, mx: 2 }} />
                 <SortableTree
                   key={defaultItems + defaultItems.map((i) => i.workspaces)}
                   dragEnd={dragEnd}
                   defaultItems={defaultItems}
                 />
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                <Box 
+                  sx={{ 
+                    display: "flex", 
+                    flexDirection: "column", 
+                    gap: 1.5,
+                    mt: 2,
+                    px: 1
+                  }}
+                >
                   <CreateFile />
                   <GetMoreFiles />
                 </Box>

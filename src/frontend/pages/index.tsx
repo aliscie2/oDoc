@@ -5,10 +5,11 @@ import { useSelector } from "react-redux";
 import { useAuth } from "@/hooks/useAuth";
 
 // Immediate imports for critical components
-import LandingPage from "./LandingPage";
-import ICPJobsLandingPage from "./LandingPage/aiJobMatch";
+import AboutUs from "./LandingPage/aboutUs";
+import ICPJobsLandingPage from "./LandingPage";
 import AffiliateRedirect from "./affiliateRedirect";
 import CalendarView from "./calendar";
+import NotFound from "@/pages/notFound404";
 
 // Lazy imports for heavy components
 const JobsPage = React.lazy(() => import("./jobs"));
@@ -44,24 +45,40 @@ const PageLoader = () => (
 );
 
 const Pages = React.memo(() => {
+
+  
   const { profile, profile_history, wallet, friends } = useSelector(
     (state: unknown) => state.filesState,
   );
 
   const { isLoggedIn } = useAuth();
 
-  const MainPage = useMemo(() => {
-    if (isLoggedIn) {
-      return <JobsPage />;
-    }
-    return <ICPJobsLandingPage />;
-  }, [isLoggedIn]);
+  // const MainPage = useMemo(() => {
+  //   if (isLoggedIn) {
+  //     return <JobsPage />;
+  //   }
+  //   return <ICPJobsLandingPage />;
+  // }, [isLoggedIn]);
 
+  if (!isLoggedIn) {
+      return (
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
+        <Route path="/" element={ <ICPJobsLandingPage />} />
+        <Route path="/about" element={<AboutUs />} />
+        <Route path="/white_paper" element={<SNSWhitepaper />} />
+        <Route path="/share/*" element={<ShareFilePage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/f*" element={<AffiliateRedirect />} />
+        <Route path="*" element={<NotFound />} />
+        </Routes>
+    </Suspense>)
+    }
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
-        <Route path="/" element={MainPage} />
-        <Route path="/about" element={<LandingPage />} />
+        <Route path="/" element={ <JobsPage />} />
+        <Route path="/about" element={<AboutUs />} />
         <Route path="/wallet" element={<WalletPage wallet={wallet} />} />
         <Route
           path="/profile"
@@ -93,7 +110,6 @@ const Pages = React.memo(() => {
         <Route path="/posts" element={<Posts />} />
         <Route path="/jobs*" element={<JobPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
-        <Route path="/f*" element={<AffiliateRedirect />} />
       </Routes>
     </Suspense>
   );

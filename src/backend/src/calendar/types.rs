@@ -9,6 +9,7 @@ use std::borrow::Cow;
 pub struct Calendar {
     pub id: String,
     pub google_ids: Vec<String>,
+    pub google_public_urls: Vec<String>,
     pub owner: String,
     pub availabilities: Vec<Availability>,
     pub events: Vec<Event>,
@@ -21,24 +22,47 @@ impl Storable for Calendar {
 
     fn from_bytes(bytes: Cow<[u8]>) -> Self {
         Decode!(bytes.as_ref(), Self).unwrap_or_else(|_| {
-            // Try to decode with old format (without google_ids)
+            // Try to decode with old format (without google_public_urls)
             #[derive(Clone, Debug, Serialize, CandidType, Deserialize)]
-            struct OldCalendar {
+            struct OldCalendarV2 {
                 id: String,
+                google_ids: Vec<String>,
                 owner: String,
                 availabilities: Vec<Availability>,
                 events: Vec<Event>,
             }
 
-            match Decode!(bytes.as_ref(), OldCalendar) {
+            match Decode!(bytes.as_ref(), OldCalendarV2) {
                 Ok(old_calendar) => Calendar {
                     id: old_calendar.id,
-                    google_ids: Vec::new(), // Default empty vector for new field
+                    google_ids: old_calendar.google_ids,
+                    google_public_urls: Vec::new(), // Default empty vector for new field
                     owner: old_calendar.owner,
                     availabilities: old_calendar.availabilities,
                     events: old_calendar.events,
                 },
-                Err(_) => Calendar::default(), // Use default if both formats fail
+                Err(_) => {
+                    // Try even older format (without google_ids)
+                    #[derive(Clone, Debug, Serialize, CandidType, Deserialize)]
+                    struct OldCalendar {
+                        id: String,
+                        owner: String,
+                        availabilities: Vec<Availability>,
+                        events: Vec<Event>,
+                    }
+
+                    match Decode!(bytes.as_ref(), OldCalendar) {
+                        Ok(old_calendar) => Calendar {
+                            id: old_calendar.id,
+                            google_ids: Vec::new(),
+                            google_public_urls: Vec::new(),
+                            owner: old_calendar.owner,
+                            availabilities: old_calendar.availabilities,
+                            events: old_calendar.events,
+                        },
+                        Err(_) => Calendar::default(),
+                    }
+                }
             }
         })
     }
@@ -126,7 +150,8 @@ impl Calendar {
     pub fn default() -> Self {
         Calendar {
             id: ic_cdk::api::time().to_string(),
-            google_ids: Vec::new(), // Added missing field
+            google_ids: Vec::new(),
+            google_public_urls: Vec::new(),
             owner: caller().to_text(),
             availabilities: Vec::new(),
             events: Vec::new(),
@@ -198,7 +223,8 @@ impl Calendar {
             None => {
                 let new_calendar = Calendar {
                     id: ic_cdk::api::time().to_string(),
-                    google_ids: Vec::new(), // Already present here
+                    google_ids: Vec::new(),
+                    google_public_urls: Vec::new(),
                     owner: caller().to_text(),
                     availabilities: Vec::new(),
                     events: Vec::new(),

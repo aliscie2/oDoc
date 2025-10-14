@@ -20,6 +20,8 @@ export class IdentityManager {
   private static currentFingerprint: ReplicaFingerprint | null = null;
   private static readonly CACHE_KEY = "identity_cache";
   private static readonly MAX_IDENTITY_AGE = 24 * 60 * 60 * 1000; // 24 hours
+  private static rootKeyFetched: boolean = false;
+  private static rootKeyPromise: Promise<void> | null = null;
 
   /**
    * Generate a unique fingerprint for the current replica instance
@@ -68,8 +70,6 @@ export class IdentityManager {
    */
   private static async clearStaleCache(): Promise<void> {
     if (this.isEnvironmentStale()) {
-      console.log("Environment change detected, clearing stale cache");
-
       // Clear localStorage
       localStorage.removeItem(this.CACHE_KEY);
       localStorage.removeItem("ic-identity");
@@ -175,7 +175,6 @@ export class IdentityManager {
       const isValid = await this.validateIdentity(identity);
 
       if (!isValid) {
-        console.log("Identity validation failed, clearing cache");
         await this.forceRefresh();
         return null;
       }
@@ -191,8 +190,6 @@ export class IdentityManager {
    * Force refresh identity by clearing all caches
    */
   static async forceRefresh(): Promise<void> {
-    console.log("Forcing identity refresh");
-
     // Clear all caches
     await this.clearStaleCache();
 
@@ -225,7 +222,6 @@ export class IdentityManager {
     if (!config.isProduction) {
       try {
         await agent.fetchRootKey();
-        console.log("Successfully fetched root key");
       } catch (error) {
         console.warn("Error fetching root key:", error);
         throw error;

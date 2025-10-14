@@ -16,6 +16,7 @@ export interface MessageRule {
     showOnce?: boolean;
     cooldownMs?: number;
     dependencies?: string[];
+    replaceGroup?: string;
   };
 }
 
@@ -35,36 +36,40 @@ export class MessageRulesService {
     "\nWhat are you looking for Job or Talent? Tell me in details.";
 
   constructor(
-    private jobs: unknown[],
-    private calendar: unknown,
-    private jobSearchStage: number,
-    private currentJobId: string | null,
-  ) {}
+  private jobs: unknown[],
+  private calendar: unknown,
+  private jobSearchStage: number,
+  private currentJobId: string | null,
+) {}
 
   private get currentJob(): Job | undefined {
     return this.jobs.find((job) => job.id === this.currentJobId);
   }
 
   get messageRules(): MessageRule[] {
-    return [
-      {
-        id: "welcome",
-        type: "immediate",
-        priority: 1,
-        condition: () => this.jobs.length === 0,
-        message: () => {
-          const userType = localStorage.getItem("UserType");
-          if (userType === "TALENT")
-            return `� AI Pnrofile Builder ready to help!${this.TALENT_DETAILS}`;
-          if (userType === "JOB")
-            return `� AI Pnrofile Builder ready to help!${this.JOB_DETAILS}`;
-          return `� AI Profile Builder ready to help!${this.GENERAL_DETAILS}`;
-        },
+  return [
+    {
+      id: "welcome",
+      type: "immediate",
+      priority: 1,
+      condition: () => {
+        // Only show if explicitly no jobs (not undefined/loading state)
+        if (this.jobs === null || this.jobs === undefined) return false;
+        return this.jobs.length === 0;
+      },
+      message: () => {
+        const userType = localStorage.getItem("UserType");
+        if (userType === "TALENT")
+          return `💼 🤝 AI Profile Builder ready to help!${this.TALENT_DETAILS}`;
+        if (userType === "JOB")
+          return `💼 🤝 AI Profile Builder ready to help!${this.JOB_DETAILS}`;
+        return `💼 🤝 AI Profile Builder ready to help!${this.GENERAL_DETAILS}`;
+      },
+      actionType: "WELCOME_MESSAGE",
+      canUndo: false,
+      canRetry: false,
+      metadata: { showOnce: true },
 
-        actionType: "WELCOME_MESSAGE",
-        canUndo: false,
-        canRetry: false,
-        metadata: { showOnce: true },
       },
       {
         id: "calendar",
@@ -72,9 +77,8 @@ export class MessageRulesService {
         priority: 1,
         condition: () => {
           const hasJobs = this.jobs.length > 0;
-          const noCalendarAvailabilities =
-            !this.calendar?.availabilities?.length;
-          const hasHighCompletionJob = this.jobs.some((job: any) => {
+          const noCalendarAvailabilities = !this.calendar?.availabilities?.length;
+          const hasHighCompletionJob = this.jobs.some((job: unknown) => {
             const percentage = job.profile_completion || 0;
             return percentage >= 0.9;
           });
@@ -115,18 +119,43 @@ export class MessageRulesService {
         metadata: { showOnce: true },
       },
       {
+        id: "profile-feedback",
+        type: "immediate",
+        priority: 1,
+        condition: () => {
+          // Don't show if there are any user messages (conversation started)
+          // const hasUserMessages = this.chatHistory?.some(msg => msg.type === "user");
+          return true;
+        },
+        message: () => {
+          // const feedback = this.currentJob?.feedback || "How can I help today?";
+          // const completion = this.currentJob?.profile_completion || 0;
+          // const percentage = Math.round(completion * 100);
+          // return `${feedback}\n\n**Profile Completion: ${percentage}%**`;
+          return "Do you like to make any updats?";
+        },
+        actionType: "PROFILE_FEEDBACK_MESSAGE",
+        canUndo: false,
+        canRetry: false,
+        metadata: { 
+          showOnce: true,
+          replaceGroup: "profile-status",
+          includeProgress: true,
+          profileCompletion: this.currentJob?.profile_completion || 0
+        },
+      },
+      {
         id: "new-profile",
         type: "immediate",
         priority: 2,
-        condition: () => this.jobs.length > 0 && !this.currentJobId,
+        condition: () => this.jobs && !this.currentJob,
         message:
-          "� RReady to build a new profile? I can help you create a compelling professional profile and provide consultation on how to make it stand out.",
+          "Ready to build a new profile? I can help you create a compelling professional profile and provide consultation on how to make it stand out.",
         actionType: "NEW_PROFILE_MESSAGE",
         canUndo: false,
         canRetry: false,
-        metadata: { showOnce: false },
+        metadata: { showOnce: false, replaceGroup: "profile-status" },
       },
-
       {
         id: "hiring_insights",
         type: "contextual",

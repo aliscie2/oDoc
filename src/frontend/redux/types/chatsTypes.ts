@@ -16,18 +16,20 @@ export const ADD_CHATS_NOTIFICATIONS = "ADD_CHATS_NOTIFICATIONS";
 export const DELETE_CHAT = "DELETE_CHAT";
 export const UPDATE_CHAT = "UPDATE_CHAT";
 export const ADD_CHAT = "ADD_CHAT";
+export const EXTEND_CHATS = "EXTEND_CHATS";
 
 // Action Types
 export type ChatActions =
   | { type: typeof OPEN_CHAT; current_chat_id: string; current_user: Principal }
   | { type: typeof SET_CHATS; chats: FEChat[] }
+  | { type: typeof EXTEND_CHATS; chats: FEChat[] }
   | { type: typeof SEND_MESSAGE; message: Message }
   | { type: typeof UPDATE_MESSAGE; message: Message }
   | { type: typeof ADD_NOTIFICATION; message: Message }
   | { type: typeof UPDATE_NOTIFICATION; message: Message }
   | { type: typeof SET_CHATS_NOTIFICATIONS; messages: Message[] }
   | { type: typeof DELETE_CHATS_NOTIFICATIONS; chat_id: string }
-  | { type: typeof DELETE_CHAT; id: string }
+  | { type: typeof DELETE_CHAT; chat_id: string }
   | { type: typeof UPDATE_CHAT; chat: FEChat }
   | { type: typeof ADD_CHATS_NOTIFICATIONS; message: Message }
   | { type: typeof ADD_CHAT; chat: FEChat };
@@ -46,4 +48,6 @@ export const initialChatsState: ChatState = {
   current_user: Principal.fromText("2vxsx-fae"),
   chats: [],
   chats_notifications: [],
+    openChatWindows: {}, // Add this
+
 };

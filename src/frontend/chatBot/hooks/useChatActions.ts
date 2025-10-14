@@ -16,6 +16,11 @@ export interface UseChatActionsConfig {
     messageId: string | number,
     abortSignal?: AbortSignal,
   ) => Promise<any>;
+  // Calendar routing for undo/redo
+  calendarRouter?: {
+    isGoogleConnected: boolean;
+    executeGoogleAction: (action: any) => Promise<unknown>;
+  };
 }
 
 /**
@@ -32,7 +37,19 @@ export const useChatActions = (config: UseChatActionsConfig) => {
     processMessage,
   } = config;
   const dispatch = useDispatch();
-  const { createSnapshot, undo, redo } = useUndoRedo(dispatch);
+
+  // Set up calendar router for undo/redo system
+  const calendarRouterWithDispatch = config.calendarRouter
+    ? {
+        ...config.calendarRouter,
+        dispatch,
+      }
+    : undefined;
+
+  const { createSnapshot, undo, redo } = useUndoRedo(
+    dispatch,
+    calendarRouterWithDispatch,
+  );
 
   const handleChatSend = useCallback(
     async (message: string) => {
@@ -79,6 +96,13 @@ export const useChatActions = (config: UseChatActionsConfig) => {
         // Create snapshot for undo/redo if there are actions
         let snapshotId: string | undefined;
         if (result.actions?.length > 0) {
+          console.log("[CHAT] Creating snapshot:", {
+            aiMessageId,
+            actionType: result.action_type,
+            actionsCount: result.actions.length,
+            actions: result.actions,
+          });
+
           const snapshot = createSnapshot(
             aiMessageId,
             result.action_type,
@@ -86,6 +110,8 @@ export const useChatActions = (config: UseChatActionsConfig) => {
             result, // Pass the full result which includes prev_job, etc.
           );
           snapshotId = snapshot.id;
+
+          console.log("[CHAT] Snapshot created with ID:", snapshotId);
         }
 
         // Update final message with complete response and actions
@@ -94,7 +120,7 @@ export const useChatActions = (config: UseChatActionsConfig) => {
             msg.id === aiMessageId
               ? {
                   ...msg,
-                  message: result.feedback,
+                  message: `${result.feedback} \n **${result.profile_completion || result.job?.profile_completion||""}**`,
                   canUndo: Boolean(snapshotId),
                   canRetry: (result.actions?.length || 0) > 0,
                   action_type: result.action_type,
@@ -105,7 +131,7 @@ export const useChatActions = (config: UseChatActionsConfig) => {
               : msg,
           ),
         );
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Don't show error if request was cancelled
         if (controller.signal.aborted) {
           return;
@@ -170,14 +196,34 @@ export const useChatActions = (config: UseChatActionsConfig) => {
   }, [setChatHistory, setIsLoading]);
 
   const handleUndoMessage = useCallback(
-    (messageId: string | number) => {
+    async (messageId: string | number) => {
+      console.log("[CHAT] ========== UNDO BUTTON CLICKED ==========");
+      console.log("[CHAT] Message ID:", messageId);
+
       const message = chatHistory.find((m) => m.id === messageId);
 
-      if (!message?.snapshotId) {
+      if (!message) {
+        console.log("[CHAT] ❌ Message not found in chat history");
         return;
       }
 
-      const success = undo(message.snapshotId);
+      console.log("[CHAT] Message found:", {
+        type: message.type,
+        actionType: message.action_type,
+        actionsCount: message.actions?.length,
+        hasSnapshotId: !!message.snapshotId,
+        snapshotId: message.snapshotId,
+        canUndo: message.canUndo,
+      });
+
+      if (!message.snapshotId) {
+        console.log("[CHAT] ❌ No snapshot ID - cannot undo");
+        return;
+      }
+
+      console.log("[CHAT] Calling undo with snapshot ID:", message.snapshotId);
+      const success = await undo(message.snapshotId);
+      console.log("[CHAT] Undo result:", success ? "SUCCESS" : "FAILED");
 
       if (success) {
         setChatHistory((prev) =>
@@ -193,14 +239,20 @@ export const useChatActions = (config: UseChatActionsConfig) => {
   );
 
   const handleRedoMessage = useCallback(
-    (messageId: string | number) => {
+    async (messageId: string | number) => {
+      console.log("[CHAT] ========== REDO BUTTON CLICKED ==========");
+      console.log("[CHAT] Message ID:", messageId);
+
       const message = chatHistory.find((m) => m.id === messageId);
 
       if (!message?.snapshotId) {
+        console.log("[CHAT] ❌ No snapshot ID - cannot redo");
         return;
       }
 
-      const success = redo(message.snapshotId);
+      console.log("[CHAT] Calling redo with snapshot ID:", message.snapshotId);
+      const success = await redo(message.snapshotId);
+      console.log("[CHAT] Redo result:", success ? "SUCCESS" : "FAILED");
 
       if (success) {
         setChatHistory((prev) =>

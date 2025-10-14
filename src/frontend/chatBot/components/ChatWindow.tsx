@@ -9,6 +9,7 @@ interface ChatWindowProps extends ChatHistoryProps {
   credits: number;
   isLoading: boolean;
   onMinimize: () => void;
+  shouldCenter?: boolean;
 }
 
 export const ChatWindow = ({
@@ -21,18 +22,19 @@ export const ChatWindow = ({
   onRedoMessage,
   onRetry,
   onTypingComplete,
+  shouldCenter = false,
 }: ChatWindowProps) => {
   const { theme, isDark } = useThemeStyles();
 
   return (
     <Box
       sx={{
-        position: "fixed",
-        bottom: { xs: 130, sm: 110 },
-        left: { xs: 0, sm: "50%" },
-        transform: { xs: "none", sm: "translateX(-50%)" },
-        zIndex: 999,
-        width: { xs: "100vw", sm: 500 },
+        position: shouldCenter ? "relative" : "fixed",
+        bottom: shouldCenter ? "auto" : { xs: 130, sm: 110 },
+        left: shouldCenter ? "auto" : { xs: 0, sm: "50%" },
+        transform: shouldCenter ? "none" : { xs: "none", sm: "translateX(-50%)" },
+        zIndex: shouldCenter ? "auto" : 999,
+        width: shouldCenter ? "100%" : { xs: "100vw", sm: 500 },
         bgcolor: theme.palette.background.paper,
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",

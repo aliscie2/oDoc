@@ -5,6 +5,7 @@ import {
   ChatState,
   DELETE_CHAT,
   DELETE_CHATS_NOTIFICATIONS,
+  EXTEND_CHATS,
   initialChatsState,
   SET_CHATS,
   SET_CHATS_NOTIFICATIONS,
@@ -19,15 +20,28 @@ export function chatsReducer(
   action: ChatActions,
 ): ChatState {
   switch (action.type) {
-    // case OPEN_CHAT: {
-    //   const { current_chat_id, current_user } = action;
-    //   return {
-    //     ...state,
-    //     current_chat_id,
-    //     current_user,
-    //   };
-    // }
+   case "OPEN_CHAT": {
+  const { chatId, current_user } = action;
+  return {
+    ...state,
+    current_chat_id: chatId,
+    current_user,
+    openChatWindows: {
+      ...state.openChatWindows,
+      [chatId]: { x: 100 + (Object.keys(state.openChatWindows).length * 30), y: 100 + (Object.keys(state.openChatWindows).length * 30) }
+    }
+  };
+}
 
+case "CLOSE_CHAT_WINDOW": {
+  const { chatId } = action;
+  const { [chatId]: removed, ...remaining } = state.openChatWindows;
+  return {
+    ...state,
+    openChatWindows: remaining,
+    current_chat_id: state.current_chat_id === chatId ? "none" : state.current_chat_id
+  };
+}
     case ADD_CHAT: {
       return {
         ...state,
@@ -42,7 +56,7 @@ export function chatsReducer(
       };
     }
 
-    case "EXTEND_CHATS": {
+    case EXTEND_CHATS: {
       return {
         ...state,
         chats: [...state.chats, ...action.chats],
@@ -137,25 +151,49 @@ export function chatsReducer(
       };
     }
 
+    
     case ADD_NOTIFICATION: {
-      return {
-        ...state,
-        chats: state.chats.map((chat: FEChat) =>
-          chat.id === action.message.chat_id
-            ? {
-                ...chat,
-                messages: [...chat.messages, action.message],
-              }
-            : chat,
+  const chatIndex = state.chats.findIndex((chat: FEChat) => chat.id === action.message.chat_id);
+  
+  if (chatIndex === -1) {
+    // Chat doesn't exist locally, need to fetch it
+    return {
+      ...state,
+      chats_notifications: [
+        ...state.chats_notifications.filter(
+          (m: Message) => m.chat_id !== action.message.chat_id,
         ),
-        chats_notifications: [
-          ...state.chats_notifications.filter(
-            (m: Message) => m.chat_id !== action.message.chat_id,
-          ),
-          action.message,
-        ],
-      };
-    }
+        action.message,
+      ],
+    };
+  }
+
+  // ⚠️ CRITICAL: MESSAGE ORDERING
+  // Messages are stored in REVERSE CHRONOLOGICAL order (newest first)
+  // Index 0 = newest message, Index N = oldest message
+  // When adding a new message, it MUST go at the BEGINNING of the array
+  // Example: [newMsg, msg2, msg1, oldestMsg]
+  const updatedChat = {
+    ...state.chats[chatIndex],
+    messages: [action.message, ...state.chats[chatIndex].messages],
+  };
+
+  const newChats = [...state.chats];
+  newChats[chatIndex] = updatedChat;
+
+  return {
+    ...state,
+    chats: newChats,
+    chats_notifications: [
+      ...state.chats_notifications.filter(
+        (m: Message) => m.chat_id !== action.message.chat_id,
+      ),
+      action.message,
+    ],
+  };
+}
+
+
 
     case UPDATE_NOTIFICATION: {
       return {

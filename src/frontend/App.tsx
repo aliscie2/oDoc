@@ -24,7 +24,7 @@ import RegistrationForm from "./components/MainComponents/RegistrationForm";
 import {
   AvailabilityTimezone,
   EventTimezone,
-} from "./pages/calendar/serializers";
+} from "./pages/calendar/utils/serializers";
 
 import RunawayJellyfish from "./components/creature/runAeayJellyFish";
 import GoogleCalendarOnboarding from "./components/userBadges/connectGoogleCalendar";
@@ -96,7 +96,6 @@ const useAppInitialization = () => {
   // Main initialization
   useEffect(() => {
     const initializeAppData = async () => {
-      console.log("yyyyy");
       if (
         authStatus !== "registered" ||
         !isLoggedIn ||
@@ -154,14 +153,21 @@ const useAppInitialization = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       if (!profile?.id || initState.userDataFetched) return;
-      console.log("zzzz");
+
+      // Check if we're on a shared calendar page - don't fetch user's calendar if so
+      const isSharedCalendarPage =
+        window.location.pathname === "/calendar" &&
+        window.location.search.includes("id=");
 
       try {
         const [notifications, chats, calendar, credits] =
           await Promise.allSettled([
             backendActor.get_user_notifications(BigInt(0)),
             backendActor.get_my_chats(BigInt(0)),
-            backendActor.get_my_calendar(),
+            // Only fetch user's calendar if NOT on shared calendar page
+            isSharedCalendarPage
+              ? Promise.reject("Skipping on shared calendar page")
+              : backendActor.get_my_calendar(),
             backendActor.get_ai_credits(),
           ]);
 
@@ -208,7 +214,6 @@ const useAppInitialization = () => {
   useEffect(() => {
     const processDeposit = async () => {
       if (!profile?.id || initState.depositProcessed) return;
-      console.log("1111");
 
       try {
         if (!ckUSDCActor) return;

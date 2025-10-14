@@ -7,7 +7,7 @@ export const JOB_MATCHING_PROMPT = `Match the current job to candidates. Return 
 Return valid JSON in this exact format:
 {matches:[{candidate_id:string, missmatching_skills:string[], score:number, cover_letter:string}]}
 
-Scoring approach (0-10 scale) - SCORE BASED ON AVAILABLE DATA ONLY:
+Scoring approach (0-1 scale, where 1.0 = perfect match) - SCORE BASED ON AVAILABLE DATA ONLY:
 
 **Skills Assessment (0-6 points):**
 - If candidate has skills: (matching_skills / candidate_total_skills) * 6
@@ -36,8 +36,8 @@ Scoring approach (0-10 scale) - SCORE BASED ON AVAILABLE DATA ONLY:
 Rules:
 - One match per candidate_id only
 - candidate_id must be from candidates array  
-- score: calculated number (0-10)
-- missmatching_skills: actual skill names that are in current job but missing in candidate
+- score: calculated number 0.0-1.0
+- missmatching_skills: actual skill names that are in job.skills (required) but missing in talent.skills (asymmetric difference)
 - cover_letter: focus on potential and available strengths, mention data gaps as areas to explore in markdown built points with emojis
 
 Always return valid JSON with no duplicates.`;

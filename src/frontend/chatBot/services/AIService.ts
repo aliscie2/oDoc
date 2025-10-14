@@ -1,5 +1,6 @@
 import ask_ai from "@/utils/askAIAgent";
 import { textToJson } from "../../pages/jobs/utils/processResponseJobs";
+import ResponseGuard from "../utils/responseGuard";
 
 // AI Message Service Types
 interface AIMessageConfig {
@@ -15,7 +16,7 @@ interface AIMessageResult<T = any> {
   parsedData: T;
   remainingCredits: number;
 }
-const JSON_PROMPT =
+export const JSON_PROMPT =
   "Analyze the user's request and provide a pure and only json. ";
 export class AIService {
   constructor(
@@ -23,15 +24,10 @@ export class AIService {
     private dispatch: any,
   ) {}
 
-  async sendAIMessage<T = any>(
+  async sendAIMessage<T = unknown>(
     config: AIMessageConfig,
     abortSignal?: AbortSignal,
   ): Promise<AIMessageResult<T>> {
-    console.log({
-      x: config.prompt,
-      y: JSON_PROMPT + config.promptType,
-      z: config.classify, // classify=true means quick=true (for classification)
-    });
     const aiResponse = await ask_ai(
       config.prompt,
       JSON_PROMPT + config.promptType,
@@ -39,7 +35,6 @@ export class AIService {
       import.meta.env.VITE_GROQ_API_KEY,
       config.credits,
     );
-    console.log("AI Response: ", aiResponse);
 
     if (!aiResponse || "Err" in aiResponse) {
       throw new Error(
@@ -52,6 +47,22 @@ export class AIService {
     const response = aiResponse.Ok.response;
     const remainingCredits = aiResponse.Ok.remaining_credits;
 
+    let processedResponse = response;
+    if (!config.classify) {
+      const guardResult = ResponseGuard.guard(response);
+      processedResponse = guardResult.isValid
+        ? guardResult.repairedResponse
+        : guardResult.originalResponse;
+
+      if (!guardResult.isValid && response.toLowerCase().includes("calendar")) {
+        processedResponse = ResponseGuard.generateFallbackResponse(
+          config.prompt,
+        );
+      }
+    }
+
+    const parsedResult = textToJson(processedResponse);
+
     if (!config.skipCreditUpdate) {
       this.dispatch({
         type: "UPDATE_AI_CREDITS",
@@ -60,13 +71,13 @@ export class AIService {
     }
 
     return {
-      response,
-      parsedData: textToJson(response).extractedData as T,
+      response: processedResponse,
+      parsedData: parsedResult.extractedData as T,
       remainingCredits,
     };
   }
 
-  async sendAIMessages<T = any>(
+  async sendAIMessages<T = unknown>(
     configs: AIMessageConfig[],
     abortSignal?: AbortSignal,
   ): Promise<AIMessageResult<T>[]> {

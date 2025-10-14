@@ -1,12 +1,12 @@
 import ProfilePage from "./profile";
 // MessageMenuItem.tsx
-import React, { useEffect, useState } from "react";
-import { backendActor } from "../utils/backendUtils";
-import { useSearchParams } from "react-router-dom";
 import { Principal } from "@dfinity/principal";
-import FriendshipButton from "../components/FriendshipButton";
-import { useSelector } from "react-redux";
 import { Typography } from "@mui/material";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { useSearchParams } from "react-router-dom";
+import FriendshipButton from "../components/FriendshipButton";
+import { backendActor } from "../utils/backendUtils";
 
 function UserProfile() {
   const [searchParams] = useSearchParams();

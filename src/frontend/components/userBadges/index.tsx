@@ -27,6 +27,7 @@ import {
   ExpandLess as ExpandLessIcon,
 } from "@mui/icons-material";
 import useProgress, { type BadgeType } from "./useProgress";
+import UserLevelBadge from "../MainComponents/topNavBar/UserLevelBadge";
 
 import { useGoogleCalendar } from "@/pages/calendar/googleAccounts/useGoogleCalendar";
 import { Link } from "react-router-dom";
@@ -427,22 +428,19 @@ const AchievementPage: React.FC = () => {
           background: `linear-gradient(135deg, ${currentLevel.color}20, ${currentLevel.color}10)`,
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
-          <Avatar
-            sx={{
-              width: { xs: 48, sm: 56 },
-              height: { xs: 48, sm: 56 },
-              fontSize: { xs: "1.5rem", sm: "1.8rem" },
-            }}
-          >
-            {currentLevel.icon}
-          </Avatar>
-          <Box>
+        <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, alignItems: "center", gap: 3, mb: 3 }}>
+          <Box sx={{ display: "flex", justifyContent: "center" }}>
+            <UserLevelBadge actions_rate={karmaScore} size={120} />
+          </Box>
+          <Box sx={{ flex: 1, textAlign: { xs: "center", sm: "left" } }}>
             <Typography variant="h5" fontWeight="bold">
               Your Achievements
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
               {currentLevel.label} Level
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Keep earning karma to unlock higher tiers and better rewards!
             </Typography>
           </Box>
         </Box>

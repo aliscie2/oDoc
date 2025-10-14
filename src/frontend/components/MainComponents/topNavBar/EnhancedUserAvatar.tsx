@@ -1,68 +1,26 @@
-import React, { useEffect, useState } from "react";
-import { styled, keyframes } from "@mui/material/styles";
+import React, { useState, useEffect } from "react";
+import { styled } from "@mui/material/styles";
 import { Box } from "@mui/material";
 import { Person } from "@mui/icons-material";
 
-const appear = keyframes`
-  0% { transform: scale(0.8); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
-`;
-
-const growCircle = keyframes`
-  0% { clip-path: polygon(50% 0%, 50% 0%, 50% 0%, 50% 0%, 50% 0%); }
-  100% { clip-path: var(--final-clip-path); }
-`;
-
-const TrustCircle = styled(Box)(({ score }) => {
-  const finalClipPath =
-    score === 5
-      ? "circle(50%)"
-      : score >= 4
-        ? "polygon(50% 0%, 100% 0%, 100% 100%, 50% 100%, 50% 0)"
-        : score >= 3
-          ? "polygon(50% 0%, 100% 0%, 100% 75%, 50% 75%, 50% 0)"
-          : score >= 2
-            ? "polygon(50% 0%, 100% 0%, 100% 50%, 50% 50%, 50% 0)"
-            : "polygon(50% 0%, 100% 0%, 100% 25%, 50% 25%, 50% 0)";
-
-  return {
-    position: "relative",
-    width: 34,
-    height: 34,
-    borderRadius: "50%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    cursor: "pointer",
-    "--final-clip-path": finalClipPath,
-
-    "&:hover": { transform: "scale(1.05)" },
-
-    "&::before": {
-      content: '""',
-      position: "absolute",
-      width: "calc(100% + 6px)",
-      height: "calc(100% + 6px)",
-      borderRadius: "50%",
-      border: `2px solid ${getTrustColor(score)}`,
-      boxShadow: `0 0 8px ${getTrustColor(score)}`,
-      animation: `${appear} 1s ease, ${growCircle} 1.2s ease forwards`,
-      clipPath: "var(--final-clip-path)",
-    },
-  };
-});
-
 const Avatar = styled(Box)({
-  width: 26,
-  height: 26,
+  width: 34,
+  height: 34,
   borderRadius: "50%",
   overflow: "hidden",
   backgroundColor: "rgba(255, 255, 255, 0.1)",
   backdropFilter: "blur(8px)",
-  border: "1px solid rgba(255, 255, 255, 0.2)",
+  border: "2px solid rgba(255, 255, 255, 0.3)",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
+  cursor: "pointer",
+  transition: "transform 0.2s ease, border-color 0.2s ease",
+  
+  "&:hover": { 
+    transform: "scale(1.05)",
+    borderColor: "rgba(255, 255, 255, 0.5)",
+  },
 });
 
 const AvatarImage = styled("img")({
@@ -71,25 +29,17 @@ const AvatarImage = styled("img")({
   objectFit: "cover",
 });
 
-const FallbackAvatar = styled(Box)(({ score }) => ({
+const FallbackAvatar = styled(Box)({
   width: "100%",
   height: "100%",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  background: `linear-gradient(135deg, ${getTrustColor(score)}20, ${getTrustColor(score)}40)`,
-  color: getTrustColor(score),
-  fontSize: "0.75rem",
-  fontWeight: "bold",
-}));
-
-const getTrustColor = (score: number) => {
-  if (score >= 4.5) return "#4CAF50";
-  if (score >= 4) return "#8BC34A";
-  if (score >= 3.5) return "#FFC107";
-  if (score >= 3) return "#FF9800";
-  return "#F44336";
-};
+  background: "linear-gradient(135deg, rgba(100, 100, 255, 0.3), rgba(150, 100, 255, 0.4))",
+  color: "rgba(255, 255, 255, 0.9)",
+  fontSize: "0.85rem",
+  fontWeight: "600",
+});
 
 const generateInitials = (email = "", name = "") => {
   if (name)
@@ -109,7 +59,6 @@ const generateInitials = (email = "", name = "") => {
 };
 
 interface EnhancedUserAvatarProps {
-  actions_rate: number;
   photo?: string;
   email?: string;
   name?: string;
@@ -117,43 +66,44 @@ interface EnhancedUserAvatarProps {
 }
 
 const EnhancedUserAvatar: React.FC<EnhancedUserAvatarProps> = ({
-  actions_rate,
   photo,
   email,
   name,
   style,
 }) => {
-  const [imgError, setImgError] = useState(!photo);
-  const [animatedScore, setAnimatedScore] = useState(0);
+  const [imgError, setImgError] = useState(false);
 
+  // Reset error state when photo changes
   useEffect(() => {
-    const timer = setTimeout(() => setAnimatedScore(actions_rate), 300);
-    return () => clearTimeout(timer);
-  }, [actions_rate]);
-
-  useEffect(() => {
-    setImgError(!photo);
+    setImgError(false);
   }, [photo]);
 
   const initials = generateInitials(email, name);
 
   return (
-    <TrustCircle score={animatedScore} style={style}>
-      <Avatar>
-        {!imgError && photo ? (
-          <AvatarImage
-            src={photo}
-            alt="Avatar"
-            onError={() => setImgError(true)}
-          />
-        ) : (
-          <FallbackAvatar score={actions_rate}>
-            {initials !== "U" ? initials : <Person sx={{ fontSize: 16 }} />}
-          </FallbackAvatar>
-        )}
-      </Avatar>
-    </TrustCircle>
+    <Avatar style={style}>
+      {!imgError && photo ? (
+        <AvatarImage
+          src={photo}
+          alt="Avatar"
+          onError={() => setImgError(true)}
+        />
+      ) : (
+        <FallbackAvatar>
+          {initials !== "U" ? initials : <Person sx={{ fontSize: 18 }} />}
+        </FallbackAvatar>
+      )}
+    </Avatar>
   );
 };
 
-export default EnhancedUserAvatar;
+// Memoize with custom comparison to prevent re-renders when style object changes
+export default React.memo(EnhancedUserAvatar, (prevProps, nextProps) => {
+  return (
+    prevProps.photo === nextProps.photo &&
+    prevProps.email === nextProps.email &&
+    prevProps.name === nextProps.name &&
+    prevProps.style?.width === nextProps.style?.width &&
+    prevProps.style?.height === nextProps.style?.height
+  );
+});

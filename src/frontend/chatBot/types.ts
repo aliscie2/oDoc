@@ -11,6 +11,10 @@ export interface ChatMessage {
   actions?: unknown[];
   isTyping?: boolean;
   snapshotId?: string;
+  shareLink?: string;
+  jobId?: string;
+  thumbnailUrl?: string;
+  replaceGroup?: string;
 }
 
 export interface ReduxState {
@@ -30,7 +34,7 @@ export interface ReduxState {
 }
 
 export interface ThemeStyles {
-  theme: any;
+  theme: unknown;
   isDark: boolean;
   chatBg: string;
   borderColor: string;

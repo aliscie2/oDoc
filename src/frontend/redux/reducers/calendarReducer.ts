@@ -22,13 +22,14 @@ const initialState: any = {
   calendar_actions,
   calendar,
   current_timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-  google_events: [], // Add this line to initialize google_events
+  google_events: [],
+  owner_google_events: [],
   is_google_connected: false,
   calendarChanged: false,
   isInitlized: false,
 };
 
-export function calendarReducer(state = initialState, action: any): any {
+export function calendarReducer(state = initialState, action: any): unknown {
   switch (action.type) {
     case "SET_TRAINING_DATA":
       return {
@@ -73,7 +74,7 @@ export function calendarReducer(state = initialState, action: any): any {
             ...state,
             google_events: [
               ...state.google_events,
-              ...action.events.map((e: any) => ({
+              ...action.events.map((e: unknown) => ({
                 ...e,
                 id: e.id || Math.random().toString(),
                 isGoogleEvent: true,
@@ -87,7 +88,7 @@ export function calendarReducer(state = initialState, action: any): any {
               ...state.calendar_actions,
               events: [
                 ...state.calendar_actions.events,
-                ...action.events.map((e: any) => ({
+                ...action.events.map((e: unknown) => ({
                   ...e,
                   id: e.id || Math.random().toString(),
                 })),
@@ -97,7 +98,7 @@ export function calendarReducer(state = initialState, action: any): any {
               ...state.calendar,
               events: [
                 ...state.calendar.events,
-                ...action.events.map((e: any) => ({
+                ...action.events.map((e: unknown) => ({
                   ...e,
                   id: e.id || Math.random().toString(),
                 })),
@@ -339,9 +340,30 @@ export function calendarReducer(state = initialState, action: any): any {
         is_google_connected: true,
         google_events: action.events.map((event) => ({
           ...event,
-          id: `${event.id}`, // Add prefix to avoid ID conflicts
+          // Don't add another prefix - events already have email_originalId format
+          // and we need to preserve originalId for API operations
           isGoogleEvent: true, // Add flag to identify Google events
+          // Preserve the created_by field which should be the Google account email
+          // Preserve originalId for API operations
         })),
+      };
+
+    case "MERGE_GOOGLE_CALENDAR_EVENTS":
+      // Remove existing events from this account and add new ones
+      const accountEmail = action.accountEmail;
+      const existingEvents = state.google_events.filter(
+        (event) => event.created_by !== accountEmail,
+      );
+      const newEvents = action.events.map((event) => ({
+        ...event,
+        isGoogleEvent: true,
+        // Don't add google_ prefix here as it's already handled in the hook
+      }));
+
+      return {
+        ...state,
+        is_google_connected: true,
+        google_events: [...existingEvents, ...newEvents],
       };
 
     case "ADD_CALENDAR_EMAIL":
@@ -369,9 +391,52 @@ export function calendarReducer(state = initialState, action: any): any {
         calendar: {
           ...state.calendar,
           google_ids: (state.calendar.google_ids || []).filter(
-            (email: string) => email !== action.email
+            (email: string) => email !== action.email,
           ),
         },
+      };
+
+    case "ADD_GOOGLE_EVENT_OPTIMISTIC":
+      // Add optimistic event immediately for instant UI feedback
+      return {
+        ...state,
+        google_events: [
+          ...state.google_events,
+          {
+            ...action.event,
+            isGoogleEvent: true,
+            isPending: true, // Mark as pending sync
+          },
+        ],
+      };
+
+    case "UPDATE_GOOGLE_EVENT_OPTIMISTIC":
+      // Update Google event optimistically for instant UI feedback
+      return {
+        ...state,
+        google_events: state.google_events.map((event) =>
+          event.id === action.event.id
+            ? { ...action.event, isGoogleEvent: true, isPending: true }
+            : event,
+        ),
+      };
+
+    case "DELETE_GOOGLE_EVENT_OPTIMISTIC":
+      // Delete Google event optimistically for instant UI feedback
+      return {
+        ...state,
+        google_events: state.google_events.filter(
+          (event) => event.id !== action.id,
+        ),
+      };
+
+    case "REMOVE_OPTIMISTIC_EVENT":
+      // Remove optimistic event (usually after real event is loaded)
+      return {
+        ...state,
+        google_events: state.google_events.filter(
+          (event) => event.id !== action.id,
+        ),
       };
 
     case "CLEAR_GOOGLE_CALENDAR":
@@ -382,6 +447,23 @@ export function calendarReducer(state = initialState, action: any): any {
         calendar: {
           ...state.calendar,
           google_ids: [],
+        },
+      };
+
+    case "SET_OWNER_GOOGLE_EVENTS":
+      return {
+        ...state,
+        owner_google_events: action.events,
+      };
+
+    case "CLEAR_CALENDAR_ACTIONS":
+      return {
+        ...state,
+        calendar_actions: {
+          delete_availabilities: [],
+          delete_events: [],
+          events: [],
+          availabilities: [],
         },
       };
 

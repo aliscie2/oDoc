@@ -3,18 +3,16 @@ import { Job, JobUpdate, Match } from "$/declarations/backend/backend.did";
 import {
   Box,
   Typography,
-  Divider,
   Paper,
   Chip,
   Stack,
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Card,
-  CardContent,
   Button,
   TextField,
   Tooltip,
+  LinearProgress,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -127,246 +125,253 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
 
   // Debounced dispatch function using lodash
   const debouncedDispatch = React.useCallback(
-    debounce((scoreAsDecimal: number) => {
-      dispatch({
-        type: "UPDATE_REQUIRED_MATCH_SCORE",
-        score: scoreAsDecimal,
-      });
-    }, 150),
-    [dispatch],
-  );
-
-  const handleScoreChange = (newScore: number) => {
-    // Show tooltip if user tries to go below 60%
-    if (newScore < 60) {
-      setShowTooltip(true);
-      // Hide tooltip after 2 seconds
-      setTimeout(() => setShowTooltip(false), 2000);
-    } else {
-      setShowTooltip(false);
+  debounce(async (scoreAsDecimal: number) => {
+    dispatch({
+      type: "UPDATE_REQUIRED_MATCH_SCORE",
+      score: scoreAsDecimal,
+    });
+    
+    // Save to backend
+    try {
+      const jobUpdate: JobUpdate = {
+        id: job.id,
+        active: [],
+        matches: [],
+        updates: [],
+        category: [],
+        required_match_score: [scoreAsDecimal],
+      };
+      await backendActor.update_job([jobUpdate], []);
+    } catch (error) {
+      console.error("Failed to save match score:", error);
     }
+  }, 500),
+  [dispatch, job.id],
+);
 
-    // Ensure minimum of 60
-    const clampedScore = Math.max(60, newScore);
-    setLocalScore(clampedScore); // Update UI immediately for smooth experience
+ const handleScoreChange = (newScore: number) => {
+  if (newScore < 60) {
+    setShowTooltip(true);
+    setTimeout(() => setShowTooltip(false), 2000);
+  } else {
+    setShowTooltip(false);
+  }
 
-    // Convert from percentage (0-100) to decimal (0-1) and ensure minimum of 0.6
-    const scoreAsDecimal = Math.max(0.6, clampedScore / 100);
-    debouncedDispatch(scoreAsDecimal); // Debounced dispatch
-  };
+  const clampedScore = Math.max(60, newScore);
+  setLocalScore(clampedScore);
+
+  const scoreAsDecimal = Math.max(0.6, clampedScore / 100);
+  debouncedDispatch(scoreAsDecimal);
+  
+  // Trigger filter update
+  dispatch({ type: "FILTER_MATCHES_BY_SCORE" });
+};
 
   const EmailsList = () => (
-    <Card
-      sx={{
-        mb: 3,
-        borderRadius: 2,
-        border: "1px solid",
-        borderColor: "divider",
-      }}
-    >
-      <CardContent sx={{ p: 3 }}>
-        <Typography
-          variant="h6"
-          sx={{
-            mb: 2,
-            fontWeight: 600,
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-          }}
-        >
-          <EmailIcon color="info" />
-          Contact Information
-        </Typography>
-        <Stack spacing={2}>
-          {job.emails?.map((email, index) => (
-            <Box
-              key={index}
-              sx={{
-                p: 2,
-                borderRadius: 2,
-                bgcolor: "action.hover",
-                border: "1px solid",
-                borderColor: "divider",
-                transition: "all 0.2s ease",
-                "&:hover": {
-                  bgcolor: "action.selected",
-                  borderColor: "primary.main",
-                },
-              }}
-            >
-              <Typography
-                variant="body1"
-                sx={{
-                  fontWeight: 500,
-                  lineHeight: 1.6,
-                  fontFamily: "monospace",
-                }}
-              >
-                {email}
-              </Typography>
-            </Box>
-          ))}
-        </Stack>
-        <Box
-          sx={{
-            mt: 2,
-            p: 2,
-            bgcolor: "action.hover",
-            borderRadius: 1,
-            border: "1px solid",
-            borderColor: "divider",
-          }}
-        >
-          <Typography
-            variant="caption"
+    <Box sx={{ mb: 3 }}>
+      <Typography
+        variant="subtitle1"
+        sx={{
+          mb: 1.5,
+          fontWeight: 600,
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+        }}
+      >
+        <EmailIcon fontSize="small" color="info" />
+        Contact
+      </Typography>
+      <Stack spacing={1.5}>
+        {job.emails?.map((email, index) => (
+          <Box
+            key={index}
             sx={{
-              color: "text.secondary",
-              fontWeight: 500,
-              display: "block",
-              lineHeight: 1.4,
+              p: { xs: 1.5, sm: 2 },
+              borderRadius: 1,
+              bgcolor: "action.hover",
+              border: "1px solid",
+              borderColor: "divider",
             }}
           >
-            🔒 Privacy Protected: We will not share your emails with other
-            users. We will only contact you when finding good matches.
-          </Typography>
-        </Box>
-      </CardContent>
-    </Card>
+            <Typography
+              variant="body2"
+              sx={{
+                fontWeight: 500,
+                fontFamily: "monospace",
+                wordBreak: "break-all",
+              }}
+            >
+              {email}
+            </Typography>
+          </Box>
+        ))}
+      </Stack>
+      <Box
+        sx={{
+          mt: 1.5,
+          p: 1.5,
+          bgcolor: "action.hover",
+          borderRadius: 1,
+        }}
+      >
+        <Typography variant="caption" sx={{ color: "text.secondary" }}>
+          🔒 Privacy Protected: We will not share your emails with other users.
+        </Typography>
+      </Box>
+    </Box>
   );
 
   return (
-    <Paper
-      elevation={0}
+    <Box
       sx={{
-        p: { xs: 2, sm: 3, md: 4 },
-        maxWidth: 1000,
+        width: "100%",
+        maxWidth: { xs: "100%", sm: 720, md: 900 },
         mx: "auto",
-        borderRadius: 3,
-        bgcolor: "background.default",
-        border: "1px solid",
-        borderColor: "divider",
+        px: { xs: 2, sm: 3, md: 4 },
+        py: { xs: 2, sm: 3 },
       }}
     >
-      {/* Header Section */}
-      <Box sx={{ mb: 4 }}>
-        {job.job_titles && (
-          <Typography
-            variant="h4"
-            component="h1"
-            sx={{
-              mb: 2,
-              fontWeight: 700,
-              color: "text.primary",
-              lineHeight: 1.2,
-            }}
+      <Paper
+        elevation={0}
+        sx={{
+          p: { xs: 2, sm: 3 },
+          borderRadius: 2,
+          bgcolor: "background.paper",
+          border: "1px solid",
+          borderColor: "divider",
+        }}
+      >
+        {/* Header Section */}
+        <Box sx={{ mb: 3 }}>
+          {job.job_titles && (
+            <Typography
+              variant="h5"
+              component="h1"
+              sx={{
+                mb: 2,
+                fontWeight: 700,
+                color: "text.primary",
+                lineHeight: 1.3,
+                fontSize: { xs: "1.25rem", sm: "1.5rem" },
+              }}
+            >
+              {job.job_titles[0]}
+            </Typography>
+          )}
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={{ xs: 1, sm: 2 }}
+            alignItems={{ xs: "flex-start", sm: "center" }}
+            sx={{ mb: 2 }}
           >
-            {job.job_titles[0]}
-          </Typography>
-        )}
-        <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-          <Chip
-            icon={job.active ? <CheckCircleIcon /> : <PauseCircleIcon />}
-            label={
-              job.active
-                ? `Active ${Object.keys(job.category)[0]}`
-                : `Inactive ${Object.keys(job.category)[0]}`
-            }
-            color={job.active ? "success" : "default"}
-            size="small"
-            sx={{ fontWeight: 600 }}
-          />
-          {!job.user_id || profile?.id === job.user_id ? (
             <Chip
-              label="Your Posting"
-              color="primary"
+              icon={job.active ? <CheckCircleIcon /> : <PauseCircleIcon />}
+              label={
+                job.active
+                  ? `Active ${Object.keys(job.category)[0]}`
+                  : `Inactive ${Object.keys(job.category)[0]}`
+              }
+              color={job.active ? "success" : "default"}
               size="small"
               sx={{ fontWeight: 600 }}
             />
-          ) : (
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Typography variant="body2" color="text.secondary">
-                Posted by:
-              </Typography>
-              <UserAvatarMenu
-                user_id={job.user_id}
-                sx={{ width: 32, height: 32 }}
+            {!job.user_id || profile?.id === job.user_id ? (
+              <Chip
+                label="Your Posting"
+                color="primary"
+                size="small"
+                sx={{ fontWeight: 600 }}
               />
-            </Stack>
-          )}
-        </Stack>
-        <Stack direction="row" spacing={3} sx={{ color: "text.secondary" }}>
-          <Typography variant="body2">
-            Created {formatRelativeTime(job.date_created)}
-          </Typography>
-          <Typography variant="body2">
-            Updated {formatRelativeTime(job.date_updated)}
-          </Typography>
-        </Stack>
+            ) : (
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Typography variant="body2" color="text.secondary">
+                  Posted by:
+                </Typography>
+                <UserAvatarMenu
+                  user_id={job.user_id}
+                  sx={{ width: 32, height: 32 }}
+                />
+              </Stack>
+            )}
+          </Stack>
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={{ xs: 0.5, sm: 2 }}
+            sx={{ color: "text.secondary" }}
+          >
+            <Typography variant="caption">
+              Created {formatRelativeTime(job.date_created)}
+            </Typography>
+            <Typography variant="caption">
+              Updated {formatRelativeTime(job.date_updated)}
+            </Typography>
+          </Stack>
+        </Box>
+
+        {/* Job Description */}
+        
+          <Box display="flex" alignItems="center" gap={1}>
+      <Typography variant="body2" color="text.secondary">
+        Profile Completion:
+      </Typography>
+
+      <Box flexGrow={1}>
+        <LinearProgress
+          variant="buffer"
+          value={(job?.profile_completion ?? 0) * 100}
+        />
       </Box>
 
-      {/* Job Description */}
-      {job.description && (
-        <Card
-          sx={{
-            mb: 3,
-            borderRadius: 2,
-            border: "1px solid",
-            borderColor: "divider",
-          }}
-        >
-          <CardContent sx={{ p: 3 }}>
+      <Typography variant="body2" color="text.secondary">
+        {Math.round((job?.profile_completion ?? 0) * 100)}%
+      </Typography>
+    </Box>
+    
+        {job.description && (
+          <Box sx={{ mb: 3 }}>
             <Typography
-              variant="h6"
+              variant="subtitle1"
               sx={{
-                mb: 2,
+                mb: 1.5,
                 fontWeight: 600,
                 display: "flex",
                 alignItems: "center",
                 gap: 1,
               }}
             >
-              <DescriptionIcon color="primary" />
-              Job Description
+              <DescriptionIcon fontSize="small" color="primary" />
+              Description
             </Typography>
             <Box
               sx={{
-                pl: 2,
+                pl: { xs: 1.5, sm: 2 },
                 borderLeft: "3px solid",
                 borderColor: "primary.main",
                 bgcolor: "action.hover",
                 borderRadius: 1,
-                p: 2,
+                p: { xs: 1.5, sm: 2 },
               }}
             >
               <MarkdownMessage message={job.description} isUser={false} />
             </Box>
-          </CardContent>
-        </Card>
-      )}
+          </Box>
+        )}
 
-      {/* Emails Section */}
-      {showEmails && job.emails && job.emails.length > 0 && <EmailsList />}
+        {/* Emails Section */}
+        {showEmails && job.emails && job.emails.length > 0 && <EmailsList />}
 
-      {/* Cover Letter */}
-      {match && (match.cover_letter || canEdit) && (
-        <Card
-          sx={{
-            mb: 3,
-            borderRadius: 2,
-            border: "1px solid",
-            borderColor: "divider",
-          }}
-        >
-          <CardContent sx={{ p: 3 }}>
+        {/* Cover Letter */}
+        {match && (match.cover_letter || canEdit) && (
+          <Box sx={{ mb: 3 }}>
             <Stack
               direction="row"
               alignItems="center"
               justifyContent="space-between"
-              sx={{ mb: 2 }}
+              sx={{ mb: 1.5 }}
             >
               <Typography
-                variant="h6"
+                variant="subtitle1"
                 sx={{
                   fontWeight: 600,
                   display: "flex",
@@ -374,7 +379,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
                   gap: 1,
                 }}
               >
-                <EmailIcon color="secondary" />
+                <EmailIcon fontSize="small" color="secondary" />
                 Cover Letter
               </Typography>
               {canEdit && (
@@ -405,12 +410,12 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
             ) : (
               <Box
                 sx={{
-                  pl: 2,
+                  pl: { xs: 1.5, sm: 2 },
                   borderLeft: "3px solid",
                   borderColor: "secondary.main",
                   bgcolor: "action.hover",
                   borderRadius: 1,
-                  p: 2,
+                  p: { xs: 1.5, sm: 2 },
                 }}
               >
                 <MarkdownMessage
@@ -419,26 +424,25 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
                 />
               </Box>
             )}
-          </CardContent>
-        </Card>
-      )}
+          </Box>
+        )}
 
-      {/* Trust & Verification */}
-      {job.trust_note && (
-        <Card
-          sx={{
-            mb: 3,
-            borderRadius: 2,
-            border: "2px solid",
-            borderColor: "success.main",
-            bgcolor: "action.hover",
-          }}
-        >
-          <CardContent sx={{ p: 3 }}>
+        {/* Trust & Verification */}
+        {job.trust_note && (
+          <Box
+            sx={{
+              mb: 3,
+              p: { xs: 1.5, sm: 2 },
+              borderRadius: 1,
+              border: "2px solid",
+              borderColor: "success.main",
+              bgcolor: "success.50",
+            }}
+          >
             <Typography
-              variant="h6"
+              variant="subtitle1"
               sx={{
-                mb: 2,
+                mb: 1.5,
                 fontWeight: 600,
                 color: "success.dark",
                 display: "flex",
@@ -446,84 +450,58 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
                 gap: 1,
               }}
             >
-              <SecurityIcon />
-              Verified & Trusted
+              <SecurityIcon fontSize="small" />
+              Verified
             </Typography>
-            <Box
-              sx={{
-                bgcolor: "background.paper",
-                borderRadius: 1,
-                p: 2,
-                border: "1px solid",
-                borderColor: "divider",
-              }}
-            >
-              <Typography
-                variant="body1"
-                sx={{ lineHeight: 1.6, whiteSpace: "pre-wrap" }}
-              >
-                {job.trust_note}
-              </Typography>
-            </Box>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Position Details & Requirements */}
-      {basicInfoFields.length > 0 && (
-        <Card
-          sx={{
-            mb: 3,
-            borderRadius: 2,
-            border: "1px solid",
-            borderColor: "divider",
-          }}
-        >
-          <CardContent sx={{ p: 3 }}>
             <Typography
-              variant="h6"
+              variant="body2"
+              sx={{ lineHeight: 1.6, whiteSpace: "pre-wrap" }}
+            >
+              {job.trust_note}
+            </Typography>
+          </Box>
+        )}
+
+        {/* Position Details & Requirements */}
+        {basicInfoFields.length > 0 && (
+          <Box sx={{ mb: 3 }}>
+            <Typography
+              variant="subtitle1"
               sx={{
-                mb: 3,
+                mb: 2,
                 fontWeight: 600,
                 display: "flex",
                 alignItems: "center",
                 gap: 1,
               }}
             >
-              <TrendingUpIcon color="info" />
-              Position Details & Requirements
+              <TrendingUpIcon fontSize="small" color="info" />
+              Details
             </Typography>
 
             {/* Match Score Section */}
             <Box
               sx={{
-                mb: 3,
-                p: 2,
+                mb: 2,
+                p: { xs: 1.5, sm: 2 },
                 bgcolor: "action.hover",
-                borderRadius: 2,
+                borderRadius: 1,
                 border: "1px solid",
                 borderColor: "divider",
               }}
             >
-              <Stack
-                direction="row"
-                alignItems="center"
-                spacing={2}
-                sx={{ mb: 2 }}
-              >
-                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                  Match Score Requirement
-                </Typography>
-              </Stack>
+              <Typography variant="body2" sx={{ fontWeight: 600, mb: 1.5 }}>
+                Match Score Requirement
+              </Typography>
 
               {!job.user_id || profile?.id === job.user_id ? (
                 <>
                   <Typography
-                    variant="body2"
+                    variant="caption"
                     color="text.secondary"
-                    sx={{ mb: 1 }}
+                    sx={{ mb: 1, display: "block" }}
                   >
-                    Required Match Score: {localScore}%
+                    Required: {localScore}%
                   </Typography>
                   <Tooltip
                     title="Minimum match score is 60%. You cannot set it lower than this value."
@@ -553,8 +531,8 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
                   </Tooltip>
                 </>
               ) : (
-                <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                  Required Match Score:{" "}
+                <Typography variant="body2">
+                  Required:{" "}
                   {Math.round((job.required_match_score || 0.6) * 100)}%
                 </Typography>
               )}
@@ -566,9 +544,8 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
                 gridTemplateColumns: {
                   xs: "1fr",
                   sm: "repeat(2, 1fr)",
-                  md: "repeat(3, 1fr)",
                 },
-                gap: 2,
+                gap: 1.5,
               }}
             >
               {basicInfoFields.map((key) => {
@@ -578,31 +555,22 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
                   <Box
                     key={key}
                     sx={{
-                      p: 2,
-                      borderRadius: 2,
+                      p: 1.5,
+                      borderRadius: 1,
                       bgcolor: "action.hover",
                       border: "1px solid",
                       borderColor: "divider",
-                      transition: "all 0.2s ease",
-                      "&:hover": {
-                        bgcolor: "action.selected",
-                        borderColor: "primary.main",
-                      },
                     }}
                   >
                     <Typography
                       variant="caption"
                       color="text.secondary"
-                      sx={{
-                        fontWeight: 600,
-                        textTransform: "uppercase",
-                        letterSpacing: 0.5,
-                      }}
+                      sx={{ fontWeight: 600, textTransform: "uppercase" }}
                     >
                       {formatFieldName(key)}
                     </Typography>
                     <Typography
-                      variant="h6"
+                      variant="body1"
                       sx={{ fontWeight: 600, mt: 0.5, wordBreak: "break-word" }}
                     >
                       {String(value)}
@@ -611,116 +579,96 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
                 );
               })}
             </Box>
-          </CardContent>
-        </Card>
-      )}
+          </Box>
+        )}
 
-      {/* Skills & Experience Sections */}
-      {arrayFields.map((fieldName) => {
-        const fieldValue = job[fieldName as keyof Job] as string[];
-        if (!fieldValue || fieldValue.length === 0) return null;
+        {/* Skills & Experience Sections */}
+        {arrayFields.map((fieldName) => {
+          const fieldValue = job[fieldName as keyof Job] as string[];
+          if (!fieldValue || fieldValue.length === 0) return null;
 
-        return (
-          <Accordion
-            key={fieldName}
-            expanded={expandedSection === fieldName}
-            onChange={handleAccordionChange(fieldName)}
-            sx={{
-              mb: 2,
-              borderRadius: "8px !important",
-              border: "1px solid",
-              borderColor: "divider",
-              "&:before": { display: "none" },
-              "&.Mui-expanded": { margin: "0 0 16px 0" },
-            }}
-          >
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
+          return (
+            <Accordion
+              key={fieldName}
+              expanded={expandedSection === fieldName}
+              onChange={handleAccordionChange(fieldName)}
               sx={{
-                borderRadius: "8px",
-                bgcolor: "action.hover",
-                borderBottom: "1px solid",
+                mb: 1.5,
+                borderRadius: "8px !important",
+                border: "1px solid",
                 borderColor: "divider",
-                px: 3,
-                py: 1.5,
-                "&.Mui-expanded": {
-                  borderBottomLeftRadius: 0,
-                  borderBottomRightRadius: 0,
-                  bgcolor: "action.selected",
-                },
-                "&:hover": { bgcolor: "action.selected" },
+                "&:before": { display: "none" },
+                "&.Mui-expanded": { margin: "0 0 12px 0" },
               }}
             >
-              <Stack direction="row" alignItems="center" spacing={2}>
-                <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                  {formatFieldName(fieldName)}
-                </Typography>
-                <Chip
-                  label={fieldValue.length}
-                  size="small"
-                  color="primary"
-                  sx={{ fontWeight: 600 }}
-                />
-              </Stack>
-            </AccordionSummary>
-            <AccordionDetails sx={{ p: 3, bgcolor: "background.paper" }}>
-              {fieldName === "skills" ||
-              fieldName === "technologies" ||
-              fieldName === "tags" ? (
-                <Stack
-                  direction="row"
-                  spacing={1}
-                  sx={{ flexWrap: "wrap", gap: 1.5 }}
-                >
-                  {fieldValue.map((item, index) => (
-                    <Chip
-                      key={index}
-                      label={item}
-                      variant="outlined"
-                      color="primary"
-                      sx={{
-                        fontWeight: 500,
-                        borderRadius: 2,
-                        "&:hover": { bgcolor: "action.selected" },
-                      }}
-                    />
-                  ))}
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                sx={{
+                  borderRadius: "8px",
+                  bgcolor: "action.hover",
+                  px: { xs: 2, sm: 2.5 },
+                  py: 1,
+                  minHeight: 48,
+                  "&.Mui-expanded": {
+                    borderBottomLeftRadius: 0,
+                    borderBottomRightRadius: 0,
+                    minHeight: 48,
+                  },
+                }}
+              >
+                <Stack direction="row" alignItems="center" spacing={1.5}>
+                  <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                    {formatFieldName(fieldName)}
+                  </Typography>
+                  <Chip
+                    label={fieldValue.length}
+                    size="small"
+                    color="primary"
+                    sx={{ height: 20, fontSize: "0.75rem" }}
+                  />
                 </Stack>
-              ) : (
-                <Stack spacing={2}>
-                  {fieldValue.map((item, index) => (
-                    <Box
-                      key={index}
-                      sx={{
-                        p: 2,
-                        borderRadius: 2,
-                        bgcolor: "action.hover",
-                        border: "1px solid",
-                        borderColor: "divider",
-                        transition: "all 0.2s ease",
-                        "&:hover": {
-                          bgcolor: "action.selected",
-                          borderColor: "primary.main",
-                        },
-                      }}
-                    >
-                      <Typography
-                        variant="body1"
-                        sx={{ fontWeight: 500, lineHeight: 1.6 }}
+              </AccordionSummary>
+              <AccordionDetails sx={{ p: { xs: 2, sm: 2.5 } }}>
+                {fieldName === "skills" ||
+                fieldName === "technologies" ||
+                fieldName === "tags" ? (
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                    {fieldValue.map((item, index) => (
+                      <Chip
+                        key={index}
+                        label={item}
+                        variant="outlined"
+                        size="small"
+                        color="primary"
+                      />
+                    ))}
+                  </Box>
+                ) : (
+                  <Stack spacing={1.5}>
+                    {fieldValue.map((item, index) => (
+                      <Box
+                        key={index}
+                        sx={{
+                          p: 1.5,
+                          borderRadius: 1,
+                          bgcolor: "action.hover",
+                          border: "1px solid",
+                          borderColor: "divider",
+                        }}
                       >
-                        {item}
-                      </Typography>
-                    </Box>
-                  ))}
-                </Stack>
-              )}
-            </AccordionDetails>
-          </Accordion>
-        );
-      })}
-
-      <Divider sx={{ mt: 4, borderColor: "divider" }} />
-    </Paper>
+                        <Typography variant="body2" sx={{ lineHeight: 1.6 }}>
+                          {item}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Stack>
+                )}
+              </AccordionDetails>
+            </Accordion>
+          );
+        })}
+      </Paper>
+    </Box>
   );
 };
 

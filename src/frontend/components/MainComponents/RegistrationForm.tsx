@@ -42,7 +42,7 @@ interface FormValues {
 }
 
 const RegistrationForm: React.FC = () => {
-  const { cleanUp } = useAuth();
+  const { cleanUp, logout } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
   const location = useLocation();
 
@@ -229,6 +229,14 @@ const RegistrationForm: React.FC = () => {
             sx={{ mt: 1 }}
           >
             {loading ? "..." : "Complete Registration"}
+          </Button>
+          <Button
+            fullWidth
+            variant="outlined"
+            color="secondary"
+            onClick={cleanUp}
+          >
+            Logout
           </Button>
         </Stack>
       </Box>

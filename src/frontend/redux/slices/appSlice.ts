@@ -1,3 +1,4 @@
+import { convertToBlobLink } from "@/DataProcessing/imageToVec";
 import { Principal } from "@dfinity/principal";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
@@ -12,28 +13,15 @@ export const initializeApp = createAsyncThunk(
         // Return a signal that initialization is already complete
         return { alreadyInitialized: true };
       }
-      const [initialRes] = await Promise.allSettled([
-        backendActor.get_initial_data(),
-      ]);
+      
 
-      if (initialRes.status === "fulfilled" && "Ok" in initialRes.value) {
-        const workspaces = await backendActor.get_work_spaces().catch(() => []);
-        const profileRes = await backendActor
-          .get_user_profile(Principal.fromText(initialRes.value.Ok.profile.id))
-          .catch(() => initialRes.value.Ok.profile);
+      const initialRes = await backendActor.get_initial_data();
 
-        return {
-          Profile: initialRes.value.Ok.profile,
-          ProfileHistory:
-            profileRes && typeof profileRes === "object" && "Ok" in profileRes
-              ? profileRes.Ok
-              : profileRes,
-          Friends: initialRes.value.Ok.friends || [],
-          Wallet: initialRes.value.Ok.wallet || null,
-          Contracts: initialRes.value.Ok.contracts || {},
-          workspaces,
-        };
-      }
+if ("Ok" in initialRes) {
+  return initialRes.Ok;
+}
+
+
     } catch (error) {
       return rejectWithValue(error);
     }

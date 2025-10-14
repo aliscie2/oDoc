@@ -36,19 +36,26 @@ export const ChatHistory = ({
       sx={{
         maxHeight: { xs: 250, sm: 300 },
         overflowY: "auto",
-        px: 1,
-        "&::-webkit-scrollbar": { width: "4px" },
+        px: 2,
+        py: 2,
+        border: `1px solid ${theme.palette.mode === "dark" ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)"}`,
+        borderRadius: "8px",
+        bgcolor: theme.palette.mode === "dark" ? "rgba(0,0,0,0.2)" : "rgba(0,0,0,0.02)",
+        "&::-webkit-scrollbar": { width: "6px" },
         "&::-webkit-scrollbar-track": { bgcolor: "transparent" },
         "&::-webkit-scrollbar-thumb": {
           bgcolor: theme.palette.text.disabled,
-          borderRadius: "2px",
+          borderRadius: "3px",
+          "&:hover": {
+            bgcolor: theme.palette.text.secondary,
+          },
         },
       }}
     >
       {chatHistory.map((msg, idx) => {
         const isLatestMessage = idx === chatHistory.length - 1;
         return (
-          <Box key={`${msg.id}-${idx}`}>
+          <Box key={`${msg.id}-${idx}`} mb={1.5}>
             <MessageBubble
               msg={msg}
               isLatestMessage={isLatestMessage}

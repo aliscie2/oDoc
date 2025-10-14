@@ -4,13 +4,14 @@ import {
   Box,
   Chip,
   Container,
-  Fade,
   Grid2,
   Stack,
   Typography,
   useTheme,
 } from "@mui/material";
 import { useEffect, useState } from "react";
+import { backendActor } from "@/utils/backendUtils";
+import UserAvatarMenu from "@/components/MainComponents/UserAvatarMenu";
 
 const useTypingAnimation = (texts: string[], speed = 50) => {
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
@@ -18,10 +19,12 @@ const useTypingAnimation = (texts: string[], speed = 50) => {
   const [isTyping, setIsTyping] = useState(true);
 
   useEffect(() => {
+    if (!texts || texts.length === 0) return;
+
+    const targetText = texts[currentTextIndex];
     let timeout: NodeJS.Timeout;
 
     if (isTyping) {
-      const targetText = texts[currentTextIndex];
       if (currentText.length < targetText.length) {
         timeout = setTimeout(() => {
           setCurrentText(targetText.slice(0, currentText.length + 1));
@@ -29,71 +32,152 @@ const useTypingAnimation = (texts: string[], speed = 50) => {
       } else {
         timeout = setTimeout(() => {
           setIsTyping(false);
-        }, 2000);
+        }, 3000);
       }
     } else {
       if (currentText.length > 0) {
         timeout = setTimeout(() => {
-          setCurrentText(currentText.slice(1));
-        }, speed / 2);
+          setCurrentText(currentText.slice(0, -1));
+        }, speed / 3);
       } else {
         setCurrentTextIndex((prev) => (prev + 1) % texts.length);
         setIsTyping(true);
       }
     }
 
-    return () => clearTimeout(timeout);
-  }, [currentText, currentTextIndex, isTyping, texts, speed]);
+    return () => {
+      if (timeout) clearTimeout(timeout);
+    };
+  }, [currentText, currentTextIndex, isTyping, texts.length, speed]);
 
   return currentText;
 };
 
 const AIJobMatchingFlow = () => {
   const theme = useTheme();
-  const [visibleCandidates, setVisibleCandidates] = useState<number>(0);
+  const [stats, setStats] = useState({
+    users: 0,
+    jobsCount: 0,
+    talentsCount: 0,
+  });
+  const [displayStats, setDisplayStats] = useState({
+    users: 0,
+    jobsCount: 0,
+    talentsCount: 0,
+  });
+  const [allOpportunities, setAllOpportunities] = useState<
+    Array<{
+      id: string;
+      user_id?: string;
+      job_titles?: string[];
+      skills?: string[];
+      category?: Record<string, null>;
+    }>
+  >([]);
+  const [scrollPosition, setScrollPosition] = useState(0);
 
   const searchQueries = [
     "Senior React developer with 5+ years",
     "Marketing manager in tech",
-    "Full-stack engineer familiar with Web3",
+    "Rust backend Job in ICP eco system",
   ];
 
   const typedText = useTypingAnimation(searchQueries, 60);
 
-  const candidates = [
-    {
-      name: "Sarah Mitchell",
-      role: "Senior Full-Stack Engineer • 8 years",
-      match: 96,
-      avatar: "https://randomuser.me/api/portraits/women/44.jpg",
-    },
-    {
-      name: "Marcus Chen",
-      role: "Product Marketing Lead • Ex-Meta",
-      match: 92,
-      avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-    },
-    {
-      name: "Alex Rivera",
-      role: "Blockchain Developer • Smart Contracts",
-      match: 89,
-      avatar: "https://randomuser.me/api/portraits/men/22.jpg",
-    },
-  ];
-
   useEffect(() => {
-    const isComplete = searchQueries.some((query) => query === typedText);
+    const fetchData = async () => {
+      try {
+        const snsResponse = await backendActor.get_sns_status();
+        if (snsResponse.Ok) {
+          const {
+            number_users,
+            jobs_count,
+            talents_count,
+            latest_jobs,
+            latest_talents,
+          } = snsResponse.Ok;
+          setStats({
+            users: Math.floor(number_users),
+            jobsCount: Math.floor(jobs_count),
+            talentsCount: Math.floor(talents_count),
+          });
 
-    if (isComplete && visibleCandidates === 0) {
-      candidates.forEach((_, index) => {
-        setTimeout(() => {
-          setVisibleCandidates(index + 1);
-        }, index * 350);
-      });
-    } else if (typedText.length === 0) {
-      setVisibleCandidates(0);
+          // Combine jobs and talents
+          const combined = [];
+          if (latest_jobs && latest_jobs.length > 0) {
+            combined.push(...latest_jobs);
+          }
+          if (latest_talents && latest_talents.length > 0) {
+            combined.push(...latest_talents);
+          }
+
+          // Duplicate for infinite scroll effect
+          if (combined.length > 0) {
+            setAllOpportunities([...combined, ...combined, ...combined]);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch stats:", error);
+      }
+    };
+    fetchData();
+  }, []);
+
+  // Animate numbers counting up
+  useEffect(() => {
+    const duration = 2000; // 2 seconds
+    const steps = 60;
+    const stepDuration = duration / steps;
+
+    const animateValue = (key: keyof typeof stats) => {
+      const target = stats[key];
+      const increment = target / steps;
+      let current = 0;
+      let step = 0;
+
+      const timer = setInterval(() => {
+        step++;
+        current = Math.min(current + increment, target);
+        setDisplayStats((prev) => ({
+          ...prev,
+          [key]: Math.floor(current),
+        }));
+
+        if (step >= steps || current >= target) {
+          setDisplayStats((prev) => ({
+            ...prev,
+            [key]: target,
+          }));
+          clearInterval(timer);
+        }
+      }, stepDuration);
+
+      return timer;
+    };
+
+    if (stats.users > 0 || stats.jobsCount > 0 || stats.talentsCount > 0) {
+      const timers = [
+        animateValue("users"),
+        animateValue("jobsCount"),
+        animateValue("talentsCount"),
+      ];
+
+      return () => {
+        timers.forEach((timer) => clearInterval(timer));
+      };
     }
-  }, [typedText, searchQueries, visibleCandidates]);
+  }, [stats]);
+
+  // Infinite scroll animation - continuous smooth scrolling
+  useEffect(() => {
+    if (allOpportunities.length === 0) return;
+
+    const interval = setInterval(() => {
+      setScrollPosition((prev) => prev + 0.5); // Smooth continuous scroll
+    }, 20);
+
+    return () => clearInterval(interval);
+  }, [allOpportunities]);
 
   return (
     <Box
@@ -148,8 +232,7 @@ const AIJobMatchingFlow = () => {
         >
           <Grid2 container>
             <Grid2
-              xs={12}
-              md={6}
+              size={{ xs: 12, md: 6 }}
               sx={{
                 borderRight: {
                   md: `1px solid ${theme.palette.mode === "dark" ? "#2a2a2a" : theme.palette.divider}`,
@@ -206,7 +289,7 @@ const AIJobMatchingFlow = () => {
                       flex: 1,
                     }}
                   >
-                    {typedText}
+                    I am looking for {typedText}
                     <Box
                       component="span"
                       sx={{
@@ -227,31 +310,140 @@ const AIJobMatchingFlow = () => {
                 </Box>
 
                 <Box
-                  sx={{ mt: 3, display: "flex", gap: 1.5, flexWrap: "wrap" }}
+                  sx={{ 
+                    mt: 3, 
+                    display: "grid", 
+                    gridTemplateColumns: "repeat(3, 1fr)",
+                    gap: 1.5,
+                  }}
                 >
-                  {["Frontend Dev", "Marketing", "Design", "Backend"].map(
-                    (tag) => (
-                      <Chip
-                        key={tag}
-                        label={tag}
-                        size="small"
-                        sx={{
-                          bgcolor:
-                            theme.palette.mode === "dark"
-                              ? "#252525"
-                              : "grey.100",
-                          fontSize: "0.75rem",
-                          height: "28px",
-                          "&:hover": { bgcolor: "#667eea", color: "white" },
-                        }}
-                      />
-                    ),
-                  )}
+                  <Box
+                    sx={{
+                      p: 2,
+                      borderRadius: "12px",
+                      bgcolor:
+                        theme.palette.mode === "dark" ? "#252525" : "grey.100",
+                      border: `1px solid`,
+                      borderColor:
+                        theme.palette.mode === "dark" ? "#333" : "grey.200",
+                      textAlign: "center",
+                      transition: "all 0.3s ease",
+                      "&:hover": {
+                        borderColor: "#667eea",
+                        transform: "translateY(-2px)",
+                      },
+                    }}
+                  >
+                    <Typography
+                      variant="h4"
+                      sx={{
+                        fontWeight: 700,
+                        color: "#667eea",
+                        fontSize: { xs: "1.5rem", md: "2rem" },
+                        mb: 0.5,
+                      }}
+                    >
+                      {displayStats.users}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        fontSize: "0.75rem",
+                        opacity: 0.7,
+                        textTransform: "uppercase",
+                        letterSpacing: 0.5,
+                      }}
+                    >
+                      Users
+                    </Typography>
+                  </Box>
+
+                  <Box
+                    sx={{
+                      p: 2,
+                      borderRadius: "12px",
+                      bgcolor:
+                        theme.palette.mode === "dark" ? "#252525" : "grey.100",
+                      border: `1px solid`,
+                      borderColor:
+                        theme.palette.mode === "dark" ? "#333" : "grey.200",
+                      textAlign: "center",
+                      transition: "all 0.3s ease",
+                      "&:hover": {
+                        borderColor: "#2196f3",
+                        transform: "translateY(-2px)",
+                      },
+                    }}
+                  >
+                    <Typography
+                      variant="h4"
+                      sx={{
+                        fontWeight: 700,
+                        color: "#2196f3",
+                        fontSize: { xs: "1.5rem", md: "2rem" },
+                        mb: 0.5,
+                      }}
+                    >
+                      {displayStats.jobsCount}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        fontSize: "0.75rem",
+                        opacity: 0.7,
+                        textTransform: "uppercase",
+                        letterSpacing: 0.5,
+                      }}
+                    >
+                      Jobs
+                    </Typography>
+                  </Box>
+
+                  <Box
+                    sx={{
+                      p: 2,
+                      borderRadius: "12px",
+                      bgcolor:
+                        theme.palette.mode === "dark" ? "#252525" : "grey.100",
+                      border: `1px solid`,
+                      borderColor:
+                        theme.palette.mode === "dark" ? "#333" : "grey.200",
+                      textAlign: "center",
+                      transition: "all 0.3s ease",
+                      "&:hover": {
+                        borderColor: "#4caf50",
+                        transform: "translateY(-2px)",
+                      },
+                    }}
+                  >
+                    <Typography
+                      variant="h4"
+                      sx={{
+                        fontWeight: 700,
+                        color: "#4caf50",
+                        fontSize: { xs: "1.5rem", md: "2rem" },
+                        mb: 0.5,
+                      }}
+                    >
+                      {displayStats.talentsCount}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        fontSize: "0.75rem",
+                        opacity: 0.7,
+                        textTransform: "uppercase",
+                        letterSpacing: 0.5,
+                      }}
+                    >
+                      Talents
+                    </Typography>
+                  </Box>
                 </Box>
               </Box>
             </Grid2>
 
-            <Grid2 xs={12} md={6}>
+            <Grid2 size={{ xs: 12, md: 6 }}>
               <Box
                 sx={{
                   p: { xs: 3, md: 4 },
@@ -270,7 +462,9 @@ const AIJobMatchingFlow = () => {
                     variant="overline"
                     sx={{
                       color:
-                        visibleCandidates > 0 ? "#4caf50" : "text.secondary",
+                        allOpportunities.length > 0
+                          ? "#4caf50"
+                          : "text.secondary",
                       fontWeight: 700,
                       letterSpacing: 1.2,
                       fontSize: "0.7rem",
@@ -278,97 +472,144 @@ const AIJobMatchingFlow = () => {
                   >
                     STEP 2: GET MATCHES
                   </Typography>
-                  {visibleCandidates > 0 && (
+                  {allOpportunities.length > 0 && (
                     <CheckCircleIcon sx={{ color: "#4caf50", fontSize: 18 }} />
                   )}
                 </Box>
 
-                {visibleCandidates > 0 ? (
-                  <Stack spacing={1.5}>
-                    {candidates
-                      .slice(0, visibleCandidates)
-                      .map((candidate, index) => (
-                        <Fade in={true} timeout={500} key={index}>
-                          <Box
-                            sx={{
-                              p: 1.5,
-                              borderRadius: "12px",
-                              border: `1px solid`,
-                              borderColor:
-                                theme.palette.mode === "dark"
-                                  ? "#2a2a2a"
-                                  : "grey.200",
-                              bgcolor:
-                                theme.palette.mode === "dark"
-                                  ? "#252525"
-                                  : "grey.50",
-                              transition: "all 0.3s ease",
-                              cursor: "pointer",
-                              "&:hover": {
-                                borderColor: "#667eea",
-                                transform: "translateY(-2px)",
-                                boxShadow:
-                                  "0 4px 12px rgba(102, 126, 234, 0.2)",
-                              },
-                            }}
-                          >
+                {allOpportunities.length > 0 ? (
+                  <Box
+                    sx={{
+                      height: "280px",
+                      overflow: "hidden",
+                      position: "relative",
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        transform: `translateY(-${scrollPosition % ((allOpportunities.length / 3) * 70)}px)`,
+                        willChange: "transform",
+                      }}
+                    >
+                      <Stack spacing={1.5}>
+                        {allOpportunities.map((job, index) => {
+                          const category = job.category
+                            ? Object.keys(job.category)[0]
+                            : "Job";
+                          return (
                             <Box
+                              key={`${job.id}-${index}`}
                               sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 1.5,
+                                p: 1.5,
+                                borderRadius: "12px",
+                                border: `1px solid`,
+                                borderColor:
+                                  theme.palette.mode === "dark"
+                                    ? "#2a2a2a"
+                                    : "grey.200",
+                                bgcolor:
+                                  theme.palette.mode === "dark"
+                                    ? "#252525"
+                                    : "grey.50",
+                                transition: "all 0.3s ease",
+                                cursor: "pointer",
+                                "&:hover": {
+                                  borderColor: "#667eea",
+                                  transform: "translateY(-2px)",
+                                  boxShadow:
+                                    "0 4px 12px rgba(102, 126, 234, 0.2)",
+                                },
                               }}
                             >
-                              <Avatar
-                                src={candidate.avatar}
+                              <Box
                                 sx={{
-                                  width: 40,
-                                  height: 40,
-                                  border: `2px solid ${theme.palette.mode === "dark" ? "#1a1a1a" : "white"}`,
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 1.5,
                                 }}
-                              />
-                              <Box sx={{ flex: 1, minWidth: 0 }}>
-                                <Typography
-                                  variant="body2"
+                              >
+                                <Box
                                   sx={{
-                                    fontWeight: 600,
-                                    fontSize: "0.9rem",
-                                    mb: 0.25,
+                                    pointerEvents: "none",
+                                    cursor: "default",
                                   }}
                                 >
-                                  {candidate.name}
-                                </Typography>
-                                <Typography
-                                  variant="caption"
+                                  {job.user_id ? (
+                                    <UserAvatarMenu
+                                      user_id={job.user_id}
+                                      hide={["Profile", "Message", "Review"]}
+                                      sx={{
+                                        width: 40,
+                                        height: 40,
+                                        border: `2px solid ${theme.palette.mode === "dark" ? "#1a1a1a" : "white"}`,
+                                      }}
+                                    />
+                                  ) : (
+                                    <Avatar
+                                      sx={{
+                                        width: 40,
+                                        height: 40,
+                                        bgcolor:
+                                          category === "Talent"
+                                            ? "#4caf50"
+                                            : "#667eea",
+                                        border: `2px solid ${theme.palette.mode === "dark" ? "#1a1a1a" : "white"}`,
+                                      }}
+                                    >
+                                      {job.job_titles?.[0]?.[0]?.toUpperCase() ||
+                                        category[0]}
+                                    </Avatar>
+                                  )}
+                                </Box>
+                                <Box sx={{ flex: 1, minWidth: 0 }}>
+                                  <Typography
+                                    variant="body2"
+                                    sx={{
+                                      fontWeight: 600,
+                                      fontSize: "0.9rem",
+                                      mb: 0.25,
+                                    }}
+                                  >
+                                    {job.job_titles?.[0] ||
+                                      `${category} Position`}
+                                  </Typography>
+                                  <Typography
+                                    variant="caption"
+                                    sx={{
+                                      opacity: 0.7,
+                                      display: "block",
+                                      fontSize: "0.75rem",
+                                      overflow: "hidden",
+                                      textOverflow: "ellipsis",
+                                      whiteSpace: "nowrap",
+                                    }}
+                                  >
+                                    {job.skills?.slice(0, 3).join(", ") ||
+                                      "Skills not specified"}
+                                  </Typography>
+                                </Box>
+                                <Chip
+                                  label={category}
+                                  size="small"
                                   sx={{
-                                    opacity: 0.7,
-                                    display: "block",
-                                    fontSize: "0.75rem",
-                                    overflow: "hidden",
-                                    textOverflow: "ellipsis",
-                                    whiteSpace: "nowrap",
+                                    bgcolor:
+                                      category === "Talent"
+                                        ? "#4caf50"
+                                        : "#2196f3",
+                                    color: "white",
+                                    fontWeight: 700,
+                                    fontSize: "0.7rem",
+                                    height: "24px",
+                                    minWidth: "48px",
                                   }}
-                                >
-                                  {candidate.role}
-                                </Typography>
+                                />
                               </Box>
-                              <Chip
-                                label={`${candidate.match}%`}
-                                size="small"
-                                sx={{
-                                  bgcolor: "#4caf50",
-                                  color: "white",
-                                  fontWeight: 700,
-                                  fontSize: "0.7rem",
-                                  height: "24px",
-                                  minWidth: "48px",
-                                }}
-                              />
                             </Box>
-                          </Box>
-                        </Fade>
-                      ))}
-                  </Stack>
+                          );
+                        })}
+                      </Stack>
+                    </Box>
+                  </Box>
                 ) : (
                   <Box
                     sx={{
@@ -381,7 +622,7 @@ const AIJobMatchingFlow = () => {
                     }}
                   >
                     <Typography variant="body2" sx={{ textAlign: "center" }}>
-                      Waiting for your search...
+                      Loading opportunities...
                     </Typography>
                   </Box>
                 )}

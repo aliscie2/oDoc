@@ -42,7 +42,5 @@
     
     // Store job ID for React to use later
     window.__JOB_ID__ = jobId;
-    
-    console.log('SEO fallback: Set default meta tags for job page', jobId);
   }
 })();

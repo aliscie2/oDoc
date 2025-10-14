@@ -1,770 +1,750 @@
-import type { Principal } from "@dfinity/principal";
-import type { ActorMethod } from "@dfinity/agent";
-import type { IDL } from "@dfinity/candid";
+import type { Principal } from '@dfinity/principal';
+import type { ActorMethod } from '@dfinity/agent';
+import type { IDL } from '@dfinity/candid';
 
 export interface ActionRating {
-  id: string;
-  action_type: ActionType;
-  date: number;
-  received_promises: number;
-  spent: number;
-  rating: number;
-  received: number;
-  promises: number;
+  'id' : string,
+  'action_type' : ActionType,
+  'date' : number,
+  'received_promises' : number,
+  'spent' : number,
+  'rating' : number,
+  'received' : number,
+  'promises' : number,
 }
-export type ActionType = { Payment: CPayment };
-export interface AddOwnerArgs {
-  owner: Principal;
-}
+export type ActionType = { 'Payment' : CPayment };
+export interface AddOwnerArgs { 'owner' : Principal }
 export interface AddSwapArgs {
-  token0: Principal;
-  token1: Principal;
-  pool_canister: Principal;
+  'token0' : Principal,
+  'token1' : Principal,
+  'pool_canister' : Principal,
 }
 export interface Affiliate {
-  id: string;
-  earnings: Array<ReferralPayments>;
-  stats: AffiliateStats;
-  users: Array<ReferredUser>;
+  'id' : string,
+  'earnings' : Array<ReferralPayments>,
+  'stats' : AffiliateStats,
+  'users' : Array<ReferredUser>,
 }
 export interface AffiliateStats {
-  trusted_users: bigint;
-  total_referrals: bigint;
-  total_earnings: number;
+  'trusted_users' : bigint,
+  'total_referrals' : bigint,
+  'total_earnings' : number,
 }
 export interface AiResponse {
-  remaining_credits: number;
-  response: string;
+  'remaining_credits' : number,
+  'response' : string,
 }
 export interface AppMessage {
-  text: string;
-  notification: [] | [Notification];
-  timestamp: bigint;
+  'text' : string,
+  'notification' : [] | [Notification],
+  'timestamp' : bigint,
 }
 export interface Approve {
-  fee: [] | [bigint];
-  from: IndexAccount;
-  memo: [] | [Uint8Array | number[]];
-  created_at_time: [] | [bigint];
-  amount: bigint;
-  expected_allowance: [] | [bigint];
-  expires_at: [] | [bigint];
-  spender: IndexAccount;
+  'fee' : [] | [bigint],
+  'from' : IndexAccount,
+  'memo' : [] | [Uint8Array | number[]],
+  'created_at_time' : [] | [bigint],
+  'amount' : bigint,
+  'expected_allowance' : [] | [bigint],
+  'expires_at' : [] | [bigint],
+  'spender' : IndexAccount,
 }
 export interface AssistantMessage {
-  content: [] | [string];
-  tool_calls: Array<ToolCall>;
+  'content' : [] | [string],
+  'tool_calls' : Array<ToolCall>,
 }
 export interface Availability {
-  id: string;
-  title: [] | [string];
-  is_blocked: boolean;
-  schedule_type: ScheduleType;
-  time_slots: Array<TimeSlot>;
+  'id' : string,
+  'title' : [] | [string],
+  'is_blocked' : boolean,
+  'schedule_type' : ScheduleType,
+  'time_slots' : Array<TimeSlot>,
 }
 export interface Burn {
-  from: IndexAccount;
-  memo: [] | [Uint8Array | number[]];
-  created_at_time: [] | [bigint];
-  amount: bigint;
-  spender: [] | [IndexAccount];
+  'from' : IndexAccount,
+  'memo' : [] | [Uint8Array | number[]],
+  'created_at_time' : [] | [bigint],
+  'amount' : bigint,
+  'spender' : [] | [IndexAccount],
 }
-export interface CCell {
-  id: string;
-  field: string;
-  value: string;
-}
+export interface CCell { 'id' : string, 'field' : string, 'value' : string }
 export interface CColumn {
-  id: string;
-  field: string;
-  formula_string: string;
-  column_type: string;
-  filters: Array<Filter>;
-  permissions: Array<PermissionType>;
-  name: string;
-  editable: boolean;
-  deletable: boolean;
+  'id' : string,
+  'field' : string,
+  'formula_string' : string,
+  'column_type' : string,
+  'filters' : Array<Filter>,
+  'permissions' : Array<PermissionType>,
+  'name' : string,
+  'editable' : boolean,
+  'deletable' : boolean,
 }
 export interface CContract {
-  id: string;
-  creator: Principal;
-  date_created: number;
-  name: string;
-  rows: Array<CRow>;
-  columns: Array<CColumn>;
+  'id' : string,
+  'creator' : Principal,
+  'date_created' : number,
+  'name' : string,
+  'rows' : Array<CRow>,
+  'columns' : Array<CColumn>,
 }
 export interface CPayment {
-  id: string;
-  status: PaymentStatus;
-  date_created: number;
-  date_released: number;
-  cells: Array<CCell>;
-  contract_id: string;
-  sender: Principal;
-  amount: number;
-  receiver: Principal;
+  'id' : string,
+  'status' : PaymentStatus,
+  'date_created' : number,
+  'date_released' : number,
+  'cells' : Array<CCell>,
+  'contract_id' : string,
+  'sender' : Principal,
+  'amount' : number,
+  'receiver' : Principal,
 }
-export interface CRow {
-  id: string;
-  cells: Array<CCell>;
-}
+export interface CRow { 'id' : string, 'cells' : Array<CCell> }
 export interface Calendar {
-  id: string;
-  owner: string;
-  events: Array<Event>;
-  availabilities: Array<Availability>;
-  google_ids: Array<string>;
+  'id' : string,
+  'owner' : string,
+  'google_public_urls' : Array<string>,
+  'events' : Array<Event>,
+  'availabilities' : Array<Availability>,
+  'google_ids' : Array<string>,
 }
 export interface CalendarActions {
-  delete_availabilities: Array<string>;
-  delete_events: Array<string>;
-  events: Array<Event>;
-  availabilities: Array<Availability>;
+  'delete_availabilities' : Array<string>,
+  'delete_events' : Array<string>,
+  'events' : Array<Event>,
+  'availabilities' : Array<Availability>,
 }
 export interface CanisterOutputCertifiedMessages {
-  messages: Array<CanisterOutputMessage>;
-  cert: Uint8Array | number[];
-  tree: Uint8Array | number[];
-  is_end_of_queue: boolean;
+  'messages' : Array<CanisterOutputMessage>,
+  'cert' : Uint8Array | number[],
+  'tree' : Uint8Array | number[],
+  'is_end_of_queue' : boolean,
 }
 export interface CanisterOutputMessage {
-  key: string;
-  content: Uint8Array | number[];
-  client_key: ClientKey;
+  'key' : string,
+  'content' : Uint8Array | number[],
+  'client_key' : ClientKey,
 }
-export interface CanisterWsCloseArguments {
-  client_key: ClientKey;
-}
-export interface CanisterWsGetMessagesArguments {
-  nonce: bigint;
-}
-export interface CanisterWsMessageArguments {
-  msg: WebsocketMessage;
-}
+export interface CanisterWsCloseArguments { 'client_key' : ClientKey }
+export interface CanisterWsGetMessagesArguments { 'nonce' : bigint }
+export interface CanisterWsMessageArguments { 'msg' : WebsocketMessage }
 export interface CanisterWsOpenArguments {
-  gateway_principal: Principal;
-  client_nonce: bigint;
+  'gateway_principal' : Principal,
+  'client_nonce' : bigint,
 }
-export type Category = { Job: null } | { Talent: null };
+export type Category = { 'Job' : null } |
+  { 'Talent' : null };
 export interface Chat {
-  id: string;
-  creator: Principal;
-  members: Array<Principal>;
-  messages: Array<Message>;
-  name: string;
-  workspaces: Array<string>;
-  admins: Array<Principal>;
+  'id' : string,
+  'creator' : Principal,
+  'members' : Array<Principal>,
+  'messages' : Array<Message>,
+  'name' : string,
+  'workspaces' : Array<string>,
+  'admins' : Array<Principal>,
 }
-export type ChatMessage =
-  | {
-      tool: { content: string; tool_call_id: string };
-    }
-  | { user: { content: string } }
-  | { assistant: AssistantMessage }
-  | { system: { content: string } };
+export type ChatMessage = {
+    'tool' : { 'content' : string, 'tool_call_id' : string }
+  } |
+  { 'user' : { 'content' : string } } |
+  { 'assistant' : AssistantMessage } |
+  { 'system' : { 'content' : string } };
 export interface ClientKey {
-  client_principal: Principal;
-  client_nonce: bigint;
+  'client_principal' : Principal,
+  'client_nonce' : bigint,
 }
 export interface Column {
-  id: string;
-  _type: string;
-  field: string;
-  filters: Array<Filter>;
-  permissions: Array<PermissionType>;
-  data_validator: [] | [string];
-  editable: boolean;
-  formula: [] | [Formula];
+  'id' : string,
+  '_type' : string,
+  'field' : string,
+  'filters' : Array<Filter>,
+  'permissions' : Array<PermissionType>,
+  'data_validator' : [] | [string],
+  'editable' : boolean,
+  'formula' : [] | [Formula],
 }
-export type ContentData =
-  | { Comment: string }
-  | { Image: BigUint64Array | bigint[] }
-  | { Table: Table };
+export type ContentData = { 'Comment' : string } |
+  { 'Image' : BigUint64Array | bigint[] } |
+  { 'Table' : Table };
 export interface ContentNode {
-  id: string;
-  _type: string;
-  value: string;
-  data: [] | [ContentData];
-  text: string;
-  children: Array<string>;
-  language: string;
-  list_style_type: string;
-  indent: bigint;
-  list_start: bigint;
-  formats: Array<string>;
-  parent: [] | [string];
+  'id' : string,
+  '_type' : string,
+  'value' : string,
+  'data' : [] | [ContentData],
+  'text' : string,
+  'children' : Array<string>,
+  'language' : string,
+  'list_style_type' : string,
+  'indent' : bigint,
+  'list_start' : bigint,
+  'formats' : Array<string>,
+  'parent' : [] | [string],
 }
-export type Contract = { SharesContract: string };
+export type Contract = { 'SharesContract' : string };
 export interface ContractNotification {
-  contract_type: string;
-  contract_id: string;
+  'contract_type' : string,
+  'contract_id' : string,
 }
-export type ContractPermissionType =
-  | { Add: Principal }
-  | { Edit: Principal }
-  | { View: Principal }
-  | { AnyOneView: null }
-  | { AnyOneEdite: null }
-  | { AnyOneAdd: null };
+export type ContractPermissionType = { 'Add' : Principal } |
+  { 'Edit' : Principal } |
+  { 'View' : Principal } |
+  { 'AnyOneView' : null } |
+  { 'AnyOneEdite' : null } |
+  { 'AnyOneAdd' : null };
 export interface ContractUpdates {
-  id: string;
-  permissions: Array<ContractPermissionType>;
-  promises_indexes: Array<[bigint, string]>;
-  name: [] | [string];
-  delete_tables: Array<string>;
-  tables: Array<TableUpdates>;
-  delete_promises: Array<string>;
-  promises: Array<CPayment>;
+  'id' : string,
+  'permissions' : Array<ContractPermissionType>,
+  'promises_indexes' : Array<[bigint, string]>,
+  'name' : [] | [string],
+  'delete_tables' : Array<string>,
+  'tables' : Array<TableUpdates>,
+  'delete_promises' : Array<string>,
+  'promises' : Array<CPayment>,
 }
 export interface CustomContract {
-  id: string;
-  permissions: Array<ContractPermissionType>;
-  creator: string;
-  date_created: number;
-  payments: Array<CPayment>;
-  name: string;
-  formulas: Array<Formula>;
-  contracts: Array<CContract>;
-  date_updated: number;
-  promises: Array<CPayment>;
+  'id' : string,
+  'permissions' : Array<ContractPermissionType>,
+  'creator' : string,
+  'date_created' : number,
+  'payments' : Array<CPayment>,
+  'name' : string,
+  'formulas' : Array<Formula>,
+  'contracts' : Array<CContract>,
+  'date_updated' : number,
+  'promises' : Array<CPayment>,
 }
-export type Error =
-  | { OwnerAlreadyExists: null }
-  | { InsufficientAllowance: { allowance: bigint } }
-  | { SwapAlreadyExists: null }
-  | { InsufficientBalance: { balance: bigint } }
-  | { InvalidPrincipal: null }
-  | { IcCdkError: { message: string } }
-  | { OwnerNotFound: null }
-  | { SwapNotFound: null }
-  | { SwapTokenNotFound: null }
-  | { Forbidden: null }
-  | { AmountTooSmall: null };
+export type Error = { 'OwnerAlreadyExists' : null } |
+  { 'InsufficientAllowance' : { 'allowance' : bigint } } |
+  { 'SwapAlreadyExists' : null } |
+  { 'InsufficientBalance' : { 'balance' : bigint } } |
+  { 'InvalidPrincipal' : null } |
+  { 'IcCdkError' : { 'message' : string } } |
+  { 'OwnerNotFound' : null } |
+  { 'SwapNotFound' : null } |
+  { 'SwapTokenNotFound' : null } |
+  { 'Forbidden' : null } |
+  { 'AmountTooSmall' : null };
 export interface Event {
-  id: string;
-  title: string;
-  description: string;
-  created_by: string;
-  end_time: number;
-  recurrence: [] | [RecurrenceRule];
-  start_time: number;
-  attendees: Array<string>;
+  'id' : string,
+  'title' : string,
+  'description' : string,
+  'created_by' : string,
+  'end_time' : number,
+  'recurrence' : [] | [RecurrenceRule],
+  'start_time' : number,
+  'attendees' : Array<string>,
 }
 export interface Exchange {
-  to: string;
-  _type: ExchangeType;
-  date_created: number;
-  from: string;
-  amount: number;
+  'to' : string,
+  '_type' : ExchangeType,
+  'date_created' : number,
+  'from' : string,
+  'amount' : number,
 }
-export type ExchangeType =
-  | { Withdraw: null }
-  | { Deposit: null }
-  | { LocalSend: null }
-  | { LocalReceive: null };
-export type Execute = { Nft: null } | { Usdt: CPayment } | { Token: null };
+export type ExchangeType = { 'Withdraw' : null } |
+  { 'Deposit' : null } |
+  { 'LocalSend' : null } |
+  { 'LocalReceive' : null };
+export type Execute = { 'Nft' : null } |
+  { 'Usdt' : CPayment } |
+  { 'Token' : null };
 export interface FEChat {
-  id: string;
-  creator: UserFE;
-  members: Array<Principal>;
-  messages: Array<Message>;
-  name: string;
-  workspaces: Array<string>;
-  admins: Array<UserFE>;
+  'id' : string,
+  'creator' : UserFE,
+  'members' : Array<Principal>,
+  'messages' : Array<Message>,
+  'name' : string,
+  'workspaces' : Array<string>,
+  'admins' : Array<UserFE>,
 }
 export interface FEFriend {
-  id: string;
-  is_sender: boolean;
-  name: string;
-  description: string;
-  email: string;
-  photo: Uint8Array | number[];
-  confirmed: boolean;
+  'id' : string,
+  'is_sender' : boolean,
+  'name' : string,
+  'description' : string,
+  'email' : string,
+  'photo' : Uint8Array | number[],
+  'confirmed' : boolean,
 }
 export interface FileIndexing {
-  id: string;
-  new_index: bigint;
-  parent: [] | [string];
+  'id' : string,
+  'new_index' : bigint,
+  'parent' : [] | [string],
 }
 export interface FileNode {
-  id: string;
-  permission: ShareFilePermission;
-  content_id: [] | [string];
-  share_id: [] | [string];
-  name: string;
-  workspaces: Array<string>;
-  children: Array<string>;
-  author: string;
-  users_permissions: Array<[Principal, ShareFilePermission]>;
-  parent: [] | [string];
+  'id' : string,
+  'permission' : ShareFilePermission,
+  'content_id' : [] | [string],
+  'share_id' : [] | [string],
+  'name' : string,
+  'workspaces' : Array<string>,
+  'children' : Array<string>,
+  'author' : string,
+  'users_permissions' : Array<[Principal, ShareFilePermission]>,
+  'parent' : [] | [string],
 }
 export interface Filter {
-  name: string;
-  operations: Array<Operation>;
-  formula: [] | [string];
+  'name' : string,
+  'operations' : Array<Operation>,
+  'formula' : [] | [string],
 }
-export interface Formula {
-  column_id: string;
-  execute: Execute;
-}
+export interface Formula { 'column_id' : string, 'execute' : Execute }
 export interface Friend {
-  id: string;
-  sender: User;
-  confirmed: boolean;
-  receiver: User;
+  'id' : string,
+  'sender' : User,
+  'confirmed' : boolean,
+  'receiver' : User,
 }
-export interface FriendRequestNotification {
-  friend: Friend;
-}
+export interface FriendRequestNotification { 'friend' : Friend }
 export interface FunctionCall {
-  name: string;
-  arguments: Array<ToolCallArgument>;
+  'name' : string,
+  'arguments' : Array<ToolCallArgument>,
 }
 export interface GetErrorLogsArgs {
-  start: [] | [bigint];
-  length: [] | [bigint];
+  'start' : [] | [bigint],
+  'length' : [] | [bigint],
 }
-export interface GetJobs {
-  jobs: Array<Job>;
-  matching_jobs: Array<Job>;
-}
+export interface GetJobs { 'jobs' : Array<Job>, 'matching_jobs' : Array<Job> }
 export interface GetTransactions {
-  balance: bigint;
-  transactions: Array<TransactionWithId>;
-  oldest_tx_id: [] | [bigint];
+  'balance' : bigint,
+  'transactions' : Array<TransactionWithId>,
+  'oldest_tx_id' : [] | [bigint],
 }
 export interface HttpResponse {
-  status: bigint;
-  body: Uint8Array | number[];
-  headers: Array<ToolCallArgument>;
+  'status' : bigint,
+  'body' : Uint8Array | number[],
+  'headers' : Array<ToolCallArgument>,
 }
 export interface IndexAccount {
-  owner: Principal;
-  subaccount: [] | [Uint8Array | number[]];
+  'owner' : Principal,
+  'subaccount' : [] | [Uint8Array | number[]],
 }
 export interface InitialData {
-  contracts: Array<[string, StoredContract]>;
-  wallet: Wallet;
-  friends: Array<FEFriend>;
-  profile: User;
+  'contracts' : Array<[string, StoredContract]>,
+  'wallet' : Wallet,
+  'friends' : Array<FEFriend>,
+  'profile' : User,
 }
 export interface Job {
-  id: string;
-  active: boolean;
-  profile_completion: number;
-  date_created: number;
-  contacts: Array<string>;
-  trust_note: string;
-  education: Array<string>;
-  notification_username: string;
-  description: string;
-  emails: Array<string>;
-  feedback: string;
-  trust_score: string;
-  user_id: string;
-  links: Array<string>;
-  experience: Array<string>;
-  notification_id: string;
-  matches: Array<Match>;
-  job_titles: Array<string>;
-  category: Category;
-  date_updated: number;
-  proficiency_level: string;
-  certifications: Array<string>;
-  required_match_score: number;
-  skills: Array<string>;
+  'id' : string,
+  'active' : boolean,
+  'profile_completion' : number,
+  'date_created' : number,
+  'contacts' : Array<string>,
+  'trust_note' : string,
+  'education' : Array<string>,
+  'notification_username' : string,
+  'description' : string,
+  'emails' : Array<string>,
+  'feedback' : string,
+  'trust_score' : string,
+  'user_id' : string,
+  'links' : Array<string>,
+  'experience' : Array<string>,
+  'notification_id' : string,
+  'matches' : Array<Match>,
+  'job_titles' : Array<string>,
+  'category' : Category,
+  'date_updated' : number,
+  'proficiency_level' : string,
+  'certifications' : Array<string>,
+  'required_match_score' : number,
+  'skills' : Array<string>,
 }
 export interface JobUpdate {
-  id: string;
-  active: [] | [boolean];
-  matches: [] | [Array<Match>];
-  updates: Array<Update>;
-  category: [] | [Category];
-  required_match_score: [] | [number];
+  'id' : string,
+  'active' : [] | [boolean],
+  'updates' : Array<Update>,
+  'category' : [] | [Category],
+  'required_match_score' : [] | [number],
 }
 export interface Log {
-  level: LogLevel;
-  message: string;
-  timestamp: bigint;
+  'level' : LogLevel,
+  'message' : string,
+  'timestamp' : bigint,
 }
-export type LogLevel = { Error: null } | { Info: null } | { Debug: null };
+export type LogLevel = { 'Error' : null } |
+  { 'Info' : null } |
+  { 'Debug' : null };
 export interface Match {
-  missmatching_skills: Array<string>;
-  user_id: string;
-  score: number;
-  job_id: string;
-  cover_letter: string;
-  date_updated: number;
-  is_connected: boolean;
+  'missmatching_skills' : Array<string>,
+  'user_id' : string,
+  'score' : number,
+  'job_id' : string,
+  'cover_letter' : string,
+  'date_updated' : number,
+  'is_connected' : boolean,
+}
+export interface MatchChanges {
+  'add' : Array<Match>,
+  'current_job_id' : string,
+  'delete_matches' : Array<string>,
+  'updates' : Array<Match>,
+  'reset' : [] | [Array<Match>],
 }
 export interface Message {
-  id: string;
-  date: bigint;
-  sender: Principal;
-  seen_by: Array<Principal>;
-  message: string;
-  chat_id: string;
+  'id' : string,
+  'date' : bigint,
+  'sender' : Principal,
+  'seen_by' : Array<Principal>,
+  'message' : string,
+  'chat_id' : string,
 }
 export interface Mint {
-  to: IndexAccount;
-  memo: [] | [Uint8Array | number[]];
-  created_at_time: [] | [bigint];
-  amount: bigint;
+  'to' : IndexAccount,
+  'memo' : [] | [Uint8Array | number[]],
+  'created_at_time' : [] | [bigint],
+  'amount' : bigint,
 }
-export type NoteContent =
-  | { CustomContract: [string, CPayment] }
-  | { ContractUpdate: ContractNotification }
-  | { FriendRequest: FriendRequestNotification }
-  | { AcceptFriendRequest: null }
-  | { ApproveShareRequest: string }
-  | { CPaymentContract: [CPayment, PaymentAction] }
-  | { Unfriend: null }
-  | { ReceivedDeposit: string }
-  | { ApplyShareRequest: string }
-  | { NewMessage: Message }
-  | { RemovedFromChat: string };
+export type NoteContent = { 'CustomContract' : [string, CPayment] } |
+  { 'ContractUpdate' : ContractNotification } |
+  { 'FriendRequest' : FriendRequestNotification } |
+  { 'AcceptFriendRequest' : null } |
+  { 'ApproveShareRequest' : string } |
+  { 'CPaymentContract' : [CPayment, PaymentAction] } |
+  { 'Unfriend' : null } |
+  { 'ReceivedDeposit' : string } |
+  { 'ApplyShareRequest' : string } |
+  { 'NewMessage' : Message } |
+  { 'RemovedFromChat' : string };
 export interface Notification {
-  id: string;
-  is_seen: boolean;
-  content: NoteContent;
-  time: number;
-  sender: Principal;
-  receiver: Principal;
+  'id' : string,
+  'is_seen' : boolean,
+  'content' : NoteContent,
+  'time' : number,
+  'sender' : Principal,
+  'receiver' : Principal,
 }
-export type Operation =
-  | { Equal: null }
-  | { Contains: null }
-  | { Bigger: null }
-  | { BiggerOrEqual: null };
+export type Operation = { 'Equal' : null } |
+  { 'Contains' : null } |
+  { 'Bigger' : null } |
+  { 'BiggerOrEqual' : null };
 export interface PayArgs {
-  token: Principal;
-  memo: bigint;
-  to_merchant: Principal;
-  amount: bigint;
+  'token' : Principal,
+  'memo' : bigint,
+  'to_merchant' : Principal,
+  'amount' : bigint,
 }
-export type PaymentAction =
-  | { RequestCancellation: CPayment }
-  | { Released: null }
-  | { Objected: null }
-  | { Accepted: null }
-  | { Update: null }
-  | { Cancelled: null }
-  | { Promise: null };
-export type PaymentStatus =
-  | { None: null }
-  | { RequestCancellation: null }
-  | { Released: null }
-  | { Objected: string }
-  | { Confirmed: null }
-  | { ConfirmedCancellation: null }
-  | { ApproveHighPromise: null }
-  | { HighPromise: null };
-export type PermissionType =
-  | { Edit: Principal }
-  | { View: Principal }
-  | { AnyOneView: null }
-  | { AnyOneEdite: null };
+export type PaymentAction = { 'RequestCancellation' : CPayment } |
+  { 'Released' : null } |
+  { 'Objected' : null } |
+  { 'Accepted' : null } |
+  { 'Update' : null } |
+  { 'Cancelled' : null } |
+  { 'Promise' : null };
+export type PaymentStatus = { 'None' : null } |
+  { 'RequestCancellation' : null } |
+  { 'Released' : null } |
+  { 'Objected' : string } |
+  { 'Confirmed' : null } |
+  { 'ConfirmedCancellation' : null } |
+  { 'ApproveHighPromise' : null } |
+  { 'HighPromise' : null };
+export type PermissionType = { 'Edit' : Principal } |
+  { 'View' : Principal } |
+  { 'AnyOneView' : null } |
+  { 'AnyOneEdite' : null };
 export interface Post {
-  id: string;
-  creator: string;
-  date_created: bigint;
-  votes_up: Array<Principal>;
-  tags: Array<string>;
-  content_tree: Array<ContentNode>;
-  is_comment: boolean;
-  votes_down: Array<Principal>;
-  children: Array<string>;
-  parent: string;
+  'id' : string,
+  'creator' : string,
+  'date_created' : bigint,
+  'votes_up' : Array<Principal>,
+  'tags' : Array<string>,
+  'content_tree' : Array<ContentNode>,
+  'is_comment' : boolean,
+  'votes_down' : Array<Principal>,
+  'children' : Array<string>,
+  'parent' : string,
 }
 export interface PostUser {
-  id: string;
-  creator: UserFE;
-  date_created: bigint;
-  votes_up: Array<Principal>;
-  tags: Array<string>;
-  content_tree: Array<ContentNode>;
-  is_comment: boolean;
-  votes_down: Array<Principal>;
-  children: Array<string>;
-  parent: string;
+  'id' : string,
+  'creator' : UserFE,
+  'date_created' : bigint,
+  'votes_up' : Array<Principal>,
+  'tags' : Array<string>,
+  'content_tree' : Array<ContentNode>,
+  'is_comment' : boolean,
+  'votes_down' : Array<Principal>,
+  'children' : Array<string>,
+  'parent' : string,
 }
 export interface Rating {
-  id: string;
-  date: number;
-  user_id: Principal;
-  comment: string;
-  rating: number;
+  'id' : string,
+  'date' : number,
+  'user_id' : Principal,
+  'comment' : string,
+  'rating' : number,
 }
-export type RecurrenceFrequency =
-  | { Weekly: null }
-  | { Daily: null }
-  | { Monthly: null }
-  | { Yearly: null };
+export type RecurrenceFrequency = { 'Weekly' : null } |
+  { 'Daily' : null } |
+  { 'Monthly' : null } |
+  { 'Yearly' : null };
 export interface RecurrenceRule {
-  interval: number;
-  count: [] | [number];
-  until: [] | [number];
-  frequency: RecurrenceFrequency;
+  'interval' : number,
+  'count' : [] | [number],
+  'until' : [] | [number],
+  'frequency' : RecurrenceFrequency,
 }
-export interface ReferralPayments {
-  date_created: number;
-  amount: number;
-}
+export interface ReferralPayments { 'date_created' : number, 'amount' : number }
 export interface ReferredUser {
-  id: string;
-  verified: boolean;
-  payment_processed: boolean;
-  trust_score: number;
+  'id' : string,
+  'verified' : boolean,
+  'payment_processed' : boolean,
+  'trust_score' : number,
 }
 export interface RegisterUser {
-  name: [] | [string];
-  description: [] | [string];
-  email: [] | [string];
-  photo: [] | [Uint8Array | number[]];
+  'name' : [] | [string],
+  'description' : [] | [string],
+  'email' : [] | [string],
+  'photo' : [] | [Uint8Array | number[]],
 }
-export interface RemoveSwapArgs {
-  token0: Principal;
-  token1: Principal;
-}
-export type Result = { Ok: User } | { Err: string };
-export type Result_1 = { Ok: string } | { Err: string };
-export type Result_10 = { Ok: StoredContract } | { Err: string };
-export type Result_11 = { Ok: InitialData } | { Err: string };
-export type Result_12 = { Ok: Post } | { Err: string };
-export type Result_13 = { Ok: ShareFile } | { Err: string };
-export type Result_14 =
-  | { Ok: [FileNode, Array<ContentNode>] }
-  | { Err: string };
-export type Result_15 = { Ok: SNSStatus } | { Err: string };
-export type Result_16 = { Ok: UserProfile } | { Err: string };
-export type Result_17 = { Ok: boolean } | { Err: string };
-export type Result_18 = { Ok: null } | { Err: null };
-export type Result_19 = { Ok: Calendar } | { Err: string };
-export type Result_2 = { Ok: null } | { Err: Error };
-export type Result_20 =
-  | { Ok: CanisterOutputCertifiedMessages }
-  | { Err: string };
-export type Result_3 = { Ok: null } | { Err: string };
-export type Result_4 = { Ok: AiResponse } | { Err: string };
-export type Result_5 = { Ok: GetTransactions } | { Err: Error };
-export type Result_6 = { Ok: WorkSpace } | { Err: string };
-export type Result_7 = { Ok: Wallet } | { Err: Error };
-export type Result_8 = { Ok: Affiliate } | { Err: string };
-export type Result_9 = { Ok: number } | { Err: string };
+export interface RemoveSwapArgs { 'token0' : Principal, 'token1' : Principal }
+export type Result = { 'Ok' : User } |
+  { 'Err' : string };
+export type Result_1 = { 'Ok' : string } |
+  { 'Err' : string };
+export type Result_10 = { 'Ok' : Array<string> } |
+  { 'Err' : string };
+export type Result_11 = { 'Ok' : StoredContract } |
+  { 'Err' : string };
+export type Result_12 = { 'Ok' : InitialData } |
+  { 'Err' : string };
+export type Result_13 = { 'Ok' : Post } |
+  { 'Err' : string };
+export type Result_14 = { 'Ok' : ShareFile } |
+  { 'Err' : string };
+export type Result_15 = { 'Ok' : [FileNode, Array<ContentNode>] } |
+  { 'Err' : string };
+export type Result_16 = { 'Ok' : SNSStatus } |
+  { 'Err' : string };
+export type Result_17 = { 'Ok' : UserProfile } |
+  { 'Err' : string };
+export type Result_18 = { 'Ok' : boolean } |
+  { 'Err' : string };
+export type Result_19 = { 'Ok' : null } |
+  { 'Err' : null };
+export type Result_2 = { 'Ok' : null } |
+  { 'Err' : Error };
+export type Result_20 = { 'Ok' : Calendar } |
+  { 'Err' : string };
+export type Result_21 = { 'Ok' : CanisterOutputCertifiedMessages } |
+  { 'Err' : string };
+export type Result_3 = { 'Ok' : null } |
+  { 'Err' : string };
+export type Result_4 = { 'Ok' : AiResponse } |
+  { 'Err' : string };
+export type Result_5 = { 'Ok' : GetTransactions } |
+  { 'Err' : Error };
+export type Result_6 = { 'Ok' : WorkSpace } |
+  { 'Err' : string };
+export type Result_7 = { 'Ok' : Wallet } |
+  { 'Err' : Error };
+export type Result_8 = { 'Ok' : Affiliate } |
+  { 'Err' : string };
+export type Result_9 = { 'Ok' : number } |
+  { 'Err' : string };
 export interface Row {
-  id: string;
-  contract: [] | [Contract];
-  cells: [] | [Array<[string, string]>];
+  'id' : string,
+  'contract' : [] | [Contract],
+  'cells' : [] | [Array<[string, string]>],
 }
 export interface SNSStatus {
-  talents_count: number;
-  number_users: number;
-  active_users: number;
-  jobs_count: number;
+  'talents_count' : number,
+  'latest_jobs' : Array<Job>,
+  'latest_talents' : Array<Job>,
+  'number_users' : number,
+  'active_users' : number,
+  'jobs_count' : number,
 }
-export type ScheduleType =
-  | {
-      DateRange: { end_date: number; start_date: number };
+export type ScheduleType = {
+    'DateRange' : { 'end_date' : number, 'start_date' : number }
+  } |
+  {
+    'WeeklyRecurring' : {
+      'days' : Uint32Array | number[],
+      'valid_until' : [] | [number],
     }
-  | {
-      WeeklyRecurring: {
-        days: Uint32Array | number[];
-        valid_until: [] | [number];
-      };
-    }
-  | { SpecificDates: Array<number> };
-export interface ShareFile {
-  id: string;
-  owner: Principal;
-}
+  } |
+  { 'SpecificDates' : Array<number> };
+export interface ShareFile { 'id' : string, 'owner' : Principal }
 export interface ShareFileInput {
-  id: string;
-  permission: ShareFilePermission;
-  owner: Principal;
-  users_permissions: Array<[Principal, ShareFilePermission]>;
+  'id' : string,
+  'permission' : ShareFilePermission,
+  'owner' : Principal,
+  'users_permissions' : Array<[Principal, ShareFilePermission]>,
 }
-export type ShareFilePermission =
-  | { CanComment: null }
-  | { None: null }
-  | { CanView: null }
-  | { CanUpdate: null };
-export type StoredContract = { CustomContract: CustomContract };
-export interface Table {
-  rows: Array<Row>;
-  columns: Array<Column>;
-}
+export type ShareFilePermission = { 'CanComment' : null } |
+  { 'None' : null } |
+  { 'CanView' : null } |
+  { 'CanUpdate' : null };
+export type StoredContract = { 'CustomContract' : CustomContract };
+export interface Table { 'rows' : Array<Row>, 'columns' : Array<Column> }
 export interface TableUpdates {
-  id: string;
-  name: string;
-  rows: Array<CRow>;
-  rows_indexes: Array<[bigint, string]>;
-  delete_columns: Array<string>;
-  columns_indexes: Array<[bigint, string]>;
-  columns: Array<CColumn>;
-  delete_rows: Array<string>;
+  'id' : string,
+  'name' : string,
+  'rows' : Array<CRow>,
+  'rows_indexes' : Array<[bigint, string]>,
+  'delete_columns' : Array<string>,
+  'columns_indexes' : Array<[bigint, string]>,
+  'columns' : Array<CColumn>,
+  'delete_rows' : Array<string>,
 }
-export interface TimeSlot {
-  end_time: bigint;
-  start_time: bigint;
-}
-export interface ToolCall {
-  id: string;
-  function: FunctionCall;
-}
-export interface ToolCallArgument {
-  value: string;
-  name: string;
-}
+export interface TimeSlot { 'end_time' : bigint, 'start_time' : bigint }
+export interface ToolCall { 'id' : string, 'function' : FunctionCall }
+export interface ToolCallArgument { 'value' : string, 'name' : string }
 export interface Transaction {
-  burn: [] | [Burn];
-  kind: string;
-  mint: [] | [Mint];
-  approve: [] | [Approve];
-  timestamp: bigint;
-  transfer: [] | [Transfer];
+  'burn' : [] | [Burn],
+  'kind' : string,
+  'mint' : [] | [Mint],
+  'approve' : [] | [Approve],
+  'timestamp' : bigint,
+  'transfer' : [] | [Transfer],
 }
 export interface TransactionWithId {
-  id: bigint;
-  transaction: Transaction;
+  'id' : bigint,
+  'transaction' : Transaction,
 }
 export interface Transfer {
-  to: IndexAccount;
-  fee: [] | [bigint];
-  from: IndexAccount;
-  memo: [] | [Uint8Array | number[]];
-  created_at_time: [] | [bigint];
-  amount: bigint;
-  spender: [] | [IndexAccount];
+  'to' : IndexAccount,
+  'fee' : [] | [bigint],
+  'from' : IndexAccount,
+  'memo' : [] | [Uint8Array | number[]],
+  'created_at_time' : [] | [bigint],
+  'amount' : bigint,
+  'spender' : [] | [IndexAccount],
 }
 export interface TransformArgs {
-  context: Uint8Array | number[];
-  response: HttpResponse;
+  'context' : Uint8Array | number[],
+  'response' : HttpResponse,
 }
-export interface Update {
-  field: string;
-  values: Array<string>;
-}
+export interface Update { 'field' : string, 'values' : Array<string> }
 export interface User {
-  id: string;
-  name: string;
-  description: string;
-  email: string;
-  photo: Uint8Array | number[];
+  'id' : string,
+  'name' : string,
+  'description' : string,
+  'email' : string,
+  'photo' : Uint8Array | number[],
 }
 export interface UserFE {
-  id: string;
-  name: string;
-  photo: Uint8Array | number[];
+  'id' : string,
+  'name' : string,
+  'photo' : Uint8Array | number[],
 }
 export interface UserProfile {
-  id: Principal;
-  actions_rate: number;
-  balance: number;
-  rates_by_actions: Array<ActionRating>;
-  name: string;
-  description: string;
-  total_debt: number;
-  spent: number;
-  rates_by_others: Array<Rating>;
-  users_rate: number;
-  users_interacted: number;
-  photo: Uint8Array | number[];
-  debts: Array<string>;
-  received: number;
+  'id' : Principal,
+  'actions_rate' : number,
+  'balance' : number,
+  'rates_by_actions' : Array<ActionRating>,
+  'name' : string,
+  'description' : string,
+  'total_debt' : number,
+  'spent' : number,
+  'rates_by_others' : Array<Rating>,
+  'users_rate' : number,
+  'users_interacted' : number,
+  'photo' : Uint8Array | number[],
+  'debts' : Array<string>,
+  'received' : number,
 }
 export interface Wallet {
-  balance: number;
-  owner: string;
-  total_debt: number;
-  spent: number;
-  exchanges: Array<Exchange>;
-  debts: Array<[string, number]>;
-  received: number;
+  'balance' : number,
+  'owner' : string,
+  'total_debt' : number,
+  'spent' : number,
+  'exchanges' : Array<Exchange>,
+  'debts' : Array<[string, number]>,
+  'received' : number,
 }
 export interface WebsocketMessage {
-  sequence_num: bigint;
-  content: Uint8Array | number[];
-  client_key: ClientKey;
-  timestamp: bigint;
-  is_service_message: boolean;
+  'sequence_num' : bigint,
+  'content' : Uint8Array | number[],
+  'client_key' : ClientKey,
+  'timestamp' : bigint,
+  'is_service_message' : boolean,
 }
 export interface WorkSpace {
-  id: string;
-  files: Array<string>;
-  creator: Principal;
-  members: Array<Principal>;
-  chats: Array<string>;
-  name: string;
-  admins: Array<Principal>;
+  'id' : string,
+  'files' : Array<string>,
+  'creator' : Principal,
+  'members' : Array<Principal>,
+  'chats' : Array<string>,
+  'name' : string,
+  'admins' : Array<Principal>,
 }
 export interface _SERVICE {
-  accept_friend_request: ActorMethod<[string], Result>;
-  add_google_calendar_id: ActorMethod<[string, Array<string>], Result_1>;
-  add_owner: ActorMethod<[AddOwnerArgs], Result_2>;
-  add_swap: ActorMethod<[AddSwapArgs], Result_2>;
-  approve_high_promise: ActorMethod<[CPayment], Result_3>;
-  ask_ai: ActorMethod<[string, string, boolean, string], Result_4>;
-  buy_ai_credits: ActorMethod<[number], Result_3>;
-  cancel_friend_request: ActorMethod<[string], Result>;
-  chat: ActorMethod<[Array<ChatMessage>], string>;
-  check_external_transactions: ActorMethod<[bigint], Result_5>;
-  confirmed_c_payment: ActorMethod<[CPayment], Result_3>;
-  confirmed_cancellation: ActorMethod<[CPayment], Result_3>;
-  counter: ActorMethod<[], bigint>;
-  create_new_file: ActorMethod<[string, [] | [string]], FileNode>;
-  delete_chat: ActorMethod<[string], Result_1>;
-  delete_custom_contract: ActorMethod<[string], Result_3>;
-  delete_file: ActorMethod<[string], [] | [FileNode]>;
-  delete_job: ActorMethod<[string], Result_3>;
-  delete_post: ActorMethod<[string], Result_3>;
-  delete_work_space: ActorMethod<[WorkSpace], Result_6>;
-  deposit_ckusdt: ActorMethod<[], Result_7>;
-  drop_free_credits: ActorMethod<[], Result_3>;
-  get_affiliate_data: ActorMethod<[string], Result_8>;
-  get_ai_credits: ActorMethod<[], Result_9>;
-  get_all_files: ActorMethod<[], Array<FileNode>>;
-  get_all_files_content: ActorMethod<[], Array<[string, Array<ContentNode>]>>;
-  get_calendar: ActorMethod<[string], [] | [Calendar]>;
-  get_calendar_by_author: ActorMethod<[string], [] | [Calendar]>;
-  get_contract: ActorMethod<[string, string], Result_10>;
-  get_emails: ActorMethod<[], Array<string>>;
-  get_file: ActorMethod<[string], [] | [FileNode]>;
-  get_file_content: ActorMethod<[string], [] | [Array<ContentNode>]>;
-  get_filtered_posts: ActorMethod<
+  'accept_friend_request' : ActorMethod<[string], Result>,
+  'add_google_calendar_id' : ActorMethod<[string, Array<string>], Result_1>,
+  'add_owner' : ActorMethod<[AddOwnerArgs], Result_2>,
+  'add_swap' : ActorMethod<[AddSwapArgs], Result_2>,
+  'approve_high_promise' : ActorMethod<[CPayment], Result_3>,
+  'ask_ai' : ActorMethod<[string, string, boolean, string], Result_4>,
+  'buy_ai_credits' : ActorMethod<[number], Result_3>,
+  'cancel_friend_request' : ActorMethod<[string], Result>,
+  'chat' : ActorMethod<[Array<ChatMessage>], string>,
+  'check_external_transactions' : ActorMethod<[bigint], Result_5>,
+  'confirmed_c_payment' : ActorMethod<[CPayment], Result_3>,
+  'confirmed_cancellation' : ActorMethod<[CPayment], Result_3>,
+  'counter' : ActorMethod<[], bigint>,
+  'create_new_file' : ActorMethod<[string, [] | [string]], FileNode>,
+  'delete_chat' : ActorMethod<[string], Result_1>,
+  'delete_custom_contract' : ActorMethod<[string], Result_3>,
+  'delete_file' : ActorMethod<[string], [] | [FileNode]>,
+  'delete_job' : ActorMethod<[string], Result_3>,
+  'delete_post' : ActorMethod<[string], Result_3>,
+  'delete_work_space' : ActorMethod<[WorkSpace], Result_6>,
+  'deposit_ckusdt' : ActorMethod<[], Result_7>,
+  'drop_free_credits' : ActorMethod<[], Result_3>,
+  'get_affiliate_data' : ActorMethod<[string], Result_8>,
+  'get_ai_credits' : ActorMethod<[], Result_9>,
+  'get_all_files' : ActorMethod<[], Array<FileNode>>,
+  'get_all_files_content' : ActorMethod<
+    [],
+    Array<[string, Array<ContentNode>]>
+  >,
+  'get_calendar' : ActorMethod<[string], [] | [Calendar]>,
+  'get_calendar_by_author' : ActorMethod<[string], [] | [Calendar]>,
+  'get_calendar_public_urls' : ActorMethod<[string], Result_10>,
+  'get_contract' : ActorMethod<[string, string], Result_11>,
+  'get_emails' : ActorMethod<[], Array<string>>,
+  'get_file' : ActorMethod<[string], [] | [FileNode]>,
+  'get_file_content' : ActorMethod<[string], [] | [Array<ContentNode>]>,
+  'get_filtered_posts' : ActorMethod<
     [[] | [Array<string>], [] | [string]],
     Array<PostUser>
-  >;
-  get_initial_data: ActorMethod<[], Result_11>;
-  get_job: ActorMethod<[string], [] | [Job]>;
-  get_logs: ActorMethod<[GetErrorLogsArgs], Array<Log>>;
-  get_matches: ActorMethod<[string, Array<string>, Category], Array<Job>>;
-  get_more_files: ActorMethod<
+  >,
+  'get_initial_data' : ActorMethod<[], Result_12>,
+  'get_job' : ActorMethod<[string], [] | [Job]>,
+  'get_logs' : ActorMethod<[GetErrorLogsArgs], Array<Log>>,
+  'get_matches' : ActorMethod<[string, Array<string>, Category], Array<Job>>,
+  'get_more_files' : ActorMethod<
     [number],
     [Array<FileNode>, Array<[string, Array<ContentNode>]>]
-  >;
-  get_my_calendar: ActorMethod<[], Calendar>;
-  get_my_chats: ActorMethod<[bigint], Array<FEChat>>;
-  get_my_jobs: ActorMethod<[], GetJobs>;
-  get_owners: ActorMethod<[], Array<Principal>>;
-  get_post: ActorMethod<[string], Result_12>;
-  get_posts: ActorMethod<[bigint, bigint], Array<PostUser>>;
-  get_share_file: ActorMethod<[string], Result_13>;
-  get_shared_file: ActorMethod<[string], Result_14>;
-  get_sns_status: ActorMethod<[], Result_15>;
-  get_swaps: ActorMethod<[], Array<[Principal, Principal]>>;
-  get_user: ActorMethod<[string], Result>;
-  get_user_notifications: ActorMethod<[bigint], Array<Notification>>;
-  get_user_profile: ActorMethod<[Principal], Result_16>;
-  get_users: ActorMethod<[], number>;
-  get_work_spaces: ActorMethod<[], Array<WorkSpace>>;
-  internal_transaction: ActorMethod<[number, string, ExchangeType], Result_3>;
-  is_ai_free_tier: ActorMethod<[], Result_17>;
-  load_more_events: ActorMethod<[number], Array<Event>>;
-  load_more_messages: ActorMethod<[string, bigint], Array<Message>>;
-  make_new_chat_room: ActorMethod<[Chat], Result_1>;
-  message_is_seen: ActorMethod<[Message], Result_3>;
-  move_file: ActorMethod<[string, [] | [string]], Result_18>;
-  multi_updates: ActorMethod<
+  >,
+  'get_my_calendar' : ActorMethod<[], Calendar>,
+  'get_my_chats' : ActorMethod<[bigint], Array<FEChat>>,
+  'get_my_jobs' : ActorMethod<[], GetJobs>,
+  'get_owners' : ActorMethod<[], Array<Principal>>,
+  'get_post' : ActorMethod<[string], Result_13>,
+  'get_posts' : ActorMethod<[bigint, bigint], Array<PostUser>>,
+  'get_share_file' : ActorMethod<[string], Result_14>,
+  'get_shared_file' : ActorMethod<[string], Result_15>,
+  'get_sns_status' : ActorMethod<[], Result_16>,
+  'get_swaps' : ActorMethod<[], Array<[Principal, Principal]>>,
+  'get_user' : ActorMethod<[string], Result>,
+  'get_user_notifications' : ActorMethod<[bigint], Array<Notification>>,
+  'get_user_profile' : ActorMethod<[Principal], Result_17>,
+  'get_users' : ActorMethod<[], number>,
+  'get_work_spaces' : ActorMethod<[], Array<WorkSpace>>,
+  'internal_transaction' : ActorMethod<
+    [number, string, ExchangeType],
+    Result_3
+  >,
+  'is_ai_free_tier' : ActorMethod<[], Result_18>,
+  'load_more_events' : ActorMethod<[number], Array<Event>>,
+  'load_more_messages' : ActorMethod<[string, bigint], Array<Message>>,
+  'make_new_chat_room' : ActorMethod<[Chat], Result_1>,
+  'message_is_seen' : ActorMethod<[Message], Result_3>,
+  'move_file' : ActorMethod<[string, [] | [string]], Result_19>,
+  'multi_updates' : ActorMethod<
     [
       Array<FileNode>,
       Array<Array<[string, Array<ContentNode>]>>,
@@ -772,40 +752,42 @@ export interface _SERVICE {
       Array<FileIndexing>,
     ],
     Result_1
-  >;
-  object_on_cancel: ActorMethod<[CPayment, string], Result_3>;
-  pay: ActorMethod<[PayArgs], Result_2>;
-  prompt: ActorMethod<[string], string>;
-  rate_user: ActorMethod<[Principal, Rating], Result_3>;
-  register: ActorMethod<[string, RegisterUser], Result>;
-  reject_friend_request: ActorMethod<[string], Result>;
-  remove_google_calendar_id: ActorMethod<[string, string], Result_1>;
-  remove_owner: ActorMethod<[AddOwnerArgs], Result_2>;
-  remove_swap: ActorMethod<[RemoveSwapArgs], Result_2>;
-  save_post: ActorMethod<[Post], Result_3>;
-  save_work_space: ActorMethod<[WorkSpace], Result_6>;
-  search_posts: ActorMethod<[string], Array<PostUser>>;
-  see_notifications: ActorMethod<[Array<string>], Result_1>;
-  send_friend_request: ActorMethod<[string], Result>;
-  send_message: ActorMethod<[[] | [Principal], Message], Result_1>;
-  share_file: ActorMethod<[ShareFileInput], Result_13>;
-  transform: ActorMethod<[TransformArgs], HttpResponse>;
-  unfriend: ActorMethod<[string], Result>;
-  unvote: ActorMethod<[string], Result_12>;
-  update_calendar: ActorMethod<[string, CalendarActions], Result_19>;
-  update_chat: ActorMethod<[Chat], Result_1>;
-  update_job: ActorMethod<[Array<JobUpdate>, [] | [number]], Result_3>;
-  update_user_profile: ActorMethod<[RegisterUser], Result>;
-  vote_down: ActorMethod<[string], Result_12>;
-  vote_up: ActorMethod<[string], Result_12>;
-  withdraw_ckusdt: ActorMethod<[bigint, string], Result_7>;
-  ws_close: ActorMethod<[CanisterWsCloseArguments], Result_3>;
-  ws_get_messages: ActorMethod<[CanisterWsGetMessagesArguments], Result_20>;
-  ws_message: ActorMethod<
+  >,
+  'object_on_cancel' : ActorMethod<[CPayment, string], Result_3>,
+  'pay' : ActorMethod<[PayArgs], Result_2>,
+  'prompt' : ActorMethod<[string], string>,
+  'rate_user' : ActorMethod<[Principal, Rating], Result_3>,
+  'register' : ActorMethod<[string, RegisterUser], Result>,
+  'reject_friend_request' : ActorMethod<[string], Result>,
+  'remove_google_calendar_id' : ActorMethod<[string, string], Result_1>,
+  'remove_owner' : ActorMethod<[AddOwnerArgs], Result_2>,
+  'remove_swap' : ActorMethod<[RemoveSwapArgs], Result_2>,
+  'save_post' : ActorMethod<[Post], Result_3>,
+  'save_work_space' : ActorMethod<[WorkSpace], Result_6>,
+  'search_posts' : ActorMethod<[string], Array<PostUser>>,
+  'see_notifications' : ActorMethod<[Array<string>], Result_1>,
+  'send_friend_request' : ActorMethod<[string], Result>,
+  'send_message' : ActorMethod<[[] | [Principal], Message], Result_1>,
+  'share_file' : ActorMethod<[ShareFileInput], Result_14>,
+  'store_calendar_public_url' : ActorMethod<[string, string], Result_3>,
+  'transform' : ActorMethod<[TransformArgs], HttpResponse>,
+  'unfriend' : ActorMethod<[string], Result>,
+  'unvote' : ActorMethod<[string], Result_13>,
+  'update_calendar' : ActorMethod<[string, CalendarActions], Result_20>,
+  'update_chat' : ActorMethod<[Chat], Result_1>,
+  'update_job' : ActorMethod<[Array<JobUpdate>, [] | [number]], Result_3>,
+  'update_matches' : ActorMethod<[MatchChanges, [] | [number]], Result_3>,
+  'update_user_profile' : ActorMethod<[RegisterUser], Result>,
+  'vote_down' : ActorMethod<[string], Result_13>,
+  'vote_up' : ActorMethod<[string], Result_13>,
+  'withdraw_ckusdt' : ActorMethod<[bigint, string], Result_7>,
+  'ws_close' : ActorMethod<[CanisterWsCloseArguments], Result_3>,
+  'ws_get_messages' : ActorMethod<[CanisterWsGetMessagesArguments], Result_21>,
+  'ws_message' : ActorMethod<
     [CanisterWsMessageArguments, [] | [AppMessage]],
     Result_3
-  >;
-  ws_open: ActorMethod<[CanisterWsOpenArguments], Result_3>;
+  >,
+  'ws_open' : ActorMethod<[CanisterWsOpenArguments], Result_3>,
 }
 export declare const idlFactory: IDL.InterfaceFactory;
 export declare const init: (args: { IDL: typeof IDL }) => IDL.Type[];

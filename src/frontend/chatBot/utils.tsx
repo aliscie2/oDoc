@@ -182,7 +182,7 @@ export class ActionProcessor {
     );
   }
 
-  static processAction(action: any): CalendarAction | null {
+  static processAction(action: unknown): CalendarAction | null {
     const newAction: CalendarAction = { type: action.type };
 
     try {
@@ -224,11 +224,54 @@ export class ActionProcessor {
               `Invalid availability data in action: ${JSON.stringify(action)}`,
             );
           }
+
+          // Serialize days: ensure they are numbers and deduplicate
+          let days: number[] = [];
+          if (action.availability.schedule_type?.WeeklyRecurring?.days) {
+            const rawDays =
+              action.availability.schedule_type.WeeklyRecurring.days;
+            // Convert day names to numbers if needed and deduplicate
+            days = Array.from(
+              new Set(
+                rawDays.map((day: string | number) => {
+                  if (typeof day === "number") return day;
+                  // Convert day names to numbers
+                  const dayMap: Record<string, number> = {
+                    monday: 1,
+                    mon: 1,
+                    tuesday: 2,
+                    tue: 2,
+                    wednesday: 3,
+                    wed: 3,
+                    thursday: 4,
+                    thu: 4,
+                    friday: 5,
+                    fri: 5,
+                    saturday: 6,
+                    sat: 6,
+                    sunday: 7,
+                    sun: 7,
+                  };
+                  return dayMap[String(day).toLowerCase()] || Number(day);
+                }),
+              ),
+            ).sort((a, b) => a - b);
+          }
+
           newAction.availability = {
             id: action.availability.id || `avail_${Date.now()}`,
             title: action.availability.title ? [action.availability.title] : [],
             is_blocked: action.availability.is_blocked || false,
-            schedule_type: action.availability.schedule_type || "WEEKLY",
+            schedule_type: action.availability.schedule_type
+              ? {
+                  WeeklyRecurring: {
+                    days: days,
+                    valid_until:
+                      action.availability.schedule_type.WeeklyRecurring
+                        ?.valid_until || [],
+                  },
+                }
+              : { WeeklyRecurring: { days: [], valid_until: [] } },
             time_slots: action.availability.slots.map((slot: any) => ({
               start_time: TimeFormatter.parseTime(slot.start_time),
               end_time: TimeFormatter.parseTime(slot.end_time),

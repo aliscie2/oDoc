@@ -1,8 +1,7 @@
-import React from "react";
 import { useSnackbar } from "notistack";
-import { backendActor } from "../utils/backendUtils";
-import { useState } from "react";
+import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { backendActor } from "../utils/backendUtils";
 
 interface FEFriend {
   id: string;

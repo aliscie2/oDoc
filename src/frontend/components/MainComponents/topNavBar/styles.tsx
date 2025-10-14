@@ -14,9 +14,8 @@ const getStyles = (theme: Theme) => ({
     ),
   },
   toolbar: {
-    minHeight: "44px !important",
-    height: "44px",
-    padding: "0 12px",
+    // Use MUI default minHeight, don't override
+    padding: theme.spacing(0, 2),
     transition: theme.transitions.create(["margin", "width"], {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
@@ -31,15 +30,9 @@ const getStyles = (theme: Theme) => ({
     }),
   },
   iconButton: {
-    padding: 4,
-    width: "28px",
-    height: "28px",
     color: theme.palette.text.primary,
     "&:hover": {
       backgroundColor: alpha(theme.palette.primary.main, 0.08),
-    },
-    "& .MuiSvgIcon-root": {
-      fontSize: "1.2rem",
     },
   },
   mobileNavigation: {

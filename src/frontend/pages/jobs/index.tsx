@@ -15,6 +15,7 @@ import JobSelector from "./JobSelector";
 import { Helmet } from "react-helmet-async";
 
 const JobsPage: React.FC = React.memo(() => {
+  
   const currentJobId = useSelector(selectCurrentJobId);
   const jobs = useSelector(selectJobs);
   const profile = useSelector(selectProfile);
@@ -23,10 +24,13 @@ const JobsPage: React.FC = React.memo(() => {
   useEffect(() => {
     currentJobRef.current = jobs?.find((job: Job) => job.id === currentJobId);
   }, [currentJobId, jobs]);
+  
 
   if (!profile) {
     return <CircularProgress />;
   }
+
+  const hasJobs = jobs && jobs.length > 0;
 
   return (
     <Box
@@ -40,7 +44,6 @@ const JobsPage: React.FC = React.memo(() => {
         overflowX: "hidden",
         display: "flex",
         flexDirection: "column",
-        // Center content with max width like Twitter
         maxWidth: { xs: "100%", sm: "600px", md: "800px" },
         marginX: { xs: 0, sm: "auto" },
       }}
@@ -49,19 +52,22 @@ const JobsPage: React.FC = React.memo(() => {
         <title>Jobs</title>
       </Helmet>
 
-      <Box
-        data-testid="job-selector-container"
-        sx={{
-          // Mobile: add left margin to avoid sandwich button overlap
-          marginLeft: { xs: "60px", sm: 0 },
-          marginRight: { xs: "16px", sm: 0 },
-        }}
-      >
-        <JobSelector />
-      </Box>
-      <Box data-testid="job-search-container">
-        <JobSearchComponent />
-      </Box>
+      {hasJobs && (
+        <>
+          <Box
+            data-testid="job-selector-container"
+            sx={{
+              marginTop: { xs: "20px", sm: 0 },
+              marginLeft: { xs: "60px", sm: 0 },
+            }}
+          >
+            <JobSelector />
+          </Box>
+          <Box data-testid="job-search-container">
+            <JobSearchComponent />
+          </Box>
+        </>
+      )}
     </Box>
   );
 });

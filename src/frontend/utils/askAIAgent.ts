@@ -1,35 +1,28 @@
-function calculateAICost(
-  prompt: string,
-  response: string,
-  quick: boolean,
-): number {
-  // Rough token estimation: ~4 characters per token for English text
-  const estimateTokens = (text: string): number => Math.ceil(text.length / 4);
+interface AiResponse {
+  Ok: {
+    response: string;
+    remaining_credits: number;
+  };
+}
 
+interface Message {
+  role: string;
+  content: string;
+}
+
+const contextHistory: Message[] = [];
+let pendingUserMessage: string | null = null;
+
+
+const calculateAICost = (prompt: string, response: string, quick: boolean): number => {
+  const estimateTokens = (text: string) => Math.ceil(text.length / 4);
   const inputTokens = estimateTokens(prompt);
   const outputTokens = estimateTokens(response);
-
-  if (quick) {
-    // llama-3.1-8b-instant pricing (example rates)
-    const inputCostPerToken = 0.00000005; // $0.05 per 1M tokens
-    const outputCostPerToken = 0.00000005;
-    return inputTokens * inputCostPerToken + outputTokens * outputCostPerToken;
-  } else {
-    // llama-3.3-70b-versatile pricing (example rates)
-    const inputCostPerToken = 0.00000059; // $0.59 per 1M tokens
-    const outputCostPerToken = 0.00000079; // $0.79 per 1M tokens
-    return inputTokens * inputCostPerToken + outputTokens * outputCostPerToken;
-  }
-}
-
-interface AiResponse {
-  remainingCredits: number;
-  response: string;
-}
-
-interface AiResponse {
-  response: string;
-}
+  
+  return quick
+    ? (inputTokens + outputTokens) * 0.00000005
+    : inputTokens * 0.00000059 + outputTokens * 0.00000079;
+};
 
 async function ask_ai(
   prompt: string,
@@ -38,67 +31,85 @@ async function ask_ai(
   apiKey: string,
   current_credits: number,
 ): Promise<AiResponse> {
-  const model = quick ? "llama-3.1-8b-instant" : "llama-3.3-70b-versatile";
-  const maxTokens = quick ? 500 : 8192;
+
+  // Store user message when quick===true
+  if (quick) {
+    pendingUserMessage = prompt;
+  }
+
+  
+
+  const messages: Message[] = [
+    { role: "system", content: systemPrompt },
+    ...contextHistory,
+    { role: "user", content: prompt }
+  ];
+
+
 
   const requestBody = {
-    model,
-    max_tokens: maxTokens,
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: prompt },
-    ],
+    model: quick ? "llama-3.1-8b-instant" : "llama-3.3-70b-versatile",
+    max_tokens: quick ? 500 : 8192,
+    messages,
   };
 
-  const maxAttempts = 3;
-  let attempts = 0;
   let response: Response;
-
-  do {
-    attempts++;
+  for (let attempt = 1; attempt <= 3; attempt++) {
     try {
-      response = await fetch(
-        "https://api.groq.com/openai/v1/chat/completions",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${apiKey}`,
-          },
-          body: JSON.stringify(requestBody),
+      response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
         },
-      );
+        body: JSON.stringify(requestBody),
+      });
+
       break;
     } catch (error) {
-      if (attempts >= maxAttempts) {
-        throw new Error(
-          `HTTP request failed after ${attempts} attempts: ${error}`,
-        );
-      }
-      console.log(`Request failed on attempt ${attempts}, retrying...`);
+      
+      if (attempt === 3) throw new Error(`HTTP request failed after 3 attempts: ${error}`);
+      console.log(`Request failed on attempt ${attempt}, retrying...`);
     }
-  } while (attempts < maxAttempts);
+  }
 
   if (!response.ok) {
-    const errorBody = await response.text();
-    throw new Error(
-      `API request failed with status: ${response.status} - Response: ${errorBody}`,
-    );
+    throw new Error(`API request failed with status: ${response.status} - ${await response.text()}`);
   }
 
   const responseJson = await response.json();
-  const responseText =
-    responseJson?.choices?.[0]?.message?.content || "No response from AI";
+  const responseText = responseJson?.choices?.[0]?.message?.content || "No response from AI";
 
-  if (responseJson.usage) {
-    console.log("Token usage:", responseJson.usage);
+  
+
+  // After long model responds, add both messages to history
+  if (!quick && pendingUserMessage) {
+    
+    
+    contextHistory.push(
+      { role: "user", content: pendingUserMessage },
+      { role: "assistant", content: responseText }
+    );
+    
+    
+    
+    // Keep only last 4 exchanges (8 messages)
+    while (contextHistory.length > 8) {
+      contextHistory.splice(0, 2);
+    }
+    
+    
+    
+    pendingUserMessage = null;
+    
   }
+
+  
 
   return {
     Ok: {
       response: responseText,
-      remaining_credits:
-        current_credits - calculateAICost(prompt, responseText, quick),
+      remaining_credits: current_credits - calculateAICost(prompt, responseText, quick),
     },
   };
 }

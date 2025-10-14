@@ -7,14 +7,14 @@ import { useAuth } from "@/hooks/useAuth";
 interface LoginButtonProps {
   isMobile?: boolean;
   sx?: React.CSSProperties | any;
-  onMouseDown?: () => void;
+  userType?: string;
 }
 
 const LoginButton: React.FC<LoginButtonProps> = ({
   isMobile = false,
   sx = {},
   children = null,
-  onMouseDown = () => {},
+  userType = null,
 }) => {
   const { login } = useAuth();
   const { isFetching } = useSelector((state: RootState) => state.uiState);
@@ -29,13 +29,16 @@ const LoginButton: React.FC<LoginButtonProps> = ({
       />
     );
   }
-  const defualtText = isMobile ? "Get started" : "Login with Internet Identity";
+  const defualtText = isMobile ? "Get started" : "Get Started";
 
   return (
     <Button
+
       variant="contained"
-      onMouseDown={onMouseDown}
-      onMouseUp={login}
+      onClick={async(e)=>{
+        userType && localStorage.setItem("UserType", userType)
+        await login()
+      }}
       sx={{
         fontWeight: 600,
         textTransform: "none",

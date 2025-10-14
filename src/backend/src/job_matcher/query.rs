@@ -78,12 +78,12 @@ fn get_matches(current_job_id: String, skills: Vec<String>, category: Category) 
 }
 
 fn should_include_job(job: &Job, current_job: &Job) -> bool {
-    // Check if this job is already in matches
+    // If current job has been updated since we last matched, include all jobs again
     if let Some(existing_match) = current_job.matches.iter().find(|m| m.job_id == job.id) {
-        // If the job has been updated since it was last matched, include it again
+        // Re-match if: job was updated OR current job was updated (new category/skills/etc)
         job.date_updated > existing_match.date_updated
+            || current_job.date_updated > existing_match.date_updated
     } else {
-        // Job is not in matches, so include it
         true
     }
 }

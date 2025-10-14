@@ -36,6 +36,11 @@ export const useAuth = () => {
       try {
         const principal: Principal = identity.getPrincipal();
 
+        // CRITICAL: Ensure actors are initialized before checking profile
+        // This is needed after page reload following login
+        const { initializeSmartActors } = await import("../utils/backendUtils");
+        await initializeSmartActors();
+
         // Use ActorFactory for reliable actor calls
         const { canisterId, idlFactory } = await import(
           "$/declarations/backend"
@@ -70,14 +75,14 @@ export const useAuth = () => {
       const success = await loginUtil();
       if (success) {
         await checkAuthStatus();
-        // Reload the page after successful login
-        window.location.reload();
+      } else {
+        setAuthStatus("anonymous");
       }
       return success;
     } catch (error) {
       console.error("Login failed:", error);
       setAuthStatus("anonymous");
-      return false;
+      throw error;
     } finally {
       dispatch({ type: "IS_FETCHING", isFetching: false });
     }

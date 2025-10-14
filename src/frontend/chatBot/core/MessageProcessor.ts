@@ -1,5 +1,5 @@
 import { Principal } from "@dfinity/principal";
-import { Job } from "$/declarations/backend/backend.did";
+import { Job, CalendarActions } from "$/declarations/backend/backend.did";
 import { ActionProcessor } from "../utils";
 import { buildContractPrompt } from "../prompts/contract";
 import { parseContractUrlParams } from "../../utils/urlEncoder";
@@ -7,6 +7,11 @@ import compactMessage from "../../pages/jobs/utils/compactMessage";
 import { mockJobAIResponse } from "../mocks/mockJobAIRes";
 import { mockCalendarAIResponse } from "../mocks/mockCalendarAIRes";
 import PROMPTS from "../prompts";
+import { backendActor } from "@/utils/backendUtils";
+import {
+  EventTimezone,
+  AvailabilityTimezone,
+} from "@/pages/calendar/utils/serializers";
 
 export interface ProcessedMessage {
   action_type: string;
@@ -14,7 +19,7 @@ export interface ProcessedMessage {
   actions: unknown[];
   done: boolean;
   // Additional fields for undo system
-  prev_cal?: any;
+  prev_cal?: unknown;
   prev_job?: any;
   prev_contract?: any;
   curr_job?: any;
@@ -47,7 +52,18 @@ export interface NavigationInterface {
 }
 
 export interface DispatchInterface {
-  dispatch(action: any): void;
+  dispatch(action: unknown): void;
+}
+
+export interface GoogleCalendarInterface {
+  executeGoogleAction(action: {
+    type: string;
+    event?: any;
+    id?: string;
+    calendarEmail?: string;
+  }): Promise<any>;
+  isConnected: boolean;
+  refreshGoogleCalendarEvents(): Promise<void>;
 }
 
 /**
@@ -61,6 +77,7 @@ export class MessageProcessor {
     private aiCases: AICasesInterface,
     private navigation: NavigationInterface,
     private dispatcher: DispatchInterface,
+    private googleCalendar?: GoogleCalendarInterface,
   ) {
     this.loadMarkdownContent();
   }
@@ -219,34 +236,17 @@ Provide a helpful and accurate answer based only on the documentation provided. 
    * Processes AI cases with specific business logic
    */
   private async processAICase(
-    aiCase: any,
-    message: string,
-    abortSignal?: AbortSignal,
-  ): Promise<ProcessedMessage> {
-    const prompt = aiCase.messageBuilder(
-      message,
-      this.config,
-      this.navigation.location,
-    );
-    let result: any;
+  aiCase: any,
+  message: string,
+  abortSignal?: AbortSignal,
+): Promise<ProcessedMessage> {
+  const prompt = aiCase.messageBuilder(message, this.config, this.navigation.location);
 
-    // Handle local development mode
-    if (import.meta.env.VITE_DFX_NETWORK === "local") {
-      result = this.processLocalMode(aiCase, message);
-    } else {
-      result = await this.processProductionMode(
-        aiCase,
-        message,
-        prompt,
-        abortSignal,
-      );
-    }
+  const result = await this.processProductionMode(aiCase, message, prompt, abortSignal);
+  await this.processActionsByType(aiCase, result);
+  return this.buildProcessedMessage(aiCase, result);
+}
 
-    // Process actions based on case type
-    await this.processActionsByType(aiCase, result);
-
-    return this.buildProcessedMessage(aiCase, result);
-  }
 
   /**
    * Handles local development mode processing
@@ -285,30 +285,36 @@ Provide a helpful and accurate answer based only on the documentation provided. 
    * Handles production mode processing
    */
   private async processProductionMode(
-    aiCase: any,
-    message: string,
-    prompt: string,
-    abortSignal?: AbortSignal,
-  ): Promise<any> {
-    let systemPrompt = aiCase.systemPrompt;
-    let actualPrompt = prompt;
+  aiCase: any,
+  message: string,
+  prompt: string,
+  abortSignal?: AbortSignal,
+): Promise<any> {
+  let systemPrompt = aiCase.systemPrompt;
+  let actualPrompt = prompt;
 
-    // Handle CONTRACT case with dynamic system prompt
-    if (aiCase.id === "contract") {
-      const contractData = this.getContractData();
-      systemPrompt = buildContractPrompt(
-        contractData.contract,
-        contractData.friendsList,
-        this.config.profile,
-        contractData.contractId,
-      );
-      actualPrompt = message;
-    }
-
-    const config = this.aiService.createAIConfig(actualPrompt, systemPrompt);
-    const aiResult = await this.aiService.sendAIMessage(config, abortSignal);
-    return aiResult.parsedData;
+  if (aiCase.id === "contract") {
+    const contractData = this.getContractData();
+    systemPrompt = buildContractPrompt(
+      contractData.contract,
+      contractData.friendsList,
+      this.config.profile,
+      contractData.contractId,
+    );
+    actualPrompt = message;
   }
+
+  const config = this.aiService.createAIConfig(actualPrompt, systemPrompt);
+  const aiResult = await this.aiService.sendAIMessage(config, abortSignal);
+
+  if (aiResult?.parsedData && aiCase?.class === "CALENDAR") {
+    return this.validateCalendarResponse(aiResult.parsedData);
+  }
+
+  return aiResult.parsedData;
+}
+
+
 
   /**
    * Gets contract data for CONTRACT case processing
@@ -368,24 +374,683 @@ Provide a helpful and accurate answer based only on the documentation provided. 
    */
   private async processCalendarActions(result: any): Promise<void> {
     const processedActions: any[] = [];
+    const deleteActions: any[] = [];
+    const otherActions: any[] = [];
 
-    result?.forEach((action: any) => {
+    for (const action of result || []) {
       if (action.data && action.data.type !== "CALENDAR_QUERY") {
-        try {
-          const parsedActions = ActionProcessor.processAction(action.data);
-          if (parsedActions) {
-            this.dispatcher.dispatch(parsedActions as any);
-            processedActions.push(parsedActions);
-          }
-        } catch (error) {
-          console.error("🤖 ActionProcessor error:", error);
+        if (action.data.type === "DELETE_EVENT") {
+          deleteActions.push(action.data);
+        } else {
+          otherActions.push(action.data);
         }
       }
-    });
+    }
+
+    // Process delete actions in batch for better performance
+    if (deleteActions.length > 0) {
+      try {
+        await this.processBatchDeleteActions(deleteActions);
+        processedActions.push(...deleteActions);
+      } catch (error) {
+        console.error("🤖 Batch delete error:", error);
+      }
+    }
+
+    // Process other actions individually
+    for (const action of otherActions) {
+      try {
+        await this.processIndividualCalendarAction(action);
+        processedActions.push(action);
+      } catch (error) {
+        console.error("🤖 Calendar action error:", error);
+      }
+    }
 
     if (processedActions.length > 0 && result) {
       result.actions = processedActions;
     }
+  }
+
+  /**
+   * Processes multiple delete actions in batch for better performance
+   */
+  private async processBatchDeleteActions(deleteActions: any[]): Promise<void> {
+    // Use the same connection logic as the AI system (from Redux state)
+    const isGoogleConnected =
+      this.config.is_google_connected &&
+      this.config.calendar?.google_ids?.length > 0;
+
+    console.log("🗑️ Batch delete routing decision:", {
+      deleteActionsCount: deleteActions.length,
+      hasGoogleCalendar: !!this.googleCalendar,
+      googleCalendarIsConnected: this.googleCalendar?.isConnected,
+      configCalendarGoogleIds: this.config.calendar?.google_ids,
+      configCalendarGoogleIdsLength: this.config.calendar?.google_ids?.length,
+      finalIsGoogleConnected: isGoogleConnected,
+      willUseGoogleCalendar: isGoogleConnected && !!this.googleCalendar,
+    });
+
+    // Separate Google events from backend events
+    const googleEvents = deleteActions.filter((action) =>
+      this.isGoogleEventId(action.id),
+    );
+    const backendEvents = deleteActions.filter((action) =>
+      this.isBackendEventId(action.id),
+    );
+
+    console.log("🗑️ Batch delete event separation:", {
+      totalEvents: deleteActions.length,
+      googleEvents: googleEvents.length,
+      backendEvents: backendEvents.length,
+      googleEventIds: googleEvents.map((e) => e.id),
+      backendEventIds: backendEvents.map((e) => e.id),
+      allEventIds: deleteActions.map((e) => e.id),
+      eventDetectionResults: deleteActions.map((action) => ({
+        id: action.id,
+        isGoogle: this.isGoogleEventId(action.id),
+        isBackend: this.isBackendEventId(action.id),
+        containsAt: action.id.includes("@"),
+        containsUnderscore: action.id.includes("_")
+      }))
+    });
+
+    // Process backend events
+    if (backendEvents.length > 0) {
+      console.log(
+        "🔄 Processing backend events in batch delete:",
+        backendEvents.length,
+      );
+      for (const action of backendEvents) {
+        const parsedActions = ActionProcessor.processAction(action);
+        if (parsedActions) {
+          this.dispatcher.dispatch(parsedActions as any);
+        }
+      }
+      
+      // Auto-save to backend when Google Calendar is not connected
+      if (!isGoogleConnected) {
+        console.log("💾 Auto-saving calendar changes to backend after batch delete");
+        setTimeout(async () => {
+          try {
+            await this.autoSaveCalendarChanges();
+          } catch (error) {
+            console.error("Failed to auto-save calendar changes:", error);
+          }
+        }, 500); // Small delay to ensure Redux state is updated
+      }
+    }
+
+    // Process Google Calendar events (only if connected and have Google events)
+    if (googleEvents.length > 0 && isGoogleConnected && this.googleCalendar) {
+      console.log(
+        "🔄 Processing Google Calendar events in batch delete:",
+        googleEvents.length,
+      );
+
+      // Optimistic updates first (instant UI feedback)
+      for (const action of googleEvents) {
+        this.dispatcher.dispatch({
+          type: "DELETE_GOOGLE_EVENT_OPTIMISTIC",
+          id: action.id,
+        });
+      }
+
+      // Process deletes with a small delay between each to avoid rate limiting
+      const deletePromises = googleEvents.map(async (action, index) => {
+        // Add small delay to avoid overwhelming the API
+        if (index > 0) {
+          await new Promise((resolve) => setTimeout(resolve, 100 * index));
+        }
+
+        const { originalId, calendarEmail } = this.extractGoogleEventInfo(
+          action.id,
+        );
+
+        try {
+          return await this.googleCalendar!.executeGoogleAction({
+            type: "DELETE_EVENT",
+            id: originalId,
+            calendarEmail: calendarEmail,
+          });
+        } catch (error) {
+          console.error(`Failed to delete event ${action.id}:`, error);
+          return false;
+        }
+      });
+
+      // Wait for all deletes to complete
+      const results = await Promise.all(deletePromises);
+
+      // Refresh calendar data once after all operations
+      setTimeout(async () => {
+        await this.googleCalendar!.refreshGoogleCalendarEvents();
+      }, 1000);
+
+      console.log("✅ Google Calendar batch delete completed:", {
+        googleEvents: googleEvents.length,
+        successful: results.filter((r) => r).length,
+        failed: results.filter((r) => !r).length,
+      });
+    }
+
+    console.log("✅ Overall batch delete completed:", {
+      totalEvents: deleteActions.length,
+      backendEvents: backendEvents.length,
+      googleEvents: googleEvents.length,
+    });
+  }
+
+  /**
+   * Processes individual calendar action - chooses between backend and Google Calendar
+   */
+  private async processIndividualCalendarAction(
+    actionData: any,
+  ): Promise<void> {
+    // Use the same connection logic as the AI system (from Redux state)
+    const isGoogleConnected =
+      this.config.is_google_connected &&
+      this.config.calendar?.google_ids?.length > 0;
+
+    console.log("🔄 Individual calendar action routing:", {
+      actionType: actionData.type,
+      actionId: actionData.id || actionData.event?.id,
+      isGoogleConnected: isGoogleConnected,
+      configIsGoogleConnected: this.config.is_google_connected,
+      calendarGoogleIds: this.config.calendar?.google_ids,
+    });
+
+    switch (actionData.type) {
+      case "ADD_EVENT":
+        await this.handleAddEvent(actionData, isGoogleConnected);
+        break;
+      case "UPDATE_EVENT":
+        await this.handleUpdateEvent(actionData, isGoogleConnected);
+        break;
+      case "DELETE_EVENT":
+        await this.handleDeleteEvent(actionData, isGoogleConnected);
+        break;
+      default:
+        // For availability and other actions, always use backend
+        const parsedActions = ActionProcessor.processAction(actionData);
+        if (parsedActions) {
+          this.dispatcher.dispatch(parsedActions as any);
+        }
+        break;
+    }
+  }
+
+  /**
+   * Handles ADD_EVENT action - chooses between backend and Google Calendar
+   */
+  private async handleAddEvent(
+    actionData: unknown,
+    isGoogleConnected: boolean,
+  ): Promise<void> {
+    // Convert AI format to proper format if needed
+    const processedEvent = this.preprocessAIEvent(actionData.event);
+    actionData.event = processedEvent;
+    if (isGoogleConnected && this.googleCalendar) {
+      // Create in Google Calendar with optimistic update
+      const optimisticEvent = {
+        ...actionData.event,
+        id: `temp_${Date.now()}`,
+        isGoogleEvent: true,
+        isPending: true,
+      };
+
+      // Optimistic update for instant UI feedback
+      console.log("⚡ Dispatching optimistic event:", {
+        type: "ADD_GOOGLE_EVENT_OPTIMISTIC",
+        optimisticEvent: optimisticEvent,
+        eventTitle: optimisticEvent.title,
+        eventId: optimisticEvent.id,
+      });
+
+      this.dispatcher.dispatch({
+        type: "ADD_GOOGLE_EVENT_OPTIMISTIC",
+        event: optimisticEvent,
+      });
+
+      try {
+        // Create in Google Calendar
+        const result = await this.googleCalendar.executeGoogleAction({
+          type: "ADD_EVENT",
+          event: actionData.event,
+        });
+
+        if (result) {
+          console.log(
+            "✅ Event created successfully, refreshing calendar in 1 second...",
+          );
+          // Refresh to get real Google Calendar data
+          setTimeout(async () => {
+            console.log(
+              "🔄 Starting calendar refresh after successful creation...",
+            );
+            await this.googleCalendar!.refreshGoogleCalendarEvents();
+
+            console.log("🗑️ Removing optimistic event:", {
+              type: "REMOVE_OPTIMISTIC_EVENT",
+              optimisticEventId: optimisticEvent.id,
+              eventTitle: optimisticEvent.title,
+            });
+
+            this.dispatcher.dispatch({
+              type: "REMOVE_OPTIMISTIC_EVENT",
+              id: optimisticEvent.id,
+            });
+            console.log(
+              "✅ Calendar refresh completed, optimistic event removed",
+            );
+          }, 1000);
+        } else {
+          console.log("❌ Event creation failed, removing optimistic event");
+          // Remove optimistic event if creation failed
+          this.dispatcher.dispatch({
+            type: "REMOVE_OPTIMISTIC_EVENT",
+            id: optimisticEvent.id,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to create Google Calendar event:", error);
+        this.dispatcher.dispatch({
+          type: "REMOVE_OPTIMISTIC_EVENT",
+          id: optimisticEvent.id,
+        });
+      }
+    } else {
+      // Create in backend calendar - convert to backend format
+      console.log("🔄 Routing ADD_EVENT to Backend");
+      console.log("🔄 Original event data:", actionData.event);
+
+      const backendEvent = this.convertToBackendFormat(actionData.event);
+      console.log("🔄 Converted backend event:", backendEvent);
+
+      const backendAction = {
+        ...actionData,
+        event: backendEvent,
+      };
+
+      const parsedActions = ActionProcessor.processAction(backendAction);
+      if (parsedActions) {
+        this.dispatcher.dispatch(parsedActions as any);
+
+        // Auto-save to backend when Google Calendar is not connected
+        console.log(
+          "💾 Auto-saving calendar changes to backend after ADD_EVENT",
+        );
+        setTimeout(async () => {
+          try {
+            await this.autoSaveCalendarChanges();
+          } catch (error) {
+            console.error("Failed to auto-save calendar changes:", error);
+          }
+        }, 500); // Small delay to ensure Redux state is updated
+      }
+    }
+  }
+
+  /**
+   * Handles UPDATE_EVENT action - chooses between backend and Google Calendar
+   */
+  private async handleUpdateEvent(
+    actionData: any,
+    isGoogleConnected: boolean,
+  ): Promise<void> {
+    if (isGoogleConnected && this.googleCalendar) {
+      // Update in Google Calendar with optimistic update
+      this.dispatcher.dispatch({
+        type: "UPDATE_GOOGLE_EVENT_OPTIMISTIC",
+        event: actionData.event,
+      });
+
+      try {
+        const result = await this.googleCalendar.executeGoogleAction({
+          type: "UPDATE_EVENT",
+          event: actionData.event,
+        });
+
+        if (result) {
+          setTimeout(async () => {
+            await this.googleCalendar!.refreshGoogleCalendarEvents();
+          }, 1000);
+        } else {
+          // Refresh to revert optimistic update
+          setTimeout(async () => {
+            await this.googleCalendar!.refreshGoogleCalendarEvents();
+          }, 500);
+        }
+      } catch (error) {
+        console.error("Failed to update Google Calendar event:", error);
+        setTimeout(async () => {
+          await this.googleCalendar!.refreshGoogleCalendarEvents();
+        }, 500);
+      }
+    } else {
+      // Update in backend calendar
+      const parsedActions = ActionProcessor.processAction(actionData);
+      if (parsedActions) {
+        this.dispatcher.dispatch(parsedActions as any);
+      }
+    }
+  }
+
+  /**
+   * Handles DELETE_EVENT action - chooses between backend and Google Calendar
+   */
+  private async handleDeleteEvent(
+    actionData: any,
+    isGoogleConnected: boolean,
+  ): Promise<void> {
+    // Smart routing: Detect event source by ID format
+    const isGoogleEvent = this.isGoogleEventId(actionData.id);
+    const isBackendEvent = this.isBackendEventId(actionData.id);
+
+    console.log("🗑️ Delete event routing decision:", {
+      eventId: actionData.id,
+      isGoogleConnected: isGoogleConnected,
+      isGoogleEvent: isGoogleEvent,
+      isBackendEvent: isBackendEvent,
+      routingDecision:
+        isGoogleEvent && isGoogleConnected ? "Google Calendar" : "Backend",
+    });
+
+    if (isGoogleEvent && isGoogleConnected && this.googleCalendar) {
+      console.log(
+        "🔄 Routing DELETE to Google Calendar (Google event detected)",
+      );
+      // Delete from Google Calendar with optimistic update
+      this.dispatcher.dispatch({
+        type: "DELETE_GOOGLE_EVENT_OPTIMISTIC",
+        id: actionData.id,
+      });
+
+      try {
+        // Extract the original Google Calendar ID and determine the correct calendar
+        const { originalId, calendarEmail } = this.extractGoogleEventInfo(
+          actionData.id,
+        );
+
+        console.log("🗑️ AI Delete Event Info:", {
+          fullId: actionData.id,
+          extractedOriginalId: originalId,
+          extractedCalendarEmail: calendarEmail,
+          willUseId: originalId,
+          willUseCalendar: calendarEmail,
+        });
+
+        const result = await this.googleCalendar.executeGoogleAction({
+          type: "DELETE_EVENT",
+          id: originalId, // Use extracted original ID
+          calendarEmail: calendarEmail, // Pass calendar email for proper routing
+        });
+
+        if (result) {
+          setTimeout(async () => {
+            await this.googleCalendar!.refreshGoogleCalendarEvents();
+          }, 1000);
+        } else {
+          // Refresh to revert optimistic update
+          setTimeout(async () => {
+            await this.googleCalendar!.refreshGoogleCalendarEvents();
+          }, 500);
+        }
+      } catch (error) {
+        console.error("Failed to delete Google Calendar event:", error);
+        setTimeout(async () => {
+          await this.googleCalendar!.refreshGoogleCalendarEvents();
+        }, 500);
+      }
+    } else {
+      // Delete from backend calendar (backend event or Google Calendar not connected)
+      console.log("🔄 Routing DELETE to Backend:", {
+        reason: isBackendEvent
+          ? "Backend event detected"
+          : "Google Calendar not connected",
+        eventId: actionData.id,
+      });
+      const parsedActions = ActionProcessor.processAction(actionData);
+      if (parsedActions) {
+        this.dispatcher.dispatch(parsedActions as any);
+
+        // Auto-save to backend when Google Calendar is not connected
+        if (!isGoogleConnected) {
+          console.log(
+            "💾 Auto-saving calendar changes to backend after DELETE_EVENT",
+          );
+          setTimeout(async () => {
+            try {
+              await this.autoSaveCalendarChanges();
+            } catch (error) {
+              console.error("Failed to auto-save calendar changes:", error);
+            }
+          }, 500); // Small delay to ensure Redux state is updated
+        }
+      }
+    }
+  }
+
+  /**
+   * Detects if an event ID belongs to a Google Calendar event
+   */
+  private isGoogleEventId(eventId: string): boolean {
+    // Google Calendar events have email in their ID: "email@domain.com_originalId"
+    return eventId.includes("@") && eventId.includes("_");
+  }
+
+  /**
+   * Detects if an event ID belongs to a backend event
+   */
+  private isBackendEventId(eventId: string): boolean {
+    // Backend events have simple IDs without email: "evt_1673238447" or "1673238447"
+    // Google events have format: "email@domain.com_randomstring"
+    const result = !eventId.includes("@"); // Only exclude if it contains @ (Google Calendar format)
+    console.log("🔍 Backend event ID detection:", {
+      eventId: eventId,
+      containsAt: eventId.includes("@"),
+      result: result
+    });
+    return result;
+  }
+
+  /**
+   * Preprocesses AI-generated events to convert time formats
+   */
+  private preprocessAIEvent(event: any): any {
+    if (!event) return event;
+
+    // Check if this is AI format (has date field and string times)
+    if (
+      event.date &&
+      typeof event.start_time === "string" &&
+      typeof event.end_time === "string"
+    ) {
+      console.log("🔄 Converting AI event format:", {
+        original: event,
+        date: event.date,
+        start_time: event.start_time,
+        end_time: event.end_time,
+      });
+
+      try {
+        // Parse AI format: "DD-MM-YYYY" and "HH:mm"
+        const [day, month, year] = event.date.split("-").map(Number);
+        const [startHour, startMinute] = event.start_time
+          .split(":")
+          .map(Number);
+        const [endHour, endMinute] = event.end_time.split(":").map(Number);
+
+        // Create Date objects and convert to nanoseconds
+        const startDate = new Date(
+          year,
+          month - 1,
+          day,
+          startHour,
+          startMinute,
+        );
+        const endDate = new Date(year, month - 1, day, endHour, endMinute);
+
+        console.log("🕐 Timezone handling:", {
+          userTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          localStartDate: startDate.toString(),
+          localEndDate: endDate.toString(),
+          utcStartDate: startDate.toISOString(),
+          utcEndDate: endDate.toISOString(),
+          timezoneOffset: startDate.getTimezoneOffset(),
+        });
+
+        const convertedEvent = {
+          ...event,
+          start_time: startDate.getTime() * 1000000, // Convert to nanoseconds
+          end_time: endDate.getTime() * 1000000,
+        };
+
+        // Remove the date field as it's now incorporated into timestamps
+        delete convertedEvent.date;
+
+        console.log("✅ Converted AI event:", {
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString(),
+          start_time: convertedEvent.start_time,
+          end_time: convertedEvent.end_time,
+          convertedEvent,
+        });
+
+        console.log("📊 Time conversion details:", {
+          originalAI: {
+            date: event.date,
+            start_time: event.start_time,
+            end_time: event.end_time,
+          },
+          parsed: {
+            day,
+            month,
+            year,
+            startHour,
+            startMinute,
+            endHour,
+            endMinute,
+          },
+          dateObjects: {
+            startDate: startDate.toString(),
+            endDate: endDate.toString(),
+            startISO: startDate.toISOString(),
+            endISO: endDate.toISOString(),
+          },
+          nanoseconds: {
+            start_time: convertedEvent.start_time,
+            end_time: convertedEvent.end_time,
+          },
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        });
+
+        return convertedEvent;
+      } catch (error) {
+        console.error("❌ Failed to convert AI event format:", error);
+        return event; // Return original if conversion fails
+      }
+    }
+
+    // Return as-is if already in proper format
+    return event;
+  }
+
+  /**
+   * Converts event with nanosecond timestamps to backend format (date + string times)
+   */
+  private convertToBackendFormat(event: any): any {
+    if (!event) return event;
+
+    // Check if event has nanosecond timestamps (needs conversion to backend format)
+    if (
+      typeof event.start_time === "number" &&
+      typeof event.end_time === "number"
+    ) {
+      console.log("🔄 Converting nanosecond timestamps to backend format:", {
+        original: event,
+        start_time: event.start_time,
+        end_time: event.end_time,
+      });
+
+      try {
+        // Convert nanoseconds to milliseconds and create Date objects
+        const startDate = new Date(event.start_time / 1e6);
+        const endDate = new Date(event.end_time / 1e6);
+
+        // Format for backend: DD-MM-YYYY and HH:mm
+        const dateStr = startDate
+          .toLocaleDateString("en-GB")
+          .replace(/\//g, "-"); // DD-MM-YYYY
+        const startTimeStr = startDate.toLocaleTimeString("en-GB", {
+          hour12: false,
+          hour: "2-digit",
+          minute: "2-digit",
+        }); // HH:mm
+        const endTimeStr = endDate.toLocaleTimeString("en-GB", {
+          hour12: false,
+          hour: "2-digit",
+          minute: "2-digit",
+        }); // HH:mm
+
+        const backendEvent = {
+          ...event,
+          date: dateStr,
+          start_time: startTimeStr,
+          end_time: endTimeStr,
+        };
+
+        console.log("✅ Converted to backend format:", {
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString(),
+          dateStr: dateStr,
+          startTimeStr: startTimeStr,
+          endTimeStr: endTimeStr,
+          expectedFormat: "DD-MM-YYYY with dashes",
+          backendEvent: backendEvent,
+        });
+
+        return backendEvent;
+      } catch (error) {
+        console.error("❌ Failed to convert to backend format:", error);
+        return event; // Return original if conversion fails
+      }
+    }
+
+    // Return as-is if already in backend format or doesn't need conversion
+    return event;
+  }
+
+  /**
+   * Extracts original Google Calendar ID and calendar email from prefixed event ID
+   */
+  private extractGoogleEventInfo(eventId: string): {
+    originalId: string;
+    calendarEmail: string;
+  } {
+    // Handle different ID formats:
+    // 1. email_originalId (e.g., "xxxxxx@gmail.com_bfk4f21f0evdquuiljh2iets4c")
+    // 2. email_originalId_suffix (e.g., "xxxx@gmail.com_4n5m8ubmu0m0uhnmggdlnpdcb4_20260301")
+
+    if (eventId.includes("@") && eventId.includes("_")) {
+      const parts = eventId.split("_");
+      const emailPart = parts[0]; // Should be the email
+
+      if (emailPart.includes("@")) {
+        // Email found, rest is the original ID
+        const originalId = parts.slice(1).join("_");
+        return {
+          originalId: originalId,
+          calendarEmail: emailPart,
+        };
+      }
+    }
+
+    // Fallback: use as-is (might be already a clean ID)
+    return {
+      originalId: eventId,
+      calendarEmail: "", // Will use primary calendar
+    };
   }
 
   /**
@@ -540,7 +1205,7 @@ Provide a helpful and accurate answer based only on the documentation provided. 
    * Normalizes job updates to ensure consistent format
    */
   private normalizeJobUpdates(updates: any[]): any[] {
-    return updates.map((update: any) => {
+    return updates.map((update: unknown) => {
       if (typeof update === "object" && update.field && update.values) {
         return {
           field: update.field,
@@ -554,9 +1219,66 @@ Provide a helpful and accurate answer based only on the documentation provided. 
   }
 
   /**
+   * Validates calendar response data and fixes common issues
+   */
+  private validateCalendarResponse(data: unknown): unknown {
+    if (!data) return data;
+
+    const responseArray = Array.isArray(data) ? data : [data];
+
+    const validatedArray = responseArray
+      .map((item, index) => {
+        if (!item || typeof item !== "object") {
+          return null;
+        }
+
+        if (!item.data || !item.data.type) {
+          return {
+            feedback: item.feedback || "Action processed",
+            data: {
+              type: "CALENDAR_QUERY",
+              ...item.data,
+            },
+          };
+        }
+
+        if (
+          (item.data.type === "ADD_EVENT" ||
+            item.data.type === "UPDATE_EVENT") &&
+          item.data.event
+        ) {
+          const event = item.data.event;
+
+          if (!event.id || typeof event.id !== "string") {
+            event.id = `evt_${Date.now()}_${index}`;
+          }
+
+          if (!event.title || typeof event.title !== "string") {
+            event.title = "Untitled Event";
+          }
+
+          if (!Array.isArray(event.attendees)) {
+            event.attendees = [];
+          }
+          if (!Array.isArray(event.recurrence)) {
+            event.recurrence = [];
+          }
+        }
+
+        return item;
+      })
+      .filter((item) => item !== null);
+
+    return validatedArray;
+  }
+
+  /**
    * Builds the final processed message result
    */
-  private buildProcessedMessage(aiCase: any, result: any): ProcessedMessage {
+  private buildProcessedMessage(
+    aiCase: unknown,
+    result: unknown,
+  ): ProcessedMessage {
     if (!result) {
       return {
         action_type: aiCase.class,
@@ -593,7 +1315,7 @@ Provide a helpful and accurate answer based only on the documentation provided. 
   /**
    * Gets contract data for undo system
    */
-  private getContractForUndo(): any {
+  private getContractForUndo(): unknown {
     const contractId =
       new URLSearchParams(this.navigation.location.search).get("id") || "";
     const contract = this.config.contracts[contractId];
@@ -664,33 +1386,22 @@ Provide a helpful and accurate answer based only on the documentation provided. 
   /**
    * Classifies message using AI or local logic
    */
-  private async classifyMessage(
-    message: string,
-    abortSignal?: AbortSignal,
-  ): Promise<any> {
-    if (import.meta.env.VITE_DFX_NETWORK === "local") {
-      if (message.includes("//")) {
-        const type = message.split("//")[0].toUpperCase();
-        return { type: type === "TALENT" ? "JOB" : type };
-      } else {
-        return { feedback: "locally" };
-      }
-    } else {
-      const trimmedMessage = this.trimMessageForClassifier(message);
-      const config = this.aiService.createAIConfig(
-        `current classifier: ${this.navigation.location.pathname === "/" ? "Job" : this.navigation.location.pathname}\nMessage:${trimmedMessage}`,
-        PROMPTS.CLASSIFY,
-        true,
-      );
-      const result = await this.aiService.sendAIMessage(config, abortSignal);
-      return result.parsedData;
-    }
-  }
+  private async classifyMessage(message: string, abortSignal?: AbortSignal): Promise<unknown> {
+  const trimmedMessage = this.trimMessageForClassifier(message);
+  const config = this.aiService.createAIConfig(
+    `current classifier: ${this.navigation.location.pathname === "/" ? "Job" : this.navigation.location.pathname.replace("/", "")}\nMessage:${trimmedMessage}`,
+    PROMPTS.CLASSIFY,
+    true,
+  );
+  const result = await this.aiService.sendAIMessage(config, abortSignal);
+  return result.parsedData;
+}
+
 
   /**
    * Handles navigation based on message classification
    */
-  private handleNavigation(parsed: any): void {
+  private handleNavigation(parsed: unknown): void {
     if (parsed.type === "JOB" && this.navigation.location.pathname !== "/") {
       this.navigation.navigate("/");
     }
@@ -729,7 +1440,7 @@ Provide a helpful and accurate answer based only on the documentation provided. 
    * Handles other message types (QUESTIONS, LOCAL_HELP, etc.)
    */
   private async handleOtherCases(
-    parsed: any,
+    parsed: unknown,
     message: string,
     abortSignal?: AbortSignal,
   ): Promise<ProcessedMessage> {
@@ -757,6 +1468,68 @@ Provide a helpful and accurate answer based only on the documentation provided. 
         actions: [],
         done: true,
       };
+    }
+  }
+
+  /**
+   * Auto-saves calendar changes to backend
+   */
+  private async autoSaveCalendarChanges(): Promise<void> {
+    try {
+      // Get current calendar state from Redux
+      const state = this.config;
+      const { calendar, calendar_actions, calendarChanged } = state;
+
+      if (!backendActor || !calendar || !calendarChanged) {
+        console.log(
+          "⏭️ Skipping auto-save: no backend actor, calendar, or changes",
+        );
+        return;
+      }
+
+      console.log("💾 Auto-saving calendar changes to backend...", {
+        calendarId: calendar.id,
+        deleteEvents: calendar_actions.delete_events?.length || 0,
+        addEvents: calendar_actions.events?.length || 0,
+        addAvailabilities: calendar_actions.availabilities?.length || 0,
+      });
+
+      const serializedCalendar: CalendarActions = {
+        ...calendar_actions,
+        events:
+          calendar_actions.events?.map((event) => EventTimezone(event, true)) ||
+          [],
+        availabilities:
+          calendar_actions.availabilities?.map((availability) =>
+            AvailabilityTimezone(availability, true),
+          ) || [],
+      };
+
+      const res = await backendActor.update_calendar(
+        calendar.id,
+        serializedCalendar,
+      );
+
+      if (res?.Err) {
+        console.error("❌ Auto-save failed:", res.Err);
+        throw new Error(res.Err);
+      } else {
+        console.log("✅ Calendar auto-saved successfully!");
+
+        // Mark calendar as saved
+        this.dispatcher.dispatch({
+          type: "SET_CALENDAR_CHANGED",
+          calendarChanged: false,
+        });
+
+        // Clear the calendar actions after successful save
+        this.dispatcher.dispatch({
+          type: "CLEAR_CALENDAR_ACTIONS",
+        });
+      }
+    } catch (error) {
+      console.error("❌ Auto-save calendar changes failed:", error);
+      throw error;
     }
   }
 }

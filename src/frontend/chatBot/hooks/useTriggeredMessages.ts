@@ -13,66 +13,88 @@ export interface UseTriggeredMessagesConfig {
  * Refactored useTriggeredMessages - now uses useMessageRules directly
  * No longer depends on deprecated useChatHandler
  */
-export const useTriggeredMessages = (config: UseTriggeredMessagesConfig) => {
-  const { setShownMessageIds, setChatHistory, setIsMinimized } = config;
 
-  // Use messageRules directly instead of deprecated useChatHandler
+
+export const useTriggeredMessages = (config: UseTriggeredMessagesConfig) => {
+  const { shownMessageIds, setShownMessageIds, setChatHistory, setIsMinimized } = config;
   const messageRules = useMessageRules();
 
-  // Memoize the triggered messages calculation to prevent unnecessary recalculations
   const allTriggeredMessages = useMemo(
     () => [
       ...messageRules.getTriggeredMessages("immediate"),
       ...messageRules.getTriggeredMessages("automatic"),
       ...messageRules.getTriggeredMessages("contextual"),
     ],
-    [messageRules.getTriggeredMessages],
+    [messageRules],
   );
 
-  // Memoize the message processing callback
   const processNewMessages = useCallback(
     (currentShownIds: Set<string>) => {
-      const newMessages = allTriggeredMessages.filter(
-        (msg) => !currentShownIds.has(msg.id),
-      );
+      // Get all active replace groups from triggered messages
+      const activeReplaceGroups = new Map<string, string>();
+      allTriggeredMessages.forEach((msg) => {
+        if (msg.metadata?.replaceGroup) {
+          activeReplaceGroups.set(msg.metadata.replaceGroup, msg.id);
+        }
+      });
+
+      // Filter messages: keep non-replaceable ones and only the latest from each replace group
+      const newMessages = allTriggeredMessages.filter((msg) => {
+        // If message has no replace group, check if already shown (for showOnce)
+        if (!msg.metadata?.replaceGroup) {
+          return msg.metadata?.showOnce ? !currentShownIds.has(msg.id) : false;
+        }
+        
+        // For replace groups, only show if this is the active message for that group
+        const groupId = msg.metadata.replaceGroup;
+        return activeReplaceGroups.get(groupId) === msg.id;
+      });
 
       if (newMessages.length > 0) {
-        const newChatMessages = newMessages.map((messageRule, index) => ({
+        const newChatMessages = newMessages.map((messageRule) => ({
           type: "ai" as const,
           message: messageRules.getMessage(messageRule.message),
-          id: `${messageRule.id}-${Date.now()}-${index}`,
+          id: messageRule.id,
           canUndo: messageRule.canUndo,
           canRedo: false,
           canRetry: messageRule.canRetry,
           action_type: messageRule.actionType,
           actions: [],
           isTyping: true,
+          replaceGroup: messageRule.metadata?.replaceGroup,
         }));
 
         setChatHistory((prev) => {
+          // Complete all typing messages
           const completedPrev = prev.map((msg) =>
-            msg.isTyping ? { ...msg, isTyping: false } : msg,
+            msg.isTyping ? { ...msg, isTyping: false } : msg
           );
-          return [...completedPrev, ...newChatMessages];
+          
+          // Remove old messages from active replace groups
+          const filtered = completedPrev.filter((msg) => {
+            if (!msg.replaceGroup) return true;
+            return !activeReplaceGroups.has(msg.replaceGroup);
+          });
+          
+          return [...filtered, ...newChatMessages];
         });
-        setIsMinimized(false);
 
-        const newSet = new Set(currentShownIds);
-        newMessages.forEach((msg) => newSet.add(msg.id));
-        return newSet;
+        const userClosedChat = sessionStorage.getItem('chatMinimized') === 'true';
+        if (!userClosedChat) {
+          setIsMinimized(false);
+        }
+
+        // Update shown IDs with new messages
+        const updatedIds = new Set(currentShownIds);
+        newMessages.forEach((msg) => updatedIds.add(msg.id));
+        return updatedIds;
       }
 
       return currentShownIds;
     },
-    [
-      allTriggeredMessages,
-      messageRules.getMessage,
-      setChatHistory,
-      setIsMinimized,
-    ],
+    [allTriggeredMessages, messageRules, setChatHistory, setIsMinimized],
   );
 
-  // Handle triggered messages
   useEffect(() => {
     setShownMessageIds(processNewMessages);
   }, [allTriggeredMessages, processNewMessages, setShownMessageIds]);

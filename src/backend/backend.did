@@ -95,6 +95,7 @@ type CRow = record { id : text; cells : vec CCell };
 type Calendar = record {
   id : text;
   owner : text;
+  google_public_urls : vec text;
   events : vec Event;
   availabilities : vec Availability;
   google_ids : vec text;
@@ -322,7 +323,6 @@ type Job = record {
 type JobUpdate = record {
   id : text;
   active : opt bool;
-  matches : opt vec Match;
   updates : vec Update;
   category : opt Category;
   required_match_score : opt float32;
@@ -337,6 +337,13 @@ type Match = record {
   cover_letter : text;
   date_updated : float64;
   is_connected : bool;
+};
+type MatchChanges = record {
+  add : vec Match;
+  current_job_id : text;
+  delete_matches : vec text;
+  updates : vec Match;
+  reset : opt vec Match;
 };
 type Message = record {
   id : text;
@@ -459,21 +466,22 @@ type RegisterUser = record {
 type RemoveSwapArgs = record { token0 : principal; token1 : principal };
 type Result = variant { Ok : User; Err : text };
 type Result_1 = variant { Ok : text; Err : text };
-type Result_10 = variant { Ok : StoredContract; Err : text };
-type Result_11 = variant { Ok : InitialData; Err : text };
-type Result_12 = variant { Ok : Post; Err : text };
-type Result_13 = variant { Ok : ShareFile; Err : text };
-type Result_14 = variant {
+type Result_10 = variant { Ok : vec text; Err : text };
+type Result_11 = variant { Ok : StoredContract; Err : text };
+type Result_12 = variant { Ok : InitialData; Err : text };
+type Result_13 = variant { Ok : Post; Err : text };
+type Result_14 = variant { Ok : ShareFile; Err : text };
+type Result_15 = variant {
   Ok : record { FileNode; vec ContentNode };
   Err : text;
 };
-type Result_15 = variant { Ok : SNSStatus; Err : text };
-type Result_16 = variant { Ok : UserProfile; Err : text };
-type Result_17 = variant { Ok : bool; Err : text };
-type Result_18 = variant { Ok; Err };
-type Result_19 = variant { Ok : Calendar; Err : text };
+type Result_16 = variant { Ok : SNSStatus; Err : text };
+type Result_17 = variant { Ok : UserProfile; Err : text };
+type Result_18 = variant { Ok : bool; Err : text };
+type Result_19 = variant { Ok; Err };
 type Result_2 = variant { Ok; Err : Error };
-type Result_20 = variant { Ok : CanisterOutputCertifiedMessages; Err : text };
+type Result_20 = variant { Ok : Calendar; Err : text };
+type Result_21 = variant { Ok : CanisterOutputCertifiedMessages; Err : text };
 type Result_3 = variant { Ok; Err : text };
 type Result_4 = variant { Ok : AiResponse; Err : text };
 type Result_5 = variant { Ok : GetTransactions; Err : Error };
@@ -488,6 +496,8 @@ type Row = record {
 };
 type SNSStatus = record {
   talents_count : float64;
+  latest_jobs : vec Job;
+  latest_talents : vec Job;
   number_users : float64;
   active_users : float64;
   jobs_count : float64;
@@ -618,12 +628,13 @@ service : () -> {
   get_all_files_content : () -> (vec record { text; vec ContentNode }) query;
   get_calendar : (text) -> (opt Calendar) query;
   get_calendar_by_author : (text) -> (opt Calendar) query;
-  get_contract : (text, text) -> (Result_10) query;
+  get_calendar_public_urls : (text) -> (Result_10) query;
+  get_contract : (text, text) -> (Result_11) query;
   get_emails : () -> (vec text) query;
   get_file : (text) -> (opt FileNode) query;
   get_file_content : (text) -> (opt vec ContentNode) query;
   get_filtered_posts : (opt vec text, opt text) -> (vec PostUser) query;
-  get_initial_data : () -> (Result_11) query;
+  get_initial_data : () -> (Result_12) query;
   get_job : (text) -> (opt Job) query;
   get_logs : (GetErrorLogsArgs) -> (vec Log) query;
   get_matches : (text, vec text, Category) -> (vec Job) query;
@@ -635,24 +646,24 @@ service : () -> {
   get_my_chats : (nat64) -> (vec FEChat) query;
   get_my_jobs : () -> (GetJobs) query;
   get_owners : () -> (vec principal) query;
-  get_post : (text) -> (Result_12) query;
+  get_post : (text) -> (Result_13) query;
   get_posts : (nat64, nat64) -> (vec PostUser) query;
-  get_share_file : (text) -> (Result_13) query;
-  get_shared_file : (text) -> (Result_14);
-  get_sns_status : () -> (Result_15) query;
+  get_share_file : (text) -> (Result_14) query;
+  get_shared_file : (text) -> (Result_15);
+  get_sns_status : () -> (Result_16) query;
   get_swaps : () -> (vec record { principal; principal }) query;
   get_user : (text) -> (Result) query;
   get_user_notifications : (nat64) -> (vec Notification) query;
-  get_user_profile : (principal) -> (Result_16) query;
+  get_user_profile : (principal) -> (Result_17) query;
   get_users : () -> (float64) query;
   get_work_spaces : () -> (vec WorkSpace) query;
   internal_transaction : (float64, text, ExchangeType) -> (Result_3);
-  is_ai_free_tier : () -> (Result_17) query;
+  is_ai_free_tier : () -> (Result_18) query;
   load_more_events : (int32) -> (vec Event) query;
   load_more_messages : (text, nat64) -> (vec Message) query;
   make_new_chat_room : (Chat) -> (Result_1);
   message_is_seen : (Message) -> (Result_3);
-  move_file : (text, opt text) -> (Result_18);
+  move_file : (text, opt text) -> (Result_19);
   multi_updates : (
       vec FileNode,
       vec vec record { text; vec ContentNode },
@@ -674,19 +685,21 @@ service : () -> {
   see_notifications : (vec text) -> (Result_1);
   send_friend_request : (text) -> (Result);
   send_message : (opt principal, Message) -> (Result_1);
-  share_file : (ShareFileInput) -> (Result_13);
+  share_file : (ShareFileInput) -> (Result_14);
+  store_calendar_public_url : (text, text) -> (Result_3);
   transform : (TransformArgs) -> (HttpResponse) query;
   unfriend : (text) -> (Result);
-  unvote : (text) -> (Result_12);
-  update_calendar : (text, CalendarActions) -> (Result_19);
+  unvote : (text) -> (Result_13);
+  update_calendar : (text, CalendarActions) -> (Result_20);
   update_chat : (Chat) -> (Result_1);
   update_job : (vec JobUpdate, opt float32) -> (Result_3);
+  update_matches : (MatchChanges, opt float32) -> (Result_3);
   update_user_profile : (RegisterUser) -> (Result);
-  vote_down : (text) -> (Result_12);
-  vote_up : (text) -> (Result_12);
+  vote_down : (text) -> (Result_13);
+  vote_up : (text) -> (Result_13);
   withdraw_ckusdt : (nat64, text) -> (Result_7);
   ws_close : (CanisterWsCloseArguments) -> (Result_3);
-  ws_get_messages : (CanisterWsGetMessagesArguments) -> (Result_20) query;
+  ws_get_messages : (CanisterWsGetMessagesArguments) -> (Result_21) query;
   ws_message : (CanisterWsMessageArguments, opt AppMessage) -> (Result_3);
   ws_open : (CanisterWsOpenArguments) -> (Result_3);
 }

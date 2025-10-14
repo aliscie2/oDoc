@@ -1,5 +1,3 @@
-import React, { useEffect, useState, useMemo } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import {
   alpha,
   AppBar,
@@ -18,52 +16,52 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
+import React, { useEffect, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 import {
   AccountBalanceWallet as AccountBalanceWalletIcon,
+  CalendarToday as CalendarIcon,
   DarkMode as DarkModeIcon,
-  Gavel as GavelIcon,
+  Handshake as HandshakeIcon,
   LightMode as LightModeIcon,
   Logout as LogoutIcon,
   Menu as MenuIcon,
   MenuOpen as MenuOpenIcon,
-  Person2 as Person2Icon,
-  Handshake as HandshakeIcon,
-  CalendarToday as CalendarIcon,
+  Person2 as Person2Icon
 } from "@mui/icons-material";
-import HomeIcon from "@mui/icons-material/Home";
 import GradeIcon from "@mui/icons-material/Grade";
-import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import ReceiptIcon from "@mui/icons-material/Receipt";
+import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
-import BreadPage from "@/components/MuiComponents/Breadcrumbs";
-import BasicMenu from "@/components/MuiComponents/BasicMenu";
-import ShareButton from "@/components/MuiComponents/CopyLink";
-import NotificationsButton from "@/components/NotifcationList";
 import MultiSaveButton from "@/components/Actions/MultiSave";
 import ChatsComponent from "@/components/Chat";
+import BasicMenu from "@/components/MuiComponents/BasicMenu";
+import BreadPage from "@/components/MuiComponents/Breadcrumbs";
+import ShareButton from "@/components/MuiComponents/CopyLink";
+import NotificationsButton from "@/components/NotifcationList";
 import WorkspaceManager from "../Workspaces";
-import LoginButton from "./loginButton";
 import EnhancedUserAvatar from "./EnhancedUserAvatar";
+import LoginButton from "./loginButton";
+import UserLevelBadge from "./UserLevelBadge";
 
-import { logout } from "@/utils/backendUtils";
-import { convertToBlobLink } from "@/DataProcessing/imageToVec";
-import getStyles from "./styles";
 import { useAuth } from "@/hooks/useAuth";
+import { logout } from "@/utils/backendUtils";
+import getStyles from "./styles";
 
 // Configuration-driven navigation - optimized for robustness
 const NAV_CONFIG = {
   mobile: {
-    loggedIn: ["calendar", "notifications", "chat", "profile"],
+    loggedIn: ["notifications", "chat", "profile"],
     loggedOut: ["login"],
-    registered: ["calendar", "notifications", "chat", "profile"],
+    registered: ["notifications", "chat", "profile"],
     unregistered: ["profile"],
     nullRegistered: [],
   },
   desktop: {
-    loggedIn: ["calendar", "notifications", "chat", "profile"],
+    loggedIn: ["notifications", "chat", "profile"],
     loggedOut: ["theme", "whitepaper", "login"],
-    registered: ["calendar", "notifications", "chat", "profile"],
+    registered: ["notifications", "chat", "profile"],
     unregistered: ["theme", "whitepaper", "profile"],
     nullRegistered: ["theme", "whitepaper"],
   },
@@ -71,22 +69,10 @@ const NAV_CONFIG = {
 
 // Special case items that need dynamic conditions
 const CONDITIONAL_ITEMS = {
-  home: (state) => state.isMobile && !state.isHomePage,
-  calendar: (state) => state.currentPath !== "/calendar",
   notifications: (state) => state.notifications.length > 0,
 };
 
-// Profile menu configuration
-// const PROFILE_MENU_CONFIG = [
-//   { content: "Profile", to: "/profile", icon: Person2Icon },
-//   { content: "Contracts", to: "/contracts", icon: GavelIcon },
-//   { content: "Wallet", to: "/wallet", icon: AccountBalanceWalletIcon },
-//   { content: "Affiliate", to: "/affiliate", icon: HandshakeIcon },
-//   { content: "Achievements", to: "/achievementCard", icon: GradeIcon },
-//   { content: "Logout", to: "/", icon: LogoutIcon, action: "logout" },
-// ];
-
-// Update PROFILE_MENU_CONFIG to be a function that takes isRegistered
+// Profile menu configuration based on registration status
 const getProfileMenuConfig = (isRegistered) => {
   if (isRegistered === false) {
     return [{ content: "Logout", to: "/", icon: LogoutIcon, action: "logout" }];
@@ -96,7 +82,6 @@ const getProfileMenuConfig = (isRegistered) => {
   }
   return [
     { content: "Profile", to: "/profile", icon: Person2Icon },
-    { content: "Contracts", to: "/contracts", icon: GavelIcon },
     { content: "Wallet", to: "/wallet", icon: AccountBalanceWalletIcon },
     { content: "Affiliate", to: "/affiliate", icon: HandshakeIcon },
     { content: "Achievements", to: "/achievementCard", icon: GradeIcon },
@@ -112,7 +97,6 @@ const useNavigationState = () => {
   const { isNavOpen, isDarkMode, isFetching, authStatus } = useSelector(
     (state) => state.uiState,
   );
-  console.log({ isNavOpen });
   const isLoggedIn =
     authStatus === "authenticated" || authStatus === "registered";
   const { notifications } = useSelector((state) => state.notificationState);
@@ -156,14 +140,66 @@ const useMobileScrollBehavior = (isMobile) => {
   return showMobileMenu;
 };
 
+// Custom hook for desktop navbar visibility based on mouse position only
+const useDesktopNavbarMouseVisibility = (isMobile) => {
+  const [isVisible, setIsVisible] = useState(true);
+  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (isMobile) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const shouldShow = e.clientY < 350; // Show when mouse is within 250px of top
+      
+      if (shouldShow) {
+        // Clear any pending hide timeout
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
+        }
+        // Show immediately
+        setIsVisible(true);
+      } else {
+        // Only set timeout if not already set
+        if (!timeoutRef.current) {
+          // Delay hiding to avoid flickering
+          timeoutRef.current = setTimeout(() => {
+            setIsVisible(false);
+            timeoutRef.current = null;
+          }, 500);
+        }
+      }
+    };
+
+    // Throttle mouse move events to reduce re-renders
+    let rafId: number | null = null;
+    const throttledMouseMove = (e: MouseEvent) => {
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        handleMouseMove(e);
+        rafId = null;
+      });
+    };
+
+    window.addEventListener("mousemove", throttledMouseMove, { passive: true });
+
+    return () => {
+      window.removeEventListener("mousemove", throttledMouseMove);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+      }
+    };
+  }, [isMobile]);
+
+  return isVisible;
+};
+
 // Navigation item factory
 const createNavItem = (key, config, state, handlers) => {
   const itemConfigs = {
-    home: {
-      label: "Home",
-      icon: <HomeIcon />,
-      onClick: () => handlers.navigate("/"),
-    },
     theme: {
       label: state.isDarkMode ? "Light Mode" : "Dark Mode",
       icon: state.isDarkMode ? <LightModeIcon /> : <DarkModeIcon />,
@@ -193,11 +229,10 @@ const createNavItem = (key, config, state, handlers) => {
       label: "Profile",
       icon: (
         <EnhancedUserAvatar
-          actions_rate={state.profile_history?.actions_rate ?? 0}
           photo={state.imageLink}
           style={{
-            width: state.isMobile ? 20 : 24,
-            height: state.isMobile ? 20 : 24,
+            width: state.isMobile ? 28 : 34,
+            height: state.isMobile ? 28 : 34,
           }}
         />
       ),
@@ -223,23 +258,43 @@ export default function TopNavBar() {
   const { authStatus } = useAuth();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
-  // Derive legacy values for backward compatibility
   const isRegistered = authStatus === "registered";
-
   const state = useNavigationState();
   const showMobileMenu = useMobileScrollBehavior(state.isMobile);
-
   const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null);
 
-  // Memoized selectors
   const { profile, profile_history, current_file } = useSelector(
     (state) => state.filesState,
   );
-  const imageLink = useMemo(
-    () => (profile ? convertToBlobLink(profile.photo) : ""),
-    [profile],
-  );
+
+  const imageLinkRef = React.useRef(null);
+  const imageLink = useMemo(() => {
+    if (!profile?.photo) {
+      if (imageLinkRef.current?.url) {
+        URL.revokeObjectURL(imageLinkRef.current.url);
+        imageLinkRef.current = null;
+      }
+      return "";
+    }
+    if (imageLinkRef.current?.photo === profile.photo) {
+      return imageLinkRef.current.url;
+    }
+    if (imageLinkRef.current?.url) {
+      URL.revokeObjectURL(imageLinkRef.current.url);
+    }
+    const url = profile.photo;
+    imageLinkRef.current = { photo: profile.photo, url };
+    return url;
+  }, [profile?.photo]);
+
+  useEffect(() => {
+    return () => {
+      if (imageLinkRef.current?.url) {
+        URL.revokeObjectURL(imageLinkRef.current.url);
+      }
+    };
+  }, []);
+
   const styles = useMemo(() => getStyles(state.theme), [state.theme]);
 
   const handleLogout = async () => {
@@ -251,32 +306,42 @@ export default function TopNavBar() {
       console.error("Logout failed:", error);
     }
   };
-  // Action handlers
-  // Update handlers to use the new profile menu function
-  const handlers = useMemo(
-    () => ({
-      dispatch,
-      navigate,
-      onProfileClick: (e) => setMobileMenuAnchor(e.currentTarget),
-      profileMenuOptions: getProfileMenuConfig(isRegistered).map((option) => ({
-        ...option,
-        icon: (
+
+  const profileMenuOptions = useMemo(() => {
+    return getProfileMenuConfig(isRegistered).map((option) => ({
+      ...option,
+      icon:
+        option.content === "Achievements" ? (
+          <Box sx={{ mr: 1, display: "flex", alignItems: "center" }}>
+            <UserLevelBadge
+              actions_rate={profile_history?.actions_rate ?? 0}
+              size={24}
+              showLabel={false}
+            />
+          </Box>
+        ) : (
           <option.icon
             sx={{ color: state.theme.palette.text.primary, mr: 1 }}
           />
         ),
-        onClick: option.action === "logout" ? handleLogout : undefined,
-      })),
-    }),
-    [dispatch, navigate, isRegistered, state.theme],
-  );
+      onClick: option.action === "logout" ? handleLogout : undefined,
+    }));
+  }, [
+    isRegistered,
+    profile_history?.actions_rate,
+    state.theme.palette.text.primary,
+  ]);
 
-  // Get navigation items based on configuration
-  // Update the getNavItems function
+  const handlers = useMemo(() => ({
+    dispatch,
+    navigate,
+    onProfileClick: (e) => setMobileMenuAnchor(e.currentTarget),
+    profileMenuOptions,
+  }), [dispatch, navigate, profileMenuOptions]);
+
   const getNavItems = () => {
     const context = state.isMobile ? "mobile" : "desktop";
     let authState;
-
     if (!state.isLoggedIn) {
       authState = "loggedOut";
     } else if (authStatus === "authenticated") {
@@ -286,14 +351,8 @@ export default function TopNavBar() {
     } else {
       authState = "nullRegistered";
     }
-
     const configuredItems = NAV_CONFIG[context][authState] || [];
     const items = [];
-
-    if (CONDITIONAL_ITEMS.home(state)) {
-      items.push(createNavItem("home", {}, state, handlers));
-    }
-
     for (const itemKey of configuredItems) {
       const condition = CONDITIONAL_ITEMS[itemKey];
       if (!condition || condition(state)) {
@@ -302,27 +361,21 @@ export default function TopNavBar() {
         );
       }
     }
-
     return items;
   };
 
-  // Update the navItems dependency array to include isRegistered
-  const navItems = useMemo(
-    () => getNavItems(),
-    [
-      state.isMobile,
-      state.isLoggedIn,
-      isRegistered,
-      state.isHomePage,
-      state.currentPath,
-      state.notifications.length,
-      state.isDarkMode,
-      imageLink,
-      handlers,
-    ],
-  );
+  const navItems = useMemo(() => getNavItems(), [
+    state.isMobile,
+    state.isLoggedIn,
+    authStatus,
+    state.isHomePage,
+    state.currentPath,
+    state.notifications.length,
+    state.isDarkMode,
+    imageLink,
+    handlers,
+  ]);
 
-  // Render navigation item based on context
   const renderNavItem = (item, context = "desktop") => {
     if (item.component) {
       return context === "mobile" ? (
@@ -347,7 +400,6 @@ export default function TopNavBar() {
         <Box key={item.key}>{item.icon}</Box>
       );
     }
-
     if (context === "mobile") {
       return (
         <BottomNavigationAction
@@ -355,14 +407,10 @@ export default function TopNavBar() {
           label={item.label}
           icon={item.icon}
           onClick={item.onClick}
-          sx={{
-            minWidth: 0,
-            flex: item.flex || 1,
-          }}
+          sx={{ minWidth: 0, flex: item.flex || 1 }}
         />
       );
     }
-
     if (item.menu) {
       return (
         <BasicMenu key={item.key} options={item.menu}>
@@ -370,7 +418,6 @@ export default function TopNavBar() {
         </BasicMenu>
       );
     }
-
     return (
       <Tooltip key={item.key} title={item.label || ""}>
         <IconButton
@@ -384,8 +431,32 @@ export default function TopNavBar() {
     );
   };
 
-  // Mobile navigation component
-  const MobileNav = () => (
+  
+  const MobileNav = () => {
+  const mobileNavButtonSx = { minWidth: 0, flex: 1 };
+ const imgStyles = { 
+  width: 32, 
+  height: 32, 
+  objectFit: "contain",
+  filter: state.theme.palette.mode === 'dark' 
+    ? 'brightness(0.9) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5))' 
+    : 'drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25))'
+};
+  
+  const getMobileNavButtons = () => {
+    const buttons = [
+      { path: "/", label: "Work", icon: <img src="/job.png" alt="Work" style={imgStyles} />, isHome: true },
+      { path: "/calendar", label: "Calendar", icon: <img src="/calendar.png" alt="Calendar" style={imgStyles} /> },
+      { path: "/contracts", label: "Contracts", icon: <img src="/contract.png" alt="Contracts" style={imgStyles} /> },
+    ];
+    return buttons
+      .filter((btn) => btn.isHome ? !state.isHomePage : state.currentPath !== btn.path)
+      .map((btn) => (
+        <BottomNavigationAction key={btn.path} label={btn.label} icon={btn.icon} onClick={() => navigate(btn.path)} sx={mobileNavButtonSx} />
+      ));
+  };
+
+  return (
     <>
       {state.isLoggedIn && showMobileMenu && (
         <IconButton
@@ -404,16 +475,10 @@ export default function TopNavBar() {
           {state.isNavOpen ? <MenuOpenIcon /> : <MenuIcon />}
         </IconButton>
       )}
-
-      <Box
-        sx={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 1200 }}
-      >
+      <Box sx={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 1200 }}>
         <Paper elevation={3} sx={{ borderRadius: 0 }}>
-          <BottomNavigation
-            showLabels
-            value={state.currentPath}
-            sx={{ flex: 1 }}
-          >
+          <BottomNavigation showLabels value={state.currentPath} sx={{ flex: 1 }}>
+            {state.isLoggedIn && getMobileNavButtons()}
             {navItems.map((item) => renderNavItem(item, "mobile"))}
             <MultiSaveButton />
           </BottomNavigation>
@@ -433,9 +498,7 @@ export default function TopNavBar() {
                   if (option.to) navigate(option.to);
                 }}
               >
-                <ListItemIcon sx={{ color: state.theme.palette.text.primary }}>
-                  {option.icon}
-                </ListItemIcon>
+                <ListItemIcon sx={{ color: state.theme.palette.text.primary }}>{option.icon}</ListItemIcon>
                 <ListItemText primary={option.content} />
               </MenuItem>
             ))}
@@ -444,14 +507,31 @@ export default function TopNavBar() {
       </Box>
     </>
   );
+};
 
-  // Desktop navigation component
-  const DesktopNav = () => (
+const DesktopNav = () => {
+  const imgStyles = { 
+    width: 28, 
+    height: 28, 
+    objectFit: "contain", 
+    filter: state.theme.palette.mode === 'dark' 
+      ? 'brightness(0.9) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5))' 
+      : 'drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3))',
+    transition: 'all 0.2s ease'
+  };
+  
+  return (
     <Toolbar
-      variant="dense"
-      sx={{ ...styles.toolbar, ...(state.isNavOpen && styles.toolbarShift) }}
+      sx={{
+        ...styles.toolbar,
+        ...(state.isNavOpen && styles.toolbarShift),
+        display: "grid",
+        gridTemplateColumns: state.isLoggedIn ? "1fr auto 1fr" : "1fr auto",
+        gap: 2,
+        alignItems: "center",
+      }}
     >
-      <Box sx={{ display: "flex", alignItems: "center" }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0, justifyContent: "flex-start" }}>
         {state.isLoggedIn && (
           <IconButton
             edge="start"
@@ -463,45 +543,41 @@ export default function TopNavBar() {
             {state.isNavOpen ? <MenuOpenIcon /> : <MenuIcon />}
           </IconButton>
         )}
-
-        {navItems
-          .filter((item) => ["theme", "whitepaper"].includes(item.key))
-          .map((item) => renderNavItem(item))}
-
+        {navItems.filter((item) => ["theme", "whitepaper"].includes(item.key)).map((item) => renderNavItem(item))}
         {!state.isHomePage && (
           <Routes>
             <Route path="*" element={<BreadPage />} />
           </Routes>
         )}
-
-        {state.isLoggedIn && (
-          <ShareButton fileId={current_file?.id} currentFile={current_file} />
-        )}
+        {state.isLoggedIn && <ShareButton fileId={current_file?.id} currentFile={current_file} />}
       </Box>
-
-      <Box sx={{ flexGrow: 1, mx: 2 }}>
-        {state.isLoggedIn && (
-          <Tooltip title={'You can press "Command+F"'} placement="top">
-            {/* <IconButton
-              color="inherit"
-              onClick={() => dispatch({ type: "SEARCH_TOOL" })}
-              sx={styles.iconButton}
-            >
-              {searchTool ? <CloseIcon /> : <SearchIcon />}
-            </IconButton> */}
+      {state.isLoggedIn && (
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+          <Tooltip title="Jobs">
+            <IconButton color="inherit" onClick={() => navigate("/")} sx={{ ...styles.iconButton, opacity: state.isHomePage ? 0.5 : 1 }}>
+              <img src="/job.png" alt="Work" style={imgStyles} />
+            </IconButton>
           </Tooltip>
-        )}
-      </Box>
-
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-        {navItems
-          .filter((item) => !["theme", "whitepaper"].includes(item.key))
-          .map((item) => renderNavItem(item))}
+          <Tooltip title="Calendar">
+            <IconButton color="inherit" onClick={() => navigate("/calendar")} sx={{ ...styles.iconButton, opacity: state.currentPath === "/calendar" ? 0.5 : 1 }}>
+              <img src="/calendar.png" alt="Calendar" style={imgStyles} />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Contracts">
+            <IconButton color="inherit" onClick={() => navigate("/contracts")} sx={{ ...styles.iconButton, opacity: state.currentPath === "/contracts" ? 0.5 : 1 }}>
+              <img src="/contract.png" alt="Contract" style={imgStyles} />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      )}
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1, justifyContent: "flex-end", marginRight: state.isLoggedIn ? 0 : 4 }}>
+        {navItems.filter((item) => !["theme", "whitepaper"].includes(item.key)).map((item) => renderNavItem(item))}
         {state.isLoggedIn && <WorkspaceManager />}
         {state.isLoggedIn && <MultiSaveButton />}
       </Box>
     </Toolbar>
   );
+};
 
   return (
     <>

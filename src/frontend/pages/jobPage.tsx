@@ -108,7 +108,9 @@ JobPageSEO.propTypes = {
   user: PropTypes.any,
   thumbnailUrl: PropTypes.string.isRequired,
 };
+
 const JobPage = () => {
+  console.log("{backendActor}")
   const [searchParams] = useSearchParams();
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
@@ -117,14 +119,8 @@ const JobPage = () => {
 
   const jobId = searchParams.get("id");
 
-  // Preload SEO data
-  useEffect(() => {
-    const currentJobId = jobId || (window as unknown).__JOB_ID__;
-    if (currentJobId) {
-      preloadJobSEO(currentJobId);
-    }
-  }, [jobId]);
-
+  // SEO data is loaded in the main useEffect below
+  console.log("backendActor",{"backend":backendActor})
   useEffect(() => {
     const fetchJob = async () => {
       if (!jobId || !backendActor) {

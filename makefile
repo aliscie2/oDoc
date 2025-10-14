@@ -130,4 +130,4 @@ generate_icons:
 
 testing_thumbnails:
 	cloudflared tunnel --url http://localhost:5173
-# 	addd this in vite.config.ts allowedHosts: [ ".trycloudflare.com"],
+# 	addd this in in server: in  vite.config.ts allowedHosts: [ ".trycloudflare.com"],

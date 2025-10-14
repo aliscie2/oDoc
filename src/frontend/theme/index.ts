@@ -1,39 +1,46 @@
 import { createTheme as createMuiTheme, alpha } from "@mui/material/styles";
 
 const baseColors = {
-  error: { main: "#F04438", contrastText: "#FFFFFF" },
-  info: { main: "#06AED4", contrastText: "#FFFFFF" },
-  success: { main: "#10B981", contrastText: "#FFFFFF" },
-  warning: { main: "#F79009", contrastText: "#FFFFFF" },
+  error: { main: "#ef4444", contrastText: "#FFFFFF" },
+  info: { main: "#06b6d4", contrastText: "#FFFFFF" },
+  success: { main: "#22c55e", contrastText: "#FFFFFF" },
+  warning: { main: "#f59e0b", contrastText: "#FFFFFF" },
   neutral: {
-    50: "#FAFBFC",
-    100: "#F5F6F8",
-    200: "#EAECEF",
-    300: "#D6D9DC",
-    400: "#9DA4AE",
-    500: "#6C737F",
-    600: "#4D5761",
-    700: "#3A4150",
-    800: "#2A2D3A",
-    900: "#1A1B23",
-    950: "#151620",
+    50: "#fafafa",
+    100: "#f4f4f5",
+    200: "#e4e4e7",
+    300: "#d4d4d8",
+    400: "#a1a1aa",
+    500: "#71717a",
+    600: "#52525b",
+    700: "#3f3f46",
+    800: "#27272a",
+    900: "#18181b",
+    950: "#09090b",
+  },
+  // Neo accent colors
+  neon: {
+    cyan: "#00ffff",
+    magenta: "#ff00ff",
+    yellow: "#ffff00",
+    green: "#00ff00",
   },
 };
 
 function createPalette(isDarkMode: boolean) {
   const primary = {
-    main: "#2563eb", // Modern blue (slightly deeper than #2196F3)
-    light: "#3b82f6",
-    dark: "#1d4ed8",
-    contrastText: "#fff",
+    main: isDarkMode ? "#3b82f6" : "#2563eb", // Brighter blue for dark mode
+    light: "#60a5fa",
+    dark: "#1e40af",
+    contrastText: "#ffffff",
   };
 
   return {
     mode: (isDarkMode ? "dark" : "light") as "dark" | "light",
     primary,
     secondary: {
-      main: isDarkMode ? "#64748b" : "#475569", // Neutral blue-gray
-      contrastText: "#fff",
+      main: isDarkMode ? "#8b5cf6" : "#7c3aed", // Purple accent
+      contrastText: "#ffffff",
     },
     error: baseColors.error,
     info: baseColors.info,
@@ -42,24 +49,32 @@ function createPalette(isDarkMode: boolean) {
 
     background: {
       default: isDarkMode
-        ? "#0f172a" // Deep blue-black
-        : "#f8fafc", // Cool white
+        ? "#09090b" // True black with slight warmth
+        : "#ffffff", // Pure white
       paper: isDarkMode
-        ? alpha("#1e293b", 0.85) // Blue-tinted dark
-        : alpha("#ffffff", 0.85),
+        ? "#18181b" // Dark gray with high contrast
+        : "#fafafa", // Off-white
     },
 
     text: {
-      primary: isDarkMode ? alpha("#f1f5f9", 0.92) : alpha("#0f172a", 0.9),
-      secondary: isDarkMode ? alpha("#cbd5e1", 0.72) : alpha("#475569", 0.75),
+      primary: isDarkMode ? "#fafafa" : "#09090b", // High contrast
+      secondary: isDarkMode ? "#a1a1aa" : "#52525b", // Medium contrast
     },
 
-    divider: alpha(primary.main, 0.12),
+    divider: isDarkMode ? alpha("#ffffff", 0.1) : alpha("#000000", 0.08),
+
+    // Link colors
+    link: {
+      main: isDarkMode ? "#60a5fa" : "#1e40af", // Light blue for dark mode, dark blue for light mode
+      hover: isDarkMode ? "#93c5fd" : "#1e3a8a",
+    },
 
     action: {
-      hover: alpha(primary.main, 0.04),
-      selected: alpha(primary.main, 0.08),
-      focus: alpha(primary.main, 0.12),
+      hover: isDarkMode ? alpha("#ffffff", 0.08) : alpha("#000000", 0.04),
+      selected: isDarkMode
+        ? alpha(primary.main, 0.16)
+        : alpha(primary.main, 0.08),
+      focus: isDarkMode ? alpha(primary.main, 0.24) : alpha(primary.main, 0.12),
     },
   };
 }
@@ -70,6 +85,15 @@ const createComponents = (palette: ReturnType<typeof createPalette>) => ({
       body: {
         minHeight: "100vh",
         background: palette.background.default,
+      },
+      a: {
+        color: palette.mode === "dark" ? "#60a5fa" : "#1e40af",
+        textDecoration: "none",
+        transition: "color 0.2s ease",
+        "&:hover": {
+          color: palette.mode === "dark" ? "#93c5fd" : "#1e3a8a",
+          textDecoration: "underline",
+        },
       },
       "@keyframes pulse": {
         "0%, 100%": {
@@ -86,13 +110,22 @@ const createComponents = (palette: ReturnType<typeof createPalette>) => ({
     styleOverrides: {
       root: {
         background: palette.background.paper,
-        backdropFilter: "blur(20px)",
-        border: `1px solid ${palette.mode === "dark" ? alpha(palette.divider, 0.5) : "#e2e8f0"}`,
+        border:
+          palette.mode === "dark"
+            ? `1px solid ${alpha("#ffffff", 0.1)}`
+            : `1px solid ${alpha("#000000", 0.08)}`,
         borderRadius: 16,
-        transition: "all 0.3s ease",
+        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
         "&:hover": {
           transform: "translateY(-2px)",
-          boxShadow: `0 8px 25px ${alpha(palette.primary.main, 0.15)}`,
+          boxShadow:
+            palette.mode === "dark"
+              ? `0 8px 32px ${alpha(palette.primary.main, 0.3)}, 0 0 0 1px ${alpha(palette.primary.main, 0.2)}`
+              : `0 8px 25px ${alpha(palette.primary.main, 0.15)}`,
+          borderColor:
+            palette.mode === "dark"
+              ? alpha(palette.primary.main, 0.3)
+              : alpha(palette.primary.main, 0.2),
         },
       },
     },
@@ -118,7 +151,6 @@ const createComponents = (palette: ReturnType<typeof createPalette>) => ({
         background:
           palette.mode === "dark" ? palette.background.paper : "#ffffff",
         border: `1px solid ${palette.mode === "dark" ? alpha(palette.divider, 0.5) : "#d1d5db"}`,
-        backdropFilter: "blur(10px)",
         "&:hover": {
           background: alpha(palette.primary.main, 0.08),
           border: `1px solid ${palette.primary.main}`,
@@ -133,7 +165,6 @@ const createComponents = (palette: ReturnType<typeof createPalette>) => ({
         "& .MuiOutlinedInput-root": {
           background:
             palette.mode === "dark" ? palette.background.paper : "#ffffff",
-          backdropFilter: "blur(10px)",
           borderRadius: 12,
           "& fieldset": {
             border: `1px solid ${palette.mode === "dark" ? alpha(palette.divider, 0.5) : "#d1d5db"}`,
@@ -164,7 +195,6 @@ const createComponents = (palette: ReturnType<typeof createPalette>) => ({
         background:
           palette.mode === "dark" ? palette.background.paper : "#f1f5f9",
         color: palette.text.primary,
-        backdropFilter: "blur(10px)",
         border: `1px solid ${palette.mode === "dark" ? alpha(palette.divider, 0.5) : "#d1d5db"}`,
       },
       outlined: {
@@ -203,6 +233,20 @@ const createComponents = (palette: ReturnType<typeof createPalette>) => ({
       },
     },
   },
+
+  MuiLink: {
+    styleOverrides: {
+      root: {
+        color: palette.mode === "dark" ? "#60a5fa" : "#1e40af",
+        textDecoration: "none",
+        transition: "color 0.2s ease",
+        "&:hover": {
+          color: palette.mode === "dark" ? "#93c5fd" : "#1e3a8a",
+          textDecoration: "underline",
+        },
+      },
+    },
+  },
 });
 
 export function createTheme(isDarkMode: boolean) {
@@ -228,6 +272,6 @@ export function createTheme(isDarkMode: boolean) {
           (_, i) =>
             `0 ${(i + 1) * 2}px ${(i + 1) * 4}px ${alpha("#000", isDarkMode ? 0.3 : 0.08)}`,
         ),
-    ] as any,
+    ] as unknown,
   });
 }

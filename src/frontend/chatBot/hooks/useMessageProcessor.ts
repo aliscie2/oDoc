@@ -5,6 +5,7 @@ import { RootState } from "@/redux/reducers";
 import { MessageProcessor } from "../core/MessageProcessor";
 import { useAIService } from "./useAIService";
 import { useAICases } from "./useAICases";
+import { useGoogleCalendar } from "../../pages/calendar/googleAccounts/useGoogleCalendar";
 
 // Re-export types for backward compatibility
 export type { ProcessedMessage } from "../core/MessageProcessor";
@@ -19,7 +20,9 @@ export const useMessageProcessor = () => {
   const location = useLocation();
 
   // Redux state
-  const { calendar } = useSelector((state: RootState) => state.calendarState);
+  const { calendar, google_events, is_google_connected } = useSelector(
+    (state: RootState) => state.calendarState,
+  );
   const { currentJobId, jobs } = useSelector(
     (state: RootState) => state.jobState,
   );
@@ -30,16 +33,26 @@ export const useMessageProcessor = () => {
   // Service dependencies
   const aiService = useAIService();
   const aiCases = useAICases();
+  const googleCalendar = useGoogleCalendar();
 
   // Local state for message responses
   const [messageResponses, setMessageResponses] = useState<
     Record<string | number, unknown>
   >({});
 
+  // Extract primitive values for stable dependencies
+  const calendarId = calendar?.id;
+  const googleEventsCount = google_events?.length || 0;
+  const jobsCount = jobs?.length || 0;
+  const profileId = profile?.id;
+  const locationPathname = location.pathname;
+
   // Create MessageProcessor instance with proper memoization
   const messageProcessor = useMemo(() => {
     const config = {
       calendar,
+      google_events,
+      is_google_connected,
       jobs,
       currentJobId,
       contracts,
@@ -62,11 +75,21 @@ export const useMessageProcessor = () => {
       aiCases,
       navigationInterface,
       dispatchInterface,
+      googleCalendar, // Pass Google Calendar interface
     );
   }, [
-    calendar,
-    jobs,
+    // Use primitive values to prevent unnecessary re-creation
+    calendarId,
+    googleEventsCount,
+    is_google_connected,
+    jobsCount,
     currentJobId,
+    profileId,
+    locationPathname,
+    // Still include objects for the processor to use
+    calendar,
+    google_events,
+    jobs,
     contracts,
     all_friends,
     profile,
@@ -75,6 +98,7 @@ export const useMessageProcessor = () => {
     dispatch,
     aiService,
     aiCases,
+    googleCalendar,
   ]);
 
   // Wrapper function that adds message response tracking

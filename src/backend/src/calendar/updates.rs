@@ -282,3 +282,26 @@ fn remove_google_calendar_id(calendar_id: String, id: String) -> Result<String, 
     calendar.save()?;
     Ok(calendar.id)
 }
+
+#[update]
+fn store_calendar_public_url(calendar_id: String, public_url: String) -> Result<(), String> {
+    if caller() == Principal::anonymous() {
+        return Err("Unauthorized".to_string());
+    }
+
+    let caller_id = caller().to_text();
+    let mut calendar = Calendar::get_calendar(&calendar_id)?;
+
+    // Only calendar owner can store public URLs
+    if caller_id != calendar.owner {
+        return Err("Permission denied: Only calendar owner can store public URLs".to_string());
+    }
+
+    // Add URL if not already present
+    if !calendar.google_public_urls.contains(&public_url) {
+        calendar.google_public_urls.push(public_url);
+    }
+
+    calendar.save()?;
+    Ok(())
+}

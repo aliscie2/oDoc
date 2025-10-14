@@ -42,3 +42,9 @@ fn load_more_events(week_offset: i32) -> Vec<Event> {
         Err(_) => Vec::new(),
     }
 }
+
+#[query]
+fn get_calendar_public_urls(calendar_id: String) -> Result<Vec<String>, String> {
+    let calendar = Calendar::get_calendar(&calendar_id)?;
+    Ok(calendar.google_public_urls)
+}

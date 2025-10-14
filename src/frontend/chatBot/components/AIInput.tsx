@@ -17,7 +17,8 @@ export const AIInput = ({
   isLoading,
   chatHistory,
   setIsMinimized,
-}: AIInputProps) => {
+  shouldCenter = false,
+}: AIInputProps & { shouldCenter?: boolean }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [message, setMessage] = useState("");
@@ -62,13 +63,25 @@ export const AIInput = ({
   return (
     <Box
       sx={{
-        position: "fixed",
-        bottom: isMobile ? 80 : 30,
-        left: isMobile ? 0 : "50%",
-        transform: isMobile ? "none" : "translateX(-50%)",
-        zIndex: 1000,
-        width: isMobile ? "100vw" : shouldBeExpanded ? 500 : 300,
+        position: shouldCenter ? "relative" : "fixed",
+        bottom: shouldCenter ? "auto" : isMobile ? 80 : 30,
+        left: shouldCenter ? "auto" : isMobile ? 0 : "50%",
+        transform: shouldCenter
+          ? "none"
+          : isMobile
+            ? "none"
+            : "translateX(-50%)",
+        zIndex: shouldCenter ? "auto" : 1000,
+        width: shouldCenter
+          ? "100%"
+          : isMobile
+            ? "100vw"
+            : shouldBeExpanded
+              ? 500
+              : 300,
         transition: "width 0.3s ease-in-out",
+        border: `2px solid ${theme.palette.mode === "dark" ? "rgba(255, 255, 255, 0.3)" : "rgba(0, 0, 0, 0.3)"}`,
+        borderRadius: 1.5,
       }}
       onMouseEnter={() => !isFocused && setIsExpanded(true)}
       onMouseLeave={() => !isFocused && setIsExpanded(false)}
@@ -114,16 +127,42 @@ export const AIInput = ({
                 ? "📊 Analyzing data..."
                 : "Ask about candidates, metrics, or hiring insights..."
             }
+            inputProps={{
+              style: {
+                fontSize: isMobile ? "16px" : undefined,
+              },
+            }}
             sx={{
               "& .MuiOutlinedInput-root": {
                 bgcolor: "transparent",
-                fontSize: shouldBeExpanded ? "0.9rem" : "0.8rem",
+                fontSize: isMobile
+                  ? "16px"
+                  : shouldBeExpanded
+                    ? "0.9rem"
+                    : "0.8rem",
                 color: theme.palette.text.primary,
-                "& fieldset": { border: "none" },
+                "& fieldset": {
+                  borderColor:
+                    theme.palette.mode === "dark"
+                      ? "rgba(255, 255, 255, 0.23)"
+                      : "rgba(0, 0, 0, 0.23)",
+                  borderWidth: "1px",
+                },
+                "&:hover fieldset": {
+                  borderColor:
+                    theme.palette.mode === "dark"
+                      ? "rgba(255, 255, 255, 0.4)"
+                      : "rgba(0, 0, 0, 0.4)",
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: theme.palette.primary.main,
+                  borderWidth: "2px",
+                },
                 "& input, & textarea": {
                   py: shouldBeExpanded ? 0.75 : 0.4,
                   transition: "all 0.3s ease-in-out",
                   color: "inherit",
+                  fontSize: isMobile ? "16px !important" : "inherit",
                 },
                 "& input::placeholder, & textarea::placeholder": {
                   color: theme.palette.text.secondary,

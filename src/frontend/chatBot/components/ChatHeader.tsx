@@ -1,4 +1,4 @@
-import { Close } from "@mui/icons-material";
+import { Close, WorkOutline, CalendarMonth, Handshake } from "@mui/icons-material";
 import { Box, IconButton, Typography } from "@mui/material";
 import { useLocation } from "react-router-dom";
 import { useThemeStyles } from "../hooks/useThemeStyles";
@@ -22,50 +22,69 @@ export const ChatHeader = ({
   const { theme, isDark } = useThemeStyles();
   const location = useLocation();
 
-  const getTitle = () => {
+  const getTitleConfig = () => {
     const path = location.pathname.toLowerCase();
     
     if (path === "" || path === "/") {
-      return "📊 Hiring Intelligence";
+      return { icon: WorkOutline, text: "Hiring Intelligence" };
     } else if (path.includes("calendar")) {
-      return "📅 Calendar Assistant";
+      return { icon: CalendarMonth, text: "Calendar Assistant" };
     } else if (path.includes("contract")) {
-      return "📋 Contract Assistant";
+      return { icon: Handshake, text: "Contract Assistant" };
     } else {
-      return "📊 Hiring Intelligence";
+      return { icon: WorkOutline, text: "Hiring Intelligence" };
     }
   };
+
+  const titleConfig = getTitleConfig();
+  const TitleIcon = titleConfig.icon;
 
   return (
     <Box
       display="flex"
       justifyContent="space-between"
       alignItems="center"
-      px={1.5}
-      py={1}
-      borderBottom={`1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)"}`}
+      px={2.5}
+      py={2}
+      borderBottom={`1px solid ${isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)"}`}
+      sx={{
+        background: isDark 
+          ? "linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0) 100%)"
+          : "linear-gradient(180deg, rgba(0,0,0,0.01) 0%, rgba(0,0,0,0) 100%)",
+      }}
     >
-      <Box display="flex" alignItems="center" gap={1}>
+      <Box display="flex" alignItems="center" gap={1.5}>
         <AICreditsComponent />
-        <Typography
-          variant="body2"
-          sx={{
-            color: theme.palette.primary.main,
-            fontWeight: 600,
-            fontSize: "0.8rem",
-          }}
-        >
-          {getTitle()} ({chatHistoryLength})
-        </Typography>
+        <Box display="flex" alignItems="center" gap={1}>
+          <TitleIcon 
+            sx={{ 
+              fontSize: "1.1rem",
+              color: isDark ? theme.palette.primary.light : theme.palette.primary.main,
+            }} 
+          />
+          <Typography
+            variant="body1"
+            sx={{
+              color: isDark ? theme.palette.text.primary : theme.palette.text.primary,
+              fontWeight: 600,
+              fontSize: "0.95rem",
+              letterSpacing: "0.01em",
+            }}
+          >
+            {titleConfig.text} ({chatHistoryLength})
+          </Typography>
+        </Box>
       </Box>
       <Box display="flex" alignItems="center" gap={0.5}>
         <IconButton
           size="small"
           onClick={onMinimize}
           sx={{
-            color: theme.palette.text.secondary,
-            p: 0.5,
-            "&:hover": { bgcolor: theme.palette.action.hover },
+            color: isDark ? theme.palette.text.secondary : theme.palette.text.secondary,
+            p: 0.75,
+            "&:hover": { 
+              bgcolor: isDark ? "rgba(255,255,255,0.08)" : theme.palette.action.hover,
+            },
           }}
         >
           <Close fontSize="small" />

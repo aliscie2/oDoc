@@ -79,6 +79,8 @@ pub struct SNSStatus {
     active_users: f64,
     talents_count: f64,
     jobs_count: f64,
+    latest_jobs: Vec<Job>,
+    latest_talents: Vec<Job>,
 }
 
 #[query]
@@ -87,11 +89,15 @@ fn get_sns_status() -> Result<SNSStatus, String> {
     let active_users = UserHistory::get_number_of_active_users();
     let talents_count = Job::get_talents_count() as f64;
     let jobs_count = Job::get_jobs_count() as f64;
+    let latest_jobs = Job::get_latest_jobs(3);
+    let latest_talents = Job::get_latest_talents(3);
     Ok(SNSStatus {
         number_users,
         active_users,
         talents_count,
         jobs_count,
+        latest_jobs,
+        latest_talents,
     })
 }
 
