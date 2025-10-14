@@ -50,7 +50,7 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({ jobId, matchingJob, showA
         const emailErrorMsg = " Your email address appears to be incorrect. Please update your email so oDoc can contact you in the future.";
         const contactMsg = matchingJob.contacts ? ` Is ${matchingJob.contacts} your contact?` : " Please add your email.";
         
-        const chatId = `${currentJob.user_id}_${matchingJob.user_id}_${currentJob.id}_${jobId}`;
+        const chatId = `${currentJob.user_id}_${matchingJob.user_id}_${currentJob.id}`;
         const newMessage = {
           id: `msg_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
           date: BigInt(Date.now()) * BigInt(1e6),
@@ -135,7 +135,7 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({ jobId, matchingJob, showA
         color="primary"
         size="small"
         onClick={handleConnect}
-        disabled={match?.is_connected}
+        disabled={connecting || match?.is_connected}
         startIcon={connecting ? <CircularProgress size={16} /> : null}
         sx={{ minWidth: 100, textTransform: "none" }}
       >
