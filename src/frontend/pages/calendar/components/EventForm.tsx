@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Stack, TextField, Button } from "@mui/material";
+import { Box, Stack, TextField } from "@mui/material";
 import { format } from "date-fns";
 
 interface EventFormProps {

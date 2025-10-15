@@ -4,7 +4,7 @@ import LoginButton from "@/components/MainComponents/topNavBar/loginButton";
 import { backendActor, ckUSDCActor } from "@/utils/backendUtils";
 import getckUsdcBalance from "@/utils/getBalance";
 import {
-  AttachMoney, BarChart, CheckCircle, CheckCircle as CheckCircleIcon, Description, Email, Handshake as HandshakeIcon,
+  AttachMoney, BarChart, CheckCircle as CheckCircleIcon, Email, Handshake as HandshakeIcon,
   Instagram, LinkedIn, Lock, Notifications, Search, SmartToy, Star, Telegram, Work, YouTube
 } from "@mui/icons-material";
 import DiscordIcon from "@mui/icons-material/Forum";

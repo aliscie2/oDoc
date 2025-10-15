@@ -1,5 +1,5 @@
 import { Route, Routes } from "react-router-dom";
-import React, { Suspense, useMemo } from "react";
+import React, { Suspense } from "react";
 import { CircularProgress, Box } from "@mui/material";
 import { useSelector } from "react-redux";
 import { useAuth } from "@/hooks/useAuth";

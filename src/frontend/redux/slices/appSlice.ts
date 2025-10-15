@@ -1,5 +1,3 @@
-import { convertToBlobLink } from "@/DataProcessing/imageToVec";
-import { Principal } from "@dfinity/principal";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 // Consolidated initialization thunk

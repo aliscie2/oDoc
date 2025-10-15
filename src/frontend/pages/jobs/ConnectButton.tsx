@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, CircularProgress, Tooltip } from "@mui/material";
+import { Button, CircularProgress } from "@mui/material";
 import { useSnackbar } from "notistack";
 import { useDispatch, useSelector } from "react-redux";
 import { Principal } from "@dfinity/principal";

@@ -10,7 +10,6 @@ import {
 } from "../utils/jobMatchingPrompt";
 import { textToJson } from "../utils/processResponseJobs";
 import ask_ai from "@/utils/askAIAgent";
-import { logger } from "@/DevUtils/logData";
 import { JSON_PROMPT } from "@/chatBot/services/AIService";
 
 interface AIMatchResponse {
@@ -146,7 +145,7 @@ export const useJobMatching = (currentJob: Job | null) => {
 
       console.log({processedMatches})
       
-      let res = await backendActor.update_matches({
+      const res = await backendActor.update_matches({
         current_job_id: currentJob.id,
         delete_matches: [],
         updates: [],

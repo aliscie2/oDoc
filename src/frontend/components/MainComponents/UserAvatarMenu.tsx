@@ -116,7 +116,7 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
     }
 
     try {
-      let existingChat = chats.find((chat) =>
+      const existingChat = chats.find((chat) =>
         chat.name === "private_chat" && chat.members.some((member) => member.toString() === user.id)
       );
 
