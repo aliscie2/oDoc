@@ -149,7 +149,7 @@ impl Calendar {
 
     pub fn default() -> Self {
         Calendar {
-            id: ic_cdk::api::time().to_string(),
+            id: "NOT_SET_YET".to_string(),
             google_ids: Vec::new(),
             google_public_urls: Vec::new(),
             owner: caller().to_text(),

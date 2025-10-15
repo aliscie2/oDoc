@@ -27,10 +27,26 @@ const initialState: any = {
   is_google_connected: false,
   calendarChanged: false,
   isInitlized: false,
+  sharedCalendar: null, // Add shared calendar state
 };
 
 export function calendarReducer(state = initialState, action: any): unknown {
   switch (action.type) {
+
+     case "SET_SHARED_CALENDAR":
+      return {
+        ...state,
+        sharedCalendar: action.sharedCalendar,
+      };
+
+    case "CLEAR_SHARED_CALENDAR":
+      return {
+        ...state,
+        sharedCalendar: null,
+        owner_google_events: [],
+      };
+
+
     case "SET_TRAINING_DATA":
       return {
         ...state,

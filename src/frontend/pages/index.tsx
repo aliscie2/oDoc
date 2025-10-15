@@ -8,8 +8,9 @@ import { useAuth } from "@/hooks/useAuth";
 import AboutUs from "./LandingPage/aboutUs";
 import ICPJobsLandingPage from "./LandingPage";
 import AffiliateRedirect from "./affiliateRedirect";
-import CalendarView from "./calendar";
+// import CalendarView from "./calendar";
 import NotFound from "@/pages/notFound404";
+
 
 // Lazy imports for heavy components
 const JobsPage = React.lazy(() => import("./jobs"));
@@ -25,7 +26,8 @@ const SNSVoting = React.lazy(() => import("./white_paper"));
 const DummyShares = React.lazy(() => import("./sharesContract"));
 const AffiliateDashboard = React.lazy(() => import("./affiliate"));
 const ContractPage = React.lazy(() => import("./contracts/ContractPage"));
-// const CalendarView = React.lazy(() => import("./calendar/calendar"));
+const CalendarView = React.lazy(() => import("./calendar"));
+const ShareCalendarView = React.lazy(() => import("./calendar/sharedCalendar"));
 const AchievementPage = React.lazy(() => import("@/components/userBadges"));
 const WalletPage = React.lazy(() => import("./walletPage"));
 const JobPage = React.lazy(() => import("./jobPage"));
@@ -72,6 +74,7 @@ const Pages = React.memo(() => {
         <Route path="/f*" element={<AffiliateRedirect />} />
         <Route path="*" element={<NotFound />} />
         <Route path="/calendar" element={<CalendarView />} />
+        <Route path="/share_calendar*" element={<ShareCalendarView />} />
         </Routes>
     </Suspense>)
     }
@@ -106,7 +109,9 @@ const Pages = React.memo(() => {
         <Route path="/shares_contract" element={<DummyShares />} />
         <Route path="/affiliate" element={<AffiliateDashboard />} />
         <Route path="/*" element={<FileContentPage />} />
-        <Route path="/calendar" element={<CalendarView />} />
+        
+<Route path="/calendar" element={<CalendarView />} />
+<Route path="/share_calendar*" element={<ShareCalendarView />} />
         <Route path="/achievementCard" element={<AchievementPage />} />
         <Route path="/posts" element={<Posts />} />
         <Route path="/jobs*" element={<JobPage />} />

@@ -1,51 +1,122 @@
-import React, { useState } from "react";
+import { backendActor } from "@/utils/backendUtils";
+import { Check, Share } from "@mui/icons-material";
 import {
-  Button,
-  IconButton,
-  Tooltip,
-  Snackbar,
   Alert,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Stack,
-  Typography,
-  Box,
+  IconButton,
+  Snackbar,
+  Tooltip
 } from "@mui/material";
-import { Share, ContentCopy, Check } from "@mui/icons-material";
+import React, { useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
-interface ShareCalendarButtonProps {
-  shareLink: string;
-  variant?: "button" | "icon";
-  size?: "small" | "medium" | "large";
-}
-
-/**
- * ShareCalendarButton Component
- * Provides a professional way to share calendar links with copy functionality
- */
-const ShareCalendarButton: React.FC<ShareCalendarButtonProps> = ({
-  shareLink,
-  variant = "button",
-  size = "small",
-}) => {
+const ShareCalendarButton: React.FC = () => {
+  const dispatch = useDispatch();
+  const { calendar, calendarChanged } = useSelector((state: unknown) => state.calendarState);
+  
   const [copied, setCopied] = useState(false);
-  const [showDialog, setShowDialog] = useState(false);
   const [showSnackbar, setShowSnackbar] = useState(false);
+  const [localCalendarId, setLocalCalendarId] = useState(calendar.id);
+  const [isFetching, setIsFetching] = useState(false);
+  const [disabled, setDisabled] = useState(!calendar.id || calendar.id === 'NOT_SET_YET');
+  
+  const prevCalendarChangedRef = useRef(calendarChanged);
+  const hasFetchedRef = useRef(false);
+
+  const shareLink = `${window.location.origin}/share_calendar?id=${localCalendarId}`;
+
+
+  const isShareCalendarPage = window.location.pathname === "/share_calendar"
+  if (isShareCalendarPage){
+    return null
+  }
+
+
+  useEffect(() => {
+    const isInvalid = !localCalendarId || localCalendarId === 'NOT_SET_YET';
+    console.log('[ShareButton] Updating disabled state:', { localCalendarId, isInvalid, isFetching });
+    setDisabled(isInvalid || isFetching);
+  }, [localCalendarId, isFetching]);
+
+  useEffect(() => {
+    console.log('[ShareButton] State changed:', {
+      calendarChanged,
+      prevCalendarChanged: prevCalendarChangedRef.current,
+      calendarId: calendar.id,
+      localCalendarId,
+      isFetching,
+      hasFetched: hasFetchedRef.current,
+      disabled
+    });
+
+    const fetchCalendar = async () => {
+      const wasChanged = prevCalendarChangedRef.current;
+      const isNowSaved = !calendarChanged;
+      const shouldFetch = wasChanged && isNowSaved && calendar.id === 'NOT_SET_YET' && !hasFetchedRef.current;
+      
+      console.log('[ShareButton] Fetch decision:', {
+        wasChanged,
+        isNowSaved,
+        shouldFetch,
+        calendarId: calendar.id
+      });
+
+      if (shouldFetch && !isFetching) {
+        console.log('[ShareButton] Starting fetch...');
+        setIsFetching(true);
+        hasFetchedRef.current = true;
+
+        try {
+          const cal = await backendActor.get_my_calendar();
+          console.log('[ShareButton] Fetched calendar:', cal);
+          
+          setLocalCalendarId(cal.id);
+          dispatch({ type: "SET_CALENDAR", calendar: cal });
+          
+          console.log('[ShareButton] Calendar updated, button should enable now');
+        } catch (error) {
+          console.error('[ShareButton] Failed to fetch calendar:', error);
+          hasFetchedRef.current = false;
+        } finally {
+          setIsFetching(false);
+        }
+      }
+      
+      prevCalendarChangedRef.current = calendarChanged;
+    };
+
+    fetchCalendar();
+  }, [calendarChanged, calendar.id, dispatch, isFetching, localCalendarId, disabled]);
+
+  useEffect(() => {
+    if (calendar.id !== 'NOT_SET_YET' && calendar.id !== localCalendarId) {
+      console.log('[ShareButton] Syncing localCalendarId with Redux:', calendar.id);
+      setLocalCalendarId(calendar.id);
+    }
+  }, [calendar.id, localCalendarId]);
+
+  useEffect(() => {
+    if (calendarChanged) {
+      console.log('[ShareButton] Calendar changed, resetting fetch flag');
+      hasFetchedRef.current = false;
+    }
+  }, [calendarChanged]);
 
   const handleCopy = async () => {
+    if (disabled) {
+      console.log('[ShareButton] Copy blocked - button disabled');
+      return;
+    }
+    
+    console.log('[ShareButton] Copying link:', shareLink);
+
     try {
       await navigator.clipboard.writeText(shareLink);
       setCopied(true);
       setShowSnackbar(true);
-      
-      // Reset copied state after 2 seconds
       setTimeout(() => setCopied(false), 2000);
+      console.log('[ShareButton] Link copied successfully');
     } catch (error) {
-      console.error("Failed to copy:", error);
-      // Fallback for older browsers
+      console.error('[ShareButton] Clipboard API failed, using fallback:', error);
       const textArea = document.createElement("textarea");
       textArea.value = shareLink;
       document.body.appendChild(textArea);
@@ -55,54 +126,46 @@ const ShareCalendarButton: React.FC<ShareCalendarButtonProps> = ({
       setCopied(true);
       setShowSnackbar(true);
       setTimeout(() => setCopied(false), 2000);
+      console.log('[ShareButton] Link copied via fallback');
     }
   };
 
-  const handleQuickCopy = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    await handleCopy();
-  };
+  const tooltipTitle = disabled 
+    ? "Please set your availability first before sharing your calendar"
+    : copied 
+    ? "Copied!" 
+    : "Copy calendar link";
 
-  const handleOpenDialog = () => {
-    setShowDialog(true);
-  };
-
-  const handleCloseDialog = () => {
-    setShowDialog(false);
-  };
-
-  const handleCloseSnackbar = () => {
-    setShowSnackbar(false);
-  };
-
-  if (variant === "icon") {
-    return (
+  return (
       <>
-        <Tooltip title={copied ? "Copied!" : "Share Calendar"}>
-          <IconButton
-            onClick={handleQuickCopy}
-            size={size}
-            sx={{
-              color: copied ? "success.main" : "primary.main",
-              transition: "all 0.2s",
-              "&:hover": {
-                backgroundColor: "primary.light",
-                transform: "scale(1.05)",
-              },
-            }}
-          >
-            {copied ? <Check fontSize={size} /> : <Share fontSize={size} />}
-          </IconButton>
+        <Tooltip title={tooltipTitle}>
+          <span>
+            <IconButton
+              onClick={handleCopy}
+              disabled={disabled}
+              size={'small'}
+              sx={{
+                color: copied ? "success.main" : "primary.main",
+                transition: "all 0.2s",
+                "&:hover": {
+                  backgroundColor: "primary.light",
+                  transform: "scale(1.05)",
+                },
+              }}
+            >
+              {copied ? <Check fontSize={'small'} /> : <Share fontSize={'small'} />}
+            </IconButton>
+          </span>
         </Tooltip>
 
         <Snackbar
           open={showSnackbar}
           autoHideDuration={2000}
-          onClose={handleCloseSnackbar}
+          onClose={() => setShowSnackbar(false)}
           anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
         >
           <Alert
-            onClose={handleCloseSnackbar}
+            onClose={() => setShowSnackbar(false)}
             severity="success"
             variant="filled"
             sx={{ width: "100%" }}
@@ -112,155 +175,6 @@ const ShareCalendarButton: React.FC<ShareCalendarButtonProps> = ({
         </Snackbar>
       </>
     );
-  }
-
-  return (
-    <>
-      <Button
-        onClick={handleOpenDialog}
-        startIcon={<Share />}
-        size={size}
-        variant="outlined"
-        sx={{
-          textTransform: "none",
-          fontWeight: 500,
-          borderColor: "divider",
-          color: "text.primary",
-          "&:hover": {
-            borderColor: "primary.main",
-            backgroundColor: "primary.light",
-          },
-        }}
-      >
-        Share
-      </Button>
-
-      <Dialog
-        open={showDialog}
-        onClose={handleCloseDialog}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: 2,
-          },
-        }}
-      >
-        <DialogTitle>
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <Share color="primary" />
-            <Typography variant="h6" fontWeight={600}>
-              Share Calendar
-            </Typography>
-          </Stack>
-        </DialogTitle>
-
-        <DialogContent>
-          <Stack spacing={2} sx={{ mt: 1 }}>
-            <Typography variant="body2" color="text.secondary">
-              Share this link with others to give them view access to your calendar.
-              They'll be able to see your events and availability.
-            </Typography>
-
-            <Box
-              sx={{
-                p: 2,
-                backgroundColor: (theme) => theme.palette.mode === 'dark' 
-                  ? 'rgba(255, 255, 255, 0.05)' 
-                  : 'rgba(0, 0, 0, 0.02)',
-                borderRadius: 1,
-                border: 1,
-                borderColor: "divider",
-              }}
-            >
-              <TextField
-                fullWidth
-                value={shareLink}
-                InputProps={{
-                  readOnly: true,
-                  endAdornment: (
-                    <IconButton
-                      onClick={handleCopy}
-                      size="small"
-                      sx={{
-                        color: copied ? "success.main" : "primary.main",
-                      }}
-                    >
-                      {copied ? <Check /> : <ContentCopy />}
-                    </IconButton>
-                  ),
-                }}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    backgroundColor: "background.paper",
-                  },
-                }}
-              />
-            </Box>
-
-            {copied && (
-              <Alert severity="success" variant="outlined">
-                Link copied to clipboard!
-              </Alert>
-            )}
-
-            <Box
-              sx={{
-                p: 2,
-                backgroundColor: (theme) => theme.palette.mode === 'dark'
-                  ? 'rgba(6, 174, 212, 0.15)'
-                  : 'rgba(6, 174, 212, 0.08)',
-                borderRadius: 1,
-                border: 1,
-                borderColor: "info.main",
-              }}
-            >
-              <Typography 
-                variant="caption" 
-                sx={{ 
-                  color: (theme) => theme.palette.mode === 'dark' 
-                    ? 'info.light' 
-                    : 'info.dark' 
-                }}
-              >
-                <strong>Note:</strong> Anyone with this link can view your calendar.
-                To revoke access, you&apos;ll need to create a new calendar.
-              </Typography>
-            </Box>
-          </Stack>
-        </DialogContent>
-
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={handleCloseDialog} variant="outlined">
-            Close
-          </Button>
-          <Button
-            onClick={handleCopy}
-            variant="contained"
-            startIcon={copied ? <Check /> : <ContentCopy />}
-          >
-            {copied ? "Copied!" : "Copy Link"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Snackbar
-        open={showSnackbar}
-        autoHideDuration={2000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity="success"
-          variant="filled"
-          sx={{ width: "100%" }}
-        >
-          Calendar link copied to clipboard!
-        </Alert>
-      </Snackbar>
-    </>
-  );
 };
 
 export default ShareCalendarButton;
