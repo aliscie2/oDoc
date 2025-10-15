@@ -75,6 +75,7 @@ const Pages = React.memo(() => {
         <Route path="*" element={<NotFound />} />
         <Route path="/calendar" element={<CalendarView />} />
         <Route path="/share_calendar*" element={<ShareCalendarView />} />
+        <Route path="/user/*" element={<UserProfile />} />
         </Routes>
     </Suspense>)
     }

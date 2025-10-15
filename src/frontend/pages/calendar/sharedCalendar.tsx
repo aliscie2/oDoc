@@ -239,8 +239,7 @@ return (
         </title>
       </Helmet>
 
-      {isMobile && isViewingSharedCalendar && (
-  <Box
+        <Box
     sx={{
       p: 1.5,
       backgroundColor: "background.paper",
@@ -266,7 +265,7 @@ return (
       📅 Viewing shared calendar
     </Typography>
   </Box>
-)}
+
 
       {busyError && (
         <Alert severity="warning" sx={{ m: 2 }}>

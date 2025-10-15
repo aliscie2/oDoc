@@ -152,18 +152,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
     >
       <Stack direction="row" alignItems="center" justifyContent="space-between">
         <Stack direction="row" spacing={1.5} alignItems="center">
-          {shouldShowOwnerAvatar && (
-            <>
-              <UserAvatarMenu
-                user_id={sharedCalendar.owner}
-                sx={{ width: 32, height: 32, "& .MuiAvatar-root": { fontSize: "0.875rem" } }}
-              />
-              <Typography variant="caption" sx={{ color: "text.secondary", fontStyle: "italic", display: "flex", alignItems: "center", gap: 0.5 }}>
-                📅 Viewing shared calendar
-              </Typography>
-            </>
-          )}
-          
+        
           <GoogleAccountManager size="small" isSharedCalendar={!isOwnCalendar} />
           <AvailabilityManager />
           
