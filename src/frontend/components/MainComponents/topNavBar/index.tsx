@@ -438,9 +438,11 @@ export default function TopNavBar() {
     width: 32, 
     height: 32, 
     objectFit: "contain",
-    filter: state?.theme?.palette?.mode === 'dark'  // Safe access
-      ? 'brightness(0.9) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5))' 
-      : 'drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25))'
+    filter: state?.theme?.palette?.mode === 'dark'
+      ? 'brightness(0.85) contrast(0.9) saturate(1.1)' 
+      : 'brightness(1.05) contrast(1.05)',
+    opacity: state?.theme?.palette?.mode === 'dark' ? 0.9 : 1,
+    mixBlendMode: state?.theme?.palette?.mode === 'dark' ? 'screen' : 'normal'
   };
 
   
@@ -511,13 +513,15 @@ export default function TopNavBar() {
 };
 
 const DesktopNav = () => {
-  const imgStyles = { 
+    const imgStyles = { 
     width: 28, 
     height: 28, 
     objectFit: "contain", 
-    filter: state?.theme?.palette?.mode === 'dark'  // Safe access
-      ? 'brightness(0.9) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5))' 
-      : 'drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3))',
+    filter: state?.theme?.palette?.mode === 'dark'
+      ? 'brightness(0.85) contrast(0.9) saturate(1.1)' 
+      : 'brightness(1.05) contrast(1.05)',
+    opacity: state?.theme?.palette?.mode === 'dark' ? 0.9 : 1,
+    mixBlendMode: state?.theme?.palette?.mode === 'dark' ? 'screen' : 'normal',
     transition: 'all 0.2s ease'
   };
   return (

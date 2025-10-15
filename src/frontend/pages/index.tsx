@@ -71,6 +71,7 @@ const Pages = React.memo(() => {
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/f*" element={<AffiliateRedirect />} />
         <Route path="*" element={<NotFound />} />
+        <Route path="/calendar" element={<CalendarView />} />
         </Routes>
     </Suspense>)
     }

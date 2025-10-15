@@ -142,8 +142,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
         >
           {!isOwnCalendar && calendar?.owner && (
             <>
-              <MenuItem sx={{ py: 1, display: "flex", alignItems: "center", gap: 1 }}>
-                <UserAvatarMenu
+              <UserAvatarMenu
                   user_id={calendar.owner}
                   sx={{
                     width: 24,
@@ -153,10 +152,6 @@ const Toolbar: React.FC<ToolbarProps> = ({
                     },
                   }}
                 />
-                <Typography variant="caption" color="text.secondary">
-                  📅 Viewing shared calendar
-                </Typography>
-              </MenuItem>
               <Divider />
             </>
           )}
