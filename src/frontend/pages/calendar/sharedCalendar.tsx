@@ -1,18 +1,26 @@
-// Main Calendar Component
+import UserAvatarMenu from "@/components/MainComponents/UserAvatarMenu";
 import { backendActor } from "@/utils/backendUtils";
-import { Alert, Box, useTheme } from "@mui/material";
-import { format, getDay, parse, startOfWeek } from "date-fns";
-import { enUS } from "date-fns/locale/en-US";
+import { useTheme } from "@emotion/react";
+import { Alert, Box, Typography, useMediaQuery } from "@mui/material";
 import React, { useEffect } from "react";
+
 import { Calendar, dateFnsLocalizer } from "react-big-calendar";
-import "react-big-calendar/lib/css/react-big-calendar.css";
 import { Helmet } from "react-helmet-async";
 import { useDispatch, useSelector } from "react-redux";
-import "./calendar.css";
+
 import EventDialog from "./components/EventDialog";
+import { useCalendar, useFreeBusy } from "./hooks";
+
+// Main Calendar Component
+import { format, getDay, parse, startOfWeek } from "date-fns";
+import { enUS } from "date-fns/locale/en-US";
+
+import "react-big-calendar/lib/css/react-big-calendar.css";
+
+
+import "./calendar.css";
 import Toolbar from "./components/Toolbar";
-import { useCalendar } from "./hooks";
-import { useFreeBusy } from "./hooks/useFreeBusy";
+
 
 const locales = { "en-US": enUS };
 const localizer = dateFnsLocalizer({
@@ -23,16 +31,20 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-// CalendarView.tsx - Updated component
-// CalendarView.tsx - For user's own calendar
-const CalendarView = () => {
-  console.log("Normal")
+
+// ShareCalendarView.tsx - For viewing shared calendars
+const ShareCalendarView = () => {
+  console.log("[ShareCalendarView] Rendering ShareCalendarView");
   const dispatch = useDispatch();
   const theme = useTheme();
-  const { calendar } = useSelector((state: any) => state.calendarState);
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const { calendar, sharedCalendar } = useSelector((state: any) => state.calendarState);
   const { profile } = useSelector((state: any) => state.filesState);
 
-  const { blockedEvents, isLoadingBusy, busyError } = useFreeBusy();
+  const urlParams = new URLSearchParams(window.location.search);
+  const id = urlParams.get("id");
+
+  const { blockedEvents, busyError } = useFreeBusy();
 
   const {
     currentDate,
@@ -42,7 +54,6 @@ const CalendarView = () => {
     selectedEvent,
     events,
     isDark,
-    isMobile,
     timeSpans,
     availabilityRange,
     handleSelectSlot,
@@ -55,19 +66,66 @@ const CalendarView = () => {
   } = useCalendar(blockedEvents);
 
   useEffect(() => {
-    const loadCalendar = async () => {
-      if (!backendActor) return;
+    const loadSharedCalendar = async () => {
+      if (!backendActor || !id) return;
 
       try {
-        const res = await backendActor.get_my_calendar();
-        dispatch({ type: "SET_CALENDAR", calendar: res });
+        console.log('[ShareCalendar] Loading calendar:', { id });
+        const res = await backendActor.get_calendar(id);
+        console.log('[ShareCalendar] Calendar loaded:', res[0]);
+        dispatch({ type: "SET_SHARED_CALENDAR", sharedCalendar: res[0] });
       } catch (error) {
-        console.error("❌ Error loading calendar:", error);
+        console.error("[ShareCalendar] Error loading shared calendar:", error);
       }
     };
 
-    loadCalendar();
-  }, [dispatch]);
+    loadSharedCalendar();
+
+    return () => {
+      dispatch({ type: "CLEAR_SHARED_CALENDAR" });
+    };
+  }, [id, backendActor, dispatch]);
+
+  useEffect(() => {
+    if (sharedCalendar?.google_public_urls?.length > 0) {
+      const ownerICalUrl = sharedCalendar.google_public_urls[0];
+      const CORS_PROXY = "https://corsproxy.io/?";
+      const PROXIED_URL = CORS_PROXY + encodeURIComponent(ownerICalUrl);
+
+
+      fetch(PROXIED_URL)
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+          return res.text();
+        })
+        .then((icalData) => {
+          const events = parseICalEvents(icalData);
+          const blockedSlots = events.map((event, index) => ({
+            id: `owner_ical_${index}_${event.start.getTime()}`,
+            title: "Busy",
+            description: "",
+            start_time: event.start.getTime() * 1000000,
+            end_time: event.end.getTime() * 1000000,
+            created_by: sharedCalendar.owner,
+            attendees: [],
+            isOwnerGoogleEvent: true,
+            isFreeBusyBlock: true,
+            recurrence: [],
+          }));
+
+          dispatch({ type: "SET_OWNER_GOOGLE_EVENTS", events: blockedSlots });
+          console.log(`[ShareCalendar] Loaded ${blockedSlots.length} owner's events as blocked slots`);
+        })
+        .catch((error) => {
+          console.error("[ShareCalendar] Failed to fetch owner's iCal:", error.message);
+        });
+    }
+  }, [sharedCalendar, dispatch]);
+
+  const isViewingSharedCalendar = sharedCalendar && sharedCalendar.owner !== profile?.id;
+
+
+
 
   const TimeSlotWrapper = ({ children, value }: { children: React.ReactNode; value: Date }) => {
     if (!children || !React.isValidElement(children)) return children;
@@ -164,7 +222,8 @@ const CalendarView = () => {
 
   const mobileTimeConfig = getMobileTimeConfig();
 
-  return (
+
+return (
     <Box
       sx={{
         height: "100vh",
@@ -175,8 +234,39 @@ const CalendarView = () => {
       }}
     >
       <Helmet>
-        <title>My Calendar</title>
+        <title>
+          {isViewingSharedCalendar ? "Shared Calendar" : "My Calendar"}
+        </title>
       </Helmet>
+
+      {isMobile && isViewingSharedCalendar && (
+  <Box
+    sx={{
+      p: 1.5,
+      backgroundColor: "background.paper",
+      borderBottom: 1,
+      borderColor: "divider",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",  // ADD THIS LINE
+      gap: 1,
+    }}
+  >
+    <UserAvatarMenu
+      user_id={sharedCalendar?.owner}
+      sx={{
+        width: 40,  // Make it bigger as you wanted
+        height: 40,
+        "& .MuiAvatar-root": {
+          fontSize: "1rem",  // Bigger font too
+        },
+      }}
+    />
+    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+      📅 Viewing shared calendar
+    </Typography>
+  </Box>
+)}
 
       {busyError && (
         <Alert severity="warning" sx={{ m: 2 }}>
@@ -255,4 +345,48 @@ const CalendarView = () => {
   );
 };
 
-export default CalendarView;
+function parseICalEvents(icalData: string) {
+  const events: Array<{ title: string; start: Date; end: Date; description: string }> = [];
+  const lines = icalData.split("\n");
+  let currentEvent: any = null;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+
+    if (line === "BEGIN:VEVENT") {
+      currentEvent = { title: "", description: "" };
+    } else if (line === "END:VEVENT" && currentEvent) {
+      if (currentEvent.start && currentEvent.end) events.push(currentEvent);
+      currentEvent = null;
+    } else if (currentEvent) {
+      if (line.startsWith("SUMMARY:")) {
+        currentEvent.title = line.substring(8);
+      } else if (line.startsWith("DESCRIPTION:")) {
+        currentEvent.description = line.substring(12);
+      } else if (line.startsWith("DTSTART")) {
+        currentEvent.start = parseICalDate(line.split(":")[1]);
+      } else if (line.startsWith("DTEND")) {
+        currentEvent.end = parseICalDate(line.split(":")[1]);
+      }
+    }
+  }
+
+  return events;
+}
+
+function parseICalDate(dateStr: string): Date {
+  if (dateStr.includes("T")) {
+    const year = parseInt(dateStr.substring(0, 4));
+    const month = parseInt(dateStr.substring(4, 6)) - 1;
+    const day = parseInt(dateStr.substring(6, 8));
+    const hour = parseInt(dateStr.substring(9, 11));
+    const minute = parseInt(dateStr.substring(11, 13));
+    const second = parseInt(dateStr.substring(13, 15));
+    return new Date(Date.UTC(year, month, day, hour, minute, second));
+  }
+  const year = parseInt(dateStr.substring(0, 4));
+  const month = parseInt(dateStr.substring(4, 6)) - 1;
+  const day = parseInt(dateStr.substring(6, 8));
+  return new Date(year, month, day);
+}
+export default ShareCalendarView;

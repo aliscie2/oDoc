@@ -109,7 +109,7 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({ jobId, matchingJob, showA
         const jobData = {
           job: { ...currentJob, category },
           match: { ...match, score: match.score * 100 },
-          bookEvent: `${window.location.origin}/calendar?id=${calendar.id}&jobid=${currentJob.id}`,
+          bookEvent: `${window.location.origin}/share_calendar?id=${calendar.id}&jobid=${currentJob.id}`,
         };
 
         let emailSent = false;

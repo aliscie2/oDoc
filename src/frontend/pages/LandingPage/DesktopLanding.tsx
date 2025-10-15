@@ -281,7 +281,7 @@ const CalendarStep = () => {
   const [phase, setPhase] = useState(0);
 
   const phases = [
-    { type: "availability", text: "Set me available Mon-Fri 9 AM - 1 PM" },
+    { type: "availability", text: "Set me available Mon-Wed 9 AM - 1 PM" },
     { type: "event", text: "Find me a good time to meet Sarah tomorrow." }
   ];
 
@@ -290,8 +290,6 @@ const CalendarStep = () => {
     { day: "Mon", hours: "9:00 AM - 1:00 PM" },
     { day: "Tue", hours: "9:00 AM - 1:00 PM" },
     { day: "Wed", hours: "9:00 AM - 1:00 PM" },
-    { day: "Thu", hours: "9:00 AM - 1:00 PM" },
-    { day: "Fri", hours: "9:00 AM - 1:00 PM" }
   ];
 
   useEffect(() => {
