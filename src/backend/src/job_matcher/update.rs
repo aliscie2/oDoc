@@ -116,7 +116,6 @@ fn update_matches(match_changes: MatchChanges, _ai_credits: Option<f32>) -> Resu
         return Err("Permission denied (anonymous)".to_string());
     }
 
-
     if let Some(credits) = _ai_credits {
         UserState::set_credits(credits);
     }
