@@ -134,3 +134,6 @@ testing_thumbnails:
 
 code_review:
 	git diff HEAD~1 HEAD -- src/frontend/pages/jobs
+
+get_typescript_issues:
+	npx tsc --noEmit --pretty 2>&1 | grep -A 5 "agreementView.tsx"

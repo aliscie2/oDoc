@@ -430,22 +430,17 @@ export default function TopNavBar() {
       </Tooltip>
     );
   };
-
-  
-  const MobileNav = () => {
+const MobileNav = () => {
   const mobileNavButtonSx = { minWidth: 0, flex: 1 };
-   const imgStyles = { 
-    width: 32, 
-    height: 32, 
-    objectFit: "contain",
-    filter: state?.theme?.palette?.mode === 'dark'
-      ? 'brightness(0.85) contrast(0.9) saturate(1.1)' 
-      : 'brightness(1.05) contrast(1.05)',
-    opacity: state?.theme?.palette?.mode === 'dark' ? 0.9 : 1,
-    mixBlendMode: state?.theme?.palette?.mode === 'dark' ? 'screen' : 'normal'
-  };
-
-  
+const imgStyles = { 
+  width: 32, 
+  height: 32, 
+  objectFit: "contain",
+  filter: state?.theme?.palette?.mode === 'dark'
+    ? 'brightness(0.85) contrast(0.9) saturate(1.1) drop-shadow(0 2px 6px rgba(0,0,0,0.8))' 
+    : 'brightness(1.05) contrast(1.05) drop-shadow(0 2px 6px rgba(0,0,0,0.7))',
+  opacity: state?.theme?.palette?.mode === 'dark' ? 0.9 : 1,
+};
   const getMobileNavButtons = () => {
     const buttons = [
       { path: "/", label: "Work", icon: <img src="/job.png" alt="Work" style={imgStyles} />, isHome: true },
@@ -513,17 +508,17 @@ export default function TopNavBar() {
 };
 
 const DesktopNav = () => {
-    const imgStyles = { 
-    width: 28, 
-    height: 28, 
-    objectFit: "contain", 
-    filter: state?.theme?.palette?.mode === 'dark'
-      ? 'brightness(0.85) contrast(0.9) saturate(1.1)' 
-      : 'brightness(1.05) contrast(1.05)',
-    opacity: state?.theme?.palette?.mode === 'dark' ? 0.9 : 1,
-    mixBlendMode: state?.theme?.palette?.mode === 'dark' ? 'screen' : 'normal',
-    transition: 'all 0.2s ease'
-  };
+ const imgStyles = { 
+  width: 28, 
+  height: 28, 
+  objectFit: "contain", 
+  filter: state?.theme?.palette?.mode === 'dark'
+    ? 'brightness(0.85) contrast(0.9) saturate(1.1) drop-shadow(0 2px 6px rgba(0,0,0,0.8))' 
+    : 'brightness(1.05) contrast(1.05) drop-shadow(0 2px 6px rgba(0,0,0,0.7))',
+  opacity: state?.theme?.palette?.mode === 'dark' ? 0.9 : 1,
+  transition: 'all 0.2s ease'
+};
+
   return (
     <Toolbar
       sx={{

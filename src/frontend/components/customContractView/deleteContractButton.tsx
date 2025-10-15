@@ -4,10 +4,12 @@ import { Button, CircularProgress } from "@mui/material";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 
+import { useNavigate } from 'react-router-dom';
+
 function DeleteContractButton({ contractId }: { contractId: string }) {
   const [isDeleting, setDeleting] = useState(false);
   const dispatch = useDispatch();
-  // Using direct backendActor import
+  const navigate = useNavigate();
 
   const handleDelete = async () => {
     if (
@@ -21,6 +23,7 @@ function DeleteContractButton({ contractId }: { contractId: string }) {
       setDeleting(true);
       await backendActor.delete_custom_contract(contractId);
       dispatch({ type: "DELETE_CUSTOM_CONTRACT", id: contractId });
+      navigate('/contracts');
     } catch (error) {
       console.error("Failed to delete contract:", error);
     } finally {
