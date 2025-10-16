@@ -110,16 +110,6 @@ export const ChatMobilePage: React.FC = () => {
     [chat, profile?.id, sendMessage, dispatch, infiniteScroll],
   );
 
-  const getChatTitle = () => {
-    if (!chat) return "Chat";
-    if (chat.name !== "private_chat") return chat.name;
-    const otherMember = chat.members.find((m) => m.toString() !== profile?.id);
-    if (!otherMember) return "Chat";
-    const friend = all_friends.find((f) => f.id === otherMember.toString());
-    console.log({ friend, all_friends, otherMember });
-    return friend?.name || "";
-  };
-
   if (!chat) {
     return (
       <Box
@@ -178,9 +168,6 @@ export const ChatMobilePage: React.FC = () => {
             sx={{ width: 40, height: 40 }}
             hide={["Review"]}
           />
-          <Typography variant="h6" sx={{ flex: 1, ml: 1 }}>
-            {getChatTitle()}
-          </Typography>
           {showSettings && (
             <IconButton color="inherit" onClick={() => setIsSettingsOpen(true)}>
               <Settings />
@@ -207,6 +194,7 @@ export const ChatMobilePage: React.FC = () => {
           onScroll={infiniteScroll.handleScroll}
           isLoadingMore={infiniteScroll.isLoadingMore}
           hasMoreMessages={infiniteScroll.hasMoreMessages}
+          isPrivateChat={isPrivateChat}
         />
         <MessageInput onSendMessage={handleSendMessage} isSending={isSending} />
       </Box>

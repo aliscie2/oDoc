@@ -13,6 +13,7 @@ import { backendActor } from "@/utils/backendUtils";
 import { RegisterUser } from "$/declarations/backend/backend.did";
 import { useDispatch } from "react-redux";
 import compressImage from "@/DataProcessing/compressImage";
+import { convertToBlobLink } from "@/DataProcessing/imageToVec";
 
 const EditProfile = ({ setIsEditing, profile, onCancel = false }) => {
   const dispatch = useDispatch();
@@ -115,7 +116,13 @@ const EditProfile = ({ setIsEditing, profile, onCancel = false }) => {
 
       if (result.Ok) {
         enqueueSnackbar("Profile updated successfully", { variant: "success" });
-        dispatch({ type: "UPDATE_PROFILE", profile: result.Ok });
+
+        const profileWithBlobUrl = {
+          ...result.Ok,
+          photo: photo ? convertToBlobLink(result.Ok.photo) : result.Ok.photo,
+        };
+
+        dispatch({ type: "UPDATE_PROFILE", profile: profileWithBlobUrl });
         setIsUpdating(false);
         setIsEditing(false);
       } else if (result.Err) {

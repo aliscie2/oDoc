@@ -1,17 +1,17 @@
 // ChatFloatingWindow.tsx
-import React, { useRef, useEffect, useCallback } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { Box, IconButton, Typography, Paper } from "@mui/material";
 import { Close, Remove, Settings } from "@mui/icons-material";
-import { Chat } from "./types";
-import { MessagesList } from "./MessagesList";
-import { MessageInput } from "./MessageInput";
+import { Box, IconButton, Paper } from "@mui/material";
+import React, { useCallback, useEffect, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../../redux/reducers";
+import { backendActor } from "../../utils/backendUtils";
+import UserAvatarMenu from "../MainComponents/UserAvatarMenu";
 import { ChatSettingsDialog } from "./ChatSettingsDialog";
 import { useChatOperations } from "./hooks/useChatOperations";
 import { useInfiniteScroll } from "./hooks/useInfiniteScroll";
-import { backendActor } from "../../utils/backendUtils";
-import { RootState } from "../../redux/reducers";
-import UserAvatarMenu from "../MainComponents/UserAvatarMenu";
+import { MessageInput } from "./MessageInput";
+import { MessagesList } from "./MessagesList";
+import { Chat } from "./types";
 
 interface ChatFloatingWindowProps {
   chat: Chat;
@@ -122,14 +122,6 @@ export const ChatFloatingWindow: React.FC<ChatFloatingWindowProps> = ({
     [chat, profile?.id, sendMessage, dispatch, infiniteScroll],
   );
 
-  const getChatTitle = () => {
-    if (chat.name !== "private_chat") return chat.name;
-    const otherMember = chat.members.find((m) => m.toString() !== profile?.id);
-    if (!otherMember) return "Chat";
-    const friend = all_friends.find((f) => f.id === otherMember.toString());
-    return friend?.name || "";
-  };
-
   const isPrivateChat = chat.name === "private_chat";
   const isCreator = chat.creator?.toString() === profile?.id;
   const showSettings = !isPrivateChat && isCreator;
@@ -204,17 +196,7 @@ export const ChatFloatingWindow: React.FC<ChatFloatingWindowProps> = ({
             sx={{ width: 40, height: 40 }}
             hide={["Review"]}
           />
-          <Typography
-            variant="subtitle2"
-            sx={{
-              flex: 1,
-              fontWeight: 600,
-              ml: 1,
-              fontSize: { xs: "1rem", sm: "0.875rem" },
-            }}
-          >
-            {getChatTitle()}
-          </Typography>
+          <Box sx={{ flex: 1 }} />
 
           {/* Hide minimize button on mobile */}
           <IconButton
@@ -274,6 +256,7 @@ export const ChatFloatingWindow: React.FC<ChatFloatingWindowProps> = ({
               onScroll={infiniteScroll.handleScroll}
               isLoadingMore={infiniteScroll.isLoadingMore}
               hasMoreMessages={infiniteScroll.hasMoreMessages}
+              isPrivateChat={isPrivateChat}
             />
             <MessageInput
               onSendMessage={handleSendMessage}

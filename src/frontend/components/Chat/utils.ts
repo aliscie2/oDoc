@@ -54,7 +54,7 @@ export const getUnreadCount = (
     // Skip if current user has seen this message
     const isSeen = message.seen_by.some((user) => {
       const userStr = user instanceof Principal ? user.toString() : user;
-      console.log({ userStr, currentUserId });
+
       return userStr === currentUserId;
     });
 

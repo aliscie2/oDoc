@@ -1,15 +1,9 @@
+import { Box, CircularProgress, Paper, Typography } from "@mui/material";
 import React, { memo } from "react";
-import {
-  Box,
-  Paper,
-  Typography,
-  CircularProgress,
-  Avatar,
-} from "@mui/material";
-import { Link } from "react-router-dom";
+import formatTimestamp from "../../utils/time";
+import UserAvatarMenu from "../MainComponents/UserAvatarMenu";
 import { Chat, User } from "./types";
 import { getSenderName, isCurrentUser } from "./utils";
-import formatTimestamp from "../../utils/time";
 
 interface MessagesListProps {
   chat: Chat;
@@ -20,6 +14,7 @@ interface MessagesListProps {
   onScroll: (container: HTMLElement) => void;
   isLoadingMore: boolean;
   hasMoreMessages: boolean;
+  isPrivateChat: boolean;
 }
 
 export const MessagesList = memo<MessagesListProps>(
@@ -32,20 +27,12 @@ export const MessagesList = memo<MessagesListProps>(
     onScroll,
     isLoadingMore,
     hasMoreMessages,
+    isPrivateChat,
   }) => {
     const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
       onScroll(e.currentTarget);
     };
 
-    // ⚠️ CRITICAL: MESSAGE ORDERING
-    // Storage format: [newest, ..., oldest] (reverse chronological)
-    // Display format: [oldest, ..., newest] (chronological - top to bottom)
-    //
-    // Example:
-    // Stored:    [msg3(newest), msg2, msg1(oldest)]
-    // Displayed: [msg1(oldest), msg2, msg3(newest)]
-    //
-    // We MUST reverse the array for display so users see messages in natural order
     const sortedMessages = [...chat.messages].reverse();
 
     return (
@@ -61,14 +48,12 @@ export const MessagesList = memo<MessagesListProps>(
           bgcolor: "background.default",
         }}
       >
-        {/* Loading indicator at top */}
         {isLoadingMore && (
           <Box sx={{ display: "flex", justifyContent: "center", p: 2 }}>
             <CircularProgress size={24} />
           </Box>
         )}
 
-        {/* No more messages indicator */}
         {!hasMoreMessages && chat.messages.length > 0 && (
           <Box sx={{ display: "flex", justifyContent: "center", p: 2 }}>
             <Typography variant="caption" color="text.secondary">
@@ -77,7 +62,6 @@ export const MessagesList = memo<MessagesListProps>(
           </Box>
         )}
 
-        {/* Messages - Display oldest to newest (top to bottom) */}
         {sortedMessages.map((message) => {
           const isOwn = isCurrentUser(message.sender, currentUserId);
           const senderName = getSenderName(
@@ -85,6 +69,7 @@ export const MessagesList = memo<MessagesListProps>(
             currentUserId,
             allFriends,
           );
+          const showSenderInfo = !isOwn && !isPrivateChat;
 
           return (
             <Box
@@ -96,46 +81,24 @@ export const MessagesList = memo<MessagesListProps>(
                 gap: 1,
               }}
             >
-              {/* Avatar for other users */}
-              {!isOwn && (
-                <Avatar
-                  sx={{ width: 32, height: 32, mt: 0.5 }}
-                  alt={senderName}
-                >
-                  {senderName.charAt(0).toUpperCase()}
-                </Avatar>
+              {showSenderInfo && (
+                <UserAvatarMenu
+                  user_id={message.sender.toString()}
+                  dispalyName
+                />
               )}
 
               <Box sx={{ maxWidth: "70%", minWidth: "100px" }}>
-                {/* Sender name for other users */}
-                {!isOwn && (
-                  <Typography
-                    component={Link}
-                    to={`/user?id=${message.sender.toString()}`}
-                    variant="caption"
-                    sx={{
-                      fontWeight: 600,
-                      color: "primary.main",
-                      textDecoration: "none",
-                      ml: 0.5,
-                      "&:hover": { textDecoration: "underline" },
-                    }}
-                  >
-                    {senderName}
-                  </Typography>
-                )}
-
-                {/* Message bubble */}
                 <Paper
                   elevation={0}
                   sx={(theme) => ({
                     p: 1.5,
-                    mt: !isOwn ? 0.5 : 0,
+                    mt: showSenderInfo ? 0.5 : 0,
                     bgcolor: isOwn
                       ? theme.palette.primary.main
                       : theme.palette.mode === "dark"
-                        ? "#27272a" // zinc-800
-                        : "#f4f4f5", // zinc-100
+                        ? "#27272a"
+                        : "#f4f4f5",
                     color: isOwn ? "#ffffff" : theme.palette.text.primary,
                     borderRadius: isOwn
                       ? "16px 16px 4px 16px"
@@ -159,7 +122,7 @@ export const MessagesList = memo<MessagesListProps>(
                   <Typography
                     variant="caption"
                     sx={{
-                      color: "rgba(255, 255, 255, 0.7)", // Light white with transparency
+                      color: "rgba(255, 255, 255, 0.7)",
                       opacity: 0.7,
                       fontSize: "0.7rem",
                       display: "block",
@@ -173,11 +136,9 @@ export const MessagesList = memo<MessagesListProps>(
           );
         })}
 
-        {/* Scroll anchor */}
         <div ref={messagesEndRef} />
       </Box>
     );
   },
 );
-
 MessagesList.displayName = "MessagesList";

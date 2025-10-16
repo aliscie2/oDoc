@@ -1,58 +1,65 @@
-import React, { useState } from "react";
+import { Notification } from "$/declarations/backend/backend.did";
+import { RootState } from "@/redux/reducers";
+import { backendActor } from "@/utils/backendUtils";
+import { formatRelativeTime } from "@/utils/time";
+import MessageIcon from "@mui/icons-material/Message";
+import NotificationsIcon from "@mui/icons-material/Notifications";
 import {
   Badge,
   Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
   IconButton,
   List,
   Menu,
   Typography,
-  Card,
-  CardContent,
-  Avatar,
-  Button,
-  Chip,
 } from "@mui/material";
-import NotificationsIcon from "@mui/icons-material/Notifications";
-import MessageIcon from "@mui/icons-material/Message";
-import { useDispatch, useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
-import { RootState } from "@/redux/reducers";
-import { backendActor } from "@/utils/backendUtils";
-import { formatRelativeTime } from "@/utils/time";
+import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import FriendshipButton from "../FriendshipButton";
 import UserAvatarMenu from "../MainComponents/UserAvatarMenu";
 import PaymentDialog from "./paymentDialog";
 
-const mapNotificationToCardProps = (notification: any, profileId: string) => {
+const mapNotificationToCardProps = (
+  notification: Notification,
+  profileId: string,
+) => {
   const contentType = Object.keys(notification.content)[0];
+  const baseProps = {
+    ...notification,
+    id: notification.id,
+    is_seen: notification.is_seen,
+    time: notification.time,
+  };
 
   switch (contentType) {
     case "FriendRequest": {
-      const { friend } = notification.content.FriendRequest;
-      const isCurrentUserSender = friend.sender.id === profileId;
-      const otherUser = isCurrentUserSender ? friend.receiver : friend.sender;
+      const friendReq = notification.content.FriendRequest;
+      const isCurrentUserSender = friendReq.sender.toString() === profileId;
+      const otherUser = isCurrentUserSender
+        ? friendReq.receiver
+        : friendReq.sender;
 
       return {
-        id: notification.id,
+        ...baseProps,
         type: "FriendRequest",
-        is_seen: notification.is_seen,
-        time: notification.time,
         user: {
-          id: otherUser.id,
-          name: otherUser.name,
-          photo: otherUser.photo,
+          id: otherUser.toString(),
+          name: otherUser.toString(),
+          photo: "",
         },
         isSender: isCurrentUserSender,
       };
     }
 
     case "CPaymentContract": {
-      const payment = notification.content.CPaymentContract[0];
+      const [payment, _] = notification.content.CPaymentContract;
       return {
-        id: notification.id,
+        ...baseProps,
         type: "Payment",
-        is_seen: notification.is_seen,
-        time: notification.time,
         amount: payment.amount,
         status: Object.keys(payment.status)[0],
         senderId: payment.sender,
@@ -62,28 +69,25 @@ const mapNotificationToCardProps = (notification: any, profileId: string) => {
       };
     }
 
-    case "AcceptFriendRequest": {
-      const acceptData = notification.content.AcceptFriendRequest;
+    case "NewMessage": {
+      const msg = notification.content.NewMessage;
       return {
-        id: notification.id,
-        type: "AcceptFriendRequest",
-        is_seen: notification.is_seen,
-        time: notification.time,
-        user: acceptData,
+        ...baseProps,
+        type: "Message",
+        sender: msg.sender.toString(),
+        message: msg.message,
       };
     }
 
-    case "NewMessage": {
-      const msgData = notification.content.NewMessage;
-      return {
-        id: notification.id,
-        type: "Message",
-        is_seen: notification.is_seen,
-        time: notification.time,
-        sender: msgData.sender,
-        message: msgData.message,
-      };
-    }
+    case "AcceptFriendRequest":
+    case "ApproveShareRequest":
+    case "ApplyShareRequest":
+    case "Unfriend":
+    case "ReceivedDeposit":
+    case "ContractUpdate":
+    case "CustomContract":
+    case "RemovedFromChat":
+      return { ...baseProps, type: contentType };
 
     default:
       return null;
@@ -96,6 +100,7 @@ const NotificationCard = ({
   onDecline,
   onMarkRead,
 }: any) => {
+  const { profile } = useSelector((state: AppState) => state.filesState);
   const { type, is_seen, time, isSender } = notification;
 
   const cardStyles = {
@@ -146,7 +151,7 @@ const NotificationCard = ({
           ...cardStyles,
           cursor: "pointer",
         }}
-        onClick={() => setSelectedPayment(notification)}
+        // onClick={() => setSelectedPayment(notification)}
       >
         <CardContent sx={{ p: 1.5, "&:last-child": { pb: 1.5 } }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
@@ -203,17 +208,18 @@ const NotificationCard = ({
   }
 
   if (type === "AcceptFriendRequest") {
+    let userId = notification?.sender?.toString();
+    if (userId == profile?.id) {
+      userId = notification?.receiver?.toString();
+    }
     return (
       <Card sx={cardStyles} onClick={() => onMarkRead(notification.id)}>
         <CardContent sx={{ p: 1.5, "&:last-child": { pb: 1.5 } }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <Avatar
-              src={notification.user.photo}
-              sx={{ width: 36, height: 36 }}
-            />
+            <UserAvatarMenu user_id={userId} dispalyName />
             <Box sx={{ flex: 1, minWidth: 0 }}>
               <Typography variant="body2">
-                <strong>{notification.user.name}</strong> accepted your friend
+                <strong>{notification?.user?.name}</strong> accepted your friend
                 request
               </Typography>
             </Box>
@@ -423,7 +429,7 @@ const NotificationsButton = () => {
           </Box>
         ) : (
           <List sx={{ p: 0, pb: 1 }}>
-            {notifications.map((notification: any) => {
+            {notifications.map((notification: Notification) => {
               const mappedNotification = mapNotificationToCardProps(
                 notification,
                 profile.id,
