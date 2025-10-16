@@ -227,66 +227,62 @@ const ContractCard: React.FC<ContractCardProps> = ({
           onMouseLeave={() => setIsExpanded(false)}
         >
           <CardContent sx={{ p: { xs: 2, sm: 2.5 } }}>
-            {isShared &&
-              (promisesForYou.length > 0 || paymentsForYou.length > 0) && (
-                <Box
-                  sx={{
-                    mb: 2,
-                    p: 1.5,
-                    borderRadius: 1.5,
-                    bgcolor: theme.palette.primary.main,
-                    color: theme.palette.primary.contrastText,
-                  }}
-                >
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      fontWeight: 600,
-                      display: "block",
-                      mb: 0.5,
-                      opacity: 0.9,
-                    }}
-                  >
-                    Your Summary
-                  </Typography>
-                  <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                    {promisesForYou.length > 0 && (
-                      <Chip
-                        icon={
-                          <HandshakeIcon
-                            sx={{ fontSize: 14, color: "inherit !important" }}
-                          />
-                        }
-                        label={`${promisesForYou.length} • $${promisesForYou.reduce((s, p) => s + p.amount, 0)}`}
-                        size="small"
-                        sx={{
-                          bgcolor: "rgba(255,255,255,0.2)",
-                          color: "inherit",
-                          fontSize: "0.7rem",
-                          height: 24,
-                        }}
-                      />
-                    )}
-                    {paymentsForYou.length > 0 && (
-                      <Chip
-                        icon={
-                          <CheckCircleIcon
-                            sx={{ fontSize: 14, color: "inherit !important" }}
-                          />
-                        }
-                        label={`${paymentsForYou.length} • $${paymentsForYou.reduce((s, p) => s + p.amount, 0)}`}
-                        size="small"
-                        sx={{
-                          bgcolor: "rgba(255,255,255,0.2)",
-                          color: "inherit",
-                          fontSize: "0.7rem",
-                          height: 24,
-                        }}
-                      />
-                    )}
-                  </Stack>
-                </Box>
-              )}
+           {isShared &&
+  (promisesForYou.length > 0 || paymentsForYou.length > 0) && (
+    <Box
+      sx={{
+        mb: 2,
+        p: 1.5,
+        borderRadius: 1.5,
+        bgcolor: theme.palette.mode === 'dark' 
+          ? 'rgba(58, 141, 255, 0.15)'
+          : 'rgba(58, 141, 255, 0.08)',
+        border: `1px solid ${theme.palette.primary.main}40`,
+      }}
+    >
+      <Typography
+        variant="caption"
+        sx={{
+          fontWeight: 600,
+          display: "block",
+          mb: 0.5,
+          color: theme.palette.text.primary,
+        }}
+      >
+        Your Summary
+      </Typography>
+      <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+        {promisesForYou.length > 0 && (
+          <Chip
+            icon={<HandshakeIcon sx={{ fontSize: 14 }} />}
+            label={`${promisesForYou.length} • $${promisesForYou.reduce((s, p) => s + p.amount, 0)}`}
+            size="small"
+            sx={{
+              bgcolor: theme.palette.primary.main,
+              color: 'white',
+              fontSize: "0.7rem",
+              height: 24,
+              '& .MuiChip-icon': { color: 'white' },
+            }}
+          />
+        )}
+        {paymentsForYou.length > 0 && (
+          <Chip
+            icon={<CheckCircleIcon sx={{ fontSize: 14 }} />}
+            label={`${paymentsForYou.length} • $${paymentsForYou.reduce((s, p) => s + p.amount, 0)}`}
+            size="small"
+            sx={{
+              bgcolor: theme.palette.success.main,
+              color: 'white',
+              fontSize: "0.7rem",
+              height: 24,
+              '& .MuiChip-icon': { color: 'white' },
+            }}
+          />
+        )}
+      </Stack>
+    </Box>
+  )}
 
             <Box sx={{ mb: 2 }}>
               <Typography

@@ -1,5 +1,5 @@
 import { Principal } from "@dfinity/principal";
-import { User, Message } from "./types";
+import { Message, User } from "./types";
 
 /**
  * Get display name for a sender
@@ -33,15 +33,36 @@ export const isCurrentUser = (
 /**
  * Calculate unread messages count
  */
+
 export const getUnreadCount = (
   messages: Message[],
   currentUserId: string,
 ): number => {
+  const usrs = []
+  
   return messages.reduce((count, message) => {
-    const isSeen = message.seen_by.some(
-      (user) => user.toString() === currentUserId,
-    );
-    return count + (isSeen ? 0 : 1);
+    const senderStr = message.sender instanceof Principal 
+      ? message.sender.toString() 
+      : message.sender;
+    
+    // Skip if current user is the sender
+    if (senderStr === currentUserId) {
+      return count;
+    }
+    
+    // Skip if current user has seen this message
+    const isSeen = message.seen_by.some(user => {
+      const userStr = user instanceof Principal ? user.toString() : user;
+      console.log({userStr,currentUserId})
+      return userStr === currentUserId;
+    });
+    
+    if (isSeen) {
+      return count;
+    }
+    
+    // Message is unread
+    return count + 1;
   }, 0);
 };
 

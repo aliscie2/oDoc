@@ -122,7 +122,7 @@ export const ChatMobilePage: React.FC = () => {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", height: "100vh", bgcolor: "background.default" }}>
-    <AppBar position="static" elevation={0} sx={{ bgcolor: 'background.paper', color: 'text.primary' }}>  // ✅ NEW LINE
+    <AppBar position="static" elevation={0} sx={{ bgcolor: 'background.paper', color: 'text.primary' }}>  
 
   <Toolbar>
     <IconButton edge="start" color="inherit" onClick={() => navigate(-1)}>

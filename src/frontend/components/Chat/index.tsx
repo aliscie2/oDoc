@@ -9,14 +9,12 @@ import {
   Badge,
   Box,
   Button,
+  Card,
+  CardContent,
   CircularProgress,
   IconButton,
   List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
   Menu,
-  MenuItem,
   Typography,
 } from "@mui/material";
 import React, { memo, useCallback, useMemo, useState } from "react";
@@ -28,10 +26,11 @@ import { CreateGroupDialog } from "./CreateGroupDialog";
 import { Chat } from "./types";
 import { getUnreadCount } from "./utils";
 import { useNavigate } from "react-router-dom";
+import { Principal } from "@dfinity/principal";
 
 const ChatNotifications = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate(); // Add this
+  const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [createGroupOpen, setCreateGroupOpen] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -58,6 +57,7 @@ const ChatNotifications = () => {
       0,
     );
   }, [filteredChats, profile?.id]);
+  
 
   const handleClick = useCallback((event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -65,20 +65,50 @@ const ChatNotifications = () => {
 
   const handleClose = useCallback(() => setAnchorEl(null), []);
 
-    const handleOpenChat = useCallback(
-    (chat: Chat) => {
-      // Check if mobile
-      if (window.innerWidth < 600) {
-        navigate(`/chat/${chat.id}`);
-      } else {
-        dispatch({ type: "OPEN_CHAT", chatId: chat.id });
+const handleOpenChat = useCallback(
+  async (chat: Chat) => {
+    
+    if (window.innerWidth < 600) {
+      navigate(`/chat/${chat.id}`);
+    } else {
+      dispatch({ type: "OPEN_CHAT", chatId: chat.id });
+    }
+    
+    // Mark all unread messages as seen
+    if (backendActor && profile?.id) {
+      for (const message of chat.messages) {
+        const senderStr = message.sender instanceof Principal 
+          ? message.sender.toString() 
+          : message.sender;
+        
+        if (senderStr !== profile.id) {
+          const alreadySeen = message.seen_by.some(user => {
+            const userStr = user instanceof Principal ? user.toString() : user;
+            return userStr === profile.id;
+          });
+
+          if (!alreadySeen) {
+            try {
+              const result = await backendActor.message_is_seen(message);
+              if ("Ok" in result) {
+                const updatedMessage = {
+                  ...message,
+                  seen_by: [...message.seen_by, Principal.fromText(profile.id)]
+                };
+                dispatch({ type: "UPDATE_MESSAGE", message: updatedMessage });
+              }
+            } catch (error) {
+              console.error("Error marking message as seen:", error);
+            }
+          }
+        }
       }
-      handleClose();
-    },
-    [dispatch, handleClose, navigate]
-  );
-
-
+    }
+    
+    handleClose();
+  },
+  [dispatch, handleClose, navigate, backendActor, profile?.id]
+);
   const handleCloseChat = useCallback(
     (chatId: string) => {
       dispatch({ type: "CLOSE_CHAT_WINDOW", chatId });
@@ -96,7 +126,6 @@ const ChatNotifications = () => {
 
       if (!otherMember) return null;
 
-      // Check if other member is oDoc CEO
       const ODOC_CEO_ID =
         "tgwpc-6xuon-k3a6y-ey7lt-xksjs-qx22h-ikhbt-4yp3a-6stco-rymbe-pqe";
       if (otherMember.toString() === ODOC_CEO_ID) {
@@ -128,7 +157,7 @@ const ChatNotifications = () => {
     if (!backendActor || isLoadingMore) return;
     setIsLoadingMore(true);
     try {
-      const chatsList = await backendActor.get_my_chats(chats.length);
+      const chatsList = await backendActor.get_my_chats(chats?.length);
       if (chatsList.length === 0) {
         setHasMoreChats(false);
       } else {
@@ -194,9 +223,7 @@ const ChatNotifications = () => {
   const open = Boolean(anchorEl);
 
   return (
-    
-    
-     <>
+    <>
       <IconButton
         onClick={handleClick}
         aria-controls={open ? "chat-menu" : undefined}
@@ -214,96 +241,132 @@ const ChatNotifications = () => {
         anchorEl={anchorEl}
         open={open}
         onClose={handleClose}
-        slotProps={{
-          paper: {
-            sx: { maxHeight: 500, width: 320 },
+        PaperProps={{
+          sx: {
+            width: 420,
+            maxHeight: "80vh",
+            mt: 1,
           },
         }}
         transformOrigin={{ horizontal: "right", vertical: "top" }}
         anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
       >
-        <MenuItem sx={{ justifyContent: "center", borderBottom: 1, borderColor: "divider" }}>
+        <Box sx={{ p: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            Chats
+          </Typography>
           <Button
             startIcon={<AddIcon />}
-            variant="outlined"
-            fullWidth
+            variant="contained"
+            size="small"
             onClick={() => { setCreateGroupOpen(true); handleClose(); }}
+            sx={{ borderRadius: 2 }}
           >
-            Create New Group
+            New Group
           </Button>
-        </MenuItem>
+        </Box>
 
         {filteredChats.length === 0 ? (
-          <MenuItem disabled>
-            <Typography variant="body2" color="text.secondary">No chats yet</Typography>
-          </MenuItem>
+          <Box sx={{ p: 4, textAlign: "center" }}>
+            <Typography variant="body2" color="text.secondary">
+              No chats yet
+            </Typography>
+          </Box>
         ) : (
-          <List sx={{ padding: 0, width: "100%" }}>
-            {filteredChats.map((chat) => {
-              const unreadCount = profile?.id ? getUnreadCount(chat.messages, profile.id) : 0;
-              const otherUser = getOtherUser(chat);
-              const displayName = getChatDisplayName(chat);
-              const lastMessage = chat.messages[0]?.message || "No messages";
+          <List sx={{ p: 0, pb: 1 }}>
+          {filteredChats.map((chat) => {
+  const unreadCount = profile?.id ? getUnreadCount(chat.messages, profile.id) : 0;
+  const otherUser = getOtherUser(chat);
+  const displayName = getChatDisplayName(chat);
+  const lastMessage = chat.messages[0]?.message || "No messages";
+  const hasUnread = unreadCount > 0;
 
-              return (
-                <ListItem
-                  key={chat.id}
-                  onClick={() => handleOpenChat(chat)}
+  return (
+    <Card
+      key={chat.id}
+      onClick={() => handleOpenChat(chat)}
+      sx={{
+        mb: 1,
+        mx: 1,
+        cursor: "pointer",
+        transition: "all 0.3s ease",
+        "&:hover": { transform: "translateY(-1px)" },
+        bgcolor: hasUnread ? "action.hover" : "background.paper",
+      }}
+    >
+      <CardContent sx={{ p: 1.5, "&:last-child": { pb: 1.5 } }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Box sx={{ position: "relative" }}>
+            {chat.name === "private_chat" ? (
+              <Avatar src={otherUser?.photo} alt={displayName} sx={{ width: 40, height: 40 }}>
+                {displayName.charAt(0).toUpperCase()}
+              </Avatar>
+            ) : (
+              <Avatar sx={{ width: 40, height: 40, bgcolor: "primary.main" }}>
+                <GroupIcon />
+              </Avatar>
+            )}
+          </Box>
+
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 0.25 }}>
+              <Typography
+                variant="body2"
+                sx={{ fontWeight: hasUnread ? 600 : 400 }}
+              >
+                {displayName}
+              </Typography>
+              {hasUnread && (
+                <Badge
+                  badgeContent={unreadCount}
+                  color="error"
                   sx={{
-                    cursor: "pointer",
-                    borderBottom: 1,
-                    borderColor: "divider",
-                    "&:hover": { backgroundColor: "action.hover" },
+                    "& .MuiBadge-badge": {
+                      fontSize: "0.65rem",
+                      height: 18,
+                      minWidth: 18,
+                    },
                   }}
-                >
-                  <ListItemAvatar>
-                    {chat.name === "private_chat" ? (
-                      <Avatar src={otherUser?.photo} alt={displayName}>
-                        {displayName.charAt(0).toUpperCase()}
-                      </Avatar>
-                    ) : (
-                      <Avatar><GroupIcon /></Avatar>
-                    )}
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={
-                      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <Typography variant="subtitle2" sx={{ fontWeight: unreadCount > 0 ? 600 : 400 }}>
-                          {displayName}
-                        </Typography>
-                        {unreadCount > 0 && <Badge badgeContent={unreadCount} color="error" />}
-                      </Box>
-                    }
-                    secondary={
-                      <Typography variant="body2" color="text.secondary" sx={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {lastMessage}
-                      </Typography>
-                    }
-                  />
-                </ListItem>
-              );
-            })}
+                />
+              )}
+            </Box>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                display: "block",
+              }}
+            >
+              {lastMessage}
+            </Typography>
+          </Box>
+        </Box>
+      </CardContent>
+    </Card>
+  );
+})}
           </List>
         )}
 
         {filteredChats.length > 0 && hasMoreChats && (
-          <MenuItem onClick={handleLoadMore} disabled={isLoadingMore} sx={{ justifyContent: "center", borderTop: 1, borderColor: "divider", py: 1.5 }}>
-            {isLoadingMore ? (
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <CircularProgress size={16} />
-                <Typography variant="body2">Loading...</Typography>
-              </Box>
-            ) : (
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <ExpandMoreIcon />
-                <Typography variant="body2">Load More Chats</Typography>
-              </Box>
-            )}
-          </MenuItem>
+          <Box sx={{ p: 1, borderTop: 1, borderColor: "divider" }}>
+            <Button
+              fullWidth
+              onClick={handleLoadMore}
+              disabled={isLoadingMore}
+              startIcon={isLoadingMore ? <CircularProgress size={16} /> : <ExpandMoreIcon />}
+              sx={{ borderRadius: 2 }}
+            >
+              {isLoadingMore ? "Loading..." : "Load More Chats"}
+            </Button>
+          </Box>
         )}
       </Menu>
 
-       <CreateGroupDialog
+      <CreateGroupDialog
         open={createGroupOpen}
         onClose={() => setCreateGroupOpen(false)}
         onSubmit={handleCreateGroup}
@@ -312,14 +375,12 @@ const ChatNotifications = () => {
         currentWorkspace={currentWorkspace}
       />
 
-      {/* Floating Chat Windows - Stacked from right */}
-     {window.innerWidth >= 600 && Object.keys(openChatWindows).map((chatId, index) => {
+      {window.innerWidth >= 600 && Object.keys(openChatWindows).map((chatId, index) => {
         const chat = chats.find((c) => c.id === chatId);
         if (!chat) return null;
         return <ChatFloatingWindow key={chatId} chat={chat} index={index} />;
       })}
     </>
-    
   );
 };
 

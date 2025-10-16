@@ -1,5 +1,5 @@
-import { useCallback, useState } from "react";
 import { Principal } from "@dfinity/principal";
+import { useCallback, useState } from "react";
 import { Chat, Message } from "../types";
 
 interface UseChatOperationsProps {
@@ -120,7 +120,8 @@ export const useChatOperations = ({
           seen_by: [],
           chat_id: message.chat_id,
         };
-        await backendActor.message_is_seen(messageForBackend);
+        const res = await backendActor.message_is_seen(messageForBackend);
+        console.log("message_is_seen",{useChatOper: res})
       } catch (error) {
         onError?.(error as Error);
       }

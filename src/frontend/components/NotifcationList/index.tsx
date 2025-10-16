@@ -1,333 +1,430 @@
-import React, { useState, useCallback } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useState } from "react";
 import {
   Badge,
   Box,
-  CircularProgress,
   IconButton,
   List,
-  ListItemText,
   Menu,
-  MenuItem,
-  Tooltip,
   Typography,
+  Card,
+  CardContent,
+  Avatar,
+  Button,
+  Chip,
 } from "@mui/material";
 import NotificationsIcon from "@mui/icons-material/Notifications";
-import ChecklistIcon from "@mui/icons-material/Checklist";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-
-import { backendActor } from "../../utils/backendUtils";
-import { formatRelativeTime } from "../../utils/time";
-import StyledNotificationItem from "./notiicationitem";
-import PaymentDialog from "./paymentDialog";
+import MessageIcon from "@mui/icons-material/Message";
+import { useDispatch, useSelector } from "react-redux";
+import { useSnackbar } from "notistack";
+import { RootState } from "@/redux/reducers";
+import { backendActor } from "@/utils/backendUtils";
+import { formatRelativeTime } from "@/utils/time";
+import FriendshipButton from "../FriendshipButton";
 import UserAvatarMenu from "../MainComponents/UserAvatarMenu";
-import { RootState } from "../../redux/reducers";
+import PaymentDialog from "./paymentDialog";
 
-const NotificationsButton = () => {
-  const dispatch = useDispatch();
-  const { profile } = useSelector((state: RootState) => state.filesState);
-  const { notifications } = useSelector(
-    (state: RootState) => state.notificationState,
-  );
 
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [selectedPayment, setSelectedPayment] = useState(null);
-  const [loadingNotifications, setLoadingNotifications] = useState(
-    new Set<string>(),
-  );
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [isMarkingAllRead, setIsMarkingAllRead] = useState(false);
-
-  const open = Boolean(anchorEl);
-  const hasMoreNotifications = notifications.length > 14;
-  const unreadCount = notifications.filter((n: any) => !n.is_seen).length;
-
-  const handleMenuOpen = useCallback((event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  }, []);
-
-  const handleMenuClose = useCallback(() => {
-    setAnchorEl(null);
-  }, []);
-
-  const handleLoadMore = useCallback(async () => {
-    if (!backendActor || isLoadingMore) return;
-
-    setIsLoadingMore(true);
-    try {
-      const newNotifications = await backendActor.get_user_notifications(
-        notifications.length,
-      );
-
-      if (newNotifications.length > 0) {
-        dispatch({
-          type: "UPDATE_NOT_LIST",
-          new_list: [...notifications, ...newNotifications],
-        });
-      }
-    } catch (error) {
-      console.error("Error loading more notifications:", error);
-    } finally {
-      setIsLoadingMore(false);
-    }
-  }, [backendActor, isLoadingMore, notifications, dispatch]);
-
-  const handleNotificationClick = useCallback(
-    async (notification: any) => {
-      const notificationId = notification.id;
-
-      setLoadingNotifications((prev) => new Set(prev).add(notificationId));
-
-      try {
-        // Handle payment notifications
-        if ("CPaymentContract" in notification.content) {
-          setSelectedPayment(notification.content.CPaymentContract[0]);
-        }
-
-        // Mark as read if unread
-        if (!notification.is_seen) {
-          await backendActor?.see_notifications([notificationId]);
-          notification.is_seen = true;
-        }
-      } catch (error) {
-        console.error("Error handling notification:", error);
-      } finally {
-        setLoadingNotifications((prev) => {
-          const updated = new Set(prev);
-          updated.delete(notificationId);
-          return updated;
-        });
-      }
-    },
-    [backendActor],
-  );
-
-  const getNotificationMessage = useCallback(
-    (content: any) => {
-      const messageMap: Record<string, () => React.ReactNode> = {
-        CustomContract: () =>
-          `New custom contract payment: ${content.CustomContract[1].amount}`,
-        ContractUpdate: () =>
-          `Contract updated: ${content.ContractUpdate.contract_id}`,
-        AcceptFriendRequest: () => "Friend request accepted",
-        Unfriend: () => "Someone removed you from their friends list",
-        ReceivedDeposit: () => `Received deposit: ${content.ReceivedDeposit}`,
-        ApplyShareRequest: () =>
-          `New share request: ${content.ApplyShareRequest}`,
-        NewMessage: () => `New message: ${content.NewMessage.message}`,
-        RemovedFromChat: () => `Removed from chat: ${content.RemovedFromChat}`,
-        CPaymentContract: () => {
-          const payment = content.CPaymentContract[0];
-          return `Payment update: ${payment.amount} (${Object.keys(payment.status)[0]})`;
+const mapNotificationToCardProps = (notification: any, profileId: string) => {
+  const contentType = Object.keys(notification.content)[0];
+  
+  switch (contentType) {
+    case "FriendRequest": {
+      const { friend } = notification.content.FriendRequest;
+      const isCurrentUserSender = friend.sender.id === profileId;
+      const otherUser = isCurrentUserSender ? friend.receiver : friend.sender;
+      
+      return {
+        id: notification.id,
+        type: "FriendRequest",
+        is_seen: notification.is_seen,
+        time: notification.time,
+        user: {
+          id: otherUser.id,
+          name: otherUser.name,
+          photo: otherUser.photo,
         },
-        FriendRequest: () => {
-          const { friend } = content.FriendRequest;
-          const isCurrentUserSender = friend.sender.id === profile.id;
-          const otherUser = isCurrentUserSender
-            ? friend.receiver
-            : friend.sender;
-          const messageText = isCurrentUserSender
-            ? `Friend request sent to ${otherUser.name}`
-            : `Friend request from ${otherUser.name}`;
+        isSender: isCurrentUserSender,
+      };
+    }
+    
+   case "CPaymentContract": {
+  const payment = notification.content.CPaymentContract[0];
+  return {
+    id: notification.id,
+    type: "Payment",
+    is_seen: notification.is_seen,
+    time: notification.time,
+    amount: payment.amount,
+    status: Object.keys(payment.status)[0],
+    senderId: payment.sender,
+    contractId: payment.id,
+    ownerId: payment.owner,
+    fullPayment: payment,
+  };
+}
 
-          return (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Typography variant="body2">{messageText}</Typography>
-              <UserAvatarMenu
-                user={{
-                  id: otherUser.id,
-                  name: otherUser.name,
-                  photo: otherUser.photo,
-                }}
-                sx={{ width: 24, height: 24 }}
-                hide={["Review"]}
+    
+    case "AcceptFriendRequest": {
+      const acceptData = notification.content.AcceptFriendRequest;
+      return {
+        id: notification.id,
+        type: "AcceptFriendRequest",
+        is_seen: notification.is_seen,
+        time: notification.time,
+        user: acceptData,
+      };
+    }
+    
+    case "NewMessage": {
+      const msgData = notification.content.NewMessage;
+      return {
+        id: notification.id,
+        type: "Message",
+        is_seen: notification.is_seen,
+        time: notification.time,
+        sender: msgData.sender,
+        message: msgData.message,
+      };
+    }
+    
+    default:
+      return null;
+  }
+};
+
+const NotificationCard = ({ notification, onAccept, onDecline, onMarkRead }: any) => {
+  const { type, is_seen, time, isSender } = notification;
+
+
+const cardStyles = {
+  mb: 1,
+  mx: 1,
+  opacity: is_seen ? 0.7 : 1,
+  transition: "all 0.3s ease",
+  "&:hover": { transform: "translateY(-1px)" },
+};
+
+
+// NotificationCard changes in notifications component
+if (type === "FriendRequest" && !isSender) {
+  return (
+    <Card sx={cardStyles}>
+      <CardContent sx={{ p: 1.5, "&:last-child": { pb: 1.5 } }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
+          <UserAvatarMenu user_id={notification?.user?.id} dispalyName />
+
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+
+            <Typography variant="caption" color="text.secondary">
+              sent you a friend request
+            </Typography>
+          </Box>
+          <Typography 
+            variant="caption" 
+            color="text.secondary"
+            sx={{ 
+              fontSize: "0.7rem",
+              whiteSpace: "nowrap",
+              alignSelf: "flex-start"
+            }}
+          >
+            {formatRelativeTime(time)}
+          </Typography>
+        </Box>
+        <Box sx={{ ml: 6.5 }}>
+          <FriendshipButton user={notification.user} />
+        </Box>
+      </CardContent>
+    </Card>
+  );
+}
+
+
+if (type === "Payment") {
+  return (
+    <Card 
+      sx={{ 
+        ...cardStyles, 
+        cursor: "pointer",
+      }} 
+      onClick={() => setSelectedPayment(notification)}
+    >
+      <CardContent sx={{ p: 1.5, "&:last-child": { pb: 1.5 } }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <UserAvatarMenu 
+            dispalyName
+              user_id={notification.senderId.toString()}
+              sx={{ width: 40, height: 40 }}
+            />
+            
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 0.25 }}>
+
+               <Typography variant="caption" color="text.secondary">
+              New promise
+            </Typography>
+              <Chip 
+                label={notification.status} 
+                size="small" 
+                color={notification.status === "Pending" ? "warning" : "success"}
+                sx={{ height: 18, fontSize: "0.65rem" }}
               />
             </Box>
-          );
-        },
-      };
-
-      const messageType = Object.keys(content)[0];
-      return messageMap[messageType]?.() || "Unknown notification type";
-    },
-    [profile.id],
+            <Typography variant="body2" sx={{ fontWeight: 600, color: "primary.main" }}>
+              {notification.amount}$
+            </Typography>
+          </Box>
+          
+          <Typography 
+            variant="caption" 
+            color="text.secondary"
+            sx={{ 
+              fontSize: "0.7rem",
+              whiteSpace: "nowrap",
+              alignSelf: "flex-start"
+            }}
+          >
+            {formatRelativeTime(time)}
+          </Typography>
+        </Box>
+      </CardContent>
+    </Card>
   );
+}
 
-  const isPaymentNotification = useCallback(
-    (notification: any) => "CPaymentContract" in notification.content,
-    [],
+if (type === "AcceptFriendRequest") {
+  return (
+    <Card sx={cardStyles} onClick={() => onMarkRead(notification.id)}>
+      <CardContent sx={{ p: 1.5, "&:last-child": { pb: 1.5 } }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Avatar src={notification.user.photo} sx={{ width: 36, height: 36 }} />
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography variant="body2">
+              <strong>{notification.user.name}</strong> accepted your friend request
+            </Typography>
+          </Box>
+          <Typography 
+            variant="caption" 
+            color="text.secondary"
+            sx={{ 
+              fontSize: "0.7rem",
+              whiteSpace: "nowrap",
+              alignSelf: "flex-start"
+            }}
+          >
+            {formatRelativeTime(time)}
+          </Typography>
+        </Box>
+      </CardContent>
+    </Card>
   );
+}
 
-  const handleMarkAllAsRead = useCallback(async () => {
-    const unreadIds = notifications
-      .filter((n: any) => !n.is_seen)
-      .map((n: any) => n.id);
+ return (
+  <Card sx={cardStyles} onClick={() => onMarkRead(notification.id)}>
+    <CardContent sx={{ p: 1.5, "&:last-child": { pb: 1.5 } }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+        <MessageIcon color="primary" sx={{ fontSize: 36 }} />
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.25 }}>
+            {notification.sender}
+          </Typography>
+          <Typography 
+            variant="body2" 
+            color="text.secondary"
+            sx={{
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap"
+            }}
+          >
+            {notification.message}
+          </Typography>
+        </Box>
+        <Typography 
+          variant="caption" 
+          color="text.secondary"
+          sx={{ 
+            fontSize: "0.7rem",
+            whiteSpace: "nowrap",
+            alignSelf: "flex-start"
+          }}
+        >
+          {formatRelativeTime(time)}
+        </Typography>
+      </Box>
+    </CardContent>
+  </Card>
+);
+
+
+};
+
+const NotificationsButton = () => {
+  const [selectedPayment, setSelectedPayment] = useState(null);
+
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const dispatch = useDispatch();
+  const { enqueueSnackbar } = useSnackbar();
+  const { profile } = useSelector((state: RootState) => state.filesState);
+  const { notifications } = useSelector((state: RootState) => state.notificationState);
+
+  const unreadCount = notifications.filter((n: any) => !n.is_seen).length;
+
+  const handleMarkRead = async (notificationId: string) => {
+    const notification = notifications.find((n: any) => n.id === notificationId);
+    if (!notification || notification.is_seen) return;
+
+    try {
+      await backendActor?.see_notifications([notificationId]);
+      dispatch({
+        type: "UPDATE_NOT_LIST",
+        new_list: notifications.map((n: any) =>
+          n.id === notificationId ? { ...n, is_seen: true } : n
+        ),
+      });
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+    }
+  };
+
+  const handleAcceptFriend = async (notification: any) => {
+    try {
+      const result = await backendActor?.accept_friend_request(notification.user.id);
+      if (result && "Err" in result) {
+        enqueueSnackbar(result.Err, { variant: "error" });
+        return;
+      }
+      
+      if (result && "Ok" in result) {
+        const friend = {
+          id: result.Ok.id,
+          is_sender: false,
+          confirmed: true,
+          name: result.Ok.name,
+          description: result.Ok.description,
+          email: result.Ok.email,
+          photo: result.Ok.photo,
+        };
+        dispatch({ type: "ADD_FRIEND", friend, user: result.Ok });
+      }
+
+      await handleMarkRead(notification.id);
+      enqueueSnackbar("Friend request accepted", { variant: "success" });
+    } catch (error) {
+      console.error("Error accepting friend request:", error);
+      enqueueSnackbar("Failed to accept friend request", { variant: "error" });
+    }
+  };
+
+  const handleDeclineFriend = async (notification: any) => {
+    try {
+      const result = await backendActor?.reject_friend_request(notification.user.id);
+      if (result && "Err" in result) {
+        enqueueSnackbar(result.Err, { variant: "error" });
+        return;
+      }
+
+      dispatch({
+        type: "UPDATE_NOT_LIST",
+        new_list: notifications.filter((n: any) => n.id !== notification.id),
+      });
+      enqueueSnackbar("Friend request declined", { variant: "info" });
+    } catch (error) {
+      console.error("Error declining friend request:", error);
+      enqueueSnackbar("Failed to decline friend request", { variant: "error" });
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    const unreadIds = notifications.filter((n: any) => !n.is_seen).map((n: any) => n.id);
     if (unreadIds.length === 0) return;
 
-    setIsMarkingAllRead(true);
     try {
       await backendActor?.see_notifications(unreadIds);
-
-      const updatedNotifications = notifications.map((notification: any) =>
-        unreadIds.includes(notification.id)
-          ? { ...notification, is_seen: true }
-          : notification,
-      );
-
-      dispatch({ type: "UPDATE_NOT_LIST", new_list: updatedNotifications });
+      dispatch({
+        type: "UPDATE_NOT_LIST",
+        new_list: notifications.map((n: any) =>
+          unreadIds.includes(n.id) ? { ...n, is_seen: true } : n
+        ),
+      });
     } catch (error) {
-      console.error("Error marking all notifications as read:", error);
-    } finally {
-      setIsMarkingAllRead(false);
+      console.error("Error marking all as read:", error);
     }
-  }, [notifications, backendActor, dispatch]);
-
-  const renderNotificationItem = useCallback(
-    (notification: any) => {
-      const isLoading = loadingNotifications.has(notification.id);
-      const isPayment = isPaymentNotification(notification);
-
-      return (
-        <StyledNotificationItem
-          key={notification.id}
-          onClick={() => handleNotificationClick(notification)}
-          isread={notification.is_seen.toString()}
-          ispayment={isPayment.toString()}
-          disabled={isLoading}
-        >
-          <ListItemText
-            primary={
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    fontWeight: notification.is_seen ? "normal" : "bold",
-                    opacity: notification.is_seen ? 0.7 : 1,
-                    color: isPayment
-                      ? "primary.main"
-                      : notification.is_seen
-                        ? "text.secondary"
-                        : "text.primary",
-                  }}
-                >
-                  {getNotificationMessage(notification.content)}
-                </Typography>
-                {isLoading && <CircularProgress size={16} />}
-              </Box>
-            }
-            secondary={formatRelativeTime(notification.time)}
-            secondaryTypographyProps={{
-              variant: "caption",
-              sx: { opacity: notification.is_seen ? 0.7 : 1 },
-            }}
-          />
-        </StyledNotificationItem>
-      );
-    },
-    [
-      loadingNotifications,
-      isPaymentNotification,
-      handleNotificationClick,
-      getNotificationMessage,
-    ],
-  );
-
-  const renderLoadMoreButton = () => (
-    <MenuItem
-      onClick={handleLoadMore}
-      disabled={isLoadingMore}
-      sx={{
-        justifyContent: "center",
-        borderTop: 1,
-        borderColor: "divider",
-        py: 1.5,
-      }}
-    >
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-        {isLoadingMore ? (
-          <>
-            <CircularProgress size={16} />
-            <Typography variant="body2">Loading...</Typography>
-          </>
-        ) : (
-          <>
-            <ExpandMoreIcon />
-            <Typography variant="body2">Load More</Typography>
-          </>
-        )}
-      </Box>
-    </MenuItem>
-  );
+  };
 
   return (
     <>
-      <IconButton
-        aria-label="notifications"
-        onClick={handleMenuOpen}
-        aria-controls={open ? "notifications-menu" : undefined}
-        aria-haspopup="true"
-        aria-expanded={open ? "true" : undefined}
-      >
+      <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
         <Badge badgeContent={unreadCount} color="error">
           <NotificationsIcon />
         </Badge>
       </IconButton>
 
       <Menu
-        id="notifications-menu"
         anchorEl={anchorEl}
-        open={open}
-        onClose={handleMenuClose}
+        open={Boolean(anchorEl)}
+        onClose={() => setAnchorEl(null)}
         PaperProps={{
-          elevation: 3,
-          style: { maxHeight: "80vh", width: "320px", overflowY: "auto" },
+          sx: {
+            width: 420,
+            maxHeight: "80vh",
+            mt: 1,
+          },
         }}
         transformOrigin={{ horizontal: "right", vertical: "top" }}
         anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
       >
-        {unreadCount > 0 && (
-          <Box sx={{ display: "flex", justifyContent: "flex-end", p: 1 }}>
-            <Tooltip title="Mark all as read">
-              <IconButton size="small" onClick={handleMarkAllAsRead}>
-                {isMarkingAllRead ? (
-                  <CircularProgress size={16} />
-                ) : (
-                  <ChecklistIcon fontSize="small" />
-                )}
-              </IconButton>
-            </Tooltip>
-          </Box>
-        )}
+        <Box sx={{ p: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            Notifications
+          </Typography>
+          {unreadCount > 0 && (
+            <Button size="small" onClick={handleMarkAllRead}>
+              Mark all read
+            </Button>
+          )}
+        </Box>
 
         {notifications.length === 0 ? (
-          <MenuItem>
-            <Typography variant="body2" color="textSecondary">
+          <Box sx={{ p: 4, textAlign: "center" }}>
+            <Typography variant="body2" color="text.secondary">
               No notifications
             </Typography>
-          </MenuItem>
+          </Box>
         ) : (
-          <>
-            <List sx={{ padding: 0 }}>
-              {notifications.map(renderNotificationItem)}
-            </List>
-            {hasMoreNotifications && renderLoadMoreButton()}
-          </>
+          <List sx={{ p: 0, pb: 1 }}>
+            {notifications.map((notification: any) => {
+              const mappedNotification = mapNotificationToCardProps(notification, profile.id);
+              return mappedNotification ? (
+                <NotificationCard
+                  key={notification.id}
+                  notification={mappedNotification}
+                  onAccept={handleAcceptFriend}
+                  onDecline={handleDeclineFriend}
+                  onMarkRead={handleMarkRead}
+                />
+              ) : null;
+            })}
+          </List>
         )}
       </Menu>
 
       {selectedPayment && (
-        <PaymentDialog
-          payment={selectedPayment}
-          onClose={() => {
-            setSelectedPayment(null);
-            handleMenuClose();
-          }}
-          onAction={() => {
-            setSelectedPayment(null);
-            handleMenuClose();
-          }}
-        />
-      )}
+  <PaymentDialog
+    payment={selectedPayment.fullPayment}
+    onClose={() => {
+      setSelectedPayment(null);
+      setAnchorEl(null);
+    }}
+    onAction={() => {
+      setSelectedPayment(null);
+      setAnchorEl(null);
+    }}
+  />
+)}
+
+
     </>
   );
 };
