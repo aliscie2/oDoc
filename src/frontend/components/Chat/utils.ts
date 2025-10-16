@@ -7,14 +7,14 @@ import { User, Message } from "./types";
 export const getSenderName = (
   sender: Principal | string,
   currentUserId: string,
-  allFriends: User[]
+  allFriends: User[],
 ): string => {
   const senderStr = sender instanceof Principal ? sender.toString() : sender;
-  
+
   if (senderStr === currentUserId) {
     return "You";
   }
-  
+
   const friend = allFriends.find((u) => u.id === senderStr);
   return friend?.name || senderStr.slice(0, 8);
 };
@@ -24,7 +24,7 @@ export const getSenderName = (
  */
 export const isCurrentUser = (
   sender: Principal | string,
-  currentUserId: string
+  currentUserId: string,
 ): boolean => {
   const senderStr = sender instanceof Principal ? sender.toString() : sender;
   return senderStr === currentUserId;
@@ -35,11 +35,11 @@ export const isCurrentUser = (
  */
 export const getUnreadCount = (
   messages: Message[],
-  currentUserId: string
+  currentUserId: string,
 ): number => {
   return messages.reduce((count, message) => {
     const isSeen = message.seen_by.some(
-      (user) => user.toString() === currentUserId
+      (user) => user.toString() === currentUserId,
     );
     return count + (isSeen ? 0 : 1);
   }, 0);

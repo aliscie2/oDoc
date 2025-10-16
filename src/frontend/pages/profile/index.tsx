@@ -175,146 +175,144 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
       {currentUser?.id == founderOfOdoc && <EmailComposer />}
 
       {/* User Header - Mobile Friendly */}
-      
-      <Card 
-  sx={{ 
-    mb: 4,
-    background: isDarkMode 
-      ? 'linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%)'
-      : 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-    boxShadow: isDarkMode
-      ? '0 8px 32px rgba(0, 0, 0, 0.3)'
-      : '0 8px 32px rgba(0, 0, 0, 0.08)',
-    borderRadius: 2,
-  }}
->
-  <CardContent sx={{ p: { xs: 3, sm: 4, md: 5 } }}>
-    <Stack spacing={4}>
-      {/* Avatar & Basic Info Section */}
-      <Box
+
+      <Card
         sx={{
-          display: "flex",
-          flexDirection: { xs: "column", sm: "row" },
-          alignItems: { xs: "center", sm: "flex-start" },
-          gap: { xs: 3, sm: 4 },
+          mb: 4,
+          background: isDarkMode
+            ? "linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%)"
+            : "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
+          boxShadow: isDarkMode
+            ? "0 8px 32px rgba(0, 0, 0, 0.3)"
+            : "0 8px 32px rgba(0, 0, 0, 0.08)",
+          borderRadius: 2,
         }}
       >
-        {profile && !isEditing && (
-          <Box
-            sx={{
-              flexShrink: 0,
-              position: 'relative',
-              '&::after': {
-                content: '""',
-                position: 'absolute',
-                inset: -4,
-                border: `3px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-                borderRadius: '50%',
-              }
-            }}
-          >
-            <UserAvatarMenu
-              hide={["Profile"]}
-              sx={{ 
-                width: { xs: 100, sm: 120 }, 
-                height: { xs: 100, sm: 120 },
-                position: 'relative',
-                zIndex: 1,
+        <CardContent sx={{ p: { xs: 3, sm: 4, md: 5 } }}>
+          <Stack spacing={4}>
+            {/* Avatar & Basic Info Section */}
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                alignItems: { xs: "center", sm: "flex-start" },
+                gap: { xs: 3, sm: 4 },
               }}
-              user={profile}
-            />
-          </Box>
-        )}
-
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          {isEditing ? (
-            <EditProfile
-              setIsEditing={setIsEditing}
-              profile={safeProfile}
-              onCancel={() => setIsEditing(false)}
-            />
-          ) : (
-            <Stack spacing={1.5}>
-              <Typography
-                variant="h3"
-                sx={{
-                  fontSize: { xs: "1.75rem", sm: "2.5rem" },
-                  fontWeight: 700,
-                  letterSpacing: -0.5,
-                }}
-              >
-                {name}
-              </Typography>
-              <Typography
-                variant="body1"
-                sx={{
-                  fontSize: { xs: "0.95rem", sm: "1.1rem" },
-                  opacity: 0.85,
-                  fontWeight: 500,
-                }}
-              >
-                {email}
-              </Typography>
-              {description && (
-                <Typography
-                  variant="body2"
+            >
+              {profile && !isEditing && (
+                <Box
                   sx={{
-                    opacity: 0.75,
-                    lineHeight: 1.6,
-                    mt: 1,
+                    flexShrink: 0,
+                    position: "relative",
+                    "&::after": {
+                      content: '""',
+                      position: "absolute",
+                      inset: -4,
+                      border: `3px solid ${isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`,
+                      borderRadius: "50%",
+                    },
                   }}
                 >
-                  {description}
-                </Typography>
+                  <UserAvatarMenu
+                    hide={["Profile"]}
+                    sx={{
+                      width: { xs: 100, sm: 120 },
+                      height: { xs: 100, sm: 120 },
+                      position: "relative",
+                      zIndex: 1,
+                    }}
+                    user={profile}
+                  />
+                </Box>
               )}
-              <Typography
-                variant="caption"
-                sx={{
-                  opacity: 0.6,
-                  wordBreak: "break-all",
-                  fontFamily: 'monospace',
-                  fontSize: '0.8rem',
-                }}
-              >
-                {id}
-              </Typography>
-            </Stack>
-          )}
-        </Box>
-      </Box>
 
-      {/* Action Buttons */}
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: { xs: "column", sm: "row" },
-          gap: 2,
-          pt: 2,
-          borderTop: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-        }}
-      >
-        {friendButton}
-        <CopyButton
-          title="Copy Profile Link"
-          value={`${window.location.host}/user?id=${profile?.id}`}
-        />
-        {canEdit && !isEditing && (
-          <Button
-            startIcon={<Edit />}
-            onClick={() => setIsEditing(true)}
-            variant="contained"
-            size="small"
-            sx={{ ml: 'auto' }}
-          >
-            Edit Profile
-          </Button>
-        )}
-      </Box>
-    </Stack>
-  </CardContent>
-</Card>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                {isEditing ? (
+                  <EditProfile
+                    setIsEditing={setIsEditing}
+                    profile={safeProfile}
+                    onCancel={() => setIsEditing(false)}
+                  />
+                ) : (
+                  <Stack spacing={1.5}>
+                    <Typography
+                      variant="h3"
+                      sx={{
+                        fontSize: { xs: "1.75rem", sm: "2.5rem" },
+                        fontWeight: 700,
+                        letterSpacing: -0.5,
+                      }}
+                    >
+                      {name}
+                    </Typography>
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        fontSize: { xs: "0.95rem", sm: "1.1rem" },
+                        opacity: 0.85,
+                        fontWeight: 500,
+                      }}
+                    >
+                      {email}
+                    </Typography>
+                    {description && (
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          opacity: 0.75,
+                          lineHeight: 1.6,
+                          mt: 1,
+                        }}
+                      >
+                        {description}
+                      </Typography>
+                    )}
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        opacity: 0.6,
+                        wordBreak: "break-all",
+                        fontFamily: "monospace",
+                        fontSize: "0.8rem",
+                      }}
+                    >
+                      {id}
+                    </Typography>
+                  </Stack>
+                )}
+              </Box>
+            </Box>
 
-
+            {/* Action Buttons */}
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                gap: 2,
+                pt: 2,
+                borderTop: `1px solid ${isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`,
+              }}
+            >
+              {friendButton}
+              <CopyButton
+                title="Copy Profile Link"
+                value={`${window.location.host}/user?id=${profile?.id}`}
+              />
+              {canEdit && !isEditing && (
+                <Button
+                  startIcon={<Edit />}
+                  onClick={() => setIsEditing(true)}
+                  variant="contained"
+                  size="small"
+                  sx={{ ml: "auto" }}
+                >
+                  Edit Profile
+                </Button>
+              )}
+            </Box>
+          </Stack>
+        </CardContent>
+      </Card>
 
       {/* Stats Overview */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
@@ -420,33 +418,35 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
       </Grid>
 
       {/* Chart */}
-      <Card 
-  sx={{ 
-    mb: 4,
-    background: isDarkMode 
-      ? '#242424'
-      : 'linear-gradient(135deg, #F0F4F8 0%, #E8EDF2 100%)',
-    boxShadow: isDarkMode
-      ? '12px 12px 24px rgba(0,0,0,0.5), -12px -12px 24px rgba(60,60,60,0.1)'
-      : '12px 12px 24px rgba(163,177,198,0.35), -12px -12px 24px rgba(255,255,255,0.9), inset 2px 2px 4px rgba(255,255,255,0.1)',
-    borderRadius: 3,
-    position: 'relative',
-    overflow: 'hidden',
-    '&::before': {
-      content: '""',
-      position: 'absolute',
-      top: -100,
-      right: -100,
-      width: 300,
-      height: 300,
-      background: isDarkMode 
-        ? 'radial-gradient(circle, rgba(58,141,255,0.08) 0%, transparent 70%)'
-        : 'radial-gradient(circle, rgba(255,255,255,0.6) 0%, transparent 70%)',
-      pointerEvents: 'none',
-    },
-  }}
->
-  <CardContent sx={{ p: { xs: 3, sm: 4, md: 5 }, position: 'relative', zIndex: 1 }}>
+      <Card
+        sx={{
+          mb: 4,
+          background: isDarkMode
+            ? "#242424"
+            : "linear-gradient(135deg, #F0F4F8 0%, #E8EDF2 100%)",
+          boxShadow: isDarkMode
+            ? "12px 12px 24px rgba(0,0,0,0.5), -12px -12px 24px rgba(60,60,60,0.1)"
+            : "12px 12px 24px rgba(163,177,198,0.35), -12px -12px 24px rgba(255,255,255,0.9), inset 2px 2px 4px rgba(255,255,255,0.1)",
+          borderRadius: 3,
+          position: "relative",
+          overflow: "hidden",
+          "&::before": {
+            content: '""',
+            position: "absolute",
+            top: -100,
+            right: -100,
+            width: 300,
+            height: 300,
+            background: isDarkMode
+              ? "radial-gradient(circle, rgba(58,141,255,0.08) 0%, transparent 70%)"
+              : "radial-gradient(circle, rgba(255,255,255,0.6) 0%, transparent 70%)",
+            pointerEvents: "none",
+          },
+        }}
+      >
+        <CardContent
+          sx={{ p: { xs: 3, sm: 4, md: 5 }, position: "relative", zIndex: 1 }}
+        >
           <Box sx={{ height: { xs: 300, sm: 400 } }}>
             {actionRatingsData.length > 0 ? (
               <AgCharts options={chartOptions} />

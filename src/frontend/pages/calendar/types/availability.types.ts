@@ -15,7 +15,7 @@ export interface DateRange {
   end_date: number;
 }
 
-export type ScheduleType = 
+export type ScheduleType =
   | { WeeklyRecurring: WeeklyRecurring }
   | { DateRange: DateRange }
   | { SpecificDates: number[] };
@@ -27,4 +27,4 @@ export interface Availability {
   is_blocked: boolean;
 }
 
-export type SlotStatus = 'available' | 'blocked' | 'past' | 'none';
+export type SlotStatus = "available" | "blocked" | "past" | "none";

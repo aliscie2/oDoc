@@ -26,9 +26,9 @@ interface ChatWindowProps {
 export const ChatWindow = memo<ChatWindowProps>(({ chat, onClose }) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const dispatch = useDispatch();
-  
+
   const { profile, all_friends, workspaces } = useSelector(
-    (state: RootState) => state.filesState
+    (state: RootState) => state.filesState,
   );
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -53,7 +53,7 @@ export const ChatWindow = memo<ChatWindowProps>(({ chat, onClose }) => {
       }
       return success;
     },
-    [updateChat, dispatch]
+    [updateChat, dispatch],
   );
 
   const handleDeleteChat = useCallback(() => {
@@ -105,9 +105,9 @@ export const ChatWindow = memo<ChatWindowProps>(({ chat, onClose }) => {
   const handleSendMessage = useCallback(
     async (messageText: string) => {
       if (!profile?.id) return false;
-      
+
       const success = await sendMessage(chat.id, messageText, profile.id);
-      
+
       if (success) {
         // ⚠️ CRITICAL: MESSAGE ORDERING - New Message
         // New messages MUST be added at the BEGINNING (index 0)
@@ -120,7 +120,7 @@ export const ChatWindow = memo<ChatWindowProps>(({ chat, onClose }) => {
           message: messageText,
           chat_id: chat.id,
         };
-        
+
         dispatch({
           type: "UPDATE_CHAT",
           chat: {
@@ -128,27 +128,25 @@ export const ChatWindow = memo<ChatWindowProps>(({ chat, onClose }) => {
             messages: [newMessage, ...chat.messages], // Prepend to beginning
           },
         });
-        
+
         infiniteScroll.setIsScrolledToBottom(true);
       }
-      
+
       return success;
     },
-    [chat, profile?.id, sendMessage, dispatch, infiniteScroll]
+    [chat, profile?.id, sendMessage, dispatch, infiniteScroll],
   );
 
   const getChatTitle = () => {
     if (chat.name !== "private_chat") {
       return chat.name;
     }
-    
+
     // For private chats, show the other user's name
-    const otherMember = chat.members.find(
-      (m) => m.toString() !== profile?.id
-    );
-    
+    const otherMember = chat.members.find((m) => m.toString() !== profile?.id);
+
     if (!otherMember) return "Chat";
-    
+
     const friend = all_friends.find((f) => f.id === otherMember.toString());
     return friend?.name || "User";
   };
@@ -177,78 +175,82 @@ export const ChatWindow = memo<ChatWindowProps>(({ chat, onClose }) => {
           },
         }}
       >
-      {/* Header */}
-      <AppBar
-        position="static"
-        color="default"
-        elevation={0}
-        sx={{
-          borderBottom: 1,
-          borderColor: "divider",
-          bgcolor: "background.paper",
-        }}
-      >
-        <Toolbar variant="dense" sx={{ minHeight: 48 }}>
-          <Typography
-            variant="subtitle2"
-            sx={{ flex: 1, fontWeight: 600 }}
-          >
-            {getChatTitle()}
-          </Typography>
+        {/* Header */}
+        <AppBar
+          position="static"
+          color="default"
+          elevation={0}
+          sx={{
+            borderBottom: 1,
+            borderColor: "divider",
+            bgcolor: "background.paper",
+          }}
+        >
+          <Toolbar variant="dense" sx={{ minHeight: 48 }}>
+            <Typography variant="subtitle2" sx={{ flex: 1, fontWeight: 600 }}>
+              {getChatTitle()}
+            </Typography>
 
-          {/* Settings Icon - Only for group chats and if user is creator */}
-          {showSettings && (
+            {/* Settings Icon - Only for group chats and if user is creator */}
+            {showSettings && (
+              <IconButton
+                size="small"
+                onClick={() => setIsSettingsOpen(true)}
+                aria-label="Settings"
+              >
+                <Settings />
+              </IconButton>
+            )}
+
+            {/* Close Icon */}
             <IconButton
               size="small"
-              onClick={() => setIsSettingsOpen(true)}
-              aria-label="Settings"
+              onClick={() => onClose(chat.id)}
+              aria-label="Close"
             >
-              <Settings />
+              <Close />
             </IconButton>
-          )}
+          </Toolbar>
+        </AppBar>
 
-          {/* Close Icon */}
-          <IconButton
-            size="small"
-            onClick={() => onClose(chat.id)}
-            aria-label="Close"
-          >
-            <Close />
-          </IconButton>
-        </Toolbar>
-      </AppBar>
+        {/* Content */}
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            flex: 1,
+            minHeight: 0,
+          }}
+        >
+          <MessagesList
+            chat={chat}
+            currentUserId={profile?.id || ""}
+            allFriends={all_friends}
+            messagesContainerRef={messagesContainerRef}
+            messagesEndRef={messagesEndRef}
+            onScroll={infiniteScroll.handleScroll}
+            isLoadingMore={infiniteScroll.isLoadingMore}
+            hasMoreMessages={infiniteScroll.hasMoreMessages}
+          />
+          <MessageInput
+            onSendMessage={handleSendMessage}
+            isSending={isSending}
+          />
+        </Box>
+      </Dialog>
 
-      {/* Content */}
-      <Box sx={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
-        <MessagesList
-          chat={chat}
-          currentUserId={profile?.id || ""}
-          allFriends={all_friends}
-          messagesContainerRef={messagesContainerRef}
-          messagesEndRef={messagesEndRef}
-          onScroll={infiniteScroll.handleScroll}
-          isLoadingMore={infiniteScroll.isLoadingMore}
-          hasMoreMessages={infiniteScroll.hasMoreMessages}
-        />
-        <MessageInput
-          onSendMessage={handleSendMessage}
-          isSending={isSending}
-        />
-      </Box>
-    </Dialog>
-
-    {/* Settings Dialog */}
-    <ChatSettingsDialog
-      open={isSettingsOpen}
-      onClose={() => setIsSettingsOpen(false)}
-      chat={chat}
-      currentUserId={profile?.id || ""}
-      allFriends={all_friends}
-      workspaces={workspaces}
-      onSave={handleSaveSettings}
-      onDelete={handleDeleteChat}
-    />
-  </>
+      {/* Settings Dialog */}
+      <ChatSettingsDialog
+        open={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        chat={chat}
+        currentUserId={profile?.id || ""}
+        allFriends={all_friends}
+        workspaces={workspaces}
+        onSave={handleSaveSettings}
+        onDelete={handleDeleteChat}
+      />
+    </>
   );
 });
 

@@ -24,9 +24,9 @@ export const ChatHeader = ({
 
   const getTitleConfig = () => {
     const path = location.pathname.toLowerCase();
-    
+
     if (path === "" || path === "/") {
-      return {  text: "Hiring Intelligence" };
+      return { text: "Hiring Intelligence" };
     } else if (path.includes("calendar")) {
       return { text: "Calendar Assistant" };
     } else if (path.includes("contract")) {
@@ -47,7 +47,7 @@ export const ChatHeader = ({
       py={2}
       borderBottom={`1px solid ${isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)"}`}
       sx={{
-        background: isDark 
+        background: isDark
           ? "linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0) 100%)"
           : "linear-gradient(180deg, rgba(0,0,0,0.01) 0%, rgba(0,0,0,0) 100%)",
       }}
@@ -58,7 +58,9 @@ export const ChatHeader = ({
           <Typography
             variant="body1"
             sx={{
-              color: isDark ? theme.palette.text.primary : theme.palette.text.primary,
+              color: isDark
+                ? theme.palette.text.primary
+                : theme.palette.text.primary,
               fontWeight: 600,
               fontSize: "0.95rem",
               letterSpacing: "0.01em",
@@ -73,10 +75,14 @@ export const ChatHeader = ({
           size="small"
           onClick={onMinimize}
           sx={{
-            color: isDark ? theme.palette.text.secondary : theme.palette.text.secondary,
+            color: isDark
+              ? theme.palette.text.secondary
+              : theme.palette.text.secondary,
             p: 0.75,
-            "&:hover": { 
-              bgcolor: isDark ? "rgba(255,255,255,0.08)" : theme.palette.action.hover,
+            "&:hover": {
+              bgcolor: isDark
+                ? "rgba(255,255,255,0.08)"
+                : theme.palette.action.hover,
             },
           }}
         >

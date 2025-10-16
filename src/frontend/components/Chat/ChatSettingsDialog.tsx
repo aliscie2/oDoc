@@ -74,7 +74,8 @@ export const ChatSettingsDialog = memo<ChatSettingsDialogProps>(
       try {
         const updatedChat = {
           ...chat,
-          name: formData.name === "private_chat" ? "private chat" : formData.name,
+          name:
+            formData.name === "private_chat" ? "private chat" : formData.name,
           members: formData.members.map((m) => Principal.fromText(m)),
           admins: formData.admins.map((a) => Principal.fromText(a)),
           workspaces: formData.workspaces,
@@ -96,7 +97,7 @@ export const ChatSettingsDialog = memo<ChatSettingsDialogProps>(
     const handleDelete = useCallback(() => {
       if (
         window.confirm(
-          "Are you sure you want to delete this chat? This action cannot be undone."
+          "Are you sure you want to delete this chat? This action cannot be undone.",
         )
       ) {
         onDelete();
@@ -148,7 +149,7 @@ export const ChatSettingsDialog = memo<ChatSettingsDialogProps>(
               options={workspaces}
               getOptionLabel={(option) => option.name}
               value={workspaces.filter((w) =>
-                formData.workspaces.includes(w.id)
+                formData.workspaces.includes(w.id),
               )}
               onChange={(_, newValue) =>
                 setFormData((prev) => ({
@@ -175,9 +176,7 @@ export const ChatSettingsDialog = memo<ChatSettingsDialogProps>(
               multiple
               options={allFriends}
               getOptionLabel={(option) => option.name}
-              value={allFriends.filter((f) =>
-                formData.members.includes(f.id)
-              )}
+              value={allFriends.filter((f) => formData.members.includes(f.id))}
               onChange={(_, newValue) =>
                 setFormData((prev) => ({
                   ...prev,
@@ -203,21 +202,17 @@ export const ChatSettingsDialog = memo<ChatSettingsDialogProps>(
             <Autocomplete
               multiple
               options={allFriends.filter((f) =>
-                formData.members.includes(f.id)
+                formData.members.includes(f.id),
               )}
               getOptionLabel={(option) => option.name}
-              value={allFriends.filter((f) =>
-                formData.admins.includes(f.id)
-              )}
+              value={allFriends.filter((f) => formData.admins.includes(f.id))}
               onChange={(_, newValue) =>
                 setFormData((prev) => ({
                   ...prev,
                   admins: newValue.map((u) => u.id),
                 }))
               }
-              renderInput={(params) => (
-                <TextField {...params} label="Admins" />
-              )}
+              renderInput={(params) => <TextField {...params} label="Admins" />}
               renderTags={(value, getTagProps) =>
                 value.map((option, index) => (
                   <Chip
@@ -253,7 +248,7 @@ export const ChatSettingsDialog = memo<ChatSettingsDialogProps>(
         </DialogActions>
       </Dialog>
     );
-  }
+  },
 );
 
 ChatSettingsDialog.displayName = "ChatSettingsDialog";

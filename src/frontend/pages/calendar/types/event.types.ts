@@ -1,7 +1,7 @@
 // Event type definitions
 
 export interface Recurrence {
-  frequency: 'Daily' | 'Weekly' | 'Monthly' | 'Yearly';
+  frequency: "Daily" | "Weekly" | "Monthly" | "Yearly";
   interval: number;
   count: number | null;
   until: string | null;
@@ -32,7 +32,7 @@ export interface EventFormData {
 export interface SlotInfo {
   start: Date;
   end: Date;
-  action?: 'select' | 'click';
+  action?: "select" | "click";
   slots?: Date[];
   created_by?: string;
 }

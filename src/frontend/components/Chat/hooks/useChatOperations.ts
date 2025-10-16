@@ -42,7 +42,7 @@ export const useChatOperations = ({
         setIsSending(false);
       }
     },
-    [backendActor, isSending, onSuccess, onError]
+    [backendActor, isSending, onSuccess, onError],
   );
 
   const updateChat = useCallback(
@@ -52,14 +52,14 @@ export const useChatOperations = ({
         const formattedChat = {
           ...chat,
           admins: chat.admins.map((a) =>
-            a instanceof Principal ? a : Principal.fromText(a.toString())
+            a instanceof Principal ? a : Principal.fromText(a.toString()),
           ),
           creator:
             chat.creator instanceof Principal
               ? chat.creator
               : Principal.fromText(chat.creator.toString()),
           members: chat.members.map((m) =>
-            m instanceof Principal ? m : Principal.fromText(m.toString())
+            m instanceof Principal ? m : Principal.fromText(m.toString()),
           ),
           messages: chat.messages.map((msg) => ({
             ...msg,
@@ -68,7 +68,7 @@ export const useChatOperations = ({
                 ? msg.sender
                 : Principal.fromText(msg.sender.toString()),
             seen_by: msg.seen_by.map((s) =>
-              s instanceof Principal ? s : Principal.fromText(s.toString())
+              s instanceof Principal ? s : Principal.fromText(s.toString()),
             ),
             date: typeof msg.date === "bigint" ? msg.date : BigInt(msg.date),
           })),
@@ -87,7 +87,7 @@ export const useChatOperations = ({
         setIsSaving(false);
       }
     },
-    [backendActor, onSuccess, onError]
+    [backendActor, onSuccess, onError],
   );
 
   const deleteChat = useCallback(
@@ -107,7 +107,7 @@ export const useChatOperations = ({
         setIsDeleting(false);
       }
     },
-    [backendActor, onSuccess, onError]
+    [backendActor, onSuccess, onError],
   );
 
   const markAsSeen = useCallback(
@@ -125,7 +125,7 @@ export const useChatOperations = ({
         onError?.(error as Error);
       }
     },
-    [backendActor, onError]
+    [backendActor, onError],
   );
 
   return {

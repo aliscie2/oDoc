@@ -31,7 +31,7 @@ interface RootState {
 const GoogleCalendarOnboarding = () => {
   const [hasTriedToClose, setHasTriedToClose] = useState(false);
   const [open, setOpen] = useState(false);
-  
+
   const { jobs } = useSelector((state: RootState) => state.jobState);
   const { calendar } = useSelector((state: RootState) => state.calendarState);
   const {

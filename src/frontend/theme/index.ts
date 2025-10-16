@@ -1,6 +1,5 @@
 import { createTheme as createMuiTheme, alpha } from "@mui/material/styles";
 
-
 const baseColors = {
   error: { main: "#ef4444", contrastText: "#FFFFFF" },
   info: { main: "#06b6d4", contrastText: "#FFFFFF" },
@@ -44,7 +43,7 @@ function createPalette(isDarkMode: boolean) {
 
 const createComponents = (palette: ReturnType<typeof createPalette>) => {
   const isDark = palette.mode === "dark";
-  
+
   return {
     MuiCssBaseline: {
       styleOverrides: {
@@ -58,7 +57,10 @@ const createComponents = (palette: ReturnType<typeof createPalette>) => {
           color: palette.primary.main,
           textDecoration: "none",
           transition: "color 0.2s ease",
-          "&:hover": { color: palette.primary.dark, textDecoration: "underline" },
+          "&:hover": {
+            color: palette.primary.dark,
+            textDecoration: "underline",
+          },
         },
       },
     },
@@ -69,13 +71,13 @@ const createComponents = (palette: ReturnType<typeof createPalette>) => {
           backgroundColor: palette.background.paper,
           borderRadius: 20,
           border: "none",
-          boxShadow: isDark 
-            ? "8px 8px 16px rgba(0,0,0,0.5), -8px -8px 16px rgba(60,60,60,0.1)" 
+          boxShadow: isDark
+            ? "8px 8px 16px rgba(0,0,0,0.5), -8px -8px 16px rgba(60,60,60,0.1)"
             : "8px 8px 16px rgba(163,177,198,0.3), -8px -8px 16px rgba(255,255,255,0.8)",
           transition: "all 0.3s ease",
           "&:hover": {
-            boxShadow: isDark 
-              ? "12px 12px 24px rgba(0,0,0,0.6), -12px -12px 24px rgba(60,60,60,0.15)" 
+            boxShadow: isDark
+              ? "12px 12px 24px rgba(0,0,0,0.6), -12px -12px 24px rgba(60,60,60,0.15)"
               : "12px 12px 24px rgba(163,177,198,0.4), -12px -12px 24px rgba(255,255,255,0.9)",
           },
         },
@@ -95,12 +97,12 @@ const createComponents = (palette: ReturnType<typeof createPalette>) => {
         contained: {
           backgroundColor: palette.primary.main,
           color: "#ffffff",
-          boxShadow: isDark 
+          boxShadow: isDark
             ? "4px 4px 8px rgba(0,0,0,0.4), -2px -2px 6px rgba(60,60,60,0.1)"
             : "4px 4px 8px rgba(58,141,255,0.25), -2px -2px 6px rgba(255,255,255,0.7), inset 1px 1px 2px rgba(255,255,255,0.2)",
           "&:hover": {
             backgroundColor: palette.primary.dark,
-            boxShadow: isDark 
+            boxShadow: isDark
               ? "6px 6px 12px rgba(0,0,0,0.5), -3px -3px 8px rgba(60,60,60,0.15)"
               : "6px 6px 12px rgba(58,141,255,0.35), -3px -3px 8px rgba(255,255,255,0.8), inset 1px 1px 2px rgba(255,255,255,0.3)",
             transform: "translateY(-1px)",
@@ -109,7 +111,7 @@ const createComponents = (palette: ReturnType<typeof createPalette>) => {
         },
         outlined: {
           borderColor: palette.divider,
-          boxShadow: isDark 
+          boxShadow: isDark
             ? "inset 2px 2px 4px rgba(0,0,0,0.3), inset -2px -2px 4px rgba(60,60,60,0.1)"
             : "inset 2px 2px 4px rgba(163,177,198,0.2), inset -2px -2px 4px rgba(255,255,255,0.7)",
           "&:hover": {
@@ -129,13 +131,13 @@ const createComponents = (palette: ReturnType<typeof createPalette>) => {
           "& .MuiOutlinedInput-root": {
             backgroundColor: palette.background.paper,
             borderRadius: 16,
-            boxShadow: isDark 
+            boxShadow: isDark
               ? "inset 3px 3px 6px rgba(0,0,0,0.4), inset -3px -3px 6px rgba(60,60,60,0.1)"
               : "inset 3px 3px 6px rgba(163,177,198,0.25), inset -3px -3px 6px rgba(255,255,255,0.7)",
             "& fieldset": { border: "none" },
             "&:hover fieldset": { border: "none" },
             "&.Mui-focused": {
-              boxShadow: isDark 
+              boxShadow: isDark
                 ? "inset 4px 4px 8px rgba(0,0,0,0.5), inset -4px -4px 8px rgba(60,60,60,0.15), 0 0 0 2px rgba(58,141,255,0.3)"
                 : "inset 4px 4px 8px rgba(163,177,198,0.3), inset -4px -4px 8px rgba(255,255,255,0.8), 0 0 0 2px rgba(58,141,255,0.2)",
               "& fieldset": { border: "none" },
@@ -152,7 +154,7 @@ const createComponents = (palette: ReturnType<typeof createPalette>) => {
           fontWeight: 500,
           fontSize: "0.875rem",
           height: "32px",
-          boxShadow: isDark 
+          boxShadow: isDark
             ? "3px 3px 6px rgba(0,0,0,0.4), -2px -2px 4px rgba(60,60,60,0.1)"
             : "3px 3px 6px rgba(163,177,198,0.2), -2px -2px 4px rgba(255,255,255,0.7)",
         },
@@ -164,12 +166,12 @@ const createComponents = (palette: ReturnType<typeof createPalette>) => {
         root: {
           borderRadius: 12,
           transition: "all 0.3s ease",
-          boxShadow: isDark 
+          boxShadow: isDark
             ? "4px 4px 8px rgba(0,0,0,0.4), -2px -2px 6px rgba(60,60,60,0.1)"
             : "4px 4px 8px rgba(163,177,198,0.2), -2px -2px 6px rgba(255,255,255,0.7)",
           "&:hover": {
             backgroundColor: palette.action.hover,
-            boxShadow: isDark 
+            boxShadow: isDark
               ? "6px 6px 12px rgba(0,0,0,0.5), -3px -3px 8px rgba(60,60,60,0.15)"
               : "6px 6px 12px rgba(163,177,198,0.3), -3px -3px 8px rgba(255,255,255,0.8)",
           },
@@ -185,13 +187,13 @@ const createComponents = (palette: ReturnType<typeof createPalette>) => {
           border: "none",
           textTransform: "none",
           fontWeight: 500,
-          boxShadow: isDark 
+          boxShadow: isDark
             ? "inset 2px 2px 4px rgba(0,0,0,0.3), inset -2px -2px 4px rgba(60,60,60,0.1)"
             : "inset 2px 2px 4px rgba(163,177,198,0.2), inset -2px -2px 4px rgba(255,255,255,0.7)",
           "&.Mui-selected": {
             backgroundColor: palette.primary.main,
             color: "#ffffff",
-            boxShadow: isDark 
+            boxShadow: isDark
               ? "4px 4px 8px rgba(0,0,0,0.4), -2px -2px 6px rgba(60,60,60,0.1)"
               : "4px 4px 8px rgba(58,141,255,0.25), -2px -2px 6px rgba(255,255,255,0.7)",
             "&:hover": { backgroundColor: palette.primary.dark },
@@ -206,7 +208,7 @@ const createComponents = (palette: ReturnType<typeof createPalette>) => {
           backgroundColor: palette.background.paper,
           color: palette.text.primary,
           fontWeight: 600,
-          boxShadow: isDark 
+          boxShadow: isDark
             ? "4px 4px 8px rgba(0,0,0,0.4), -2px -2px 6px rgba(60,60,60,0.1)"
             : "4px 4px 8px rgba(163,177,198,0.2), -2px -2px 6px rgba(255,255,255,0.7)",
         },
@@ -217,7 +219,7 @@ const createComponents = (palette: ReturnType<typeof createPalette>) => {
       styleOverrides: {
         root: {
           borderColor: palette.divider,
-          boxShadow: isDark 
+          boxShadow: isDark
             ? "0 1px 2px rgba(0,0,0,0.3)"
             : "0 1px 2px rgba(163,177,198,0.15), 0 -1px 1px rgba(255,255,255,0.6)",
         },
@@ -231,13 +233,13 @@ const createComponents = (palette: ReturnType<typeof createPalette>) => {
           transition: "all 0.3s ease",
           "&:hover": {
             backgroundColor: "transparent",
-            boxShadow: isDark 
+            boxShadow: isDark
               ? "inset 2px 2px 4px rgba(0,0,0,0.3), inset -2px -2px 4px rgba(60,60,60,0.1)"
               : "inset 2px 2px 4px rgba(163,177,198,0.2), inset -2px -2px 4px rgba(255,255,255,0.7)",
           },
           "&.Mui-selected": {
             backgroundColor: "transparent",
-            boxShadow: isDark 
+            boxShadow: isDark
               ? "inset 3px 3px 6px rgba(0,0,0,0.4), inset -3px -3px 6px rgba(60,60,60,0.15)"
               : "inset 3px 3px 6px rgba(163,177,198,0.25), inset -3px -3px 6px rgba(255,255,255,0.8)",
           },
@@ -255,30 +257,61 @@ export function createTheme(isDarkMode: boolean) {
     components: createComponents(palette),
     shape: { borderRadius: 16 },
     typography: {
-      fontFamily: '"DM Sans", "Inter", "Outfit", -apple-system, BlinkMacSystemFont, sans-serif',
+      fontFamily:
+        '"DM Sans", "Inter", "Outfit", -apple-system, BlinkMacSystemFont, sans-serif',
       fontSize: 15,
       fontWeightLight: 300,
       fontWeightRegular: 400,
       fontWeightMedium: 500,
       fontWeightBold: 600,
-      h1: { fontSize: "2.75rem", fontWeight: 600, lineHeight: 1.2, letterSpacing: "-0.02em" },
-      h2: { fontSize: "2.25rem", fontWeight: 600, lineHeight: 1.25, letterSpacing: "-0.015em" },
-      h3: { fontSize: "1.875rem", fontWeight: 600, lineHeight: 1.3, letterSpacing: "-0.01em" },
+      h1: {
+        fontSize: "2.75rem",
+        fontWeight: 600,
+        lineHeight: 1.2,
+        letterSpacing: "-0.02em",
+      },
+      h2: {
+        fontSize: "2.25rem",
+        fontWeight: 600,
+        lineHeight: 1.25,
+        letterSpacing: "-0.015em",
+      },
+      h3: {
+        fontSize: "1.875rem",
+        fontWeight: 600,
+        lineHeight: 1.3,
+        letterSpacing: "-0.01em",
+      },
       h4: { fontSize: "1.5rem", fontWeight: 500, lineHeight: 1.35 },
       h5: { fontSize: "1.25rem", fontWeight: 500, lineHeight: 1.4 },
       h6: { fontSize: "1.125rem", fontWeight: 500, lineHeight: 1.4 },
-      body1: { fontSize: "0.9375rem", lineHeight: 1.6, letterSpacing: "0.005em" },
+      body1: {
+        fontSize: "0.9375rem",
+        lineHeight: 1.6,
+        letterSpacing: "0.005em",
+      },
       body2: { fontSize: "0.875rem", lineHeight: 1.55 },
-      caption: { fontSize: "0.8125rem", lineHeight: 1.5, color: palette.text.secondary },
-      button: { fontWeight: 500, fontSize: "0.9375rem", textTransform: "none", letterSpacing: "0.01em" },
+      caption: {
+        fontSize: "0.8125rem",
+        lineHeight: 1.5,
+        color: palette.text.secondary,
+      },
+      button: {
+        fontWeight: 500,
+        fontSize: "0.9375rem",
+        textTransform: "none",
+        letterSpacing: "0.01em",
+      },
     },
     shadows: [
       "none",
-      ...Array(24).fill(null).map(() => 
-        isDarkMode 
-          ? "8px 8px 16px rgba(0,0,0,0.5), -8px -8px 16px rgba(60,60,60,0.1)"
-          : "8px 8px 16px rgba(163,177,198,0.3), -8px -8px 16px rgba(255,255,255,0.8)"
-      ),
+      ...Array(24)
+        .fill(null)
+        .map(() =>
+          isDarkMode
+            ? "8px 8px 16px rgba(0,0,0,0.5), -8px -8px 16px rgba(60,60,60,0.1)"
+            : "8px 8px 16px rgba(163,177,198,0.3), -8px -8px 16px rgba(255,255,255,0.8)",
+        ),
     ] as unknown,
   });
 }

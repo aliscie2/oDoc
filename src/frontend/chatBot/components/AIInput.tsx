@@ -80,7 +80,7 @@ export const AIInput = ({
               ? 500
               : 300,
         transition: "width 0.3s ease-in-out",
-        
+
         borderRadius: 1.5,
       }}
       onMouseEnter={() => !isFocused && setIsExpanded(true)}

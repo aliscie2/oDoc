@@ -19,9 +19,10 @@ const EventForm: React.FC<EventFormProps> = ({
   canEdit,
   onEventDataChange,
 }) => {
-  const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    onEventDataChange({ ...eventData, [field]: e.target.value });
-  };
+  const handleChange =
+    (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      onEventDataChange({ ...eventData, [field]: e.target.value });
+    };
 
   const handleAttendeesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const emails = e.target.value

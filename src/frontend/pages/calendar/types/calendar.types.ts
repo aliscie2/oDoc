@@ -1,7 +1,7 @@
 // Calendar type definitions
 
-import { Event } from './event.types';
-import { Availability } from './availability.types';
+import { Event } from "./event.types";
+import { Availability } from "./availability.types";
 
 export interface Calendar {
   id: string;
@@ -12,7 +12,7 @@ export interface Calendar {
   google_public_urls?: string[];
 }
 
-export type CalendarView = 'month' | 'week' | 'day';
+export type CalendarView = "month" | "week" | "day";
 
 export interface CalendarState {
   calendar: Calendar | null;
@@ -24,7 +24,7 @@ export interface CalendarState {
 }
 
 export interface CalendarAction {
-  type: 'ADD_EVENT' | 'UPDATE_EVENT' | 'DELETE_EVENT' | 'SET_AVAILABILITY';
+  type: "ADD_EVENT" | "UPDATE_EVENT" | "DELETE_EVENT" | "SET_AVAILABILITY";
   payload: any;
   timestamp: number;
 }

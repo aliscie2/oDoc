@@ -2,7 +2,7 @@
 
 export const getEventColors = (isDark: boolean = false) => {
   // Professional, accessible color palette that works in both modes
-  return isDark 
+  return isDark
     ? ["#3b82f6", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#06b6d4"]
     : ["#2563eb", "#7c3aed", "#db2777", "#d97706", "#059669", "#0891b2"];
 };
@@ -10,17 +10,23 @@ export const getEventColors = (isDark: boolean = false) => {
 export const getSlotStatusStyles = (status: string, isDark: boolean) => {
   const baseStyles = {
     past: {
-      backgroundColor: isDark ? "rgba(108, 115, 127, 0.15)" : "rgba(148, 163, 184, 0.1)",
+      backgroundColor: isDark
+        ? "rgba(108, 115, 127, 0.15)"
+        : "rgba(148, 163, 184, 0.1)",
       color: isDark ? "rgba(203, 213, 225, 0.5)" : "rgba(100, 116, 139, 0.6)",
       cursor: "not-allowed",
     },
     available: {
-      backgroundColor: isDark ? "rgba(16, 185, 129, 0.12)" : "rgba(16, 185, 129, 0.08)",
+      backgroundColor: isDark
+        ? "rgba(16, 185, 129, 0.12)"
+        : "rgba(16, 185, 129, 0.08)",
       color: isDark ? "rgba(52, 211, 153, 0.9)" : "rgba(5, 150, 105, 0.9)",
       cursor: "pointer",
     },
     blocked: {
-      backgroundColor: isDark ? "rgba(240, 68, 56, 0.1)" : "rgba(240, 68, 56, 0.06)",
+      backgroundColor: isDark
+        ? "rgba(240, 68, 56, 0.1)"
+        : "rgba(240, 68, 56, 0.06)",
       color: isDark ? "rgba(248, 113, 113, 0.9)" : "rgba(220, 38, 38, 0.9)",
       cursor: "not-allowed",
     },
@@ -43,8 +49,12 @@ export const getEventStyle = (
   if (event.isFreeBusyBlock) {
     return {
       style: {
-        backgroundColor: isDark ? "rgba(148, 163, 184, 0.25)" : "rgba(148, 163, 184, 0.35)",
-        borderColor: isDark ? "rgba(148, 163, 184, 0.35)" : "rgba(100, 116, 139, 0.4)",
+        backgroundColor: isDark
+          ? "rgba(148, 163, 184, 0.25)"
+          : "rgba(148, 163, 184, 0.35)",
+        borderColor: isDark
+          ? "rgba(148, 163, 184, 0.35)"
+          : "rgba(100, 116, 139, 0.4)",
         color: isDark ? "rgba(241, 245, 249, 0.8)" : "rgba(15, 23, 42, 0.7)",
         opacity: 0.65,
         cursor: "not-allowed",
@@ -97,7 +107,9 @@ export const getEventStyle = (
   // Other users' events on shared calendar - neutral gray
   return {
     style: {
-      backgroundColor: isDark ? "rgba(100, 116, 139, 0.4)" : "rgba(148, 163, 184, 0.5)",
+      backgroundColor: isDark
+        ? "rgba(100, 116, 139, 0.4)"
+        : "rgba(148, 163, 184, 0.5)",
       color: isDark ? "rgba(241, 245, 249, 0.9)" : "rgba(15, 23, 42, 0.8)",
       opacity: 0.85,
       fontWeight: 400,

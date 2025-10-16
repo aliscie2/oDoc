@@ -35,44 +35,42 @@ export class MessageRulesService {
   private GENERAL_DETAILS =
     "\nWhat are you looking for Job or Talent? Tell me in details.";
 
-constructor(
+  constructor(
     private jobs: unknown[],
     private calendar: unknown,
     private jobSearchStage: number,
     private currentJobId: string | null,
     private chatHistory?: unknown[],
-    private pathname: string = '',
+    private pathname: string = "",
   ) {}
-
 
   private get currentJob(): Job | undefined {
     return this.jobs.find((job) => job.id === this.currentJobId);
   }
 
   get messageRules(): MessageRule[] {
-  return [
-    {
-      id: "welcome",
-      type: "immediate",
-      priority: 1,
-      condition: () => {
-        // Only show if explicitly no jobs (not undefined/loading state)
-        if (this.jobs === null || this.jobs === undefined) return false;
-        return this.jobs.length === 0;
-      },
-      message: () => {
-        const userType = localStorage.getItem("UserType");
-        if (userType === "TALENT")
-          return `💼 🤝 AI Profile Builder ready to help!${this.TALENT_DETAILS}`;
-        if (userType === "JOB")
-          return `💼 🤝 AI Profile Builder ready to help!${this.JOB_DETAILS}`;
-        return `💼 🤝 AI Profile Builder ready to help!${this.GENERAL_DETAILS}`;
-      },
-      actionType: "WELCOME_MESSAGE",
-      canUndo: false,
-      canRetry: false,
-      metadata: { showOnce: true },
-
+    return [
+      {
+        id: "welcome",
+        type: "immediate",
+        priority: 1,
+        condition: () => {
+          // Only show if explicitly no jobs (not undefined/loading state)
+          if (this.jobs === null || this.jobs === undefined) return false;
+          return this.jobs.length === 0;
+        },
+        message: () => {
+          const userType = localStorage.getItem("UserType");
+          if (userType === "TALENT")
+            return `💼 🤝 AI Profile Builder ready to help!${this.TALENT_DETAILS}`;
+          if (userType === "JOB")
+            return `💼 🤝 AI Profile Builder ready to help!${this.JOB_DETAILS}`;
+          return `💼 🤝 AI Profile Builder ready to help!${this.GENERAL_DETAILS}`;
+        },
+        actionType: "WELCOME_MESSAGE",
+        canUndo: false,
+        canRetry: false,
+        metadata: { showOnce: true },
       },
       {
         id: "calendar",
@@ -80,7 +78,8 @@ constructor(
         priority: 1,
         condition: () => {
           const hasJobs = this.jobs.length > 0;
-          const noCalendarAvailabilities = !this.calendar?.availabilities?.length;
+          const noCalendarAvailabilities =
+            !this.calendar?.availabilities?.length;
           const hasHighCompletionJob = this.jobs.some((job: unknown) => {
             const percentage = job.profile_completion || 0;
             return percentage >= 0.9;
@@ -140,23 +139,24 @@ constructor(
         actionType: "PROFILE_FEEDBACK_MESSAGE",
         canUndo: false,
         canRetry: false,
-        metadata: { 
+        metadata: {
           showOnce: true,
           replaceGroup: "profile-status",
           includeProgress: true,
-          profileCompletion: this.currentJob?.profile_completion || 0
+          profileCompletion: this.currentJob?.profile_completion || 0,
         },
       },
-  {
+      {
         id: "new-profile",
         type: "immediate",
         priority: 2,
-        condition: () => 
-          this.jobs && 
-          !this.currentJob && 
-          !this.pathname.includes('calendar') && 
-          !this.pathname.includes('contract'),
-        message: "Ready to build a new profile? I can help you create a compelling professional profile and provide consultation on how to make it stand out.",
+        condition: () =>
+          this.jobs &&
+          !this.currentJob &&
+          !this.pathname.includes("calendar") &&
+          !this.pathname.includes("contract"),
+        message:
+          "Ready to build a new profile? I can help you create a compelling professional profile and provide consultation on how to make it stand out.",
         actionType: "NEW_PROFILE_MESSAGE",
         canUndo: false,
         canRetry: false,

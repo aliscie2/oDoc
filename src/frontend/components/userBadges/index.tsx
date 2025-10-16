@@ -428,7 +428,15 @@ const AchievementPage: React.FC = () => {
           background: `linear-gradient(135deg, ${currentLevel.color}20, ${currentLevel.color}10)`,
         }}
       >
-        <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, alignItems: "center", gap: 3, mb: 3 }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: "center",
+            gap: 3,
+            mb: 3,
+          }}
+        >
           <Box sx={{ display: "flex", justifyContent: "center" }}>
             <UserLevelBadge actions_rate={karmaScore} size={120} />
           </Box>

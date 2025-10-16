@@ -48,6 +48,5 @@ export const initialChatsState: ChatState = {
   current_user: Principal.fromText("2vxsx-fae"),
   chats: [],
   chats_notifications: [],
-    openChatWindows: {}, // Add this
-
+  openChatWindows: {}, // Add this
 };

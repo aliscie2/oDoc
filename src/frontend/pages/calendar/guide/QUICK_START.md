@@ -3,16 +3,19 @@
 ## 🚀 Get Started
 
 ### Connect Google Calendar
+
 ```
 Click "Connect Google" → Complete OAuth → Grant Permissions
 ```
 
 ### Create Event
+
 ```
 Click Time Slot → Enter Title → Click "Create"
 ```
 
 ### Set Availability
+
 ```
 Click "Availabilities" → Add New → Set Days/Times → Save
 ```

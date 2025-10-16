@@ -108,26 +108,30 @@ const ShareFileButton = () => {
     console.log("🔵 [Share Button] Clicked");
     console.log("🔵 [Share Button] Current file:", current_file);
     console.log("🔵 [Share Button] Share ID:", current_file?.share_id);
-    
+
     setAnchorEl(event.currentTarget);
-    
+
     // If share_id is undefined, save the file first then call share_file
     if (!current_file?.share_id || current_file.share_id.length === 0) {
-      console.log("⚠️ [Share Button] No share_id found, initiating save and share flow");
+      console.log(
+        "⚠️ [Share Button] No share_id found, initiating save and share flow",
+      );
       setIsLoading(true);
       try {
         console.log("📝 [Share Button] Calling saveDoc()...");
         await saveDoc();
         console.log("✅ [Share Button] saveDoc() completed");
-        
+
         if (!profile?.id) {
           console.error("❌ [Share Button] No profile ID found");
           enqueueSnackbar("Profile not loaded", { variant: "error" });
           return;
         }
-        
+
         // Call share_file to generate the share_id
-        console.log("🔗 [Share Button] Calling share_file to generate share_id");
+        console.log(
+          "🔗 [Share Button] Calling share_file to generate share_id",
+        );
         const shareFileInput = {
           id: current_file.id,
           owner: Principal.fromText(profile.id),
@@ -135,31 +139,35 @@ const ShareFileButton = () => {
           users_permissions: [],
         };
         console.log("📤 [Share Button] share_file input:", shareFileInput);
-        
+
         const shareRes = await backendActor.share_file(shareFileInput);
         console.log("📦 [Share Button] share_file response:", shareRes);
-        
+
         if (shareRes.Ok) {
           console.log("✅ [Share Button] share_file successful");
           console.log("🔗 [Share Button] Generated share ID:", shareRes.Ok.id);
-          
+
           // Now fetch the updated file to get complete data
           console.log("🔄 [Share Button] Fetching updated file from backend");
           const fileRes = await backendActor.get_file(current_file.id);
           console.log("📦 [Share Button] get_file response:", fileRes);
-          
+
           if (fileRes.Ok) {
             console.log("✅ [Share Button] File fetched successfully");
             console.log("📄 [Share Button] Updated file data:", fileRes.Ok);
-            
+
             dispatch({
               type: "CURRENT_FILE",
               file: fileRes.Ok,
             });
-            console.log("✅ [Share Button] Redux state updated with new file data");
+            console.log(
+              "✅ [Share Button] Redux state updated with new file data",
+            );
           } else {
             // Fallback: update with share_id from share_file response
-            console.log("⚠️ [Share Button] get_file failed, using share_file response");
+            console.log(
+              "⚠️ [Share Button] get_file failed, using share_file response",
+            );
             dispatch({
               type: "CURRENT_FILE",
               file: { ...current_file, share_id: [shareRes.Ok.id] },
@@ -167,21 +175,33 @@ const ShareFileButton = () => {
           }
         } else if (shareRes.Err) {
           console.error("❌ [Share Button] share_file error:", shareRes.Err);
-          enqueueSnackbar(`Failed to generate share link: ${shareRes.Err}`, { variant: "error" });
+          enqueueSnackbar(`Failed to generate share link: ${shareRes.Err}`, {
+            variant: "error",
+          });
         } else {
-          console.error("❌ [Share Button] Unexpected share_file response:", shareRes);
-          enqueueSnackbar("Failed to generate share link", { variant: "error" });
+          console.error(
+            "❌ [Share Button] Unexpected share_file response:",
+            shareRes,
+          );
+          enqueueSnackbar("Failed to generate share link", {
+            variant: "error",
+          });
         }
       } catch (error) {
         console.error("❌ [Share Button] Error in save/share flow:", error);
         console.error("❌ [Share Button] Error stack:", error?.stack);
-        enqueueSnackbar("Failed to save file before sharing", { variant: "error" });
+        enqueueSnackbar("Failed to save file before sharing", {
+          variant: "error",
+        });
       } finally {
         setIsLoading(false);
         console.log("🏁 [Share Button] Loading state cleared");
       }
     } else {
-      console.log("✅ [Share Button] Share ID already exists:", current_file.share_id[0]);
+      console.log(
+        "✅ [Share Button] Share ID already exists:",
+        current_file.share_id[0],
+      );
     }
   };
 
@@ -200,7 +220,10 @@ const ShareFileButton = () => {
     }
   };
 
-  const handlePermissionChange = (event: unknown, newValue: ShareOption | null) => {
+  const handlePermissionChange = (
+    event: unknown,
+    newValue: ShareOption | null,
+  ) => {
     setSelectedPermission(newValue);
     if (newValue?.principalId) {
       // Convert the string principal ID to a Principal type
@@ -224,9 +247,11 @@ const ShareFileButton = () => {
     console.log("💾 [Handle Save] Starting share file save");
     console.log("💾 [Handle Save] Current file:", current_file);
     console.log("💾 [Handle Save] Profile ID:", profile?.id);
-    
+
     if (!current_file || !profile?.id) {
-      console.warn("⚠️ [Handle Save] Missing current_file or profile.id, aborting");
+      console.warn(
+        "⚠️ [Handle Save] Missing current_file or profile.id, aborting",
+      );
       return;
     }
 
@@ -238,11 +263,14 @@ const ShareFileButton = () => {
         permission: selectedPermission?.value || { CanView: null },
         users_permissions: userPermissions,
       };
-      
-      console.log("📤 [Handle Save] Sending share_file request:", shareFileInput);
+
+      console.log(
+        "📤 [Handle Save] Sending share_file request:",
+        shareFileInput,
+      );
       const res = await backendActor.share_file(shareFileInput);
       console.log("📥 [Handle Save] Backend response:", res);
-      
+
       if (res.Err) {
         console.error("❌ [Handle Save] Backend error:", res.Err);
         enqueueSnackbar(
@@ -251,16 +279,16 @@ const ShareFileButton = () => {
         );
         return;
       }
-      
+
       console.log("✅ [Handle Save] Share file successful");
       console.log("🔗 [Handle Save] New share ID:", res.Ok.id);
-      
+
       dispatch({
         type: "CURRENT_FILE",
         file: { ...current_file, share_id: [res.Ok.id] },
       });
       console.log("✅ [Handle Save] Redux state updated");
-      
+
       setHasChanges(false);
       handleClose();
     } catch (error) {
@@ -289,7 +317,14 @@ const ShareFileButton = () => {
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <Box sx={{ p: 2, minWidth: 300 }}>
           {isLoading ? (
-            <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 100 }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                minHeight: 100,
+              }}
+            >
               <CircularProgress />
             </Box>
           ) : (
@@ -300,18 +335,22 @@ const ShareFileButton = () => {
                 </Typography>
                 <CopyButton onClick={handleCopyLink} />
               </Box>
-          {current_file?.author === profile?.id && (
-            <Box sx={{ mb: 2 }}>
-              <Autocomplete
-                options={generateShareOptions()}
-                value={selectedPermission}
-                onChange={handlePermissionChange}
-                renderInput={(params) => (
-                  <TextField {...params} label="Set permissions" size="small" />
-                )}
-              />
-            </Box>
-          )}
+              {current_file?.author === profile?.id && (
+                <Box sx={{ mb: 2 }}>
+                  <Autocomplete
+                    options={generateShareOptions()}
+                    value={selectedPermission}
+                    onChange={handlePermissionChange}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Set permissions"
+                        size="small"
+                      />
+                    )}
+                  />
+                </Box>
+              )}
 
               {hasChanges && (
                 <Button

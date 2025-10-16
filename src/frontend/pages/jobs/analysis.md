@@ -21,19 +21,20 @@ useEffect(() => {
 
   // Only auto-run if job actually changed (not on every render)
   if ((jobChanged || jobIdChanged) && !isProcessingRef.current) {
-    
     findMatches(false);
   }
 }, [currentJob, credits]); // ❌ MISSING findMatches - causes stale closure
 ```
 
 **Problem Chain**:
+
 1. Effect runs on `currentJob` change
 2. Calls `findMatches(false)` → fetches candidates → updates Redux
 3. Redux update causes `currentJob` object reference to change
 4. Effect sees "new" `currentJob` → triggers again (infinite loop)
 
 **Why Hash Comparison Fails**:
+
 - Hash only checks: `skills`, `category`, `title`, `description`, `required_match_score`
 - Redux update changes: `matches`, `date_updated`, `matchingJobs`
 - Object reference changes even when hash is identical
@@ -46,24 +47,27 @@ useEffect(() => {
 ### Issue #1: Infinite Re-Rendering Loop
 
 **Symptoms**:
+
 - "Finding your perfect matches..." on every page reload
 - Backend called repeatedly with same parameters
 - `jobSearchStage` cycles 0→1→2→0→1→2...
 
 **Root Cause**:
+
 ```typescript
 // Current dependency array causes re-runs
-}, [currentJob, credits]); 
+}, [currentJob, credits]);
 
 // currentJob is NEW object on every Redux update, even if content identical
 ```
 
 **Solution**:
+
 ```typescript
 // Option A: Only depend on specific fields
 useEffect(() => {
   if (!currentJob?.id || credits <= 0) return;
-  
+
   const currentJobHash = getJobHash(currentJob);
   if (currentJobHash !== lastJobHashRef.current && !isProcessingRef.current) {
     lastJobHashRef.current = currentJobHash;
@@ -75,25 +79,28 @@ useEffect(() => {
   currentJob?.skills,
   currentJob?.category,
   currentJob?.required_match_score,
-  credits
+  credits,
 ]); // Specific fields only
 
 // Option B: Use deep comparison
-import { isEqual } from 'lodash';
+import { isEqual } from "lodash";
 
-const relevantJobData = useMemo(() => ({
-  skills: currentJob?.skills,
-  category: currentJob?.category,
-  title: currentJob?.title,
-  description: currentJob?.description,
-  required_match_score: currentJob?.required_match_score,
-}), [currentJob]);
+const relevantJobData = useMemo(
+  () => ({
+    skills: currentJob?.skills,
+    category: currentJob?.category,
+    title: currentJob?.title,
+    description: currentJob?.description,
+    required_match_score: currentJob?.required_match_score,
+  }),
+  [currentJob],
+);
 
 const prevRelevantDataRef = useRef(relevantJobData);
 
 useEffect(() => {
   if (!currentJob?.id || credits <= 0) return;
-  
+
   if (!isEqual(relevantJobData, prevRelevantDataRef.current)) {
     prevRelevantDataRef.current = relevantJobData;
     if (!isProcessingRef.current) {
@@ -108,45 +115,51 @@ useEffect(() => {
 ### Issue #2: Category Switch Doesn't Clear Old Matches
 
 **Symptoms**:
+
 - Switch Job→Talent: sees talents + old job matches
 - `matchingJobs` array accumulates instead of replacing
 
 **Root Cause**:
+
 ```typescript
 // jobReducer.ts - Lines 217-228 (UPDATE_MATCHING_JOBS)
 const newMatches2 = existingMatches
-  .filter(match => !action.matches.some(m => m.job_id === match.job_id))
+  .filter((match) => !action.matches.some((m) => m.job_id === match.job_id))
   .concat(action.matches); // ❌ MERGES instead of replacing
 
 const newMatchingJobs = state.matchingJobs
-  .filter(j => !action.matchingJobs.some(m => m.id === j.id))
+  .filter((j) => !action.matchingJobs.some((m) => m.id === j.id))
   .concat(action.matchingJobs); // ❌ ACCUMULATES candidates
 ```
 
 **Solution**:
+
 ```typescript
 // Detect category change
-const currentJob = state.jobs.find(j => j.id === state.currentJobId);
-const categoryChanged = currentJob && action.matchingJobs.length > 0 && 
+const currentJob = state.jobs.find((j) => j.id === state.currentJobId);
+const categoryChanged =
+  currentJob &&
+  action.matchingJobs.length > 0 &&
   state.matchingJobs.length > 0 &&
-  Object.keys(currentJob.category)[0] !== 
-  Object.keys(state.matchingJobs[0]?.category || {})[0];
+  Object.keys(currentJob.category)[0] !==
+    Object.keys(state.matchingJobs[0]?.category || {})[0];
 
 // Complete replacement on category change
-const newMatches2 = categoryChanged 
-  ? action.matches 
+const newMatches2 = categoryChanged
+  ? action.matches
   : existingMatches
-      .filter(match => !action.matches.some(m => m.job_id === match.job_id))
+      .filter((match) => !action.matches.some((m) => m.job_id === match.job_id))
       .concat(action.matches);
 
 const newMatchingJobs = categoryChanged
   ? action.matchingJobs
   : state.matchingJobs
-      .filter(j => !action.matchingJobs.some(m => m.id === j.id))
+      .filter((j) => !action.matchingJobs.some((m) => m.id === j.id))
       .concat(action.matchingJobs);
 ```
 
 **Better Solution** - Add explicit action:
+
 ```typescript
 // New action type
 | { type: "CLEAR_MATCHES_ON_CATEGORY_CHANGE" }
@@ -157,7 +170,7 @@ const prevCategory = useRef(currentJob?.category);
 useEffect(() => {
   const currCategory = Object.keys(currentJob?.category || {})[0];
   const prevCat = Object.keys(prevCategory.current || {})[0];
-  
+
   if (currCategory !== prevCat) {
     dispatch({ type: "CLEAR_MATCHES_ON_CATEGORY_CHANGE" });
     prevCategory.current = currentJob?.category;
@@ -170,8 +183,8 @@ case "CLEAR_MATCHES_ON_CATEGORY_CHANGE":
   return {
     ...state,
     matchingJobs: [],
-    jobs: state.jobs.map(j => 
-      j.id === state.currentJobId 
+    jobs: state.jobs.map(j =>
+      j.id === state.currentJobId
         ? { ...j, matches: [] }
         : j
     ),
@@ -183,6 +196,7 @@ case "CLEAR_MATCHES_ON_CATEGORY_CHANGE":
 ### Issue #3: 40% Matches Appear Despite Threshold
 
 **Symptoms**:
+
 - `required_match_score = 0.6` but 40% matches shown
 - Backend returns all candidates regardless of score
 
@@ -206,6 +220,7 @@ fn get_matches(current_job_id: String, skills: Vec<String>, category: Category) 
 ```
 
 **Frontend Filtering**:
+
 ```typescript
 // useJobMatching.ts - Lines 103-115
 processedMatches = processAIMatches(
@@ -216,7 +231,9 @@ processedMatches = processAIMatches(
 
 // processAIMatches function - Lines 57-75
 if (normalizedScore >= requiredScore) {
-  const match: Match = { /* ... */ };
+  const match: Match = {
+    /* ... */
+  };
   uniqueMatches.set(aiMatch.candidate_id, match);
 }
 ```
@@ -239,6 +256,7 @@ fn should_include_job(job: &Job, current_job: &Job) -> bool {
 ```
 
 **Current Backend Logic** (Document 5, lines 40-48):
+
 ```rust
 fn should_include_job(job: &Job, current_job: &Job) -> bool {
     if let Some(existing_match) = current_job.matches.iter().find(|m| m.job_id == job.id) {
@@ -258,36 +276,43 @@ fn should_include_job(job: &Job, current_job: &Job) -> bool {
 **Current Behavior**: Matches calculated immediately on profile change
 
 **Solution**:
+
 ```typescript
 // useJobMatching.ts
-const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
+const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout | null>(
+  null,
+);
 
 useEffect(() => {
   if (!currentJob?.id || credits <= 0) return;
-  
+
   const currentJobHash = getJobHash(currentJob);
   const jobChanged = currentJobHash !== lastJobHashRef.current;
-  
+
   if (jobChanged && !isProcessingRef.current) {
     // Clear existing timeout
     if (debounceTimeout) {
       clearTimeout(debounceTimeout);
     }
-    
+
     // Set new timeout
     const timeout = setTimeout(() => {
-      
       lastJobHashRef.current = currentJobHash;
       findMatches(false);
     }, 5000);
-    
+
     setDebounceTimeout(timeout);
   }
-  
+
   return () => {
     if (debounceTimeout) clearTimeout(debounceTimeout);
   };
-}, [currentJob?.skills, currentJob?.category, currentJob?.required_match_score, credits]);
+}, [
+  currentJob?.skills,
+  currentJob?.category,
+  currentJob?.required_match_score,
+  credits,
+]);
 ```
 
 ---
@@ -298,19 +323,22 @@ useEffect(() => {
 
 ```typescript
 // AI returns 0-10
-const aiResponse = { score: 7.5 }
+const aiResponse = { score: 7.5 };
 
 // Normalize to 0-1
 const normalizedScore = aiResponse.score / 10; // 0.75
 
 // Compare to threshold (already 0-1)
-if (normalizedScore >= requiredScore) { /* include */ }
+if (normalizedScore >= requiredScore) {
+  /* include */
+}
 
 // Display as percentage
 const displayScore = Math.round(normalizedScore * 100); // 75%
 ```
 
 **Watch For**: Backend validation rejects scores outside 0.0-1.0
+
 ```rust
 if match_item.score < 0.0 || match_item.score > 1.0 {
     return Err("Match score must be between 0.0 and 1.0".to_string());
@@ -320,6 +348,7 @@ if match_item.score < 0.0 || match_item.score > 1.0 {
 ### 2. **Why Tests Pass But Frontend Breaks**
 
 Tests explicitly control state:
+
 ```typescript
 // Test manually calls get_matches → update_job
 const matches = await get_matches(jobId, skills, category);
@@ -327,6 +356,7 @@ await updateJobWithMatches(jobId, matches, oldMatches);
 ```
 
 Frontend has automatic triggers:
+
 ```typescript
 // useEffect runs on every currentJob change
 // Redux updates cause currentJob reference changes
@@ -381,8 +411,8 @@ fn should_include_job(job: &Job, current_job: &Job) -> bool {
 ```typescript
 // useJobMatching.ts - Replace useEffect
 
-import { useMemo, useRef, useEffect } from 'react';
-import { isEqual } from 'lodash';
+import { useMemo, useRef, useEffect } from "react";
+import { isEqual } from "lodash";
 
 export const useJobMatching = (currentJob: Job | null) => {
   // ... existing code ...
@@ -407,16 +437,19 @@ export const useJobMatching = (currentJob: Job | null) => {
     }
 
     // Check if relevant data actually changed
-    const dataChanged = !isEqual(matchingRelevantData, prevMatchingDataRef.current);
-    
+    const dataChanged = !isEqual(
+      matchingRelevantData,
+      prevMatchingDataRef.current,
+    );
+
     if (!dataChanged) {
       return; // No change, skip processing
     }
 
     // Category changed - immediate clear and refresh
-    const categoryChanged = 
+    const categoryChanged =
       prevMatchingDataRef.current?.category !== matchingRelevantData.category;
-    
+
     if (categoryChanged) {
       dispatch({ type: "CLEAR_MATCHES_ON_CATEGORY_CHANGE" });
       prevMatchingDataRef.current = matchingRelevantData;
@@ -430,7 +463,6 @@ export const useJobMatching = (currentJob: Job | null) => {
     }
 
     debounceTimeoutRef.current = setTimeout(() => {
-      
       prevMatchingDataRef.current = matchingRelevantData;
       findMatches(false);
     }, 5000);
@@ -456,7 +488,7 @@ case "UPDATE_MATCHING_JOBS": {
   if (!currentJob) return state;
 
   // Detect category change by comparing categories
-  const existingCategory = state.matchingJobs[0] 
+  const existingCategory = state.matchingJobs[0]
     ? Object.keys(state.matchingJobs[0].category || {})[0]
     : null;
   const newCategory = action.matchingJobs[0]
@@ -492,16 +524,20 @@ case "UPDATE_MATCHING_JOBS": {
 ## Extra Points to Watch
 
 ### 1. **Redux Action Frequency**
+
 Monitor in DevTools - if `UPDATE_MATCHING_JOBS` fires >2 times per user action, loop exists.
 
 ### 2. **Backend Call Patterns**
+
 Check network tab - `get_matches` should only be called:
+
 - On initial page load (if no matches exist)
 - After profile update (debounced)
 - On manual "Refresh" click
 - On category change
 
 ### 3. **Memory Leaks**
+
 ```typescript
 // Always cleanup timeouts
 useEffect(() => {
@@ -514,21 +550,22 @@ useEffect(() => {
 ```
 
 ### 4. **Race Conditions**
+
 ```typescript
 // Prevent overlapping findMatches calls
 if (isProcessingRef.current) {
-  
   return;
 }
 ```
 
 ### 5. **Error Recovery**
+
 ```typescript
 // In findMatches catch block
 } catch (err) {
   console.error("Error finding matches:", err);
   setError(err.message);
-  
+
   // Don't update refs on error - allow retry with same data
   // lastJobHashRef.current = currentJobHash; // ❌ Don't do this
 } finally {
@@ -542,36 +579,38 @@ if (isProcessingRef.current) {
 ## Testing Strategy
 
 ### Unit Tests Needed
+
 ```typescript
-describe('useJobMatching', () => {
-  it('should not trigger on mount if matches exist', () => {
+describe("useJobMatching", () => {
+  it("should not trigger on mount if matches exist", () => {
     const { result } = renderHook(() => useJobMatching(jobWithMatches));
     expect(mockFindMatches).not.toHaveBeenCalled();
   });
 
-  it('should trigger after 5 second delay on profile update', async () => {
+  it("should trigger after 5 second delay on profile update", async () => {
     const { rerender } = renderHook(({ job }) => useJobMatching(job), {
-      initialProps: { job: initialJob }
+      initialProps: { job: initialJob },
     });
-    
+
     rerender({ job: updatedJob });
-    
+
     expect(mockFindMatches).not.toHaveBeenCalled(); // Immediate
-    
+
     await waitFor(() => expect(mockFindMatches).toHaveBeenCalled(), {
-      timeout: 6000
+      timeout: 6000,
     });
   });
 
-  it('should clear matches immediately on category change', () => {
+  it("should clear matches immediately on category change", () => {
     // Test logic
   });
 });
 ```
 
 ### Integration Tests
+
 ```typescript
-it('should handle category switch without accumulation', async () => {
+it("should handle category switch without accumulation", async () => {
   // 1. Create job profile
   // 2. Get talent matches
   // 3. Switch to talent profile

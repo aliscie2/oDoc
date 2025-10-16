@@ -20,28 +20,32 @@ export function chatsReducer(
   action: ChatActions,
 ): ChatState {
   switch (action.type) {
-   case "OPEN_CHAT": {
-  const { chatId, current_user } = action;
-  return {
-    ...state,
-    current_chat_id: chatId,
-    current_user,
-    openChatWindows: {
-      ...state.openChatWindows,
-      [chatId]: { x: 100 + (Object.keys(state.openChatWindows).length * 30), y: 100 + (Object.keys(state.openChatWindows).length * 30) }
+    case "OPEN_CHAT": {
+      const { chatId, current_user } = action;
+      return {
+        ...state,
+        current_chat_id: chatId,
+        current_user,
+        openChatWindows: {
+          ...state.openChatWindows,
+          [chatId]: {
+            x: 100 + Object.keys(state.openChatWindows).length * 30,
+            y: 100 + Object.keys(state.openChatWindows).length * 30,
+          },
+        },
+      };
     }
-  };
-}
 
-case "CLOSE_CHAT_WINDOW": {
-  const { chatId } = action;
-  const { [chatId]: removed, ...remaining } = state.openChatWindows;
-  return {
-    ...state,
-    openChatWindows: remaining,
-    current_chat_id: state.current_chat_id === chatId ? "none" : state.current_chat_id
-  };
-}
+    case "CLOSE_CHAT_WINDOW": {
+      const { chatId } = action;
+      const { [chatId]: removed, ...remaining } = state.openChatWindows;
+      return {
+        ...state,
+        openChatWindows: remaining,
+        current_chat_id:
+          state.current_chat_id === chatId ? "none" : state.current_chat_id,
+      };
+    }
     case ADD_CHAT: {
       return {
         ...state,
@@ -151,49 +155,48 @@ case "CLOSE_CHAT_WINDOW": {
       };
     }
 
-    
     case ADD_NOTIFICATION: {
-  const chatIndex = state.chats.findIndex((chat: FEChat) => chat.id === action.message.chat_id);
-  
-  if (chatIndex === -1) {
-    // Chat doesn't exist locally, need to fetch it
-    return {
-      ...state,
-      chats_notifications: [
-        ...state.chats_notifications.filter(
-          (m: Message) => m.chat_id !== action.message.chat_id,
-        ),
-        action.message,
-      ],
-    };
-  }
+      const chatIndex = state.chats.findIndex(
+        (chat: FEChat) => chat.id === action.message.chat_id,
+      );
 
-  // ⚠️ CRITICAL: MESSAGE ORDERING
-  // Messages are stored in REVERSE CHRONOLOGICAL order (newest first)
-  // Index 0 = newest message, Index N = oldest message
-  // When adding a new message, it MUST go at the BEGINNING of the array
-  // Example: [newMsg, msg2, msg1, oldestMsg]
-  const updatedChat = {
-    ...state.chats[chatIndex],
-    messages: [action.message, ...state.chats[chatIndex].messages],
-  };
+      if (chatIndex === -1) {
+        // Chat doesn't exist locally, need to fetch it
+        return {
+          ...state,
+          chats_notifications: [
+            ...state.chats_notifications.filter(
+              (m: Message) => m.chat_id !== action.message.chat_id,
+            ),
+            action.message,
+          ],
+        };
+      }
 
-  const newChats = [...state.chats];
-  newChats[chatIndex] = updatedChat;
+      // ⚠️ CRITICAL: MESSAGE ORDERING
+      // Messages are stored in REVERSE CHRONOLOGICAL order (newest first)
+      // Index 0 = newest message, Index N = oldest message
+      // When adding a new message, it MUST go at the BEGINNING of the array
+      // Example: [newMsg, msg2, msg1, oldestMsg]
+      const updatedChat = {
+        ...state.chats[chatIndex],
+        messages: [action.message, ...state.chats[chatIndex].messages],
+      };
 
-  return {
-    ...state,
-    chats: newChats,
-    chats_notifications: [
-      ...state.chats_notifications.filter(
-        (m: Message) => m.chat_id !== action.message.chat_id,
-      ),
-      action.message,
-    ],
-  };
-}
+      const newChats = [...state.chats];
+      newChats[chatIndex] = updatedChat;
 
-
+      return {
+        ...state,
+        chats: newChats,
+        chats_notifications: [
+          ...state.chats_notifications.filter(
+            (m: Message) => m.chat_id !== action.message.chat_id,
+          ),
+          action.message,
+        ],
+      };
+    }
 
     case UPDATE_NOTIFICATION: {
       return {

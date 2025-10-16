@@ -53,12 +53,42 @@ interface UserLevel {
 }
 
 const USER_LEVELS: UserLevel[] = [
-  { name: "Rookie", color: "#9E9E9E", minScore: 0, description: "Just getting started on your journey" },
-  { name: "Apprentice", color: "#FF9800", minScore: 1, description: "Learning the ropes" },
-  { name: "Skilled", color: "#2196F3", minScore: 2, description: "Building solid experience" },
-  { name: "Expert", color: "#9C27B0", minScore: 3, description: "Mastering your craft" },
-  { name: "Master", color: "#4CAF50", minScore: 4, description: "Among the best" },
-  { name: "Legend", color: "#FFD700", minScore: 4.5, description: "Elite status achieved" },
+  {
+    name: "Rookie",
+    color: "#9E9E9E",
+    minScore: 0,
+    description: "Just getting started on your journey",
+  },
+  {
+    name: "Apprentice",
+    color: "#FF9800",
+    minScore: 1,
+    description: "Learning the ropes",
+  },
+  {
+    name: "Skilled",
+    color: "#2196F3",
+    minScore: 2,
+    description: "Building solid experience",
+  },
+  {
+    name: "Expert",
+    color: "#9C27B0",
+    minScore: 3,
+    description: "Mastering your craft",
+  },
+  {
+    name: "Master",
+    color: "#4CAF50",
+    minScore: 4,
+    description: "Among the best",
+  },
+  {
+    name: "Legend",
+    color: "#FFD700",
+    minScore: 4.5,
+    description: "Elite status achieved",
+  },
 ];
 
 const getUserLevel = (score: number): UserLevel => {
@@ -82,7 +112,7 @@ const UserLevelBadge: React.FC<UserLevelBadgeProps> = ({
   showLabel = true,
 }) => {
   const [animatedScore, setAnimatedScore] = useState(0);
-  
+
   useEffect(() => {
     const timer = setTimeout(() => setAnimatedScore(actions_rate), 300);
     return () => clearTimeout(timer);
@@ -99,7 +129,7 @@ const UserLevelBadge: React.FC<UserLevelBadgeProps> = ({
 
   return (
     <BadgeContainer>
-      <Tooltip 
+      <Tooltip
         title={
           <Box sx={{ textAlign: "center", p: 0.5 }}>
             <Typography variant="body2" fontWeight={600}>
@@ -108,7 +138,11 @@ const UserLevelBadge: React.FC<UserLevelBadgeProps> = ({
             <Typography variant="caption" sx={{ opacity: 0.9 }}>
               {level.description}
             </Typography>
-            <Typography variant="caption" display="block" sx={{ mt: 0.5, opacity: 0.8 }}>
+            <Typography
+              variant="caption"
+              display="block"
+              sx={{ mt: 0.5, opacity: 0.8 }}
+            >
               Score: {animatedScore.toFixed(1)} / 5.0
             </Typography>
           </Box>
@@ -117,7 +151,11 @@ const UserLevelBadge: React.FC<UserLevelBadgeProps> = ({
         placement="top"
       >
         <CircleContainer sx={{ width: size, height: size }}>
-          <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
+          <svg
+            width={size}
+            height={size}
+            style={{ transform: "rotate(-90deg)" }}
+          >
             {/* Background circle */}
             <circle
               cx={radius}
@@ -144,15 +182,11 @@ const UserLevelBadge: React.FC<UserLevelBadgeProps> = ({
               }}
             />
           </svg>
-          <LevelText>
-            {animatedScore.toFixed(1)}
-          </LevelText>
+          <LevelText>{animatedScore.toFixed(1)}</LevelText>
         </CircleContainer>
       </Tooltip>
       {showLabel && (
-        <LevelLabel sx={{ color: level.color }}>
-          {level.name}
-        </LevelLabel>
+        <LevelLabel sx={{ color: level.color }}>{level.name}</LevelLabel>
       )}
     </BadgeContainer>
   );

@@ -22,43 +22,43 @@ export const useAICases = () => {
   const jobsCount = jobs?.length || 0;
   const friendsCount = all_friends?.length || 0;
 
-  const aiCasesService = useMemo(
-    () => {
-      // Only log in development and when debug is enabled
-      if (process.env.NODE_ENV === 'development' && localStorage.getItem('debug') === 'true') {
-        console.log("🏗️ Creating AICasesService");
-      }
+  const aiCasesService = useMemo(() => {
+    // Only log in development and when debug is enabled
+    if (
+      process.env.NODE_ENV === "development" &&
+      localStorage.getItem("debug") === "true"
+    ) {
+      console.log("🏗️ Creating AICasesService");
+    }
 
-      return new AICasesService(
-        calendar,
-        jobs,
-        currentJobId,
-        contracts,
-        all_friends,
-        profile,
-        google_events || [],
-        is_google_connected || false,
-      );
-    },
-    [
-      // Use primitive values instead of objects to prevent unnecessary re-creation
-      calendarId,
-      calendarEventsCount,
-      googleEventsCount,
-      currentJobId,
-      profileId,
-      jobsCount,
-      friendsCount,
-      is_google_connected,
-      // Still include the actual objects so the service has access to them
+    return new AICasesService(
       calendar,
       jobs,
+      currentJobId,
       contracts,
       all_friends,
       profile,
-      google_events,
-    ],
-  );
+      google_events || [],
+      is_google_connected || false,
+    );
+  }, [
+    // Use primitive values instead of objects to prevent unnecessary re-creation
+    calendarId,
+    calendarEventsCount,
+    googleEventsCount,
+    currentJobId,
+    profileId,
+    jobsCount,
+    friendsCount,
+    is_google_connected,
+    // Still include the actual objects so the service has access to them
+    calendar,
+    jobs,
+    contracts,
+    all_friends,
+    profile,
+    google_events,
+  ]);
 
   return {
     aiCases: aiCasesService.aiCases,

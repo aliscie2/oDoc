@@ -27,7 +27,9 @@ export function serializeEventToGoogleEvent(odocEvent: any): GoogleEvent {
   if (typeof odocEvent.start_time === "string" && odocEvent.date) {
     try {
       const [day, month, year] = odocEvent.date.split("-").map(Number);
-      const [startHour, startMinute] = odocEvent.start_time.split(":").map(Number);
+      const [startHour, startMinute] = odocEvent.start_time
+        .split(":")
+        .map(Number);
       const [endHour, endMinute] = odocEvent.end_time.split(":").map(Number);
 
       startDate = new Date(year, month - 1, day, startHour, startMinute);

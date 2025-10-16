@@ -110,7 +110,7 @@ JobPageSEO.propTypes = {
 };
 
 const JobPage = () => {
-  console.log("{backendActor}")
+  console.log("{backendActor}");
   const [searchParams] = useSearchParams();
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
@@ -120,7 +120,7 @@ const JobPage = () => {
   const jobId = searchParams.get("id");
 
   // SEO data is loaded in the main useEffect below
-  console.log("backendActor",{"backend":backendActor})
+  console.log("backendActor", { backend: backendActor });
   useEffect(() => {
     const fetchJob = async () => {
       if (!jobId || !backendActor) {

@@ -53,7 +53,9 @@ export const useJobIntegration = () => {
   /**
    * Generate event title and description from job data
    */
-  const generateEventDataFromJob = (job: Job): { title: string; description: string } => {
+  const generateEventDataFromJob = (
+    job: Job,
+  ): { title: string; description: string } => {
     const jobTitles = job.job_titles || [];
     const jobTitlesStr =
       jobTitles.length > 0 ? jobTitles.join(", ") : "Job Opportunity";

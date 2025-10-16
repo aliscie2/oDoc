@@ -15,7 +15,6 @@ import JobSelector from "./JobSelector";
 import { Helmet } from "react-helmet-async";
 
 const JobsPage: React.FC = React.memo(() => {
-  
   const currentJobId = useSelector(selectCurrentJobId);
   const jobs = useSelector(selectJobs);
   const profile = useSelector(selectProfile);
@@ -24,7 +23,6 @@ const JobsPage: React.FC = React.memo(() => {
   useEffect(() => {
     currentJobRef.current = jobs?.find((job: Job) => job.id === currentJobId);
   }, [currentJobId, jobs]);
-  
 
   if (!profile) {
     return <CircularProgress />;

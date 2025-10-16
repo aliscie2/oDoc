@@ -33,7 +33,7 @@ export const useInfiniteScroll = ({
         try {
           const olderMessages = await backendActor.load_more_messages(
             chat.id,
-            chat.messages.length
+            chat.messages.length,
           );
 
           if (olderMessages.length === 0) {
@@ -43,12 +43,12 @@ export const useInfiniteScroll = ({
             // Backend returns messages in reverse chronological order (newest first)
             // Our local array also stores newest first: [newest, ..., oldest]
             // When loading older messages, they should be APPENDED to the END
-            // 
+            //
             // Example:
             // Current:  [msg5(newest), msg4, msg3]
             // Loaded:   [msg2, msg1(oldest)]
             // Result:   [msg5, msg4, msg3, msg2, msg1]
-            // 
+            //
             // The onLoadMore callback will handle appending to the end
             onLoadMore(olderMessages);
           }
@@ -59,7 +59,14 @@ export const useInfiniteScroll = ({
         }
       }
     },
-    [backendActor, chat.id, chat.messages.length, isLoadingMore, hasMoreMessages, onLoadMore]
+    [
+      backendActor,
+      chat.id,
+      chat.messages.length,
+      isLoadingMore,
+      hasMoreMessages,
+      onLoadMore,
+    ],
   );
 
   return {

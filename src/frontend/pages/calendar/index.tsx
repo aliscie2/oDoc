@@ -26,7 +26,7 @@ const localizer = dateFnsLocalizer({
 // CalendarView.tsx - Updated component
 // CalendarView.tsx - For user's own calendar
 const CalendarView = () => {
-  console.log("Normal")
+  console.log("Normal");
   const dispatch = useDispatch();
   const theme = useTheme();
   const { calendar } = useSelector((state: any) => state.calendarState);
@@ -69,7 +69,13 @@ const CalendarView = () => {
     loadCalendar();
   }, [dispatch]);
 
-  const TimeSlotWrapper = ({ children, value }: { children: React.ReactNode; value: Date }) => {
+  const TimeSlotWrapper = ({
+    children,
+    value,
+  }: {
+    children: React.ReactNode;
+    value: Date;
+  }) => {
     if (!children || !React.isValidElement(children)) return children;
 
     const child = React.Children.only(children);
@@ -109,29 +115,31 @@ const CalendarView = () => {
         break;
     }
 
-    const mobileProps = isMobile ? {
-      onClick: handleMobileTap,
-      onTouchStart: (e: React.TouchEvent) => {
-        if (status === "available") {
-          (e.currentTarget as HTMLElement).style.backgroundColor = isDark
-            ? "rgba(76, 175, 80, 0.3)"
-            : "rgba(76, 175, 80, 0.2)";
+    const mobileProps = isMobile
+      ? {
+          onClick: handleMobileTap,
+          onTouchStart: (e: React.TouchEvent) => {
+            if (status === "available") {
+              (e.currentTarget as HTMLElement).style.backgroundColor = isDark
+                ? "rgba(76, 175, 80, 0.3)"
+                : "rgba(76, 175, 80, 0.2)";
+            }
+          },
+          onTouchEnd: handleMobileTap,
+          onTouchCancel: (e: React.TouchEvent) => {
+            if (status === "available") {
+              (e.currentTarget as HTMLElement).style.backgroundColor = "";
+            }
+          },
+          style: {
+            ...(child.props as any).style,
+            touchAction: status === "available" ? "manipulation" : "none",
+            userSelect: "none",
+            WebkitUserSelect: "none",
+            WebkitTapHighlightColor: "transparent",
+          },
         }
-      },
-      onTouchEnd: handleMobileTap,
-      onTouchCancel: (e: React.TouchEvent) => {
-        if (status === "available") {
-          (e.currentTarget as HTMLElement).style.backgroundColor = "";
-        }
-      },
-      style: {
-        ...(child.props as any).style,
-        touchAction: status === "available" ? "manipulation" : "none",
-        userSelect: "none",
-        WebkitUserSelect: "none",
-        WebkitTapHighlightColor: "transparent",
-      },
-    } : {};
+      : {};
 
     return React.cloneElement(child, {
       ...(child.props as any),
@@ -197,9 +205,10 @@ const CalendarView = () => {
           },
           "& .rbc-header": {
             color: theme.palette.text.primary,
-            backgroundColor: theme.palette.mode === "dark"
-              ? theme.palette.background.paper
-              : theme.palette.background.default,
+            backgroundColor:
+              theme.palette.mode === "dark"
+                ? theme.palette.background.paper
+                : theme.palette.background.default,
           },
           "& .rbc-time-gutter": {
             color: theme.palette.text.secondary,
@@ -241,7 +250,9 @@ const CalendarView = () => {
           onSelectSlot={handleSelectSlot}
           onSelectEvent={handleSelectEvent}
           {...(isMobile ? mobileTimeConfig : timeSpans)}
-          scrollToTime={isMobile && mobileTimeConfig.min ? mobileTimeConfig.min : undefined}
+          scrollToTime={
+            isMobile && mobileTimeConfig.min ? mobileTimeConfig.min : undefined
+          }
         />
       </Box>
 

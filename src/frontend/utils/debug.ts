@@ -4,8 +4,10 @@
  */
 
 const isDebugEnabled = () => {
-  return process.env.NODE_ENV === 'development' && 
-         localStorage.getItem('debug') === 'true';
+  return (
+    process.env.NODE_ENV === "development" &&
+    localStorage.getItem("debug") === "true"
+  );
 };
 
 export const debug = {
@@ -14,27 +16,27 @@ export const debug = {
       console.log(...args);
     }
   },
-  
+
   warn: (...args: any[]) => {
     if (isDebugEnabled()) {
       console.warn(...args);
     }
   },
-  
+
   error: (...args: any[]) => {
     // Always log errors
     console.error(...args);
   },
-  
+
   group: (label: string) => {
     if (isDebugEnabled()) {
       console.group(label);
     }
   },
-  
+
   groupEnd: () => {
     if (isDebugEnabled()) {
       console.groupEnd();
     }
-  }
+  },
 };

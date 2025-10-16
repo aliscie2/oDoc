@@ -69,7 +69,13 @@ const EventDialog: React.FC<EventDialogProps> = ({
 
     try {
       if (selectedEvent) {
-        await updateEvent(eventData, slotInfo, selectedEvent, onSuccess, onError);
+        await updateEvent(
+          eventData,
+          slotInfo,
+          selectedEvent,
+          onSuccess,
+          onError,
+        );
       } else {
         await createEvent(eventData, slotInfo, onSuccess, onError);
       }

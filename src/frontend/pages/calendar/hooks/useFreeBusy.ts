@@ -49,23 +49,29 @@ export const useFreeBusy = (): UseFreeBusyReturn => {
   /**
    * Get cached data if available and valid
    */
-  const getCachedData = useCallback((cacheKey: string): FreeBusyTimeSlot[] | null => {
-    if (isCacheValid(cacheKey)) {
-      const cached = cacheRef.current.get(cacheKey);
-      return cached ? cached.data : null;
-    }
-    return null;
-  }, [isCacheValid]);
+  const getCachedData = useCallback(
+    (cacheKey: string): FreeBusyTimeSlot[] | null => {
+      if (isCacheValid(cacheKey)) {
+        const cached = cacheRef.current.get(cacheKey);
+        return cached ? cached.data : null;
+      }
+      return null;
+    },
+    [isCacheValid],
+  );
 
   /**
    * Set cache data
    */
-  const setCacheData = useCallback((cacheKey: string, data: FreeBusyTimeSlot[]) => {
-    cacheRef.current.set(cacheKey, {
-      data,
-      timestamp: Date.now(),
-    });
-  }, []);
+  const setCacheData = useCallback(
+    (cacheKey: string, data: FreeBusyTimeSlot[]) => {
+      cacheRef.current.set(cacheKey, {
+        data,
+        timestamp: Date.now(),
+      });
+    },
+    [],
+  );
 
   /**
    * Rate limiting check

@@ -33,22 +33,36 @@ export const useCalendar = (freeBusyEvents: Event[] = []) => {
     const googleEvents = google_events || [];
     const busyEvents = freeBusyEvents || [];
     const ownerGoogleEvents = owner_google_events || [];
-    const allEvents = [...backendEvents, ...googleEvents, ...busyEvents, ...ownerGoogleEvents];
+    const allEvents = [
+      ...backendEvents,
+      ...googleEvents,
+      ...busyEvents,
+      ...ownerGoogleEvents,
+    ];
     const colors = getEventColors(isDark);
 
     return allEvents.map((event: Event, index: number) => ({
-    ...event,
-    start: microsecondsToDate(event.start_time),
-    end: microsecondsToDate(event.end_time),
-    color: event.isGoogleEvent
-      ? (isDark ? "#4285F4" : "#1a73e8")
-      : (event as any).isFreeBusyBlock || (event as any).isOwnerGoogleEvent
-        ? (isDark ? "rgba(148, 163, 184, 0.25)" : "rgba(148, 163, 184, 0.35)")
-        : colors[index % colors.length],
-  }));
-}, [calendar, google_events, freeBusyEvents, owner_google_events, isDark, profile]);
-
-
+      ...event,
+      start: microsecondsToDate(event.start_time),
+      end: microsecondsToDate(event.end_time),
+      color: event.isGoogleEvent
+        ? isDark
+          ? "#4285F4"
+          : "#1a73e8"
+        : (event as any).isFreeBusyBlock || (event as any).isOwnerGoogleEvent
+          ? isDark
+            ? "rgba(148, 163, 184, 0.25)"
+            : "rgba(148, 163, 184, 0.35)"
+          : colors[index % colors.length],
+    }));
+  }, [
+    calendar,
+    google_events,
+    freeBusyEvents,
+    owner_google_events,
+    isDark,
+    profile,
+  ]);
 
   const isWithinWeeklySchedule = (date: Date, availability: any) => {
     if (availability.schedule_type.WeeklyRecurring) {

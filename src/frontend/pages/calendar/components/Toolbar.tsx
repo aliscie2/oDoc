@@ -14,11 +14,7 @@ import {
   Divider,
 } from "@mui/material";
 import { useSelector } from "react-redux";
-import {
-  NavigateBefore,
-  NavigateNext,
-  MoreVert,
-} from "@mui/icons-material";
+import { NavigateBefore, NavigateNext, MoreVert } from "@mui/icons-material";
 import GoogleAccountManager from "./GoogleAccountManager";
 import AvailabilityManager from "./AvailabilityManager";
 import TimezoneDisplay from "./TimezoneDisplay";
@@ -40,18 +36,28 @@ const Toolbar: React.FC<ToolbarProps> = ({
   view,
   views,
 }) => {
-  const { calendar, sharedCalendar } = useSelector((state: unknown) => state.calendarState);
+  const { calendar, sharedCalendar } = useSelector(
+    (state: unknown) => state.calendarState,
+  );
   const { profile } = useSelector((state: unknown) => state.filesState);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
 
-  const isShareCalendarPage = window.location.pathname === "/share_calendar" && window.location.search.includes("id=");
+  const isShareCalendarPage =
+    window.location.pathname === "/share_calendar" &&
+    window.location.search.includes("id=");
   const displayCalendar = isShareCalendarPage ? sharedCalendar : calendar;
-  const isOwnCalendar = !isShareCalendarPage && (!displayCalendar?.owner || displayCalendar.owner === profile?.id);
-  const shouldShowOwnerAvatar = isShareCalendarPage && sharedCalendar?.owner && sharedCalendar.owner !== profile?.id;
+  const isOwnCalendar =
+    !isShareCalendarPage &&
+    (!displayCalendar?.owner || displayCalendar.owner === profile?.id);
+  const shouldShowOwnerAvatar =
+    isShareCalendarPage &&
+    sharedCalendar?.owner &&
+    sharedCalendar.owner !== profile?.id;
 
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => setMenuAnchor(event.currentTarget);
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) =>
+    setMenuAnchor(event.currentTarget);
   const handleMenuClose = () => setMenuAnchor(null);
 
   if (isMobile) {
@@ -66,8 +72,15 @@ const Toolbar: React.FC<ToolbarProps> = ({
           color: "text.primary",
         }}
       >
-        <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
-          <Box sx={{ width: 80, display: "flex", justifyContent: "flex-start" }}>
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+          spacing={1}
+        >
+          <Box
+            sx={{ width: 80, display: "flex", justifyContent: "flex-start" }}
+          >
             <Stack direction="row" spacing={0.5}>
               <IconButton onClick={handleMenuOpen} size="medium">
                 <MoreVert />
@@ -78,11 +91,24 @@ const Toolbar: React.FC<ToolbarProps> = ({
             </Stack>
           </Box>
 
-          <Stack direction="row" alignItems="center" spacing={1.5} sx={{ flex: 1, justifyContent: "center" }}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={1.5}
+            sx={{ flex: 1, justifyContent: "center" }}
+          >
             <IconButton onClick={() => onNavigate("PREV")} size="medium">
               <NavigateBefore />
             </IconButton>
-            <Typography variant="subtitle1" sx={{ minWidth: 140, textAlign: "center", fontWeight: 600, fontSize: "1rem" }}>
+            <Typography
+              variant="subtitle1"
+              sx={{
+                minWidth: 140,
+                textAlign: "center",
+                fontWeight: 600,
+                fontSize: "1rem",
+              }}
+            >
               {label}
             </Typography>
             <IconButton onClick={() => onNavigate("NEXT")} size="medium">
@@ -94,7 +120,12 @@ const Toolbar: React.FC<ToolbarProps> = ({
             <Button
               onClick={() => onNavigate("TODAY")}
               variant="contained"
-              sx={{ minWidth: 70, textTransform: "none", fontWeight: 600, fontSize: "0.875rem" }}
+              sx={{
+                minWidth: 70,
+                textTransform: "none",
+                fontWeight: 600,
+                fontSize: "0.875rem",
+              }}
             >
               Today
             </Button>
@@ -117,7 +148,11 @@ const Toolbar: React.FC<ToolbarProps> = ({
                     user_id={sharedCalendar.owner}
                     sx={{ width: 32, height: 32 }}
                   />
-                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ fontWeight: 500 }}
+                  >
                     Viewing shared calendar
                   </Typography>
                 </Stack>
@@ -125,9 +160,12 @@ const Toolbar: React.FC<ToolbarProps> = ({
               <Divider />
             </>
           )}
-          
+
           <MenuItem onClick={handleMenuClose} sx={{ py: 1.5 }}>
-            <GoogleAccountManager size="small" isSharedCalendar={!isOwnCalendar} />
+            <GoogleAccountManager
+              size="small"
+              isSharedCalendar={!isOwnCalendar}
+            />
           </MenuItem>
           <Divider />
           <MenuItem onClick={handleMenuClose} sx={{ py: 1.5 }}>
@@ -147,15 +185,20 @@ const Toolbar: React.FC<ToolbarProps> = ({
         py: 1.5,
         backgroundColor: "background.paper",
         color: "text.primary",
-        boxShadow: theme.palette.mode === 'dark' ? "0 1px 3px rgba(0,0,0,0.3)" : "0 1px 3px rgba(0,0,0,0.1)",
+        boxShadow:
+          theme.palette.mode === "dark"
+            ? "0 1px 3px rgba(0,0,0,0.3)"
+            : "0 1px 3px rgba(0,0,0,0.1)",
       }}
     >
       <Stack direction="row" alignItems="center" justifyContent="space-between">
         <Stack direction="row" spacing={1.5} alignItems="center">
-        
-          <GoogleAccountManager size="small" isSharedCalendar={!isOwnCalendar} />
+          <GoogleAccountManager
+            size="small"
+            isSharedCalendar={!isOwnCalendar}
+          />
           <AvailabilityManager />
-          
+
           {isOwnCalendar && calendar?.id && (
             <ShareCalendarButton variant="button" />
           )}

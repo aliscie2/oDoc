@@ -125,47 +125,47 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
 
   // Debounced dispatch function using lodash
   const debouncedDispatch = React.useCallback(
-  debounce(async (scoreAsDecimal: number) => {
-    dispatch({
-      type: "UPDATE_REQUIRED_MATCH_SCORE",
-      score: scoreAsDecimal,
-    });
-    
-    // Save to backend
-    try {
-      const jobUpdate: JobUpdate = {
-        id: job.id,
-        active: [],
-        matches: [],
-        updates: [],
-        category: [],
-        required_match_score: [scoreAsDecimal],
-      };
-      await backendActor.update_job([jobUpdate], []);
-    } catch (error) {
-      console.error("Failed to save match score:", error);
+    debounce(async (scoreAsDecimal: number) => {
+      dispatch({
+        type: "UPDATE_REQUIRED_MATCH_SCORE",
+        score: scoreAsDecimal,
+      });
+
+      // Save to backend
+      try {
+        const jobUpdate: JobUpdate = {
+          id: job.id,
+          active: [],
+          matches: [],
+          updates: [],
+          category: [],
+          required_match_score: [scoreAsDecimal],
+        };
+        await backendActor.update_job([jobUpdate], []);
+      } catch (error) {
+        console.error("Failed to save match score:", error);
+      }
+    }, 500),
+    [dispatch, job.id],
+  );
+
+  const handleScoreChange = (newScore: number) => {
+    if (newScore < 60) {
+      setShowTooltip(true);
+      setTimeout(() => setShowTooltip(false), 2000);
+    } else {
+      setShowTooltip(false);
     }
-  }, 500),
-  [dispatch, job.id],
-);
 
- const handleScoreChange = (newScore: number) => {
-  if (newScore < 60) {
-    setShowTooltip(true);
-    setTimeout(() => setShowTooltip(false), 2000);
-  } else {
-    setShowTooltip(false);
-  }
+    const clampedScore = Math.max(60, newScore);
+    setLocalScore(clampedScore);
 
-  const clampedScore = Math.max(60, newScore);
-  setLocalScore(clampedScore);
+    const scoreAsDecimal = Math.max(0.6, clampedScore / 100);
+    debouncedDispatch(scoreAsDecimal);
 
-  const scoreAsDecimal = Math.max(0.6, clampedScore / 100);
-  debouncedDispatch(scoreAsDecimal);
-  
-  // Trigger filter update
-  dispatch({ type: "FILTER_MATCHES_BY_SCORE" });
-};
+    // Trigger filter update
+    dispatch({ type: "FILTER_MATCHES_BY_SCORE" });
+  };
 
   const EmailsList = () => (
     <Box sx={{ mb: 3 }}>
@@ -206,7 +206,6 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
             </Typography>
           </Box>
         ))}
-         
       </Stack>
       <Box
         sx={{
@@ -217,7 +216,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
         }}
       >
         <Typography variant="caption" sx={{ color: "text.secondary" }}>
-          We will only contact you when finding good matches. 
+          We will only contact you when finding good matches.
         </Typography>
         <Typography variant="caption" sx={{ color: "text.secondary" }}>
           🔒 Privacy Protected: We will not share your emails with other users.
@@ -314,24 +313,24 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
         </Box>
 
         {/* Job Description */}
-        
-          <Box display="flex" alignItems="center" gap={1}>
-      <Typography variant="body2" color="text.secondary">
-        Profile Completion:
-      </Typography>
 
-      <Box flexGrow={1}>
-        <LinearProgress
-          variant="buffer"
-          value={(job?.profile_completion ?? 0) * 100}
-        />
-      </Box>
+        <Box display="flex" alignItems="center" gap={1}>
+          <Typography variant="body2" color="text.secondary">
+            Profile Completion:
+          </Typography>
 
-      <Typography variant="body2" color="text.secondary">
-        {Math.round((job?.profile_completion ?? 0) * 100)}%
-      </Typography>
-    </Box>
-    
+          <Box flexGrow={1}>
+            <LinearProgress
+              variant="buffer"
+              value={(job?.profile_completion ?? 0) * 100}
+            />
+          </Box>
+
+          <Typography variant="body2" color="text.secondary">
+            {Math.round((job?.profile_completion ?? 0) * 100)}%
+          </Typography>
+        </Box>
+
         {job.description && (
           <Box sx={{ mb: 3 }}>
             <Typography

@@ -202,12 +202,13 @@ const PromiseCardHeader = memo<{
       return findUnseenNotificationForPromise(promise, notifications);
     }, [contract.creator, profile.id, promise, notifications]);
 
-    const firstCellTitle =
-      promise.cells?.[0]?.value ? promise.cells?.[0]?.value
-        ?.replace(/_/g, " ")
-        .split(" ")
-        .slice(0, 5)
-        .join(" ") + "..." || "Agreement": "Untitled";
+    const firstCellTitle = promise.cells?.[0]?.value
+      ? promise.cells?.[0]?.value
+          ?.replace(/_/g, " ")
+          .split(" ")
+          .slice(0, 5)
+          .join(" ") + "..." || "Agreement"
+      : "Untitled";
 
     const handleHeaderClick = async (e: React.MouseEvent) => {
       if (isExpanded && (e.target as HTMLElement).closest(".editable-field")) {

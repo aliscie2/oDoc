@@ -28,7 +28,7 @@ import {
   Logout as LogoutIcon,
   Menu as MenuIcon,
   MenuOpen as MenuOpenIcon,
-  Person2 as Person2Icon
+  Person2 as Person2Icon,
 } from "@mui/icons-material";
 import GradeIcon from "@mui/icons-material/Grade";
 import ReceiptIcon from "@mui/icons-material/Receipt";
@@ -150,7 +150,7 @@ const useDesktopNavbarMouseVisibility = (isMobile) => {
 
     const handleMouseMove = (e: MouseEvent) => {
       const shouldShow = e.clientY < 350; // Show when mouse is within 250px of top
-      
+
       if (shouldShow) {
         // Clear any pending hide timeout
         if (timeoutRef.current) {
@@ -332,12 +332,15 @@ export default function TopNavBar() {
     state.theme.palette.text.primary,
   ]);
 
-  const handlers = useMemo(() => ({
-    dispatch,
-    navigate,
-    onProfileClick: (e) => setMobileMenuAnchor(e.currentTarget),
-    profileMenuOptions,
-  }), [dispatch, navigate, profileMenuOptions]);
+  const handlers = useMemo(
+    () => ({
+      dispatch,
+      navigate,
+      onProfileClick: (e) => setMobileMenuAnchor(e.currentTarget),
+      profileMenuOptions,
+    }),
+    [dispatch, navigate, profileMenuOptions],
+  );
 
   const getNavItems = () => {
     const context = state.isMobile ? "mobile" : "desktop";
@@ -364,17 +367,20 @@ export default function TopNavBar() {
     return items;
   };
 
-  const navItems = useMemo(() => getNavItems(), [
-    state.isMobile,
-    state.isLoggedIn,
-    authStatus,
-    state.isHomePage,
-    state.currentPath,
-    state.notifications.length,
-    state.isDarkMode,
-    imageLink,
-    handlers,
-  ]);
+  const navItems = useMemo(
+    () => getNavItems(),
+    [
+      state.isMobile,
+      state.isLoggedIn,
+      authStatus,
+      state.isHomePage,
+      state.currentPath,
+      state.notifications.length,
+      state.isDarkMode,
+      imageLink,
+      handlers,
+    ],
+  );
 
   const renderNavItem = (item, context = "desktop") => {
     if (item.component) {
@@ -430,153 +436,229 @@ export default function TopNavBar() {
       </Tooltip>
     );
   };
-const MobileNav = () => {
-  const mobileNavButtonSx = { minWidth: 0, flex: 1 };
-const imgStyles = { 
-  width: 32, 
-  height: 32, 
-  objectFit: "contain",
-  filter: state?.theme?.palette?.mode === 'dark'
-    ? 'brightness(0.85) contrast(0.9) saturate(1.1) drop-shadow(0 2px 6px rgba(0,0,0,0.8))' 
-    : 'brightness(1.05) contrast(1.05) drop-shadow(0 2px 6px rgba(0,0,0,0.7))',
-  opacity: state?.theme?.palette?.mode === 'dark' ? 0.9 : 1,
-};
-  const getMobileNavButtons = () => {
-    const buttons = [
-      { path: "/", label: "Work", icon: <img src="/job.png" alt="Work" style={imgStyles} />, isHome: true },
-      { path: "/calendar", label: "Calendar", icon: <img src="/calendar.png" alt="Calendar" style={imgStyles} /> },
-      { path: "/contracts", label: "Contracts", icon: <img src="/contract.png" alt="Contracts" style={imgStyles} /> },
-    ];
-    return buttons
-      .filter((btn) => btn.isHome ? !state.isHomePage : state.currentPath !== btn.path)
-      .map((btn) => (
-        <BottomNavigationAction key={btn.path} label={btn.label} icon={btn.icon} onClick={() => navigate(btn.path)} sx={mobileNavButtonSx} />
-      ));
-  };
+  const MobileNav = () => {
+    const mobileNavButtonSx = { minWidth: 0, flex: 1 };
+    const imgStyles = {
+      width: 32,
+      height: 32,
+      objectFit: "contain",
+      filter:
+        state?.theme?.palette?.mode === "dark"
+          ? "brightness(0.85) contrast(0.9) saturate(1.1) drop-shadow(0 2px 6px rgba(0,0,0,0.8))"
+          : "brightness(1.05) contrast(1.05) drop-shadow(0 2px 6px rgba(0,0,0,0.7))",
+      opacity: state?.theme?.palette?.mode === "dark" ? 0.9 : 1,
+    };
+    const getMobileNavButtons = () => {
+      const buttons = [
+        {
+          path: "/",
+          label: "Work",
+          icon: <img src="/job.png" alt="Work" style={imgStyles} />,
+          isHome: true,
+        },
+        {
+          path: "/calendar",
+          label: "Calendar",
+          icon: <img src="/calendar.png" alt="Calendar" style={imgStyles} />,
+        },
+        {
+          path: "/contracts",
+          label: "Contracts",
+          icon: <img src="/contract.png" alt="Contracts" style={imgStyles} />,
+        },
+      ];
+      return buttons
+        .filter((btn) =>
+          btn.isHome ? !state.isHomePage : state.currentPath !== btn.path,
+        )
+        .map((btn) => (
+          <BottomNavigationAction
+            key={btn.path}
+            label={btn.label}
+            icon={btn.icon}
+            onClick={() => navigate(btn.path)}
+            sx={mobileNavButtonSx}
+          />
+        ));
+    };
 
-  return (
-    <>
-      {state.isLoggedIn && showMobileMenu && (
-        <IconButton
-          sx={{
-            position: "fixed",
-            top: 16,
-            left: 16,
-            zIndex: 1300,
-            backgroundColor: alpha(state.theme.palette.background.paper, 0.9),
-            backdropFilter: "blur(10px)",
-            boxShadow: state.theme.shadows[2],
-          }}
-          onClick={() => dispatch({ type: "TOGGLE_NAV" })}
-          aria-label="Toggle navigation menu"
-        >
-          {state.isNavOpen ? <MenuOpenIcon /> : <MenuIcon />}
-        </IconButton>
-      )}
-      <Box sx={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 1200 }}>
-        <Paper elevation={3} sx={{ borderRadius: 0 }}>
-          <BottomNavigation showLabels value={state.currentPath} sx={{ flex: 1 }}>
-            {state.isLoggedIn && getMobileNavButtons()}
-            {navItems.map((item) => renderNavItem(item, "mobile"))}
-            <MultiSaveButton />
-          </BottomNavigation>
-          <Menu
-            anchorEl={mobileMenuAnchor}
-            open={Boolean(mobileMenuAnchor)}
-            onClose={() => setMobileMenuAnchor(null)}
-            anchorOrigin={{ vertical: "top", horizontal: "center" }}
-            transformOrigin={{ vertical: "bottom", horizontal: "center" }}
-          >
-            {handlers.profileMenuOptions.map((option, index) => (
-              <MenuItem
-                key={`${option.content}-${index}`}
-                onClick={() => {
-                  setMobileMenuAnchor(null);
-                  if (option.onClick) option.onClick();
-                  if (option.to) navigate(option.to);
-                }}
-              >
-                <ListItemIcon sx={{ color: state.theme.palette.text.primary }}>{option.icon}</ListItemIcon>
-                <ListItemText primary={option.content} />
-              </MenuItem>
-            ))}
-          </Menu>
-        </Paper>
-      </Box>
-    </>
-  );
-};
-
-const DesktopNav = () => {
-  const imgStyles = { 
-    width: 28, 
-    height: 28, 
-    objectFit: "contain", 
-    filter: state?.theme?.palette?.mode === 'dark'
-      ? 'brightness(0.85) contrast(0.9) saturate(1.1) drop-shadow(0 2px 4px rgba(0,0,0,0.4))' 
-      : 'brightness(1.05) contrast(1.05) drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
-    opacity: state?.theme?.palette?.mode === 'dark' ? 0.9 : 1,
-    transition: 'all 0.2s ease'
-  };
-
-  return (
-    <Toolbar
-      sx={{
-        ...styles.toolbar,
-        ...(state.isNavOpen && styles.toolbarShift),
-        display: "grid",
-        gridTemplateColumns: state.isLoggedIn ? "1fr auto 1fr" : "1fr auto",
-        gap: 2,
-        alignItems: "center",
-      }}
-    >
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0, justifyContent: "flex-start" }}>
-        {state.isLoggedIn && (
+    return (
+      <>
+        {state.isLoggedIn && showMobileMenu && (
           <IconButton
-            edge="start"
-            color="inherit"
+            sx={{
+              position: "fixed",
+              top: 16,
+              left: 16,
+              zIndex: 1300,
+              backgroundColor: alpha(state.theme.palette.background.paper, 0.9),
+              backdropFilter: "blur(10px)",
+              boxShadow: state.theme.shadows[2],
+            }}
             onClick={() => dispatch({ type: "TOGGLE_NAV" })}
-            sx={styles.iconButton}
             aria-label="Toggle navigation menu"
           >
             {state.isNavOpen ? <MenuOpenIcon /> : <MenuIcon />}
           </IconButton>
         )}
-        {navItems.filter((item) => ["theme", "whitepaper"].includes(item.key)).map((item) => renderNavItem(item))}
-        {!state.isHomePage && (
-          <Routes>
-            <Route path="*" element={<BreadPage />} />
-          </Routes>
-        )}
-        {state.isLoggedIn && <ShareButton fileId={current_file?.id} currentFile={current_file} />}
-      </Box>
-      {state.isLoggedIn && (
-        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-          <Tooltip title="Jobs">
-            <IconButton color="inherit" onClick={() => navigate("/")} sx={{ ...styles.iconButton, opacity: state.isHomePage ? 0.5 : 1 }}>
-              <img src="/job.png" alt="Work" style={imgStyles} />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Calendar">
-            <IconButton color="inherit" onClick={() => navigate("/calendar")} sx={{ ...styles.iconButton, opacity: state.currentPath === "/calendar" ? 0.5 : 1 }}>
-              <img src="/calendar.png" alt="Calendar" style={imgStyles} />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Contracts">
-            <IconButton color="inherit" onClick={() => navigate("/contracts")} sx={{ ...styles.iconButton, opacity: state.currentPath === "/contracts" ? 0.5 : 1 }}>
-              <img src="/contract.png" alt="Contract" style={imgStyles} />
-            </IconButton>
-          </Tooltip>
+        <Box
+          sx={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 1200 }}
+        >
+          <Paper elevation={3} sx={{ borderRadius: 0 }}>
+            <BottomNavigation
+              showLabels
+              value={state.currentPath}
+              sx={{ flex: 1 }}
+            >
+              {state.isLoggedIn && getMobileNavButtons()}
+              {navItems.map((item) => renderNavItem(item, "mobile"))}
+              <MultiSaveButton />
+            </BottomNavigation>
+            <Menu
+              anchorEl={mobileMenuAnchor}
+              open={Boolean(mobileMenuAnchor)}
+              onClose={() => setMobileMenuAnchor(null)}
+              anchorOrigin={{ vertical: "top", horizontal: "center" }}
+              transformOrigin={{ vertical: "bottom", horizontal: "center" }}
+            >
+              {handlers.profileMenuOptions.map((option, index) => (
+                <MenuItem
+                  key={`${option.content}-${index}`}
+                  onClick={() => {
+                    setMobileMenuAnchor(null);
+                    if (option.onClick) option.onClick();
+                    if (option.to) navigate(option.to);
+                  }}
+                >
+                  <ListItemIcon
+                    sx={{ color: state.theme.palette.text.primary }}
+                  >
+                    {option.icon}
+                  </ListItemIcon>
+                  <ListItemText primary={option.content} />
+                </MenuItem>
+              ))}
+            </Menu>
+          </Paper>
         </Box>
-      )}
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1, justifyContent: "flex-end", marginRight: state.isLoggedIn ? 0 : 4 }}>
-        {navItems.filter((item) => !["theme", "whitepaper"].includes(item.key)).map((item) => renderNavItem(item))}
-        {state.isLoggedIn && <WorkspaceManager />}
-        {state.isLoggedIn && <MultiSaveButton />}
-      </Box>
-    </Toolbar>
-  );
-};
+      </>
+    );
+  };
+
+  const DesktopNav = () => {
+    const imgStyles = {
+      width: 28,
+      height: 28,
+      objectFit: "contain",
+      filter:
+        state?.theme?.palette?.mode === "dark"
+          ? "brightness(0.85) contrast(0.9) saturate(1.1) drop-shadow(0 2px 4px rgba(0,0,0,0.4))"
+          : "brightness(1.05) contrast(1.05) drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
+      opacity: state?.theme?.palette?.mode === "dark" ? 0.9 : 1,
+      transition: "all 0.2s ease",
+    };
+
+    return (
+      <Toolbar
+        sx={{
+          ...styles.toolbar,
+          ...(state.isNavOpen && styles.toolbarShift),
+          display: "grid",
+          gridTemplateColumns: state.isLoggedIn ? "1fr auto 1fr" : "1fr auto",
+          gap: 2,
+          alignItems: "center",
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            minWidth: 0,
+            justifyContent: "flex-start",
+          }}
+        >
+          {state.isLoggedIn && (
+            <IconButton
+              edge="start"
+              color="inherit"
+              onClick={() => dispatch({ type: "TOGGLE_NAV" })}
+              sx={styles.iconButton}
+              aria-label="Toggle navigation menu"
+            >
+              {state.isNavOpen ? <MenuOpenIcon /> : <MenuIcon />}
+            </IconButton>
+          )}
+          {navItems
+            .filter((item) => ["theme", "whitepaper"].includes(item.key))
+            .map((item) => renderNavItem(item))}
+          {!state.isHomePage && (
+            <Routes>
+              <Route path="*" element={<BreadPage />} />
+            </Routes>
+          )}
+          {state.isLoggedIn && (
+            <ShareButton fileId={current_file?.id} currentFile={current_file} />
+          )}
+        </Box>
+        {state.isLoggedIn && (
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            <Tooltip title="Jobs">
+              <IconButton
+                color="inherit"
+                onClick={() => navigate("/")}
+                sx={{
+                  ...styles.iconButton,
+                  opacity: state.isHomePage ? 0.5 : 1,
+                }}
+              >
+                <img src="/job.png" alt="Work" style={imgStyles} />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Calendar">
+              <IconButton
+                color="inherit"
+                onClick={() => navigate("/calendar")}
+                sx={{
+                  ...styles.iconButton,
+                  opacity: state.currentPath === "/calendar" ? 0.5 : 1,
+                }}
+              >
+                <img src="/calendar.png" alt="Calendar" style={imgStyles} />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Contracts">
+              <IconButton
+                color="inherit"
+                onClick={() => navigate("/contracts")}
+                sx={{
+                  ...styles.iconButton,
+                  opacity: state.currentPath === "/contracts" ? 0.5 : 1,
+                }}
+              >
+                <img src="/contract.png" alt="Contract" style={imgStyles} />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        )}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            justifyContent: "flex-end",
+            marginRight: state.isLoggedIn ? 0 : 4,
+          }}
+        >
+          {navItems
+            .filter((item) => !["theme", "whitepaper"].includes(item.key))
+            .map((item) => renderNavItem(item))}
+          {state.isLoggedIn && <WorkspaceManager />}
+          {state.isLoggedIn && <MultiSaveButton />}
+        </Box>
+      </Toolbar>
+    );
+  };
 
   return (
     <>

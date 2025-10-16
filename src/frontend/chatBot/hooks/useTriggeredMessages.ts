@@ -14,9 +14,13 @@ export interface UseTriggeredMessagesConfig {
  * No longer depends on deprecated useChatHandler
  */
 
-
 export const useTriggeredMessages = (config: UseTriggeredMessagesConfig) => {
-  const { shownMessageIds, setShownMessageIds, setChatHistory, setIsMinimized } = config;
+  const {
+    shownMessageIds,
+    setShownMessageIds,
+    setChatHistory,
+    setIsMinimized,
+  } = config;
   const messageRules = useMessageRules();
 
   const allTriggeredMessages = useMemo(
@@ -44,7 +48,7 @@ export const useTriggeredMessages = (config: UseTriggeredMessagesConfig) => {
         if (!msg.metadata?.replaceGroup) {
           return msg.metadata?.showOnce ? !currentShownIds.has(msg.id) : false;
         }
-        
+
         // For replace groups, only show if this is the active message for that group
         const groupId = msg.metadata.replaceGroup;
         return activeReplaceGroups.get(groupId) === msg.id;
@@ -67,19 +71,20 @@ export const useTriggeredMessages = (config: UseTriggeredMessagesConfig) => {
         setChatHistory((prev) => {
           // Complete all typing messages
           const completedPrev = prev.map((msg) =>
-            msg.isTyping ? { ...msg, isTyping: false } : msg
+            msg.isTyping ? { ...msg, isTyping: false } : msg,
           );
-          
+
           // Remove old messages from active replace groups
           const filtered = completedPrev.filter((msg) => {
             if (!msg.replaceGroup) return true;
             return !activeReplaceGroups.has(msg.replaceGroup);
           });
-          
+
           return [...filtered, ...newChatMessages];
         });
 
-        const userClosedChat = sessionStorage.getItem('chatMinimized') === 'true';
+        const userClosedChat =
+          sessionStorage.getItem("chatMinimized") === "true";
         if (!userClosedChat) {
           setIsMinimized(false);
         }

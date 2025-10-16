@@ -18,11 +18,9 @@ async function getLedgerActor(agent) {
 
   // ---------------------- root key fetch ---------------------- \\
   if (import.meta.env.VITE_DFX_NETWORK !== "ic") {
-    agent
-      .fetchRootKey()
-      .catch((err) => {
-        console.error("Error fetching root key: ", err);
-      });
+    agent.fetchRootKey().catch((err) => {
+      console.error("Error fetching root key: ", err);
+    });
   }
   const ckusdc_ledger: _SERVICE = Actor.createActor<_SERVICE>(idlFactory, {
     agent,

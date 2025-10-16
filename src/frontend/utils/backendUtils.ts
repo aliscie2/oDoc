@@ -331,7 +331,9 @@ export const initializeSmartActors = async (
         idlFactory,
         actorType: "backend",
       });
-      actorState.backend = backendActorInstance ? createCastedActor(backendActorInstance) : createCastedActor(backend);
+      actorState.backend = backendActorInstance
+        ? createCastedActor(backendActorInstance)
+        : createCastedActor(backend);
 
       // Initialize ckUSDC actor
       const ckUSDCActorInstance = await BackendUtils.getCkUSDCActor();

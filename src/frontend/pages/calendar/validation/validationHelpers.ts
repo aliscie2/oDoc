@@ -1,18 +1,23 @@
 // Reusable Validation Helper Functions
 
-import { ValidationContext, ValidationResult } from './validationTypes';
-import { Event } from '../types/event.types';
-import { Availability } from '../types/availability.types';
-import { Calendar } from '../types/calendar.types';
+import { ValidationContext, ValidationResult } from "./validationTypes";
+import { Event } from "../types/event.types";
+import { Availability } from "../types/availability.types";
+import { Calendar } from "../types/calendar.types";
 
 /**
  * Check if a date is within a weekly recurring schedule
  */
-export const isWithinWeeklySchedule = (date: Date, availability: Availability): boolean => {
-  if ('WeeklyRecurring' in availability.schedule_type) {
+export const isWithinWeeklySchedule = (
+  date: Date,
+  availability: Availability,
+): boolean => {
+  if ("WeeklyRecurring" in availability.schedule_type) {
     const dayOfWeek = date.getDay();
     const adjustedDay = dayOfWeek === 0 ? 7 : dayOfWeek; // Convert Sunday from 0 to 7
-    return availability.schedule_type.WeeklyRecurring.days.includes(adjustedDay);
+    return availability.schedule_type.WeeklyRecurring.days.includes(
+      adjustedDay,
+    );
   }
   return false;
 };
@@ -22,7 +27,7 @@ export const isWithinWeeklySchedule = (date: Date, availability: Availability): 
  */
 export const isWithinTimeSlot = (
   date: Date,
-  timeSlot: { start_time: number; end_time: number }
+  timeSlot: { start_time: number; end_time: number },
 ): boolean => {
   // Convert nanoseconds to milliseconds
   let slotStart = new Date(Number(timeSlot.start_time) / 1000000);
@@ -37,7 +42,8 @@ export const isWithinTimeSlot = (
   const currentTime = new Date(0, 0, 0, hours, minutes, 0);
 
   return (
-    currentTime >= new Date(0, 0, 0, slotStart.getHours(), slotStart.getMinutes(), 0) &&
+    currentTime >=
+      new Date(0, 0, 0, slotStart.getHours(), slotStart.getMinutes(), 0) &&
     currentTime < new Date(0, 0, 0, slotEnd.getHours(), slotEnd.getMinutes(), 0)
   );
 };
@@ -48,7 +54,7 @@ export const isWithinTimeSlot = (
 export const hasTimeConflict = (
   newEvent: { start_time: number; end_time: number },
   existingEvents: Event[],
-  excludeEventId?: string
+  excludeEventId?: string,
 ): boolean => {
   return existingEvents.some((event) => {
     if (excludeEventId && event.id === excludeEventId) {
@@ -68,7 +74,10 @@ export const hasTimeConflict = (
 /**
  * Validate time order (start before end)
  */
-export const isValidTimeOrder = (startTime: number, endTime: number): boolean => {
+export const isValidTimeOrder = (
+  startTime: number,
+  endTime: number,
+): boolean => {
   return startTime < endTime;
 };
 
@@ -84,12 +93,12 @@ export const isPastTimeSlot = (slotStart: Date): boolean => {
  */
 export const checkAvailability = (
   slotStart: Date,
-  availabilities: Availability[]
+  availabilities: Availability[],
 ): { isAvailable: boolean; isBlocked: boolean } => {
   const isBlocked = availabilities.some((availability) => {
     const isCorrectDay = isWithinWeeklySchedule(slotStart, availability);
     const isInTimeSlot = availability.time_slots.some((slot) =>
-      isWithinTimeSlot(slotStart, slot)
+      isWithinTimeSlot(slotStart, slot),
     );
     return isCorrectDay && isInTimeSlot && availability.is_blocked;
   });
@@ -97,7 +106,7 @@ export const checkAvailability = (
   const isAvailable = availabilities.some((availability) => {
     const isCorrectDay = isWithinWeeklySchedule(slotStart, availability);
     const isInTimeSlot = availability.time_slots.some((slot) =>
-      isWithinTimeSlot(slotStart, slot)
+      isWithinTimeSlot(slotStart, slot),
     );
     return isCorrectDay && isInTimeSlot && !availability.is_blocked;
   });
@@ -110,7 +119,7 @@ export const checkAvailability = (
  */
 export const isWithinAvailability = (
   eventTime: { start: number; end: number },
-  availability: Availability[]
+  availability: Availability[],
 ): boolean => {
   if (availability.length === 0) {
     return true; // No restrictions
@@ -137,14 +146,19 @@ export const hasRequiredFields = (event: Partial<Event>): boolean => {
 /**
  * Check if user can edit calendar
  */
-export const canEditCalendar = (userId: string, calendar: Calendar): boolean => {
+export const canEditCalendar = (
+  userId: string,
+  calendar: Calendar,
+): boolean => {
   return calendar.owner === userId;
 };
 
 /**
  * Check calendar owner's availability
  */
-export const checkOwnerAvailability = (context: ValidationContext): ValidationResult => {
+export const checkOwnerAvailability = (
+  context: ValidationContext,
+): ValidationResult => {
   const { calendar, slotInfo } = context;
   const availabilities = calendar.availabilities || [];
 
@@ -152,19 +166,24 @@ export const checkOwnerAvailability = (context: ValidationContext): ValidationRe
     return { isValid: true, errors: [] };
   }
 
-  const { isAvailable, isBlocked } = checkAvailability(slotInfo.start, availabilities);
+  const { isAvailable, isBlocked } = checkAvailability(
+    slotInfo.start,
+    availabilities,
+  );
 
   if (isBlocked) {
     return {
       isValid: false,
-      errors: ['This time slot is blocked by the calendar owner'],
+      errors: ["This time slot is blocked by the calendar owner"],
     };
   }
 
   if (!isAvailable) {
     return {
       isValid: false,
-      errors: ["This time slot is not available in the calendar owner's schedule"],
+      errors: [
+        "This time slot is not available in the calendar owner's schedule",
+      ],
     };
   }
 
@@ -174,7 +193,9 @@ export const checkOwnerAvailability = (context: ValidationContext): ValidationRe
 /**
  * Check user's own availability (for shared calendar scenario)
  */
-export const checkUserAvailability = (context: ValidationContext): ValidationResult => {
+export const checkUserAvailability = (
+  context: ValidationContext,
+): ValidationResult => {
   const { userCalendar, slotInfo } = context;
 
   if (!userCalendar) {
@@ -187,19 +208,22 @@ export const checkUserAvailability = (context: ValidationContext): ValidationRes
     return { isValid: true, errors: [] };
   }
 
-  const { isAvailable, isBlocked } = checkAvailability(slotInfo.start, availabilities);
+  const { isAvailable, isBlocked } = checkAvailability(
+    slotInfo.start,
+    availabilities,
+  );
 
   if (isBlocked) {
     return {
       isValid: false,
-      errors: ['This time slot is blocked in your own calendar'],
+      errors: ["This time slot is blocked in your own calendar"],
     };
   }
 
   if (!isAvailable) {
     return {
       isValid: false,
-      errors: ['This time slot is not available in your own schedule'],
+      errors: ["This time slot is not available in your own schedule"],
     };
   }
 
@@ -209,7 +233,9 @@ export const checkUserAvailability = (context: ValidationContext): ValidationRes
 /**
  * Check for conflicts with calendar owner's events
  */
-export const checkOwnerEventConflicts = (context: ValidationContext): ValidationResult => {
+export const checkOwnerEventConflicts = (
+  context: ValidationContext,
+): ValidationResult => {
   const { calendar, slotInfo, selectedEvent } = context;
   const events = calendar.events || [];
 
@@ -223,7 +249,7 @@ export const checkOwnerEventConflicts = (context: ValidationContext): Validation
   return {
     isValid: !hasConflict,
     errors: hasConflict
-      ? ['This time slot conflicts with an existing event on this calendar']
+      ? ["This time slot conflicts with an existing event on this calendar"]
       : [],
   };
 };
@@ -231,7 +257,9 @@ export const checkOwnerEventConflicts = (context: ValidationContext): Validation
 /**
  * Check for conflicts with user's own events
  */
-export const checkUserEventConflicts = (context: ValidationContext): ValidationResult => {
+export const checkUserEventConflicts = (
+  context: ValidationContext,
+): ValidationResult => {
   const { userCalendar, slotInfo, selectedEvent } = context;
 
   if (!userCalendar) {
@@ -249,14 +277,18 @@ export const checkUserEventConflicts = (context: ValidationContext): ValidationR
 
   return {
     isValid: !hasConflict,
-    errors: hasConflict ? ['This time slot conflicts with an event on your own calendar'] : [],
+    errors: hasConflict
+      ? ["This time slot conflicts with an event on your own calendar"]
+      : [],
   };
 };
 
 /**
  * Check if user has permission to modify an event
  */
-export const checkEventPermission = (context: ValidationContext): ValidationResult => {
+export const checkEventPermission = (
+  context: ValidationContext,
+): ValidationResult => {
   const { calendar, profile, selectedEvent } = context;
 
   if (!selectedEvent) {
@@ -266,33 +298,38 @@ export const checkEventPermission = (context: ValidationContext): ValidationResu
   const isOwner = calendar.owner === profile.id;
   const isCreator = selectedEvent.created_by === profile.id;
   const isUserGoogleEvent =
-    selectedEvent.isGoogleEvent && calendar.google_ids?.includes(selectedEvent.created_by);
+    selectedEvent.isGoogleEvent &&
+    calendar.google_ids?.includes(selectedEvent.created_by);
 
   const hasPermission = isOwner || isCreator || isUserGoogleEvent;
 
   return {
     isValid: hasPermission,
-    errors: hasPermission ? [] : ['You do not have permission to modify this event'],
+    errors: hasPermission
+      ? []
+      : ["You do not have permission to modify this event"],
   };
 };
 
 /**
  * Validate event data completeness
  */
-export const validateEventData = (context: ValidationContext): ValidationResult => {
+export const validateEventData = (
+  context: ValidationContext,
+): ValidationResult => {
   const { eventData, slotInfo } = context;
   const errors: string[] = [];
 
   if (!eventData.title || !eventData.title.trim()) {
-    errors.push('Event title is required');
+    errors.push("Event title is required");
   }
 
   if (!slotInfo?.start || !slotInfo?.end) {
-    errors.push('Invalid event time slot');
+    errors.push("Invalid event time slot");
   }
 
   if (slotInfo?.start && slotInfo?.end && slotInfo.start >= slotInfo.end) {
-    errors.push('Event end time must be after start time');
+    errors.push("Event end time must be after start time");
   }
 
   return {
@@ -304,20 +341,22 @@ export const validateEventData = (context: ValidationContext): ValidationResult 
 /**
  * Check if a time slot is blocked
  */
-export const checkBlockedSlots = (context: ValidationContext): ValidationResult => {
+export const checkBlockedSlots = (
+  context: ValidationContext,
+): ValidationResult => {
   const { calendar, slotInfo } = context;
   const availabilities = calendar.availabilities || [];
 
   const isBlocked = availabilities.some((availability) => {
     const isCorrectDay = isWithinWeeklySchedule(slotInfo.start, availability);
     const isInTimeSlot = availability.time_slots.some((slot) =>
-      isWithinTimeSlot(slotInfo.start, slot)
+      isWithinTimeSlot(slotInfo.start, slot),
     );
     return isCorrectDay && isInTimeSlot && availability.is_blocked;
   });
 
   return {
     isValid: !isBlocked,
-    errors: isBlocked ? ['This time slot is blocked'] : [],
+    errors: isBlocked ? ["This time slot is blocked"] : [],
   };
 };

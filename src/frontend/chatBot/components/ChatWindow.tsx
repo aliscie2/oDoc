@@ -32,7 +32,9 @@ export const ChatWindow = ({
         position: shouldCenter ? "relative" : "fixed",
         bottom: shouldCenter ? "auto" : { xs: 130, sm: 110 },
         left: shouldCenter ? "auto" : { xs: 0, sm: "50%" },
-        transform: shouldCenter ? "none" : { xs: "none", sm: "translateX(-50%)" },
+        transform: shouldCenter
+          ? "none"
+          : { xs: "none", sm: "translateX(-50%)" },
         zIndex: shouldCenter ? "auto" : 999,
         width: shouldCenter ? "100%" : { xs: "100vw", sm: 500 },
         bgcolor: theme.palette.background.paper,

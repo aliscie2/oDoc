@@ -1,7 +1,4 @@
-import {
-  Job,
-  JobUpdate,
-} from "$/declarations/backend/backend.did";
+import { Job, JobUpdate } from "$/declarations/backend/backend.did";
 import { createIdentity } from "@dfinity/pic";
 import { registerUser } from "../utils";
 
@@ -52,7 +49,10 @@ describe("Updated Job Matching - Edge Cases", () => {
 
     const talentSkills = ["icp", "rust", "django"];
     const talentProfile = await createTalentProfile(talentSkills);
-    const talentResult = await globalThis.testActor.update_job([talentProfile], []);
+    const talentResult = await globalThis.testActor.update_job(
+      [talentProfile],
+      [],
+    );
 
     if ("Err" in talentResult) {
       throw new Error(`Failed to create talent: ${talentResult.Err}`);
@@ -86,13 +86,11 @@ describe("Updated Job Matching - Edge Cases", () => {
 
     // Step 4: Update the job with matching skills
     await globalThis.oneHourLater();
-    
+
     const updatedJobSkills = ["icp", "rust", "scripting", "django"];
     const jobUpdate: JobUpdate = {
       id: jobProfile.id,
-      updates: [
-        { field: "skills", values: updatedJobSkills },
-      ],
+      updates: [{ field: "skills", values: updatedJobSkills }],
       active: [],
       required_match_score: [],
       category: [],
@@ -120,20 +118,25 @@ describe("Updated Job Matching - Edge Cases", () => {
 
     console.log("Matches after update:", {
       count: matchesAfterUpdate.length,
-      matchedIds: matchesAfterUpdate.map(m => m.id),
-      matchedSkills: matchesAfterUpdate.map(m => ({ id: m.id, skills: m.skills })),
+      matchedIds: matchesAfterUpdate.map((m) => m.id),
+      matchedSkills: matchesAfterUpdate.map((m) => ({
+        id: m.id,
+        skills: m.skills,
+      })),
     });
 
     // Step 7: Verify the talent is now found
     expect(matchesAfterUpdate.length).toBeGreaterThan(0);
-    
-    const foundTalent = matchesAfterUpdate.find(m => m.id === talentProfile.id);
+
+    const foundTalent = matchesAfterUpdate.find(
+      (m) => m.id === talentProfile.id,
+    );
     expect(foundTalent).toBeDefined();
     expect(foundTalent?.skills).toEqual(talentSkills);
 
     // Step 8: Verify skill overlap calculation
-    const commonSkills = updatedJobSkills.filter(skill => 
-      talentSkills.includes(skill)
+    const commonSkills = updatedJobSkills.filter((skill) =>
+      talentSkills.includes(skill),
     );
     console.log("Common skills:", commonSkills);
     expect(commonSkills.length).toBe(3); // icp, rust, django
@@ -148,7 +151,10 @@ describe("Updated Job Matching - Edge Cases", () => {
 
     const talentSkills = ["icp", "rust", "django"];
     const talentProfile = await createTalentProfile(talentSkills);
-    const talentResult = await globalThis.testActor.update_job([talentProfile], []);
+    const talentResult = await globalThis.testActor.update_job(
+      [talentProfile],
+      [],
+    );
 
     if ("Err" in talentResult) {
       throw new Error(`Failed to create talent: ${talentResult.Err}`);
@@ -179,13 +185,13 @@ describe("Updated Job Matching - Edge Cases", () => {
 
     console.log("Matches for new job:", {
       count: matches.length,
-      matchedIds: matches.map(m => m.id),
+      matchedIds: matches.map((m) => m.id),
     });
 
     // Step 4: Verify the talent is found
     expect(matches.length).toBeGreaterThan(0);
-    
-    const foundTalent = matches.find(m => m.id === talentProfile.id);
+
+    const foundTalent = matches.find((m) => m.id === talentProfile.id);
     expect(foundTalent).toBeDefined();
     expect(foundTalent?.skills).toEqual(talentSkills);
   }, 30000);
@@ -244,11 +250,11 @@ describe("Updated Job Matching - Edge Cases", () => {
       ["icp", "rust", "django"],
       { Talent: null },
     );
-    
+
     console.log("After second update - matches:", matches.length);
     expect(matches.length).toBeGreaterThan(0);
-    
-    const foundTalent = matches.find(m => m.id === talentProfile.id);
+
+    const foundTalent = matches.find((m) => m.id === talentProfile.id);
     expect(foundTalent).toBeDefined();
   }, 30000);
 });

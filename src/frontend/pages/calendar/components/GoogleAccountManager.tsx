@@ -141,10 +141,10 @@ const GoogleAccountManager: React.FC<GoogleAccountManagerProps> = ({
   // Single account
   if (emails.length === 1) {
     const displayText = isSharedCalendar ? "My Google" : emails[0];
-    const tooltipText = isSharedCalendar 
+    const tooltipText = isSharedCalendar
       ? `Your Google account connected: ${emails[0]}`
       : `Connected: ${emails[0]}`;
-    
+
     return (
       <>
         <Tooltip title={tooltipText}>
@@ -160,7 +160,13 @@ const GoogleAccountManager: React.FC<GoogleAccountManagerProps> = ({
               maxWidth: 200,
             }}
           >
-            <Box sx={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            <Box
+              sx={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
               {displayText}
             </Box>
           </Button>
@@ -182,11 +188,13 @@ const GoogleAccountManager: React.FC<GoogleAccountManagerProps> = ({
   }
 
   // Multiple accounts
-  const displayText = isSharedCalendar ? "My Google" : `${emails.length} Accounts`;
+  const displayText = isSharedCalendar
+    ? "My Google"
+    : `${emails.length} Accounts`;
   const tooltipText = isSharedCalendar
     ? `Your ${emails.length} Google accounts connected`
     : `${emails.length} Google accounts connected`;
-  
+
   return (
     <>
       <Tooltip title={tooltipText}>
@@ -195,8 +203,8 @@ const GoogleAccountManager: React.FC<GoogleAccountManagerProps> = ({
           onClick={handleMenuClick}
           size={size}
           startIcon={<GoogleIcon />}
-          sx={{ 
-            backgroundColor: "#4285F4", 
+          sx={{
+            backgroundColor: "#4285F4",
             "&:hover": { backgroundColor: "#3367D6" },
             textTransform: "none",
           }}
@@ -253,10 +261,16 @@ const AccountMenu: React.FC<AccountMenuProps> = ({
   >
     <Box sx={{ px: 2, py: 1 }}>
       <Typography variant="subtitle2" color="text.secondary">
-        {isSharedCalendar ? "Your Google Accounts" : "Connected Google Accounts"}
+        {isSharedCalendar
+          ? "Your Google Accounts"
+          : "Connected Google Accounts"}
       </Typography>
       {isSharedCalendar && (
-        <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ display: "block", mt: 0.5 }}
+        >
           These are YOUR accounts, not the calendar owner&apos;s
         </Typography>
       )}
@@ -265,11 +279,20 @@ const AccountMenu: React.FC<AccountMenuProps> = ({
     {emails.map((email, index) => (
       <MenuItem key={email} sx={{ px: 2, py: 1 }}>
         <Box sx={{ flexGrow: 1, mr: 1 }}>
-          <Typography variant="body2" sx={{ fontWeight: index === 0 ? 600 : 400 }}>
+          <Typography
+            variant="body2"
+            sx={{ fontWeight: index === 0 ? 600 : 400 }}
+          >
             {email}
           </Typography>
           {index === 0 && (
-            <Chip label="Primary" size="small" color="primary" variant="outlined" sx={{ mt: 0.5, height: 20 }} />
+            <Chip
+              label="Primary"
+              size="small"
+              color="primary"
+              variant="outlined"
+              sx={{ mt: 0.5, height: 20 }}
+            />
           )}
         </Box>
 
@@ -287,7 +310,11 @@ const AccountMenu: React.FC<AccountMenuProps> = ({
           )}
 
           <Tooltip title="Remove account">
-            <IconButton size="small" onClick={() => onRemoveEmail(email)} color="error">
+            <IconButton
+              size="small"
+              onClick={() => onRemoveEmail(email)}
+              color="error"
+            >
               <DeleteIcon fontSize="small" />
             </IconButton>
           </Tooltip>
@@ -302,14 +329,26 @@ const AccountMenu: React.FC<AccountMenuProps> = ({
       <Typography variant="body2">Add Another Account</Typography>
     </MenuItem>
 
-    <MenuItem onClick={() => { onRefresh(); onClose(); }} sx={{ px: 2, py: 1 }}>
+    <MenuItem
+      onClick={() => {
+        onRefresh();
+        onClose();
+      }}
+      sx={{ px: 2, py: 1 }}
+    >
       <RefreshIcon sx={{ mr: 1 }} fontSize="small" />
       <Typography variant="body2">Refresh Calendar Events</Typography>
     </MenuItem>
 
     <Divider sx={{ my: 1 }} />
 
-    <MenuItem onClick={() => { onDisconnect(); onClose(); }} sx={{ px: 2, py: 1, color: "error.main" }}>
+    <MenuItem
+      onClick={() => {
+        onDisconnect();
+        onClose();
+      }}
+      sx={{ px: 2, py: 1, color: "error.main" }}
+    >
       <LogoutIcon sx={{ mr: 1 }} fontSize="small" />
       <Typography variant="body2">Disconnect All</Typography>
     </MenuItem>

@@ -33,11 +33,10 @@ const LoginButton: React.FC<LoginButtonProps> = ({
 
   return (
     <Button
-
       variant="contained"
-      onClick={async(e)=>{
-        userType && localStorage.setItem("UserType", userType)
-        await login()
+      onClick={async (e) => {
+        userType && localStorage.setItem("UserType", userType);
+        await login();
       }}
       sx={{
         fontWeight: 600,

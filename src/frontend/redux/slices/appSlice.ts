@@ -11,15 +11,12 @@ export const initializeApp = createAsyncThunk(
         // Return a signal that initialization is already complete
         return { alreadyInitialized: true };
       }
-      
 
       const initialRes = await backendActor.get_initial_data();
 
-if ("Ok" in initialRes) {
-  return initialRes.Ok;
-}
-
-
+      if ("Ok" in initialRes) {
+        return initialRes.Ok;
+      }
     } catch (error) {
       return rejectWithValue(error);
     }

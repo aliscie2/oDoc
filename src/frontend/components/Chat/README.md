@@ -3,6 +3,7 @@
 ## 🚨 CRITICAL: Message Ordering System
 
 ### ⚠️ READ THIS FIRST
+
 Messages are stored in **REVERSE CHRONOLOGICAL** order (newest first).
 **Index 0 = NEWEST message, Index N = OLDEST message**
 
@@ -11,6 +12,7 @@ This is the most important thing to understand when working with the chat system
 ---
 
 ## Table of Contents
+
 1. [Message Ordering Rules](#message-ordering-rules)
 2. [Visual Guide](#visual-guide)
 3. [Code Examples](#code-examples)
@@ -24,19 +26,21 @@ This is the most important thing to understand when working with the chat system
 ## Message Ordering Rules
 
 ### Storage Format (Redux/Backend)
+
 ```javascript
 messages: [
-  { id: "msg_3", message: "Hi", date: 1000 },      // Index 0 - NEWEST
-  { id: "msg_2", message: "Hello", date: 900 },    // Index 1
-  { id: "msg_1", message: "Hey", date: 800 }       // Index 2 - OLDEST
-]
+  { id: "msg_3", message: "Hi", date: 1000 }, // Index 0 - NEWEST
+  { id: "msg_2", message: "Hello", date: 900 }, // Index 1
+  { id: "msg_1", message: "Hey", date: 800 }, // Index 2 - OLDEST
+];
 ```
 
 ### Display Format (UI)
+
 ```
 ┌─────────────────────────┐
 │ Hey      (800)          │ ← Oldest (from index 2)
-│ Hello    (900)          │ ← Middle (from index 1)  
+│ Hello    (900)          │ ← Middle (from index 1)
 │ Hi       (1000)         │ ← Newest (from index 0)
 └─────────────────────────┘
 ```
@@ -44,24 +48,27 @@ messages: [
 ### Key Rules
 
 #### 1. Adding NEW Messages
+
 ```typescript
 // ✅ CORRECT - Add to BEGINNING
-messages: [newMessage, ...existingMessages]
+messages: [newMessage, ...existingMessages];
 
 // ❌ WRONG - Don't add to end
-messages: [...existingMessages, newMessage]
+messages: [...existingMessages, newMessage];
 ```
 
 #### 2. Loading OLDER Messages (Infinite Scroll)
+
 ```typescript
 // ✅ CORRECT - Add to END
-messages: [...existingMessages, ...olderMessages]
+messages: [...existingMessages, ...olderMessages];
 
 // ❌ WRONG - Don't add to beginning
-messages: [...olderMessages, ...existingMessages]
+messages: [...olderMessages, ...existingMessages];
 ```
 
 #### 3. Displaying Messages
+
 ```typescript
 // ✅ CORRECT - Reverse for display
 const sortedMessages = [...chat.messages].reverse();
@@ -71,6 +78,7 @@ const sortedMessages = chat.messages;
 ```
 
 #### 4. Getting Last Message (Chat List)
+
 ```typescript
 // ✅ CORRECT - Use index 0
 const lastMessage = chat.messages[0]?.message;
@@ -148,6 +156,7 @@ STORAGE (Stack):          DISPLAY (Flipped):
 ## Code Examples
 
 ### Example 1: Adding New Message
+
 ```typescript
 // Current state
 messages: [
@@ -170,6 +179,7 @@ messages: [
 ```
 
 ### Example 2: Loading Older Messages
+
 ```typescript
 // Current state
 messages: [
@@ -200,6 +210,7 @@ messages: [
 ## System Architecture
 
 ### File Structure
+
 ```
 Chat/
 ├── README.md                    # This file - Complete documentation
@@ -219,6 +230,7 @@ Chat/
 ### Key Components
 
 #### ChatNotifications (index.tsx)
+
 - Shows chat icon with unread badge
 - Displays chat list in dropdown menu
 - **Create New Group** button to create group chats
@@ -227,6 +239,7 @@ Chat/
 - Filters chats by workspace
 
 #### ChatWindow (ChatWindow.tsx)
+
 - Individual chat dialog
 - Handles message display and input
 - **Settings icon** (gear) for group chat creators
@@ -237,6 +250,7 @@ Chat/
 - Full screen on mobile
 
 #### MessagesList (MessagesList.tsx)
+
 - Displays messages in chronological order (oldest to newest)
 - Shows sender avatars and names
 - Infinite scroll support
@@ -244,6 +258,7 @@ Chat/
 - Styled message bubbles
 
 #### MessageInput (MessageInput.tsx)
+
 - Text input with send button
 - Enter to send, Shift+Enter for new line
 - Loading state during send
@@ -252,11 +267,13 @@ Chat/
 ### Code Comments
 
 All critical sections are marked with:
+
 ```
 ⚠️ CRITICAL: MESSAGE ORDERING
 ```
 
 Search for this marker in:
+
 - `src/frontend/redux/reducers/chatsReducer.ts`
 - `src/frontend/components/Chat/ChatWindow.tsx`
 - `src/frontend/components/Chat/MessagesList.tsx`
@@ -269,26 +286,30 @@ Search for this marker in:
 ## Quick Start
 
 ### Display Chat Icon in Navbar
+
 ```tsx
 import ChatNotifications from "@/components/Chat";
 
-<ChatNotifications />
+<ChatNotifications />;
 ```
 
 ### Features Available
 
 #### 1. Create Group Chat
+
 - Click the chat icon in the navbar
 - Click "Create New Group" button
 - Fill in group name, select members, admins, and workspaces
 - Click "Create Group"
 
 #### 2. Load More Chats
+
 - Scroll to the bottom of the chat list
 - Click "Load More Chats" button
 - Loads additional chats from the backend
 
 #### 3. Edit Group Chat Settings
+
 - Open a group chat (that you created)
 - Click the gear icon (⚙️) in the top right
 - Edit group name, members, admins, and workspaces
@@ -298,11 +319,13 @@ import ChatNotifications from "@/components/Chat";
 **Note**: Only the chat creator can access settings. Private chats cannot be edited.
 
 #### 4. Open Multiple Chats
+
 - Click on any chat in the list to open it
 - Multiple chat windows can be open simultaneously
 - Full screen on mobile devices
 
 ### Create a New Chat Programmatically
+
 ```tsx
 import { useDispatch } from "react-redux";
 import { Principal } from "@dfinity/principal";
@@ -315,14 +338,8 @@ const createChat = async (userId: string, currentUserId: string) => {
     id: `chat-${Date.now()}`,
     name: "private_chat",
     messages: [],
-    members: [
-      Principal.fromText(currentUserId),
-      Principal.fromText(userId),
-    ],
-    admins: [
-      Principal.fromText(currentUserId),
-      Principal.fromText(userId),
-    ],
+    members: [Principal.fromText(currentUserId), Principal.fromText(userId)],
+    admins: [Principal.fromText(currentUserId), Principal.fromText(userId)],
     creator: Principal.fromText(currentUserId),
     workspaces: [],
   };
@@ -339,31 +356,39 @@ const createChat = async (userId: string, currentUserId: string) => {
 ## Common Mistakes
 
 ### ❌ Mistake 1: Adding new messages to the end
+
 ```typescript
 // WRONG
-messages: [...existingMessages, newMessage]
+messages: [...existingMessages, newMessage];
 ```
+
 **Result**: New messages appear at the top instead of bottom
 
 ### ❌ Mistake 2: Not reversing for display
+
 ```typescript
 // WRONG
 {chat.messages.map(message => ...)}
 ```
+
 **Result**: Messages display newest at top (backwards)
 
 ### ❌ Mistake 3: Using wrong index for last message
+
 ```typescript
 // WRONG
 const lastMessage = chat.messages[chat.messages.length - 1];
 ```
+
 **Result**: Shows oldest message instead of newest
 
 ### ❌ Mistake 4: Prepending older messages
+
 ```typescript
 // WRONG
-messages: [...olderMessages, ...existingMessages]
+messages: [...olderMessages, ...existingMessages];
 ```
+
 **Result**: Infinite scroll breaks message order
 
 ---
@@ -386,12 +411,12 @@ When modifying message-related code, verify:
 
 ## Quick Reference
 
-| Operation | Code Pattern | Location |
-|-----------|-------------|----------|
-| Add new message | `[newMsg, ...msgs]` | Reducer, ChatWindow |
+| Operation           | Code Pattern            | Location                      |
+| ------------------- | ----------------------- | ----------------------------- |
+| Add new message     | `[newMsg, ...msgs]`     | Reducer, ChatWindow           |
 | Load older messages | `[...msgs, ...oldMsgs]` | ChatWindow, useInfiniteScroll |
-| Display messages | `[...msgs].reverse()` | MessagesList |
-| Get last message | `msgs[0]` | Chat index |
+| Display messages    | `[...msgs].reverse()`   | MessagesList                  |
+| Get last message    | `msgs[0]`               | Chat index                    |
 
 ---
 
@@ -418,12 +443,14 @@ Are you showing last message in chat list?
 ## Why This Approach?
 
 ### Advantages
+
 1. **Backend Consistency**: Backend returns messages newest first
 2. **Performance**: Quick access to recent messages (no array traversal)
 3. **Chat List Efficiency**: Last message is always at index 0
 4. **Infinite Scroll**: Natural append operation for older messages
 
 ### Trade-offs
+
 - Requires reversing array for display
 - Can be confusing for new developers (hence this documentation!)
 
@@ -432,6 +459,7 @@ Are you showing last message in chat list?
 ## Key Features
 
 ### Performance
+
 - React.memo on all components
 - useMemo for expensive computations
 - useCallback for stable function references
@@ -439,6 +467,7 @@ Are you showing last message in chat list?
 - Optimistic updates for better UX
 
 ### User Experience
+
 - Smooth scrolling to bottom on new messages
 - Loading states for async operations
 - Unread message badges
@@ -449,6 +478,7 @@ Are you showing last message in chat list?
 - High contrast colors (Neo style)
 
 ### Code Quality
+
 - No console.logs in production
 - Proper TypeScript typing
 - Clear separation of concerns
@@ -460,6 +490,7 @@ Are you showing last message in chat list?
 ## Mobile Support
 
 Chat windows are full screen on mobile devices:
+
 - Height: 100vh on mobile, 70vh on desktop
 - Full screen dialog on mobile
 - Touch-friendly buttons
@@ -470,6 +501,7 @@ Chat windows are full screen on mobile devices:
 ## Theme & Styling
 
 ### Neo Style Features
+
 - High contrast colors for better readability
 - Vibrant primary colors (blue/purple)
 - Message bubbles with clear distinction:
@@ -480,6 +512,7 @@ Chat windows are full screen on mobile devices:
 - Subtle shadows and glows
 
 ### Color Contrast
+
 - Dark mode: True black background with high contrast text
 - Light mode: Pure white background with dark text
 - Message bubbles optimized for readability
@@ -499,6 +532,7 @@ Chat windows are full screen on mobile devices:
 ## Related Files
 
 All files with message ordering logic:
+
 - `src/frontend/components/Chat/types.ts` - Type definitions with ordering docs
 - `src/frontend/redux/reducers/chatsReducer.ts` - Redux state management
 - `src/frontend/components/Chat/ChatWindow.tsx` - Chat window component
@@ -511,7 +545,7 @@ All files with message ordering logic:
 ## Summary
 
 > **Messages are stored NEWEST FIRST (reverse chronological)**
-> 
+>
 > - Index 0 = Newest message
 > - Index N = Oldest message
 > - Display requires reversing the array

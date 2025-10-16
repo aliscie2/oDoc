@@ -7,7 +7,8 @@ export const useEventActions = () => {
   const dispatch = useDispatch();
   const { profile } = useSelector((state: any) => state.filesState);
   const { calendar } = useSelector((state: any) => state.calendarState);
-  const { isConnected, executeGoogleAction, refreshGoogleCalendarEvents } = useGoogleCalendar();
+  const { isConnected, executeGoogleAction, refreshGoogleCalendarEvents } =
+    useGoogleCalendar();
 
   const createEvent = async (
     eventData: any,
@@ -26,20 +27,27 @@ export const useEventActions = () => {
           attendees: eventData.attendees || [],
         },
         slotInfo,
-        isGoogleConnected: isConnected && calendar?.google_ids && calendar.google_ids.length > 0,
+        isGoogleConnected:
+          isConnected && calendar?.google_ids && calendar.google_ids.length > 0,
       };
 
       const validationResult = ValidationEngine.validate(validationContext);
 
       if (!validationResult.isValid) {
-        console.error("❌ [EventActions] Validation failed:", validationResult.errors);
+        console.error(
+          "❌ [EventActions] Validation failed:",
+          validationResult.errors,
+        );
         onError(validationResult.errors.join("\n"));
         return;
       }
 
       // Display warnings if any
       if (validationResult.warnings && validationResult.warnings.length > 0) {
-        console.warn("⚠️ [EventActions] Validation warnings:", validationResult.warnings);
+        console.warn(
+          "⚠️ [EventActions] Validation warnings:",
+          validationResult.warnings,
+        );
       }
 
       const eventPayload = {
@@ -54,7 +62,8 @@ export const useEventActions = () => {
       };
 
       // Check if Google Calendar is connected
-      const isGoogleConnected = isConnected && calendar?.google_ids && calendar.google_ids.length > 0;
+      const isGoogleConnected =
+        isConnected && calendar?.google_ids && calendar.google_ids.length > 0;
 
       console.log("🎯 [EventActions] Create event routing:", {
         isConnected,
@@ -66,7 +75,7 @@ export const useEventActions = () => {
 
       if (isGoogleConnected) {
         console.log("🔄 [EventActions] Creating event in Google Calendar");
-        
+
         // Create in Google Calendar
         const result = await executeGoogleAction({
           type: "ADD_EVENT",
@@ -76,18 +85,24 @@ export const useEventActions = () => {
         console.log("📊 [EventActions] Google Calendar result:", result);
 
         if (result) {
-          console.log("✅ [EventActions] Event created successfully, refreshing...");
+          console.log(
+            "✅ [EventActions] Event created successfully, refreshing...",
+          );
           // Refresh to get the actual Google Calendar event
           setTimeout(async () => {
             await refreshGoogleCalendarEvents();
           }, 1000);
           onSuccess();
         } else {
-          console.error("❌ [EventActions] Failed to create event in Google Calendar");
+          console.error(
+            "❌ [EventActions] Failed to create event in Google Calendar",
+          );
           onError("Failed to create event in Google Calendar");
         }
       } else {
-        console.log("🔄 [EventActions] Creating event in Backend (Google not connected)");
+        console.log(
+          "🔄 [EventActions] Creating event in Backend (Google not connected)",
+        );
         // Create in backend only
         dispatch({ type: "ADD_EVENT", event: eventPayload });
         onSuccess();
@@ -117,20 +132,27 @@ export const useEventActions = () => {
         },
         slotInfo,
         selectedEvent,
-        isGoogleConnected: isConnected && calendar?.google_ids && calendar.google_ids.length > 0,
+        isGoogleConnected:
+          isConnected && calendar?.google_ids && calendar.google_ids.length > 0,
       };
 
       const validationResult = ValidationEngine.validate(validationContext);
 
       if (!validationResult.isValid) {
-        console.error("❌ [EventActions] Validation failed:", validationResult.errors);
+        console.error(
+          "❌ [EventActions] Validation failed:",
+          validationResult.errors,
+        );
         onError(validationResult.errors.join("\n"));
         return;
       }
 
       // Display warnings if any
       if (validationResult.warnings && validationResult.warnings.length > 0) {
-        console.warn("⚠️ [EventActions] Validation warnings:", validationResult.warnings);
+        console.warn(
+          "⚠️ [EventActions] Validation warnings:",
+          validationResult.warnings,
+        );
       }
 
       const eventPayload = {
@@ -144,12 +166,13 @@ export const useEventActions = () => {
         created_by: profile?.id,
       };
 
-      const isGoogleConnected = isConnected && calendar?.google_ids && calendar.google_ids.length > 0;
+      const isGoogleConnected =
+        isConnected && calendar?.google_ids && calendar.google_ids.length > 0;
       const isGoogleEvent = selectedEvent.isGoogleEvent;
 
       if (isGoogleConnected && isGoogleEvent) {
         console.log("🔄 Updating event in Google Calendar");
-        
+
         const result = await executeGoogleAction({
           type: "UPDATE_EVENT",
           event: eventPayload,
@@ -180,12 +203,15 @@ export const useEventActions = () => {
     onError: (message: string) => void,
   ) => {
     try {
-      const isGoogleConnected = isConnected && calendar?.google_ids && calendar.google_ids.length > 0;
-      const isGoogleEvent = selectedEvent.isGoogleEvent || (selectedEvent.id && selectedEvent.id.includes("@"));
+      const isGoogleConnected =
+        isConnected && calendar?.google_ids && calendar.google_ids.length > 0;
+      const isGoogleEvent =
+        selectedEvent.isGoogleEvent ||
+        (selectedEvent.id && selectedEvent.id.includes("@"));
 
       if (isGoogleConnected && isGoogleEvent) {
         console.log("🔄 Deleting event from Google Calendar");
-        
+
         // Extract the actual Google Calendar event ID
         let googleEventId = selectedEvent.originalId || selectedEvent.id;
         if (googleEventId.includes("_")) {

@@ -120,7 +120,7 @@ export const useChatActions = (config: UseChatActionsConfig) => {
             msg.id === aiMessageId
               ? {
                   ...msg,
-                  message: `${result.feedback} \n **${result.profile_completion || result.job?.profile_completion||""}**`,
+                  message: `${result.feedback} \n **${result.profile_completion || result.job?.profile_completion || ""}**`,
                   canUndo: Boolean(snapshotId),
                   canRetry: (result.actions?.length || 0) > 0,
                   action_type: result.action_type,

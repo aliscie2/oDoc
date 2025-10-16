@@ -109,15 +109,17 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
 
   const handleMessage = async () => {
     handleClose();
-    
+
     if (onMessageClick && user) {
       onMessageClick(user);
       return;
     }
 
     try {
-      const existingChat = chats.find((chat) =>
-        chat.name === "private_chat" && chat.members.some((member) => member.toString() === user.id)
+      const existingChat = chats.find(
+        (chat) =>
+          chat.name === "private_chat" &&
+          chat.members.some((member) => member.toString() === user.id),
       );
 
       if (existingChat) {
@@ -128,10 +130,14 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
           id: tempChatId,
           name: "private_chat",
           messages: [],
-          members: [Principal.fromText(profile.id), Principal.fromText(user.id)],
+          members: [
+            Principal.fromText(profile.id),
+            Principal.fromText(user.id),
+          ],
           admins: [Principal.fromText(profile.id), Principal.fromText(user.id)],
           creator: Principal.fromText(profile.id),
-          workspaces: currentWorkspace?.name !== "default" ? [currentWorkspace.id] : [],
+          workspaces:
+            currentWorkspace?.name !== "default" ? [currentWorkspace.id] : [],
         };
 
         dispatch({ type: "ADD_CHAT", chat: newChat });
@@ -140,7 +146,10 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
         const result = await backendActor.make_new_chat_room(newChat);
         if ("Ok" in result) {
           const realChatId = result.Ok.id || tempChatId;
-          dispatch({ type: "UPDATE_CHAT", chat: { ...newChat, id: realChatId } });
+          dispatch({
+            type: "UPDATE_CHAT",
+            chat: { ...newChat, id: realChatId },
+          });
           enqueueSnackbar("Chat created successfully", { variant: "success" });
         } else {
           dispatch({ type: "DELETE_CHAT", chat_id: tempChatId });
@@ -172,12 +181,16 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
       const result = await backendActor?.rate_user(userPrincipal, ratingData);
 
       if (result && "Ok" in result) {
-        enqueueSnackbar("Review submitted successfully", { variant: "success" });
+        enqueueSnackbar("Review submitted successfully", {
+          variant: "success",
+        });
       } else if (result && "Err" in result) {
         enqueueSnackbar(result.Err, { variant: "error" });
       }
     } catch (error) {
-      enqueueSnackbar("Failed to submit review " + (error as Error).message, { variant: "error" });
+      enqueueSnackbar("Failed to submit review " + (error as Error).message, {
+        variant: "error",
+      });
     } finally {
       setIsSubmitting(false);
       setReviewOpen(false);
@@ -198,9 +211,9 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
         </Avatar>
       </IconButton>
 
-      <Menu 
-        anchorEl={anchorEl} 
-        open={Boolean(anchorEl)} 
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
         onClose={handleClose}
         PaperProps={{
           elevation: 3,
@@ -209,35 +222,45 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
             maxWidth: 320,
             mt: 1,
             borderRadius: 2,
-            overflow: 'visible',
-            '&:before': {
+            overflow: "visible",
+            "&:before": {
               content: '""',
-              display: 'block',
-              position: 'absolute',
+              display: "block",
+              position: "absolute",
               top: 0,
               right: 14,
               width: 10,
               height: 10,
-              bgcolor: 'background.paper',
-              transform: 'translateY(-50%) rotate(45deg)',
+              bgcolor: "background.paper",
+              transform: "translateY(-50%) rotate(45deg)",
               zIndex: 0,
             },
           },
         }}
-        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+        transformOrigin={{ horizontal: "right", vertical: "top" }}
+        anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
       >
         <Box sx={{ p: 2.5 }}>
-          <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2, mb: 1.5 }}>
+          <Box
+            sx={{ display: "flex", alignItems: "flex-start", gap: 2, mb: 1.5 }}
+          >
             <Avatar
               src={getUserPhoto() || undefined}
               alt={user.name}
-              sx={{ width: 56, height: 56, border: '3px solid', borderColor: 'divider' }}
+              sx={{
+                width: 56,
+                height: 56,
+                border: "3px solid",
+                borderColor: "divider",
+              }}
             >
               {user.name?.charAt(0) || "A"}
             </Avatar>
             <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5, fontSize: '1.1rem' }}>
+              <Typography
+                variant="h6"
+                sx={{ fontWeight: 600, mb: 0.5, fontSize: "1.1rem" }}
+              >
                 {user.name || "Anonymous"}
               </Typography>
               {user.description && (
@@ -262,62 +285,76 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
 
           {user && profile && user.id !== profile.id && (
             <Box sx={{ mt: 2 }}>
-              <FriendshipButton user={user} profile={profile} friends={friends || []} />
+              <FriendshipButton
+                user={user}
+                profile={profile}
+                friends={friends || []}
+              />
             </Box>
           )}
         </Box>
 
-        <Box sx={{ borderTop: 1, borderColor: 'divider', py: 1 }}>
+        <Box sx={{ borderTop: 1, borderColor: "divider", py: 1 }}>
           {!hide.includes("Profile") && (
-            <MenuItem 
+            <MenuItem
               onClick={handleProfile}
-              sx={{ 
-                px: 2.5, 
+              sx={{
+                px: 2.5,
                 py: 1.25,
-                '&:hover': { bgcolor: 'action.hover' }
+                "&:hover": { bgcolor: "action.hover" },
               }}
             >
-              <Person sx={{ mr: 2, fontSize: 22, color: 'text.secondary' }} />
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>View Profile</Typography>
+              <Person sx={{ mr: 2, fontSize: 22, color: "text.secondary" }} />
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                View Profile
+              </Typography>
             </MenuItem>
           )}
           {!hide.includes("Message") && (
-            <MenuItem 
+            <MenuItem
               onClick={handleMessage}
-              sx={{ 
-                px: 2.5, 
+              sx={{
+                px: 2.5,
                 py: 1.25,
-                '&:hover': { bgcolor: 'action.hover' }
+                "&:hover": { bgcolor: "action.hover" },
               }}
             >
-              <MessageIcon sx={{ mr: 2, fontSize: 22, color: 'text.secondary' }} />
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>Send Message</Typography>
+              <MessageIcon
+                sx={{ mr: 2, fontSize: 22, color: "text.secondary" }}
+              />
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                Send Message
+              </Typography>
             </MenuItem>
           )}
           {!hide.includes("Review") && (
-            <MenuItem 
+            <MenuItem
               onClick={handleReviewClick}
-              sx={{ 
-                px: 2.5, 
+              sx={{
+                px: 2.5,
                 py: 1.25,
-                '&:hover': { bgcolor: 'action.hover' }
+                "&:hover": { bgcolor: "action.hover" },
               }}
             >
-              <Star sx={{ mr: 2, fontSize: 22, color: 'text.secondary' }} />
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>Write Review</Typography>
+              <Star sx={{ mr: 2, fontSize: 22, color: "text.secondary" }} />
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                Write Review
+              </Typography>
             </MenuItem>
           )}
         </Box>
       </Menu>
 
-      <Dialog 
-        open={reviewOpen} 
+      <Dialog
+        open={reviewOpen}
         onClose={() => setReviewOpen(false)}
         PaperProps={{ sx: { borderRadius: 2, minWidth: 400 } }}
       >
         <DialogTitle sx={{ pb: 1 }}>Review {user.name}</DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
-          <Typography component="legend" sx={{ mb: 1, fontWeight: 500 }}>Rating</Typography>
+          <Typography component="legend" sx={{ mb: 1, fontWeight: 500 }}>
+            Rating
+          </Typography>
           <UiRating
             value={rating}
             onChange={(_, newValue) => setRating(newValue || 0)}
@@ -353,6 +390,5 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
     </>
   );
 };
-
 
 export default UserAvatarMenu;

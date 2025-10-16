@@ -22,7 +22,7 @@ export const MessageInput = memo<MessageInputProps>(
           setMessage("");
         }
       },
-      [message, isSending, disabled, onSendMessage]
+      [message, isSending, disabled, onSendMessage],
     );
 
     const handleKeyDown = useCallback(
@@ -32,7 +32,7 @@ export const MessageInput = memo<MessageInputProps>(
           handleSubmit(e);
         }
       },
-      [handleSubmit]
+      [handleSubmit],
     );
 
     return (
@@ -78,7 +78,7 @@ export const MessageInput = memo<MessageInputProps>(
         </IconButton>
       </Box>
     );
-  }
+  },
 );
 
 MessageInput.displayName = "MessageInput";

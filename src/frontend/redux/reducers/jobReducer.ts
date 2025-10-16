@@ -15,7 +15,7 @@ export interface JobState {
 }
 
 const initialState: JobState = {
-  currentJobId: localStorage.getItem("lastSelectedJobId")||null,
+  currentJobId: localStorage.getItem("lastSelectedJobId") || null,
   jobChanges: [],
   jobs: [],
   isChanged: false,
@@ -211,122 +211,139 @@ export function jobReducer(
             ],
         isChanged: true,
       };
-case "UPDATE_FIELDS": {
-  const category: unknown = {};
-  category[action.category] = null;
+    case "UPDATE_FIELDS": {
+      const category: unknown = {};
+      category[action.category] = null;
 
-  const formattedUpdates = action.updates.map((update) => {
-    const [field, values] = Array.isArray(update) 
-      ? update 
-      : [update.field, update.values];
-    
-    return {
-      field,
-      values: Array.isArray(values) 
-        ? values.map(v => String(v)) 
-        : [String(values)],
-    };
-  });
+      const formattedUpdates = action.updates.map((update) => {
+        const [field, values] = Array.isArray(update)
+          ? update
+          : [update.field, update.values];
 
-  if (action.feedback !== undefined) {
-    formattedUpdates.push({ 
-      field: "feedback", 
-      values: [String(action.feedback)] 
-    });
-  }
+        return {
+          field,
+          values: Array.isArray(values)
+            ? values.map((v) => String(v))
+            : [String(values)],
+        };
+      });
 
-  if (action.profile_completion !== undefined) {
-    formattedUpdates.push({
-      field: "profile_completion",
-      values: [String(action.profile_completion)],
-    });
-  }
-
-  if (!state.currentJobId) {
-    const newJob = applyFieldUpdates(
-      generateDummyJob(),
-      action.updates,
-      action.category,
-      action.feedback,
-      action.profile_completion,
-    );
-    newJob.active = true;
-
-    const jobUpdate: JobUpdate = {
-      id: newJob.id,
-      active: [true],
-      updates: formattedUpdates,
-      category: [category],
-      required_match_score: action.required_match_score ? [action.required_match_score] : [],
-      matches: [],
-    };
-
-    return {
-      ...state,
-      currentJobId: newJob.id,
-      jobs: [...state.jobs, newJob],
-      jobChanges: [...state.jobChanges, jobUpdate],
-      isChanged: true,
-    };
-  }
-
-  const currentJob = state.jobs.find((j) => j.id === state.currentJobId);
-  if (!currentJob) return state;
-
-  const updatedJob = applyFieldUpdates(
-    currentJob,
-    action.updates,
-    action.category,
-    action.feedback,
-    action.profile_completion,
-  );
-
-  const existingChange = state.jobChanges.find((j) => j.id === state.currentJobId);
-
-    const contentFields = ["skills", "description", "job_titles", "education", "certifications", "experience", "category"];
-  
-  // Safely check if updates exist and are iterable
-  const hasContentChange = Array.isArray(action.updates) && action.updates.some(
-    (update) => {
-      const [field] = Array.isArray(update) ? update : [update.field];
-      return contentFields.includes(field);
-    }
-  );
-  
-  if (hasContentChange) {
-    updatedJob.date_updated = Date.now() * 1e6;
-  }
-
-  
-  const jobUpdate: JobUpdate = existingChange
-    ? {
-        ...existingChange,
-        updates: [...existingChange.updates, ...formattedUpdates],
-        category: [category],
-        required_match_score: action.required_match_score ? [action.required_match_score] : existingChange.required_match_score,
+      if (action.feedback !== undefined) {
+        formattedUpdates.push({
+          field: "feedback",
+          values: [String(action.feedback)],
+        });
       }
-    : {
-        id: state.currentJobId,
-        active: [true],
-        updates: formattedUpdates,
-        category: [category],
-        required_match_score: action.required_match_score ? [action.required_match_score] : [],
-        matches: [],
+
+      if (action.profile_completion !== undefined) {
+        formattedUpdates.push({
+          field: "profile_completion",
+          values: [String(action.profile_completion)],
+        });
+      }
+
+      if (!state.currentJobId) {
+        const newJob = applyFieldUpdates(
+          generateDummyJob(),
+          action.updates,
+          action.category,
+          action.feedback,
+          action.profile_completion,
+        );
+        newJob.active = true;
+
+        const jobUpdate: JobUpdate = {
+          id: newJob.id,
+          active: [true],
+          updates: formattedUpdates,
+          category: [category],
+          required_match_score: action.required_match_score
+            ? [action.required_match_score]
+            : [],
+          matches: [],
+        };
+
+        return {
+          ...state,
+          currentJobId: newJob.id,
+          jobs: [...state.jobs, newJob],
+          jobChanges: [...state.jobChanges, jobUpdate],
+          isChanged: true,
+        };
+      }
+
+      const currentJob = state.jobs.find((j) => j.id === state.currentJobId);
+      if (!currentJob) return state;
+
+      const updatedJob = applyFieldUpdates(
+        currentJob,
+        action.updates,
+        action.category,
+        action.feedback,
+        action.profile_completion,
+      );
+
+      const existingChange = state.jobChanges.find(
+        (j) => j.id === state.currentJobId,
+      );
+
+      const contentFields = [
+        "skills",
+        "description",
+        "job_titles",
+        "education",
+        "certifications",
+        "experience",
+        "category",
+      ];
+
+      // Safely check if updates exist and are iterable
+      const hasContentChange =
+        Array.isArray(action.updates) &&
+        action.updates.some((update) => {
+          const [field] = Array.isArray(update) ? update : [update.field];
+          return contentFields.includes(field);
+        });
+
+      if (hasContentChange) {
+        updatedJob.date_updated = Date.now() * 1e6;
+      }
+
+      const jobUpdate: JobUpdate = existingChange
+        ? {
+            ...existingChange,
+            updates: [...existingChange.updates, ...formattedUpdates],
+            category: [category],
+            required_match_score: action.required_match_score
+              ? [action.required_match_score]
+              : existingChange.required_match_score,
+          }
+        : {
+            id: state.currentJobId,
+            active: [true],
+            updates: formattedUpdates,
+            category: [category],
+            required_match_score: action.required_match_score
+              ? [action.required_match_score]
+              : [],
+            matches: [],
+          };
+
+      return {
+        ...state,
+        jobs: state.jobs.map((j) =>
+          j.id === state.currentJobId ? updatedJob : j,
+        ),
+        jobChanges: existingChange
+          ? state.jobChanges.map((j) =>
+              j.id === state.currentJobId ? jobUpdate : j,
+            )
+          : [...state.jobChanges, jobUpdate],
+        isChanged: true,
       };
+    }
 
-  return {
-    ...state,
-    jobs: state.jobs.map((j) => (j.id === state.currentJobId ? updatedJob : j)),
-    jobChanges: existingChange
-      ? state.jobChanges.map((j) => (j.id === state.currentJobId ? jobUpdate : j))
-      : [...state.jobChanges, jobUpdate],
-    isChanged: true,
-  };
-}
-
-
-    
-      case "IS_LOOKING_NEW_MATCHES":
+    case "IS_LOOKING_NEW_MATCHES":
       return { ...state, jobSearchStage: action.stage };
 
     case "UPDATE_MATCHING_JOBS": {
@@ -374,84 +391,132 @@ case "UPDATE_FIELDS": {
             .concat(action.matchingJobs)
         : state.matchingJobs;
 
-     
+      return {
+        ...state,
+        jobs: hasMatchChanges
+          ? state.jobs.map((j) =>
+              j.id === state.currentJobId ? { ...j, matches: newMatches2 } : j,
+            )
+          : state.jobs,
+        matchingJobs: newMatchingJobs,
+        jobChanges: state.jobChanges, // ← Don't modify jobChanges for matches
+        isChanged: state.isChanged,
+      };
+    }
+    case "UPDATE_MATCHES": {
+      const currentJob = state.jobs.find((j) => j.id === state.currentJobId);
+      if (!currentJob) return state;
+
+      const updatedMatches =
+        currentJob.matches?.map((existingMatch) => {
+          const updateMatch = action.matches.find(
+            (m) => m.job_id === existingMatch.job_id,
+          );
+          return updateMatch
+            ? { ...existingMatch, ...updateMatch }
+            : existingMatch;
+        }) || [];
+
+      const newMatches = action.matches.filter(
+        (newMatch) =>
+          !updatedMatches.some(
+            (existing) => existing.job_id === newMatch.job_id,
+          ),
+      );
+      const finalMatches = [...updatedMatches, ...newMatches];
 
       return {
-    ...state,
-    jobs: hasMatchChanges
-      ? state.jobs.map((j) =>
-          j.id === state.currentJobId ? { ...j, matches: newMatches2 } : j,
-        )
-      : state.jobs,
-    matchingJobs: newMatchingJobs,
-    jobChanges: state.jobChanges,  // ← Don't modify jobChanges for matches
-    isChanged: state.isChanged,
-  };
+        ...state,
+        isChanged: true,
+        jobs: state.jobs.map((job) =>
+          job.id === state.currentJobId
+            ? { ...job, matches: finalMatches }
+            : job,
+        ),
+        jobChanges: state.jobChanges.some((j) => j.id === state.currentJobId)
+          ? state.jobChanges.map((change) =>
+              change.id === state.currentJobId
+                ? {
+                    ...change,
+                    matchChanges: {
+                      add: action.matches,
+                      updates: [],
+                      delete_matches: [],
+                      reset: [],
+                    },
+                  }
+                : change,
+            )
+          : [
+              ...state.jobChanges,
+              {
+                id: state.currentJobId!,
+                active: [],
+                updates: [],
+                category: [],
+                required_match_score: [],
+                matchChanges: {
+                  add: action.matches,
+                  updates: [],
+                  delete_matches: [],
+                  reset: [],
+                },
+              },
+            ],
+      };
     }
-case "UPDATE_MATCHES": {
-  const currentJob = state.jobs.find((j) => j.id === state.currentJobId);
-  if (!currentJob) return state;
 
-  const updatedMatches = currentJob.matches?.map((existingMatch) => {
-    const updateMatch = action.matches.find((m) => m.job_id === existingMatch.job_id);
-    return updateMatch ? { ...existingMatch, ...updateMatch } : existingMatch;
-  }) || [];
+    case "DELETE_MATCH":
+      const newMatches =
+        state.jobs
+          .find((j) => j.id === state.currentJobId)
+          ?.matches.filter((match) => match.job_id !== action.id) || [];
 
-  const newMatches = action.matches.filter(
-    (newMatch) => !updatedMatches.some((existing) => existing.job_id === newMatch.job_id)
-  );
-  const finalMatches = [...updatedMatches, ...newMatches];
-
-  return {
-    ...state,
-    isChanged: true,
-    jobs: state.jobs.map((job) =>
-      job.id === state.currentJobId ? { ...job, matches: finalMatches } : job
-    ),
-    jobChanges: state.jobChanges.some((j) => j.id === state.currentJobId)
-      ? state.jobChanges.map((change) =>
-          change.id === state.currentJobId
-            ? { ...change, matchChanges: { add: action.matches, updates: [], delete_matches: [], reset: [] } }
-            : change
-        )
-      : [...state.jobChanges, {
-          id: state.currentJobId!,
-          active: [],
-          updates: [],
-          category: [],
-          required_match_score: [],
-          matchChanges: { add: action.matches, updates: [], delete_matches: [], reset: [] }
-        }],
-  };
-}
-
-case "DELETE_MATCH":
-  const newMatches = state.jobs.find((j) => j.id === state.currentJobId)?.matches.filter((match) => match.job_id !== action.id) || [];
-
-  return {
-    ...state,
-    jobChanges: state.jobChanges.some((j) => j.id === state.currentJobId)
-      ? state.jobChanges.map((j) =>
-          j.id === state.currentJobId
-            ? { ...j, matchChanges: { ...j.matchChanges, delete_matches: [...(j.matchChanges?.delete_matches || []), action.id] } }
-            : j
-        )
-      : [...state.jobChanges, {
-          id: state.currentJobId,
-          active: [],
-          updates: [],
-          category: [],
-          required_match_score: [],
-          matchChanges: { delete_matches: [action.id], updates: [], add: [], reset: [] }
-        }],
-    jobs: state.jobs.map((job) =>
-      job.id === state.currentJobId
-        ? { ...job, matches: job.matches.filter((match) => match.job_id !== action.id) }
-        : job
-    ),
-    isChanged: true,
-  };
-
+      return {
+        ...state,
+        jobChanges: state.jobChanges.some((j) => j.id === state.currentJobId)
+          ? state.jobChanges.map((j) =>
+              j.id === state.currentJobId
+                ? {
+                    ...j,
+                    matchChanges: {
+                      ...j.matchChanges,
+                      delete_matches: [
+                        ...(j.matchChanges?.delete_matches || []),
+                        action.id,
+                      ],
+                    },
+                  }
+                : j,
+            )
+          : [
+              ...state.jobChanges,
+              {
+                id: state.currentJobId,
+                active: [],
+                updates: [],
+                category: [],
+                required_match_score: [],
+                matchChanges: {
+                  delete_matches: [action.id],
+                  updates: [],
+                  add: [],
+                  reset: [],
+                },
+              },
+            ],
+        jobs: state.jobs.map((job) =>
+          job.id === state.currentJobId
+            ? {
+                ...job,
+                matches: job.matches.filter(
+                  (match) => match.job_id !== action.id,
+                ),
+              }
+            : job,
+        ),
+        isChanged: true,
+      };
 
     case "CLEAR_JOB_CHANGES":
       return { ...state, jobChanges: [], isChanged: false };
@@ -479,62 +544,65 @@ case "DELETE_MATCH":
       return { ...state, jobs: [...state.jobs, action.job] };
 
     case "DELETE_JOB":
-  const filteredJobs = state.jobs.filter((job) => job.id !== action.id);
-  const isDeleted = state.currentJobId === action.id;
-  const newCurrentId = isDeleted && filteredJobs.length > 0 ? filteredJobs[0].id : (isDeleted ? null : state.currentJobId);
+      const filteredJobs = state.jobs.filter((job) => job.id !== action.id);
+      const isDeleted = state.currentJobId === action.id;
+      const newCurrentId =
+        isDeleted && filteredJobs.length > 0
+          ? filteredJobs[0].id
+          : isDeleted
+            ? null
+            : state.currentJobId;
 
-  return {
-    ...state,
-    jobs: filteredJobs,
-    currentJobId: newCurrentId,
-    jobChanges: state.jobChanges.filter(j => j.id !== action.id),
-  };
-  
+      return {
+        ...state,
+        jobs: filteredJobs,
+        currentJobId: newCurrentId,
+        jobChanges: state.jobChanges.filter((j) => j.id !== action.id),
+      };
 
-  case "UPDATE_REQUIRED_MATCH_SCORE":
-  if (!state.currentJobId) return state;
+    case "UPDATE_REQUIRED_MATCH_SCORE":
+      if (!state.currentJobId) return state;
 
-  const updatedJob = state.jobs.find((j) => j.id === state.currentJobId);
-  if (!updatedJob) return state;
+      const updatedJob = state.jobs.find((j) => j.id === state.currentJobId);
+      if (!updatedJob) return state;
 
-  const updatedJobWithScore = {
-    ...updatedJob,
-    required_match_score: action.score,
-  };
+      const updatedJobWithScore = {
+        ...updatedJob,
+        required_match_score: action.score,
+      };
 
-  const existingChange = state.jobChanges.find(
-    (j) => j.id === state.currentJobId,
-  );
+      const existingChange = state.jobChanges.find(
+        (j) => j.id === state.currentJobId,
+      );
 
-  const newJobChanges = existingChange
-    ? state.jobChanges.map((j) =>
-        j.id === state.currentJobId
-          ? { ...j, required_match_score: [action.score] }
-          : j,
-      )
-    : [
-        ...state.jobChanges,
-        {
-          id: state.currentJobId,
-          active: [],
-          matches: [],
-          updates: [],
-          category: [],
-          required_match_score: [action.score],
-        },
-      ];
+      const newJobChanges = existingChange
+        ? state.jobChanges.map((j) =>
+            j.id === state.currentJobId
+              ? { ...j, required_match_score: [action.score] }
+              : j,
+          )
+        : [
+            ...state.jobChanges,
+            {
+              id: state.currentJobId,
+              active: [],
+              matches: [],
+              updates: [],
+              category: [],
+              required_match_score: [action.score],
+            },
+          ];
 
-  return {
-    ...state,
-    jobs: state.jobs.map((j) =>
-      j.id === state.currentJobId ? updatedJobWithScore : j,
-    ),
-    jobChanges: newJobChanges,
-    isChanged: true,
-  };
-  
-      
-      default:
+      return {
+        ...state,
+        jobs: state.jobs.map((j) =>
+          j.id === state.currentJobId ? updatedJobWithScore : j,
+        ),
+        jobChanges: newJobChanges,
+        isChanged: true,
+      };
+
+    default:
       return state;
   }
 }

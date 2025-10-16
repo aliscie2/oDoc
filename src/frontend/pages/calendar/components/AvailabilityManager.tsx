@@ -21,7 +21,10 @@ import {
   FormControlLabel,
   Divider,
 } from "@mui/material";
-import { Add as AddIcon, DoNotDisturb as DoNotDisturbIcon } from "@mui/icons-material";
+import {
+  Add as AddIcon,
+  DoNotDisturb as DoNotDisturbIcon,
+} from "@mui/icons-material";
 
 interface TimeSlot {
   start_time: bigint;
@@ -48,7 +51,8 @@ const AvailabilityManager: React.FC = () => {
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedAvailability, setSelectedAvailability] = useState<Availability | null>(null);
+  const [selectedAvailability, setSelectedAvailability] =
+    useState<Availability | null>(null);
 
   const isOwner = calendar?.owner === profile?.id;
   const availabilities = calendar?.availabilities || [];
@@ -95,7 +99,9 @@ const AvailabilityManager: React.FC = () => {
   const handleSave = () => {
     if (selectedAvailability) {
       dispatch({
-        type: selectedAvailability.id ? "UPDATE_AVAILABILITY" : "ADD_AVAILABILITY",
+        type: selectedAvailability.id
+          ? "UPDATE_AVAILABILITY"
+          : "ADD_AVAILABILITY",
         availability: selectedAvailability,
       });
       handleDialogClose();
@@ -146,7 +152,9 @@ const AvailabilityManager: React.FC = () => {
                 {availability.schedule_type.WeeklyRecurring && (
                   <Typography component="span" color="text.secondary">
                     {" • "}
-                    {formatDays(availability.schedule_type.WeeklyRecurring.days)}
+                    {formatDays(
+                      availability.schedule_type.WeeklyRecurring.days,
+                    )}
                   </Typography>
                 )}
               </Typography>
@@ -156,9 +164,16 @@ const AvailabilityManager: React.FC = () => {
         ))}
       </Menu>
 
-      <Dialog open={dialogOpen} onClose={handleDialogClose} maxWidth="sm" fullWidth>
+      <Dialog
+        open={dialogOpen}
+        onClose={handleDialogClose}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>
-          {selectedAvailability?.id ? "Edit Availability" : "Create Availability"}
+          {selectedAvailability?.id
+            ? "Edit Availability"
+            : "Create Availability"}
         </DialogTitle>
         <DialogContent>
           {selectedAvailability && (
@@ -197,14 +212,17 @@ const AvailabilityManager: React.FC = () => {
                   <InputLabel>Days</InputLabel>
                   <Select
                     multiple
-                    value={selectedAvailability.schedule_type.WeeklyRecurring.days}
+                    value={
+                      selectedAvailability.schedule_type.WeeklyRecurring.days
+                    }
                     onChange={(e) => {
                       const days = e.target.value as number[];
                       setSelectedAvailability({
                         ...selectedAvailability,
                         schedule_type: {
                           WeeklyRecurring: {
-                            ...selectedAvailability.schedule_type.WeeklyRecurring!,
+                            ...selectedAvailability.schedule_type
+                              .WeeklyRecurring!,
                             days: days,
                           },
                         },
@@ -216,7 +234,11 @@ const AvailabilityManager: React.FC = () => {
                         {(selected as number[]).map((day) => (
                           <Chip
                             key={day}
-                            label={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][day - 1]}
+                            label={
+                              ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][
+                                day - 1
+                              ]
+                            }
                           />
                         ))}
                       </Box>
@@ -224,7 +246,17 @@ const AvailabilityManager: React.FC = () => {
                   >
                     {[1, 2, 3, 4, 5, 6, 7].map((day) => (
                       <MenuItem key={day} value={day}>
-                        {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"][day - 1]}
+                        {
+                          [
+                            "Monday",
+                            "Tuesday",
+                            "Wednesday",
+                            "Thursday",
+                            "Friday",
+                            "Saturday",
+                            "Sunday",
+                          ][day - 1]
+                        }
                       </MenuItem>
                     ))}
                   </Select>

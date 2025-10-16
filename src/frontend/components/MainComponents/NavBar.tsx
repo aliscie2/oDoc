@@ -244,13 +244,13 @@ const NavBar = (props: any) => {
                   dragEnd={dragEnd}
                   defaultItems={defaultItems}
                 />
-                <Box 
-                  sx={{ 
-                    display: "flex", 
-                    flexDirection: "column", 
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
                     gap: 1.5,
                     mt: 2,
-                    px: 1
+                    px: 1,
                   }}
                 >
                   <CreateFile />

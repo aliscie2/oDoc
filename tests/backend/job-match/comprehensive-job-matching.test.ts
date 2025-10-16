@@ -42,10 +42,7 @@ async function createJobProfile(skills: string[]): Promise<JobUpdate> {
 }
 
 // NEW: Use update_matches instead of update_job for matches
-async function updateJobWithMatches(
-  jobId: string,
-  matches: Job[],
-) {
+async function updateJobWithMatches(jobId: string, matches: Job[]) {
   const matchObjects: Match[] = matches.map((talent) => ({
     user_id: talent.user_id,
     job_id: talent.id,
@@ -56,13 +53,16 @@ async function updateJobWithMatches(
     is_connected: false,
   }));
 
-  const result = await globalThis.testActor.update_matches({
-    current_job_id: jobId,
-    delete_matches: [],
-    updates: [],
-    add: matchObjects,
-    reset: [],
-  },[]);
+  const result = await globalThis.testActor.update_matches(
+    {
+      current_job_id: jobId,
+      delete_matches: [],
+      updates: [],
+      add: matchObjects,
+      reset: [],
+    },
+    [],
+  );
 
   if ("Err" in result) {
     throw new Error(`Failed to update matches: ${result.Err}`);
@@ -79,7 +79,7 @@ async function getInitJobs(
     JOB_SKILLS,
     lookingFor,
   );
-  
+
   // Save matches using new update_matches endpoint
   if (jobMatches.length > 0) {
     await updateJobWithMatches(jobProfileId, jobMatches);
@@ -140,7 +140,9 @@ describe("Comprehensive Job Matching System", () => {
     }
 
     for (let i = 1; i <= 3; i++) {
-      const { jobMatches: matches, userJobs } = await getInitJobs(jobProfile.id);
+      const { jobMatches: matches, userJobs } = await getInitJobs(
+        jobProfile.id,
+      );
 
       expect(matches.length).toBe(10);
       expect(userJobs.jobs[0].matches.length).toBe(10 * i);
@@ -152,13 +154,13 @@ describe("Comprehensive Job Matching System", () => {
 
     globalThis.testActor.setIdentity(talentsUsers[0].user);
     await makeRandomTalentUpdate(talentsUsers[0].talentId);
-    
+
     globalThis.testActor.setIdentity(jobCreator);
     const { jobMatches: newMatches } = await getInitJobs(jobProfile.id);
-    
+
     // Check if backend supports re-matching updated profiles
     expect(newMatches.length).toBeGreaterThanOrEqual(0);
-    
+
     if (newMatches.length === 0) {
       console.log("Backend does not return updated profiles as new matches");
     }

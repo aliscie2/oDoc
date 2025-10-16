@@ -1,7 +1,7 @@
 // Validation type definitions
 
-import { Calendar } from './calendar.types';
-import { Event, SlotInfo } from './event.types';
+import { Calendar } from "./calendar.types";
+import { Event, SlotInfo } from "./event.types";
 
 export interface ValidationContext {
   calendar: Calendar;
@@ -25,9 +25,9 @@ export interface ValidationResult {
   warnings: string[];
 }
 
-export type ValidationScenario = 
-  | 'OWN_CALENDAR_NO_GOOGLE'
-  | 'OWN_CALENDAR_WITH_GOOGLE'
-  | 'SHARED_CALENDAR_BASIC'
-  | 'SHARED_CALENDAR_READONLY'
-  | 'SHARED_CALENDAR_ADVANCED';
+export type ValidationScenario =
+  | "OWN_CALENDAR_NO_GOOGLE"
+  | "OWN_CALENDAR_WITH_GOOGLE"
+  | "SHARED_CALENDAR_BASIC"
+  | "SHARED_CALENDAR_READONLY"
+  | "SHARED_CALENDAR_ADVANCED";

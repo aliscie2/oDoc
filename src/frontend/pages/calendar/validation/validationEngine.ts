@@ -1,7 +1,11 @@
 // Validation Engine - Core validation orchestration
 
-import { ValidationContext, ValidationResult, ValidationScenario } from './validationTypes';
-import { getRulesForScenario } from './validationRules';
+import {
+  ValidationContext,
+  ValidationResult,
+  ValidationScenario,
+} from "./validationTypes";
+import { getRulesForScenario } from "./validationRules";
 
 /**
  * Main Validation Engine
@@ -46,8 +50,8 @@ export class ValidationEngine {
     const scenario = this.determineScenario(context);
     const rules = getRulesForScenario(scenario);
 
-    console.log('🔍 [ValidationEngine] Scenario:', scenario);
-    console.log('🔍 [ValidationEngine] Rules to apply:', rules.length);
+    console.log("🔍 [ValidationEngine] Scenario:", scenario);
+    console.log("🔍 [ValidationEngine] Rules to apply:", rules.length);
 
     const errors: string[] = [];
     const warnings: string[] = [];
@@ -77,7 +81,7 @@ export class ValidationEngine {
 
     const isValid = errors.length === 0;
 
-    console.log('🔍 [ValidationEngine] Result:', {
+    console.log("🔍 [ValidationEngine] Result:", {
       isValid,
       errorCount: errors.length,
       warningCount: warnings.length,
@@ -112,12 +116,12 @@ export class ValidationEngine {
   static getErrorMessage(context: ValidationContext): string {
     const result = this.validate(context);
     if (result.errors.length === 0) {
-      return '';
+      return "";
     }
     if (result.errors.length === 1) {
       return result.errors[0];
     }
-    return '• ' + result.errors.join('\n• ');
+    return "• " + result.errors.join("\n• ");
   }
 }
 

@@ -14,13 +14,20 @@ interface ConnectButtonProps {
   showAvatar?: boolean;
 }
 
-
-const ConnectButton: React.FC<ConnectButtonProps> = ({ jobId, matchingJob, showAvatar = true }) => {
+const ConnectButton: React.FC<ConnectButtonProps> = ({
+  jobId,
+  matchingJob,
+  showAvatar = true,
+}) => {
   const { calendar } = useSelector((state: unknown) => state.calendarState);
-  const { currentJobId, jobs } = useSelector((state: unknown) => state.jobState);
+  const { currentJobId, jobs } = useSelector(
+    (state: unknown) => state.jobState,
+  );
   const { chats } = useSelector((state: unknown) => state.chatsState); // ADD THIS
   const currentJob: Job = jobs?.find((job: Job) => job.id === currentJobId);
-  const match: Match | undefined = currentJob?.matches?.find((m: Match) => m.job_id === jobId);
+  const match: Match | undefined = currentJob?.matches?.find(
+    (m: Match) => m.job_id === jobId,
+  );
   const dispatch = useDispatch();
   const [connecting, setConnecting] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
@@ -41,15 +48,22 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({ jobId, matchingJob, showA
     }
 
     try {
-      const res = await backendActor.get_calendar_by_author(matchingJob.user_id);
+      const res = await backendActor.get_calendar_by_author(
+        matchingJob.user_id,
+      );
       const emails = [...(res?.[0]?.google_ids || []), ...matchingJob.emails];
-      const jobTitle = Array.isArray(currentJob.title) ? currentJob.title[0] : currentJob.title || "this position";
+      const jobTitle = Array.isArray(currentJob.title)
+        ? currentJob.title[0]
+        : currentJob.title || "this position";
 
       const sendFallbackMessage = async (includeEmailError = false) => {
         const baseMessage = `Hello, I am interested in ${jobTitle}.`;
-        const emailErrorMsg = " Your email address appears to be incorrect. Please update your email so oDoc can contact you in the future.";
-        const contactMsg = matchingJob.contacts ? ` Is ${matchingJob.contacts} your contact?` : " Please add your email.";
-        
+        const emailErrorMsg =
+          " Your email address appears to be incorrect. Please update your email so oDoc can contact you in the future.";
+        const contactMsg = matchingJob.contacts
+          ? ` Is ${matchingJob.contacts} your contact?`
+          : " Please add your email.";
+
         const chatId = `${currentJob.user_id}_${matchingJob.user_id}`;
 
         const newMessage = {
@@ -57,26 +71,33 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({ jobId, matchingJob, showA
           date: BigInt(Date.now()) * BigInt(1e6),
           sender: Principal.fromText(currentJob.user_id),
           seen_by: [Principal.fromText(currentJob.user_id)],
-          message: baseMessage + (includeEmailError ? emailErrorMsg : contactMsg),
+          message:
+            baseMessage + (includeEmailError ? emailErrorMsg : contactMsg),
           chat_id: chatId,
         };
-        
+
         const existingChat = chats?.find((c) => c.id === chatId);
-        
+
         if (!existingChat) {
           const newChat = {
             id: chatId,
             name: "private_chat",
             messages: [newMessage],
-            members: [Principal.fromText(currentJob.user_id), Principal.fromText(matchingJob.user_id)],
-            admins: [Principal.fromText(currentJob.user_id), Principal.fromText(matchingJob.user_id)],
+            members: [
+              Principal.fromText(currentJob.user_id),
+              Principal.fromText(matchingJob.user_id),
+            ],
+            admins: [
+              Principal.fromText(currentJob.user_id),
+              Principal.fromText(matchingJob.user_id),
+            ],
             creator: Principal.fromText(currentJob.user_id),
             workspaces: [],
           };
-          
+
           dispatch({ type: "ADD_CHAT", chat: newChat });
           dispatch({ type: "OPEN_CHAT", chatId });
-          
+
           try {
             await backendActor.make_new_chat_room(newChat);
           } catch (err) {
@@ -85,14 +106,20 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({ jobId, matchingJob, showA
         } else {
           dispatch({ type: "ADD_NOTIFICATION", message: newMessage });
         }
-        
+
         try {
-          await backendActor.send_message([Principal.fromText(matchingJob.user_id)], newMessage);
+          await backendActor.send_message(
+            [Principal.fromText(matchingJob.user_id)],
+            newMessage,
+          );
         } catch (err) {
           console.error("Failed to send message:", err);
         }
-        
-        dispatch({ type: "UPDATE_MATCHES", matches: [{ ...match, is_connected: true }] });
+
+        dispatch({
+          type: "UPDATE_MATCHES",
+          matches: [{ ...match, is_connected: true }],
+        });
       };
 
       if (emails.length === 0) {
@@ -101,11 +128,12 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({ jobId, matchingJob, showA
           enqueueSnackbar("Message sent.", { variant: "success" });
         } catch (err) {
           console.error("Failed to send fallback message:", err);
-          enqueueSnackbar("Something went wrong, contact x.com/odoc_ic.", { variant: "error" });
+          enqueueSnackbar("Something went wrong, contact x.com/odoc_ic.", {
+            variant: "error",
+          });
         }
-        
       } else {
-        const category = Object.keys(currentJob?.category||{"Job":null})[0];
+        const category = Object.keys(currentJob?.category || { Job: null })[0];
         const jobData = {
           job: { ...currentJob, category },
           match: { ...match, score: match.score * 100 },
@@ -114,9 +142,18 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({ jobId, matchingJob, showA
 
         let emailSent = false;
         for (const email of emails) {
-          const result = await sendEmail("oDoc AI", category === "Job" ? "New opportunity" : "New talent", [email], jobData, "odoc_job_match");
+          const result = await sendEmail(
+            "oDoc AI",
+            category === "Job" ? "New opportunity" : "New talent",
+            [email],
+            jobData,
+            "odoc_job_match",
+          );
           if (result) {
-            dispatch({ type: "UPDATE_MATCHES", matches: [{ ...match, is_connected: true }] });
+            dispatch({
+              type: "UPDATE_MATCHES",
+              matches: [{ ...match, is_connected: true }],
+            });
             enqueueSnackbar("Connection sent.", { variant: "success" });
             emailSent = true;
             break;
@@ -125,7 +162,9 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({ jobId, matchingJob, showA
 
         if (!emailSent) {
           await sendFallbackMessage(true);
-          enqueueSnackbar("Message sent about incorrect email.", { variant: "success" });
+          enqueueSnackbar("Message sent about incorrect email.", {
+            variant: "success",
+          });
         }
       }
     } catch (error) {
@@ -138,7 +177,7 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({ jobId, matchingJob, showA
     <>
       {showAvatar && <UserAvatarMenu user_id={matchingJob?.user_id} />}
       <Button
-        variant={ "contained"}
+        variant={"contained"}
         color="primary"
         size="small"
         onClick={handleConnect}
@@ -151,7 +190,5 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({ jobId, matchingJob, showA
     </>
   );
 };
-
-
 
 export default ConnectButton;

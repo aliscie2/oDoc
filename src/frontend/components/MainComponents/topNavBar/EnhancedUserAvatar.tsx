@@ -16,8 +16,8 @@ const Avatar = styled(Box)({
   justifyContent: "center",
   cursor: "pointer",
   transition: "transform 0.2s ease, border-color 0.2s ease",
-  
-  "&:hover": { 
+
+  "&:hover": {
     transform: "scale(1.05)",
     borderColor: "rgba(255, 255, 255, 0.5)",
   },
@@ -35,7 +35,8 @@ const FallbackAvatar = styled(Box)({
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  background: "linear-gradient(135deg, rgba(100, 100, 255, 0.3), rgba(150, 100, 255, 0.4))",
+  background:
+    "linear-gradient(135deg, rgba(100, 100, 255, 0.3), rgba(150, 100, 255, 0.4))",
   color: "rgba(255, 255, 255, 0.9)",
   fontSize: "0.85rem",
   fontWeight: "600",

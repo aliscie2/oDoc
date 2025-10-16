@@ -1,7 +1,7 @@
 // Google Calendar FreeBusy API Integration
 // Fetches owner's busy times without revealing event details
 
-import { Event } from '../types/event.types';
+import { Event } from "../types/event.types";
 
 export interface FreeBusyTimeSlot {
   start: string; // ISO 8601 format

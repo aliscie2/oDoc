@@ -1,17 +1,17 @@
 // Validation Types and Interfaces
 
-import { Event, SlotInfo } from '../types/event.types';
-import { Calendar } from '../types/calendar.types';
+import { Event, SlotInfo } from "../types/event.types";
+import { Calendar } from "../types/calendar.types";
 
 /**
  * Validation scenarios based on calendar ownership and connection status
  */
 export enum ValidationScenario {
-  OWN_CALENDAR_GOOGLE = 'own_calendar_google',
-  OWN_CALENDAR_BACKEND = 'own_calendar_backend',
-  SHARED_CALENDAR_BASIC = 'shared_calendar_basic',
-  SHARED_CALENDAR_CONTRIBUTOR = 'shared_calendar_contributor',
-  SHARED_CALENDAR_ADVANCED = 'shared_calendar_advanced',
+  OWN_CALENDAR_GOOGLE = "own_calendar_google",
+  OWN_CALENDAR_BACKEND = "own_calendar_backend",
+  SHARED_CALENDAR_BASIC = "shared_calendar_basic",
+  SHARED_CALENDAR_CONTRIBUTOR = "shared_calendar_contributor",
+  SHARED_CALENDAR_ADVANCED = "shared_calendar_advanced",
 }
 
 /**

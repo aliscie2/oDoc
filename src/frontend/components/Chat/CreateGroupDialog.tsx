@@ -45,8 +45,7 @@ export const CreateGroupDialog = memo<CreateGroupDialogProps>(
       name: "",
       members: [],
       admins: [],
-      workspace:
-        currentWorkspace?.name !== "default" ? [currentWorkspace] : [],
+      workspace: currentWorkspace?.name !== "default" ? [currentWorkspace] : [],
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -192,7 +191,7 @@ export const CreateGroupDialog = memo<CreateGroupDialogProps>(
         </DialogActions>
       </Dialog>
     );
-  }
+  },
 );
 
 CreateGroupDialog.displayName = "CreateGroupDialog";

@@ -32,8 +32,7 @@ const initialState: any = {
 
 export function calendarReducer(state = initialState, action: any): unknown {
   switch (action.type) {
-
-     case "SET_SHARED_CALENDAR":
+    case "SET_SHARED_CALENDAR":
       return {
         ...state,
         sharedCalendar: action.sharedCalendar,
@@ -45,7 +44,6 @@ export function calendarReducer(state = initialState, action: any): unknown {
         sharedCalendar: null,
         owner_google_events: [],
       };
-
 
     case "SET_TRAINING_DATA":
       return {

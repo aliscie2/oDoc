@@ -24,20 +24,19 @@ const getScoreColor = (score: number): string => {
   return "#f44336";
 };
 
-
-const JobMatchCard: React.FC<JobMatchCardProps> = ({ 
-  job, 
-  match, 
-  score, 
-  onViewDetails 
+const JobMatchCard: React.FC<JobMatchCardProps> = ({
+  job,
+  match,
+  score,
+  onViewDetails,
 }) => {
   const scoreColor = getScoreColor(score);
   const description = job.description || "";
-  const fallbackText = description || (
-    job.skills?.length > 0
+  const fallbackText =
+    description ||
+    (job.skills?.length > 0
       ? `Skills: ${job.skills.slice(0, 5).join(", ")}${job.skills.length > 5 ? "..." : ""}`
-      : ""
-  );
+      : "");
 
   return (
     <Card
@@ -48,7 +47,13 @@ const JobMatchCard: React.FC<JobMatchCardProps> = ({
       }}
     >
       <CardContent sx={{ p: 2.5 }}>
-        <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 2 }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            gap: 2,
+          }}
+        >
           {/* Avatar */}
           <Box sx={{ flexShrink: 0 }}>
             <UserAvatarMenu user_id={job.user_id} />
@@ -57,29 +62,41 @@ const JobMatchCard: React.FC<JobMatchCardProps> = ({
           {/* Content */}
           <Box sx={{ flex: 1, minWidth: 0 }}>
             {/* Header: Title + Badge + Button */}
-            <Box sx={{ 
-              display: "flex", 
-              flexDirection: { xs: "column", sm: "row" },
-              alignItems: { xs: "flex-start", sm: "center" },
-              gap: 1, 
-              mb: 1.5,
-              flexWrap: "wrap"
-            }}>
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  fontWeight: 600, 
-                  fontSize: "1rem", 
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                alignItems: { xs: "flex-start", sm: "center" },
+                gap: 1,
+                mb: 1.5,
+                flexWrap: "wrap",
+              }}
+            >
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 600,
+                  fontSize: "1rem",
                   lineHeight: 1.3,
                   flex: 1,
-                  minWidth: 0
+                  minWidth: 0,
                 }}
               >
                 {job.job_titles?.[0] || "Untitled Position"}
               </Typography>
 
-              <Box sx={{ display: "flex", gap: 1, alignItems: "center", flexWrap: "wrap" }}>
-                <Tooltip title="Match score based Comparison between job requirement and the talent profile" arrow>
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 1,
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                }}
+              >
+                <Tooltip
+                  title="Match score based Comparison between job requirement and the talent profile"
+                  arrow
+                >
                   <Chip
                     label={`${score}% match`}
                     size="small"
@@ -89,23 +106,28 @@ const JobMatchCard: React.FC<JobMatchCardProps> = ({
                       fontWeight: 600,
                       fontSize: "0.75rem",
                       height: 24,
-                      flexShrink: 0
+                      flexShrink: 0,
                     }}
                   />
                 </Tooltip>
                 <Box sx={{ display: { xs: "none", sm: "block" } }}>
-                  <ConnectButton jobId={job.id} matchingJob={job} showAvatar={false} />
+                  <ConnectButton
+                    jobId={job.id}
+                    matchingJob={job}
+                    showAvatar={false}
+                  />
                 </Box>
               </Box>
             </Box>
 
             {/* Description */}
-            <Typography 
-              variant="body2" 
-              color="text.secondary" 
+            <Typography
+              variant="body2"
+              color="text.secondary"
               sx={{ lineHeight: 1.5, mb: 1.5, wordBreak: "break-word" }}
             >
-              {fallbackText.slice(0, 200)}{fallbackText.length > 200 ? "..." : ""}{" "}
+              {fallbackText.slice(0, 200)}
+              {fallbackText.length > 200 ? "..." : ""}{" "}
               <Typography
                 component="span"
                 onClick={onViewDetails}
@@ -124,27 +146,31 @@ const JobMatchCard: React.FC<JobMatchCardProps> = ({
             {/* Missing Skills */}
             {match.missmatching_skills?.length > 0 && (
               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-                <Typography 
-                  variant="caption" 
-                  sx={{ fontSize: "0.7rem", lineHeight: 2.4, flexBasis: "100%" }}
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontSize: "0.7rem",
+                    lineHeight: 2.4,
+                    flexBasis: "100%",
+                  }}
                 >
                   Missing skills:
                 </Typography>
                 {match.missmatching_skills.slice(0, 3).map((skill, i) => (
-                  <Chip 
-                    key={i} 
-                    label={skill} 
-                    size="small" 
-                    variant="outlined" 
-                    sx={{ height: 20, fontSize: "0.7rem" }} 
+                  <Chip
+                    key={i}
+                    label={skill}
+                    size="small"
+                    variant="outlined"
+                    sx={{ height: 20, fontSize: "0.7rem" }}
                   />
                 ))}
                 {match.missmatching_skills.length > 3 && (
-                  <Chip 
-                    label={`+${match.missmatching_skills.length - 3}`} 
-                    size="small" 
-                    variant="outlined" 
-                    sx={{ height: 20, fontSize: "0.7rem" }} 
+                  <Chip
+                    label={`+${match.missmatching_skills.length - 3}`}
+                    size="small"
+                    variant="outlined"
+                    sx={{ height: 20, fontSize: "0.7rem" }}
                   />
                 )}
               </Box>
@@ -152,8 +178,14 @@ const JobMatchCard: React.FC<JobMatchCardProps> = ({
           </Box>
 
           {/* Mobile Connect Button */}
-          <Box sx={{ display: { xs: "block", sm: "none" }, width: "100%", mt: 1 }}>
-            <ConnectButton jobId={job.id} matchingJob={job} showAvatar={false} />
+          <Box
+            sx={{ display: { xs: "block", sm: "none" }, width: "100%", mt: 1 }}
+          >
+            <ConnectButton
+              jobId={job.id}
+              matchingJob={job}
+              showAvatar={false}
+            />
           </Box>
         </Box>
       </CardContent>

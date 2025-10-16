@@ -17,10 +17,8 @@ import { enUS } from "date-fns/locale/en-US";
 
 import "react-big-calendar/lib/css/react-big-calendar.css";
 
-
 import "./calendar.css";
 import Toolbar from "./components/Toolbar";
-
 
 const locales = { "en-US": enUS };
 const localizer = dateFnsLocalizer({
@@ -31,14 +29,15 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-
 // ShareCalendarView.tsx - For viewing shared calendars
 const ShareCalendarView = () => {
   console.log("[ShareCalendarView] Rendering ShareCalendarView");
   const dispatch = useDispatch();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const { calendar, sharedCalendar } = useSelector((state: any) => state.calendarState);
+  const { calendar, sharedCalendar } = useSelector(
+    (state: any) => state.calendarState,
+  );
   const { profile } = useSelector((state: any) => state.filesState);
 
   const urlParams = new URLSearchParams(window.location.search);
@@ -70,9 +69,9 @@ const ShareCalendarView = () => {
       if (!backendActor || !id) return;
 
       try {
-        console.log('[ShareCalendar] Loading calendar:', { id });
+        console.log("[ShareCalendar] Loading calendar:", { id });
         const res = await backendActor.get_calendar(id);
-        console.log('[ShareCalendar] Calendar loaded:', res[0]);
+        console.log("[ShareCalendar] Calendar loaded:", res[0]);
         dispatch({ type: "SET_SHARED_CALENDAR", sharedCalendar: res[0] });
       } catch (error) {
         console.error("[ShareCalendar] Error loading shared calendar:", error);
@@ -91,7 +90,6 @@ const ShareCalendarView = () => {
       const ownerICalUrl = sharedCalendar.google_public_urls[0];
       const CORS_PROXY = "https://corsproxy.io/?";
       const PROXIED_URL = CORS_PROXY + encodeURIComponent(ownerICalUrl);
-
 
       fetch(PROXIED_URL)
         .then((res) => {
@@ -114,20 +112,29 @@ const ShareCalendarView = () => {
           }));
 
           dispatch({ type: "SET_OWNER_GOOGLE_EVENTS", events: blockedSlots });
-          console.log(`[ShareCalendar] Loaded ${blockedSlots.length} owner's events as blocked slots`);
+          console.log(
+            `[ShareCalendar] Loaded ${blockedSlots.length} owner's events as blocked slots`,
+          );
         })
         .catch((error) => {
-          console.error("[ShareCalendar] Failed to fetch owner's iCal:", error.message);
+          console.error(
+            "[ShareCalendar] Failed to fetch owner's iCal:",
+            error.message,
+          );
         });
     }
   }, [sharedCalendar, dispatch]);
 
-  const isViewingSharedCalendar = sharedCalendar && sharedCalendar.owner !== profile?.id;
+  const isViewingSharedCalendar =
+    sharedCalendar && sharedCalendar.owner !== profile?.id;
 
-
-
-
-  const TimeSlotWrapper = ({ children, value }: { children: React.ReactNode; value: Date }) => {
+  const TimeSlotWrapper = ({
+    children,
+    value,
+  }: {
+    children: React.ReactNode;
+    value: Date;
+  }) => {
     if (!children || !React.isValidElement(children)) return children;
 
     const child = React.Children.only(children);
@@ -167,29 +174,31 @@ const ShareCalendarView = () => {
         break;
     }
 
-    const mobileProps = isMobile ? {
-      onClick: handleMobileTap,
-      onTouchStart: (e: React.TouchEvent) => {
-        if (status === "available") {
-          (e.currentTarget as HTMLElement).style.backgroundColor = isDark
-            ? "rgba(76, 175, 80, 0.3)"
-            : "rgba(76, 175, 80, 0.2)";
+    const mobileProps = isMobile
+      ? {
+          onClick: handleMobileTap,
+          onTouchStart: (e: React.TouchEvent) => {
+            if (status === "available") {
+              (e.currentTarget as HTMLElement).style.backgroundColor = isDark
+                ? "rgba(76, 175, 80, 0.3)"
+                : "rgba(76, 175, 80, 0.2)";
+            }
+          },
+          onTouchEnd: handleMobileTap,
+          onTouchCancel: (e: React.TouchEvent) => {
+            if (status === "available") {
+              (e.currentTarget as HTMLElement).style.backgroundColor = "";
+            }
+          },
+          style: {
+            ...(child.props as any).style,
+            touchAction: status === "available" ? "manipulation" : "none",
+            userSelect: "none",
+            WebkitUserSelect: "none",
+            WebkitTapHighlightColor: "transparent",
+          },
         }
-      },
-      onTouchEnd: handleMobileTap,
-      onTouchCancel: (e: React.TouchEvent) => {
-        if (status === "available") {
-          (e.currentTarget as HTMLElement).style.backgroundColor = "";
-        }
-      },
-      style: {
-        ...(child.props as any).style,
-        touchAction: status === "available" ? "manipulation" : "none",
-        userSelect: "none",
-        WebkitUserSelect: "none",
-        WebkitTapHighlightColor: "transparent",
-      },
-    } : {};
+      : {};
 
     return React.cloneElement(child, {
       ...(child.props as any),
@@ -222,8 +231,7 @@ const ShareCalendarView = () => {
 
   const mobileTimeConfig = getMobileTimeConfig();
 
-
-return (
+  return (
     <Box
       sx={{
         height: "100vh",
@@ -239,33 +247,36 @@ return (
         </title>
       </Helmet>
 
-        <Box
-    sx={{
-      p: 1.5,
-      backgroundColor: "background.paper",
-      borderBottom: 1,
-      borderColor: "divider",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",  // ADD THIS LINE
-      gap: 1,
-    }}
-  >
-    <UserAvatarMenu
-      user_id={sharedCalendar?.owner}
-      sx={{
-        width: 40,  // Make it bigger as you wanted
-        height: 40,
-        "& .MuiAvatar-root": {
-          fontSize: "1rem",  // Bigger font too
-        },
-      }}
-    />
-    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-      📅 Viewing shared calendar
-    </Typography>
-  </Box>
-
+      <Box
+        sx={{
+          p: 1.5,
+          backgroundColor: "background.paper",
+          borderBottom: 1,
+          borderColor: "divider",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center", // ADD THIS LINE
+          gap: 1,
+        }}
+      >
+        <UserAvatarMenu
+          user_id={sharedCalendar?.owner}
+          sx={{
+            width: 40, // Make it bigger as you wanted
+            height: 40,
+            "& .MuiAvatar-root": {
+              fontSize: "1rem", // Bigger font too
+            },
+          }}
+        />
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ fontWeight: 500 }}
+        >
+          📅 Viewing shared calendar
+        </Typography>
+      </Box>
 
       {busyError && (
         <Alert severity="warning" sx={{ m: 2 }}>
@@ -286,9 +297,10 @@ return (
           },
           "& .rbc-header": {
             color: theme.palette.text.primary,
-            backgroundColor: theme.palette.mode === "dark"
-              ? theme.palette.background.paper
-              : theme.palette.background.default,
+            backgroundColor:
+              theme.palette.mode === "dark"
+                ? theme.palette.background.paper
+                : theme.palette.background.default,
           },
           "& .rbc-time-gutter": {
             color: theme.palette.text.secondary,
@@ -330,7 +342,9 @@ return (
           onSelectSlot={handleSelectSlot}
           onSelectEvent={handleSelectEvent}
           {...(isMobile ? mobileTimeConfig : timeSpans)}
-          scrollToTime={isMobile && mobileTimeConfig.min ? mobileTimeConfig.min : undefined}
+          scrollToTime={
+            isMobile && mobileTimeConfig.min ? mobileTimeConfig.min : undefined
+          }
         />
       </Box>
 
@@ -345,7 +359,12 @@ return (
 };
 
 function parseICalEvents(icalData: string) {
-  const events: Array<{ title: string; start: Date; end: Date; description: string }> = [];
+  const events: Array<{
+    title: string;
+    start: Date;
+    end: Date;
+    description: string;
+  }> = [];
   const lines = icalData.split("\n");
   let currentEvent: any = null;
 

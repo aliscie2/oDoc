@@ -19,11 +19,11 @@ This file contains a deduplicated list of important console logs previously used
 
 ## External/Environment Logs (Cannot be removed)
 
-- Object  - scriptOnStart.js:1991 (External script)
-- action Object  - rrweb-plugin-console-record.js:2447 (Recording plugin)
-- {app.tsx}  - rrweb-plugin-console-record.js:2447 (Recording plugin)
-- {pages}  - rrweb-plugin-console-record.js:2447 (Recording plugin)
-- JobsPage rendered Object  - rrweb-plugin-console-record.js:2447 (Recording plugin)
+- Object - scriptOnStart.js:1991 (External script)
+- action Object - rrweb-plugin-console-record.js:2447 (Recording plugin)
+- {app.tsx} - rrweb-plugin-console-record.js:2447 (Recording plugin)
+- {pages} - rrweb-plugin-console-record.js:2447 (Recording plugin)
+- JobsPage rendered Object - rrweb-plugin-console-record.js:2447 (Recording plugin)
 
 ## Current Debugging Strategy
 

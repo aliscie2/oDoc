@@ -11,7 +11,6 @@ import AffiliateRedirect from "./affiliateRedirect";
 // import CalendarView from "./calendar";
 import NotFound from "@/pages/notFound404";
 
-
 // Lazy imports for heavy components
 const JobsPage = React.lazy(() => import("./jobs"));
 const FileContentPage = React.lazy(() => import("./fileContentPage"));
@@ -47,8 +46,6 @@ const PageLoader = () => (
 );
 
 const Pages = React.memo(() => {
-
-  
   const { profile, profile_history, wallet, friends } = useSelector(
     (state: unknown) => state.filesState,
   );
@@ -63,26 +60,27 @@ const Pages = React.memo(() => {
   // }, [isLoggedIn]);
 
   if (!isLoggedIn) {
-      return (
-    <Suspense fallback={<PageLoader />}>
-      <Routes>
-        <Route path="/" element={ <ICPJobsLandingPage />} />
-        <Route path="/about" element={<AboutUs />} />
-        <Route path="/white_paper" element={<SNSWhitepaper />} />
-        <Route path="/share/*" element={<ShareFilePage />} />
-        <Route path="/privacy" element={<PrivacyPage />} />
-        <Route path="/f*" element={<AffiliateRedirect />} />
-        <Route path="*" element={<NotFound />} />
-        <Route path="/calendar" element={<CalendarView />} />
-        <Route path="/share_calendar*" element={<ShareCalendarView />} />
-        <Route path="/user/*" element={<UserProfile />} />
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="/" element={<ICPJobsLandingPage />} />
+          <Route path="/about" element={<AboutUs />} />
+          <Route path="/white_paper" element={<SNSWhitepaper />} />
+          <Route path="/share/*" element={<ShareFilePage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/f*" element={<AffiliateRedirect />} />
+          <Route path="*" element={<NotFound />} />
+          <Route path="/calendar" element={<CalendarView />} />
+          <Route path="/share_calendar*" element={<ShareCalendarView />} />
+          <Route path="/user/*" element={<UserProfile />} />
         </Routes>
-    </Suspense>)
-    }
+      </Suspense>
+    );
+  }
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
-        <Route path="/" element={ <JobsPage />} />
+        <Route path="/" element={<JobsPage />} />
         <Route path="/about" element={<AboutUs />} />
         <Route path="/wallet" element={<WalletPage wallet={wallet} />} />
         <Route
@@ -110,9 +108,9 @@ const Pages = React.memo(() => {
         <Route path="/shares_contract" element={<DummyShares />} />
         <Route path="/affiliate" element={<AffiliateDashboard />} />
         <Route path="/*" element={<FileContentPage />} />
-        
-<Route path="/calendar" element={<CalendarView />} />
-<Route path="/share_calendar*" element={<ShareCalendarView />} />
+
+        <Route path="/calendar" element={<CalendarView />} />
+        <Route path="/share_calendar*" element={<ShareCalendarView />} />
         <Route path="/achievementCard" element={<AchievementPage />} />
         <Route path="/posts" element={<Posts />} />
         <Route path="/jobs*" element={<JobPage />} />

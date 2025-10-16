@@ -29,7 +29,10 @@ export const EventTimezone = (
   event: { start_time: number; end_time: number },
   toUtc = false,
 ) => {
-  if (typeof event.start_time === "string" || typeof event.end_time === "string") {
+  if (
+    typeof event.start_time === "string" ||
+    typeof event.end_time === "string"
+  ) {
     throw new Error(
       `EventTimezone received invalid time format. Expected numeric timestamps but got strings: start_time=${event.start_time}, end_time=${event.end_time}`,
     );
@@ -59,8 +62,12 @@ export const AvailabilityTimezone = (
 
   if (convertedScheduleType.DateRange) {
     convertedScheduleType.DateRange = {
-      start_date: Number(converter(BigInt(convertedScheduleType.DateRange.start_date))),
-      end_date: Number(converter(BigInt(convertedScheduleType.DateRange.end_date))),
+      start_date: Number(
+        converter(BigInt(convertedScheduleType.DateRange.start_date)),
+      ),
+      end_date: Number(
+        converter(BigInt(convertedScheduleType.DateRange.end_date)),
+      ),
     };
   }
 
@@ -76,9 +83,10 @@ export const AvailabilityTimezone = (
   }
 
   if (convertedScheduleType.SpecificDates) {
-    convertedScheduleType.SpecificDates = convertedScheduleType.SpecificDates.map((date) =>
-      Number(converter(BigInt(date))),
-    );
+    convertedScheduleType.SpecificDates =
+      convertedScheduleType.SpecificDates.map((date) =>
+        Number(converter(BigInt(date))),
+      );
   }
 
   return {

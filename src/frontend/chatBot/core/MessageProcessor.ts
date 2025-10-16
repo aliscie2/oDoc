@@ -236,17 +236,25 @@ Provide a helpful and accurate answer based only on the documentation provided. 
    * Processes AI cases with specific business logic
    */
   private async processAICase(
-  aiCase: any,
-  message: string,
-  abortSignal?: AbortSignal,
-): Promise<ProcessedMessage> {
-  const prompt = aiCase.messageBuilder(message, this.config, this.navigation.location);
+    aiCase: any,
+    message: string,
+    abortSignal?: AbortSignal,
+  ): Promise<ProcessedMessage> {
+    const prompt = aiCase.messageBuilder(
+      message,
+      this.config,
+      this.navigation.location,
+    );
 
-  const result = await this.processProductionMode(aiCase, message, prompt, abortSignal);
-  await this.processActionsByType(aiCase, result);
-  return this.buildProcessedMessage(aiCase, result);
-}
-
+    const result = await this.processProductionMode(
+      aiCase,
+      message,
+      prompt,
+      abortSignal,
+    );
+    await this.processActionsByType(aiCase, result);
+    return this.buildProcessedMessage(aiCase, result);
+  }
 
   /**
    * Handles local development mode processing
@@ -285,36 +293,34 @@ Provide a helpful and accurate answer based only on the documentation provided. 
    * Handles production mode processing
    */
   private async processProductionMode(
-  aiCase: any,
-  message: string,
-  prompt: string,
-  abortSignal?: AbortSignal,
-): Promise<any> {
-  let systemPrompt = aiCase.systemPrompt;
-  let actualPrompt = prompt;
+    aiCase: any,
+    message: string,
+    prompt: string,
+    abortSignal?: AbortSignal,
+  ): Promise<any> {
+    let systemPrompt = aiCase.systemPrompt;
+    let actualPrompt = prompt;
 
-  if (aiCase.id === "contract") {
-    const contractData = this.getContractData();
-    systemPrompt = buildContractPrompt(
-      contractData.contract,
-      contractData.friendsList,
-      this.config.profile,
-      contractData.contractId,
-    );
-    actualPrompt = message;
+    if (aiCase.id === "contract") {
+      const contractData = this.getContractData();
+      systemPrompt = buildContractPrompt(
+        contractData.contract,
+        contractData.friendsList,
+        this.config.profile,
+        contractData.contractId,
+      );
+      actualPrompt = message;
+    }
+
+    const config = this.aiService.createAIConfig(actualPrompt, systemPrompt);
+    const aiResult = await this.aiService.sendAIMessage(config, abortSignal);
+
+    if (aiResult?.parsedData && aiCase?.class === "CALENDAR") {
+      return this.validateCalendarResponse(aiResult.parsedData);
+    }
+
+    return aiResult.parsedData;
   }
-
-  const config = this.aiService.createAIConfig(actualPrompt, systemPrompt);
-  const aiResult = await this.aiService.sendAIMessage(config, abortSignal);
-
-  if (aiResult?.parsedData && aiCase?.class === "CALENDAR") {
-    return this.validateCalendarResponse(aiResult.parsedData);
-  }
-
-  return aiResult.parsedData;
-}
-
-
 
   /**
    * Gets contract data for CONTRACT case processing
@@ -451,8 +457,8 @@ Provide a helpful and accurate answer based only on the documentation provided. 
         isGoogle: this.isGoogleEventId(action.id),
         isBackend: this.isBackendEventId(action.id),
         containsAt: action.id.includes("@"),
-        containsUnderscore: action.id.includes("_")
-      }))
+        containsUnderscore: action.id.includes("_"),
+      })),
     });
 
     // Process backend events
@@ -467,10 +473,12 @@ Provide a helpful and accurate answer based only on the documentation provided. 
           this.dispatcher.dispatch(parsedActions as any);
         }
       }
-      
+
       // Auto-save to backend when Google Calendar is not connected
       if (!isGoogleConnected) {
-        console.log("💾 Auto-saving calendar changes to backend after batch delete");
+        console.log(
+          "💾 Auto-saving calendar changes to backend after batch delete",
+        );
         setTimeout(async () => {
           try {
             await this.autoSaveCalendarChanges();
@@ -849,7 +857,7 @@ Provide a helpful and accurate answer based only on the documentation provided. 
     console.log("🔍 Backend event ID detection:", {
       eventId: eventId,
       containsAt: eventId.includes("@"),
-      result: result
+      result: result,
     });
     return result;
   }
@@ -1386,17 +1394,19 @@ Provide a helpful and accurate answer based only on the documentation provided. 
   /**
    * Classifies message using AI or local logic
    */
-  private async classifyMessage(message: string, abortSignal?: AbortSignal): Promise<unknown> {
-  const trimmedMessage = this.trimMessageForClassifier(message);
-  const config = this.aiService.createAIConfig(
-    `current classifier: ${this.navigation.location.pathname === "/" ? "Job" : this.navigation.location.pathname.replace("/", "")}\nMessage:${trimmedMessage}`,
-    PROMPTS.CLASSIFY,
-    true,
-  );
-  const result = await this.aiService.sendAIMessage(config, abortSignal);
-  return result.parsedData;
-}
-
+  private async classifyMessage(
+    message: string,
+    abortSignal?: AbortSignal,
+  ): Promise<unknown> {
+    const trimmedMessage = this.trimMessageForClassifier(message);
+    const config = this.aiService.createAIConfig(
+      `current classifier: ${this.navigation.location.pathname === "/" ? "Job" : this.navigation.location.pathname.replace("/", "")}\nMessage:${trimmedMessage}`,
+      PROMPTS.CLASSIFY,
+      true,
+    );
+    const result = await this.aiService.sendAIMessage(config, abortSignal);
+    return result.parsedData;
+  }
 
   /**
    * Handles navigation based on message classification
@@ -1439,55 +1449,55 @@ Provide a helpful and accurate answer based only on the documentation provided. 
   /**
    * Handles other message types (QUESTIONS, LOCAL_HELP, etc.)
    */
-private async handleOtherCases(
-  parsed: unknown,
-  message: string,
-  abortSignal?: AbortSignal,
-): Promise<ProcessedMessage> {
-  if (parsed.type === "GENERAL_QUERY") {
-    return await this.processGeneralQuery(message, abortSignal);
-  } else if (parsed.type === "QUESTIONS") {
+  private async handleOtherCases(
+    parsed: unknown,
+    message: string,
+    abortSignal?: AbortSignal,
+  ): Promise<ProcessedMessage> {
+    if (parsed.type === "GENERAL_QUERY") {
+      return await this.processGeneralQuery(message, abortSignal);
+    } else if (parsed.type === "QUESTIONS") {
+      return {
+        action_type: "QUESTIONS",
+        feedback: "Questions functionality with RAG will be implemented soon",
+        actions: [],
+        done: true,
+      };
+    } else if (parsed.feedback?.includes("locally")) {
+      return {
+        action_type: "LOCAL_HELP",
+        feedback:
+          "Locally you can make commands like:\n- Calendar: `calendar//aa>title>09:00>17:00>1,2,3,4,5>false`\n- Job: `Job//as>skill1,skill2` (add skills)",
+        actions: [],
+        done: true,
+      };
+    }
+
+    // Fallback: determine type based on current path
+    const pathname = this.navigation.location.pathname;
+    let inferredType = "JOB";
+
+    if (pathname === "/calendar") {
+      inferredType = "CALENDAR";
+    } else if (pathname === "/contract" || pathname === "/contracts") {
+      inferredType = "CONTRACT";
+    }
+
+    const matchingCase = this.aiCases.aiCases.find(
+      (c) => c.class === inferredType,
+    );
+
+    if (matchingCase) {
+      return await this.processAICase(matchingCase, message, abortSignal);
+    }
+
     return {
-      action_type: "QUESTIONS",
-      feedback: "Questions functionality with RAG will be implemented soon",
+      action_type: inferredType,
+      feedback: "",
       actions: [],
       done: true,
     };
-  } else if (parsed.feedback?.includes("locally")) {
-    return {
-      action_type: "LOCAL_HELP",
-      feedback:
-        "Locally you can make commands like:\n- Calendar: `calendar//aa>title>09:00>17:00>1,2,3,4,5>false`\n- Job: `Job//as>skill1,skill2` (add skills)",
-      actions: [],
-      done: true,
-    };
   }
-
-  // Fallback: determine type based on current path
-  const pathname = this.navigation.location.pathname;
-  let inferredType = "JOB";
-  
-  if (pathname === "/calendar") {
-    inferredType = "CALENDAR";
-  } else if (pathname === "/contract" || pathname === "/contracts") {
-    inferredType = "CONTRACT";
-  }
-
-  const matchingCase = this.aiCases.aiCases.find(
-    (c) => c.class === inferredType,
-  );
-
-  if (matchingCase) {
-    return await this.processAICase(matchingCase, message, abortSignal);
-  }
-
-  return {
-    action_type: inferredType,
-    feedback: "",
-    actions: [],
-    done: true,
-  };
-}
   /**
    * Auto-saves calendar changes to backend
    */

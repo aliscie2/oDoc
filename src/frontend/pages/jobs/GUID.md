@@ -1,20 +1,24 @@
 # Job Matching System Guide
 
 ## Overview
+
 Users interact with a chatbot that generates a JSON profile, which is then used to find and match candidates. The system calculates match scores, generates cover letters, and presents results to users while saving everything to the backend.
 
 ## Core Workflow
 
 1. **Profile Generation**
+
    - User chats with bot → Bot generates JSON profile
    - Profile is validated and saved
    - System waits 5 seconds after profile update before triggering match generation
 
 2. **Candidate Fetching**
+
    - Backend receives profile data and returns list of potential candidates
    - List is filtered based on skills, category, and other criteria
 
 3. **AI Matching**
+
    - Candidate list + current profile → AI processing
    - AI generates: match scores (0-10 scale) + cover letters
    - Results are normalized to 0.0-1.0 range for storage
@@ -33,14 +37,15 @@ Users interact with a chatbot that generates a JSON profile, which is then used 
   - Expected: Should only fetch when profile changes or new candidates appear
   - Root cause: Not properly tracking which matches have been calculated
   - Backend doesn't know matches are already stored
-  
 - [ ] **Category Switch Handling**
+
   - Problem: When switching Job ↔ Talent, old matches persist
   - Expected: Immediate recalculation + complete removal of old matches
   - Should work without page reload
   - Must clear `matchingJobs` array completely
 
 - [ ] **Score Filtering Not Working**
+
   - Problem: Jobs with 40% match score appear despite `required_match_score` threshold
   - Backend should filter based on `job.required_match_score`
   - Frontend receives matches that don't meet minimum threshold
@@ -54,6 +59,7 @@ Users interact with a chatbot that generates a JSON profile, which is then used 
 ### Medium Priority
 
 - [ ] **AI Response Validation**
+
   - Check returned JSON structure before processing
   - Validate: `candidate_id` exists, `score` is 0-10, `missmatching_skills` is array
   - Handle cases where AI returns malformed data
@@ -72,18 +78,21 @@ Users interact with a chatbot that generates a JSON profile, which is then used 
 ## Known Behavioral Issues
 
 ### Match Calculation Triggers
+
 **Current behavior**: Recalculates on every render/reload
 **Expected behavior**: Should only recalculate when:
+
 - Profile fields actually change (skills, category, description, etc.)
 - Category switches between Job/Talent
 - User manually clicks "Refresh Matches"
 
 ### Hash Tracking Problem
+
 ```typescript
 // Current issue: Hash comparison not preventing re-renders
 const getJobHash = (job: Job): string => {
   const relevantProps = {
-    skills: job.skills?.sort().join(','),
+    skills: job.skills?.sort().join(","),
     category: Object.keys(job.category || {})[0],
     title: job.title,
     description: job.description,
@@ -92,11 +101,13 @@ const getJobHash = (job: Job): string => {
   return JSON.stringify(relevantProps);
 };
 ```
+
 This should prevent unnecessary recalculations but currently fails to do so.
 
 ## Data Flow Issues
 
 ### Score Normalization
+
 - AI returns: 0-10 scale
 - Storage format: 0.0-1.0 (normalized)
 - Display format: 0-100%
@@ -104,6 +115,7 @@ This should prevent unnecessary recalculations but currently fails to do so.
 **Watch out for**: Double normalization bugs
 
 ### Backend Match Storage
+
 ```rust
 // Backend expects complete match replacement
 job.matches = validated_matches; // Replaces entire array
@@ -115,10 +127,12 @@ job.matches = validated_matches; // Replaces entire array
 ## Questions Needing Clarification
 
 1. **When should matches be considered "stale"?**
+
    - Is `date_updated` comparison sufficient?
    - Should we use a time threshold?
 
 2. **What defines a "new" candidate?**
+
    - Someone who just created a profile?
    - Someone whose profile changed significantly?
 
@@ -135,18 +149,18 @@ job.matches = validated_matches; // Replaces entire array
 - [ ] Matches below threshold → not displayed
 - [ ] Corrupted AI response → error shown, no save to backend
 - [ ] sometimes I face this issue which is part of the validation that we should add to the AI response, Failed to load matches
-A state mutation was detected between dispatches, in the path 'jobState.jobChanges.0.updates.4.values.0'. This may cause incorrect behavior. (https://redux.js.org/style-guide/style-guide#do-not-mutate-state)
+      A state mutation was detected between dispatches, in the path 'jobState.jobChanges.0.updates.4.values.0'. This may cause incorrect behavior. (https://redux.js.org/style-guide/style-guide#do-not-mutate-state)
 - [ ] we must add our comprehensive console logs and remove the old ones to have a very clear understanding of what is going on using the console logs
 - [ ] I already made some changes so some of the issues are mentioned here in this file could be solved by now double check do not want something that is already fixed
+
 ## Additional Context Needed
 
 To better diagnose the infinite loop and filtering issues, please provide:
 
 1. **Redux State Management**: src/frontend/redux/reducers/jobReducer.ts
 2. **Effect Dependencies**: Complete `useEffect` dependency arrays in `useJobMatching` hook
-3. **Backend Response Format**: Exact structure returned by `get_matches` and `update_job` src/declarations/backend/backend.did.d.ts 
-    3.1 const category : string = Object.keys(job.category)[0]
-    
+3. **Backend Response Format**: Exact structure returned by `get_matches` and `update_job` src/declarations/backend/backend.did.d.ts
+   3.1 const category : string = Object.keys(job.category)[0]
 4. **When does `date_updated` get set?**: On every field change or only significant ones?
 
 note: The item that is lower than the current required matching square we just filter it in the UI we don't filter it from redux

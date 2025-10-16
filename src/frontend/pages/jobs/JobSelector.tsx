@@ -53,12 +53,20 @@ const JobSelector: React.FC = () => {
     }
   }, [currentJobId]);
 
-
-
   const JOB_FIELDS = [
-    "description", "location", "salary", "jobType", "category", "active",
-    "skills", "requirements", "benefits", "company", "contactEmail",
-    "applicationDeadline", "experienceLevel",
+    "description",
+    "location",
+    "salary",
+    "jobType",
+    "category",
+    "active",
+    "skills",
+    "requirements",
+    "benefits",
+    "company",
+    "contactEmail",
+    "applicationDeadline",
+    "experienceLevel",
   ];
   const MAX_JOBS = 4;
   const COPY_SUCCESS_DURATION = 2000;
@@ -104,51 +112,57 @@ const JobSelector: React.FC = () => {
     dispatch({ type: "SET_CURRENT_JOB_ID", job });
     setExpanded(false);
   };
-  
 
-  const handleJobAction = (job: Job, action: string, event: React.MouseEvent) => {
-  event.stopPropagation();
-  event.preventDefault();
-  
-  switch (action) {
-    case "toggle":
-      dispatch({ type: "TOGGLE_ACTIVE", id: job.id });
-      break;
-    case "details":
-      setSelectedJob(job);
-      setDialogOpen(true);
-      break;
-    case "delete":
-      if (window.confirm("Are you sure you want to delete this job?")) {
-        const isCurrentJob = job.id === currentJobId;
-        backendActor?.delete_job(job.id);
-        dispatch({ type: "DELETE_JOB", id: job.id });
-        
-        if (isCurrentJob) {
-          const remainingJobs = jobs.filter((j: Job) => j.id !== job.id);
-          const nextJobId = remainingJobs.length > 0 ? remainingJobs[0].id : null;
-          dispatch({ 
-            type: "SET_CURRENT_JOB_ID", 
-            job: remainingJobs[0] || null 
-          });
+  const handleJobAction = (
+    job: Job,
+    action: string,
+    event: React.MouseEvent,
+  ) => {
+    event.stopPropagation();
+    event.preventDefault();
+
+    switch (action) {
+      case "toggle":
+        dispatch({ type: "TOGGLE_ACTIVE", id: job.id });
+        break;
+      case "details":
+        setSelectedJob(job);
+        setDialogOpen(true);
+        break;
+      case "delete":
+        if (window.confirm("Are you sure you want to delete this job?")) {
+          const isCurrentJob = job.id === currentJobId;
+          backendActor?.delete_job(job.id);
+          dispatch({ type: "DELETE_JOB", id: job.id });
+
+          if (isCurrentJob) {
+            const remainingJobs = jobs.filter((j: Job) => j.id !== job.id);
+            const nextJobId =
+              remainingJobs.length > 0 ? remainingJobs[0].id : null;
+            dispatch({
+              type: "SET_CURRENT_JOB_ID",
+              job: remainingJobs[0] || null,
+            });
+          }
         }
-      }
-      break;
-    case "copy":
-      navigator.clipboard.writeText(`${window.location.origin}/jobs?id=${job.id}`);
-      setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 2000);
-      break;
-  }
-};
-
-
+        break;
+      case "copy":
+        navigator.clipboard.writeText(
+          `${window.location.origin}/jobs?id=${job.id}`,
+        );
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
+        break;
+    }
+  };
 
   const truncateText = (text: string, maxLength: number = 40) =>
     text?.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
 
   const getJobCategory = (job: Job) =>
-    job.category ? Object.keys(job.category)[0] || "Uncategorized" : "Uncategorized";
+    job.category
+      ? Object.keys(job.category)[0] || "Uncategorized"
+      : "Uncategorized";
 
   const getJobTitle = (job: Job) =>
     job.job_titles ? truncateText(job.job_titles[0]) : "Untitled Job";
@@ -168,7 +182,10 @@ const JobSelector: React.FC = () => {
         elevation={0}
         sx={{
           border: { xs: "none", sm: `1px solid ${theme.palette.divider}` },
-          borderBottom: { xs: `1px solid ${theme.palette.divider}`, sm: `1px solid ${theme.palette.divider}` },
+          borderBottom: {
+            xs: `1px solid ${theme.palette.divider}`,
+            sm: `1px solid ${theme.palette.divider}`,
+          },
           borderRadius: { xs: 0, sm: 2 },
           overflow: "visible",
           transition: "all 0.3s ease",
@@ -176,12 +193,19 @@ const JobSelector: React.FC = () => {
           p: { xs: 1, sm: 1.5 },
           mx: { xs: 0, sm: 0 },
           "&:hover": {
-            borderColor: { xs: theme.palette.divider, sm: theme.palette.primary.main + "40" },
+            borderColor: {
+              xs: theme.palette.divider,
+              sm: theme.palette.primary.main + "40",
+            },
           },
         }}
       >
         {currentJob ? (
-          <Stack direction="row" spacing={{ xs: 0.5, sm: 1 }} alignItems="center">
+          <Stack
+            direction="row"
+            spacing={{ xs: 0.5, sm: 1 }}
+            alignItems="center"
+          >
             {/* Share button */}
             <Tooltip
               title={copySuccess ? "Link copied!" : "Copy job link"}
@@ -192,10 +216,16 @@ const JobSelector: React.FC = () => {
                 size="small"
                 onClick={(e) => handleJobAction(currentJob, "copy", e)}
                 sx={{
-                  color: copySuccess ? theme.palette.common.white : theme.palette.info.main,
-                  bgcolor: copySuccess ? theme.palette.success.main : theme.palette.info.main + "15",
+                  color: copySuccess
+                    ? theme.palette.common.white
+                    : theme.palette.info.main,
+                  bgcolor: copySuccess
+                    ? theme.palette.success.main
+                    : theme.palette.info.main + "15",
                   "&:hover": {
-                    bgcolor: copySuccess ? theme.palette.success.dark : theme.palette.info.main + "25",
+                    bgcolor: copySuccess
+                      ? theme.palette.success.dark
+                      : theme.palette.info.main + "25",
                     transform: "scale(1.05)",
                   },
                   "&:active": { transform: "scale(0.95)" },
@@ -204,7 +234,11 @@ const JobSelector: React.FC = () => {
                   transition: "all 0.2s ease",
                 }}
               >
-                {copySuccess ? <Check sx={{ fontSize: { xs: 14, sm: 20 } }} /> : <Share sx={{ fontSize: { xs: 14, sm: 20 } }} />}
+                {copySuccess ? (
+                  <Check sx={{ fontSize: { xs: 14, sm: 20 } }} />
+                ) : (
+                  <Share sx={{ fontSize: { xs: 14, sm: 20 } }} />
+                )}
               </IconButton>
             </Tooltip>
 
@@ -297,44 +331,55 @@ const JobSelector: React.FC = () => {
 
             {/* Action buttons */}
             <Stack direction="row" spacing={{ xs: 0.25, sm: 0.5 }}>
-            <Tooltip title={currentJob.active ? "Pause job posting" : "Activate job posting"} arrow>
-  <IconButton
-    size="small"
-    onClick={(e) => handleJobAction(currentJob, "toggle", e)}
-    sx={{
-      "&:hover": {
-        bgcolor: currentJob.active
-          ? theme.palette.warning.main + "15"
-          : theme.palette.success.main + "15",
-      },
-      width: { xs: 24, sm: 32 },
-      height: { xs: 24, sm: 32 },
-    }}
-  >
-    {currentJob.active ? <Pause sx={{ fontSize: { xs: 16, sm: 20 } }} /> : <PlayArrow sx={{ fontSize: { xs: 16, sm: 20 } }} />}
-  </IconButton>
-</Tooltip>
+              <Tooltip
+                title={
+                  currentJob.active
+                    ? "Pause job posting"
+                    : "Activate job posting"
+                }
+                arrow
+              >
+                <IconButton
+                  size="small"
+                  onClick={(e) => handleJobAction(currentJob, "toggle", e)}
+                  sx={{
+                    "&:hover": {
+                      bgcolor: currentJob.active
+                        ? theme.palette.warning.main + "15"
+                        : theme.palette.success.main + "15",
+                    },
+                    width: { xs: 24, sm: 32 },
+                    height: { xs: 24, sm: 32 },
+                  }}
+                >
+                  {currentJob.active ? (
+                    <Pause sx={{ fontSize: { xs: 16, sm: 20 } }} />
+                  ) : (
+                    <PlayArrow sx={{ fontSize: { xs: 16, sm: 20 } }} />
+                  )}
+                </IconButton>
+              </Tooltip>
 
-<Tooltip title="View job details" arrow>
-  <IconButton
-    size="small"
-    onClick={(e) => handleJobAction(currentJob, "details", e)}
-    sx={{
-      "&:hover": { bgcolor: theme.palette.info.main + "15" },
-      width: { xs: 24, sm: 32 },
-      height: { xs: 24, sm: 32 },
-    }}
-  >
-    <Visibility sx={{ fontSize: { xs: 16, sm: 20 } }} />
-  </IconButton>
-</Tooltip>
-
-        
+              <Tooltip title="View job details" arrow>
+                <IconButton
+                  size="small"
+                  onClick={(e) => handleJobAction(currentJob, "details", e)}
+                  sx={{
+                    "&:hover": { bgcolor: theme.palette.info.main + "15" },
+                    width: { xs: 24, sm: 32 },
+                    height: { xs: 24, sm: 32 },
+                  }}
+                >
+                  <Visibility sx={{ fontSize: { xs: 16, sm: 20 } }} />
+                </IconButton>
+              </Tooltip>
 
               <Tooltip title="Delete job posting" arrow>
                 <IconButton
                   size="small"
-                  disabled={currentJob?.skills?.length === 0 && jobs.length === 1}
+                  disabled={
+                    currentJob?.skills?.length === 0 && jobs.length === 1
+                  }
                   onClick={(e) => handleJobAction(currentJob, "delete", e)}
                   sx={{
                     "&:hover": { bgcolor: theme.palette.error.main + "15" },
@@ -368,7 +413,13 @@ const JobSelector: React.FC = () => {
         )}
 
         <Collapse in={expanded} timeout={300}>
-          <Box sx={{ mt: 2, pt: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
+          <Box
+            sx={{
+              mt: 2,
+              pt: 2,
+              borderTop: `1px solid ${theme.palette.divider}`,
+            }}
+          >
             <Stack spacing={1}>
               <Box
                 onClick={() => {
@@ -381,12 +432,16 @@ const JobSelector: React.FC = () => {
                   p: 2,
                   borderRadius: 1,
                   cursor: jobs.length >= MAX_JOBS ? "not-allowed" : "pointer",
-                  bgcolor: jobs.length >= MAX_JOBS ? "transparent" : theme.palette.primary.main + "08",
+                  bgcolor:
+                    jobs.length >= MAX_JOBS
+                      ? "transparent"
+                      : theme.palette.primary.main + "08",
                   opacity: jobs.length >= MAX_JOBS ? 0.5 : 1,
                   "&:hover": {
-                    bgcolor: jobs.length >= MAX_JOBS
-                      ? theme.palette.action.hover
-                      : theme.palette.primary.main + "12",
+                    bgcolor:
+                      jobs.length >= MAX_JOBS
+                        ? theme.palette.action.hover
+                        : theme.palette.primary.main + "12",
                   },
                 }}
               >
@@ -398,16 +453,18 @@ const JobSelector: React.FC = () => {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    bgcolor: jobs.length >= MAX_JOBS
-                      ? theme.palette.grey[200]
-                      : theme.palette.primary.main + "15",
+                    bgcolor:
+                      jobs.length >= MAX_JOBS
+                        ? theme.palette.grey[200]
+                        : theme.palette.primary.main + "15",
                   }}
                 >
                   <Add
                     sx={{
-                      color: jobs.length >= MAX_JOBS
-                        ? theme.palette.text.disabled
-                        : theme.palette.primary.main,
+                      color:
+                        jobs.length >= MAX_JOBS
+                          ? theme.palette.text.disabled
+                          : theme.palette.primary.main,
                       fontSize: 20,
                     }}
                   />
@@ -417,15 +474,22 @@ const JobSelector: React.FC = () => {
                     variant="subtitle1"
                     sx={{
                       fontWeight: 500,
-                      color: jobs.length >= MAX_JOBS
-                        ? theme.palette.text.disabled
-                        : theme.palette.primary.main,
+                      color:
+                        jobs.length >= MAX_JOBS
+                          ? theme.palette.text.disabled
+                          : theme.palette.primary.main,
                     }}
                   >
                     Create New Job Post
                   </Typography>
                   {jobs.length >= MAX_JOBS && (
-                    <Typography variant="caption" sx={{ color: theme.palette.error.main, fontSize: "0.7rem" }}>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: theme.palette.error.main,
+                        fontSize: "0.7rem",
+                      }}
+                    >
                       Maximum limit reached ({MAX_JOBS}/{MAX_JOBS})
                     </Typography>
                   )}
@@ -440,7 +504,10 @@ const JobSelector: React.FC = () => {
                     p: 2,
                     borderRadius: 1,
                     cursor: "pointer",
-                    bgcolor: currentJobId === job.id ? theme.palette.action.selected : "transparent",
+                    bgcolor:
+                      currentJobId === job.id
+                        ? theme.palette.action.selected
+                        : "transparent",
                     "&:hover": { bgcolor: theme.palette.action.hover },
                   }}
                 >
@@ -456,7 +523,13 @@ const JobSelector: React.FC = () => {
                   >
                     {getJobTitle(job)}
                   </Typography>
-                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontSize: "0.75rem" }}>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: theme.palette.text.secondary,
+                      fontSize: "0.75rem",
+                    }}
+                  >
                     {getJobCategory(job)}
                   </Typography>
                 </Box>
@@ -486,21 +559,40 @@ const JobSelector: React.FC = () => {
             width: { xs: "100vw", sm: "auto" },
             maxWidth: { xs: "100vw", sm: "900px" },
           },
-          "& .MuiDialog-container": { alignItems: { xs: "stretch", sm: "center" } },
-          "& .MuiBackdrop-root": { backgroundColor: { xs: "transparent", sm: "rgba(0, 0, 0, 0.5)" } },
+          "& .MuiDialog-container": {
+            alignItems: { xs: "stretch", sm: "center" },
+          },
+          "& .MuiBackdrop-root": {
+            backgroundColor: { xs: "transparent", sm: "rgba(0, 0, 0, 0.5)" },
+          },
         }}
       >
-        <DialogTitle sx={{ p: { xs: 2, sm: 3 }, borderBottom: `1px solid ${theme.palette.divider}` }}>
-          <Typography variant="h6" sx={{ fontWeight: 600, fontSize: { xs: "1rem", sm: "1.25rem" } }}>
+        <DialogTitle
+          sx={{
+            p: { xs: 2, sm: 3 },
+            borderBottom: `1px solid ${theme.palette.divider}`,
+          }}
+        >
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: 600, fontSize: { xs: "1rem", sm: "1.25rem" } }}
+          >
             Job Details
           </Typography>
         </DialogTitle>
 
         <DialogContent sx={{ p: 0, overflow: "auto" }}>
-          {selectedJob && <JobDetails job={selectedJob} match={null} showEmails={true} />}
+          {selectedJob && (
+            <JobDetails job={selectedJob} match={null} showEmails={true} />
+          )}
         </DialogContent>
 
-        <DialogActions sx={{ p: { xs: 2, sm: 3 }, borderTop: `1px solid ${theme.palette.divider}` }}>
+        <DialogActions
+          sx={{
+            p: { xs: 2, sm: 3 },
+            borderTop: `1px solid ${theme.palette.divider}`,
+          }}
+        >
           <Button
             onClick={() => setDialogOpen(false)}
             variant="contained"

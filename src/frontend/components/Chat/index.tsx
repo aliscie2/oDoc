@@ -34,19 +34,26 @@ const ChatNotifications = () => {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMoreChats, setHasMoreChats] = useState(true);
 
-  const { chats, openChatWindows } = useSelector((state: RootState) => state.chatsState);
+  const { chats, openChatWindows } = useSelector(
+    (state: RootState) => state.chatsState,
+  );
   const { profile, all_friends, currentWorkspace, workspaces } = useSelector(
     (state: RootState) => state.filesState,
   );
 
   const filteredChats = useMemo(() => {
     if (!currentWorkspace || currentWorkspace.name === "default") return chats;
-    return chats.filter((chat) => chat.workspaces.includes(currentWorkspace.id));
+    return chats.filter((chat) =>
+      chat.workspaces.includes(currentWorkspace.id),
+    );
   }, [chats, currentWorkspace]);
 
   const totalUnread = useMemo(() => {
     if (!profile?.id) return 0;
-    return filteredChats.reduce((total, chat) => total + getUnreadCount(chat.messages, profile.id), 0);
+    return filteredChats.reduce(
+      (total, chat) => total + getUnreadCount(chat.messages, profile.id),
+      0,
+    );
   }, [filteredChats, profile?.id]);
 
   const handleClick = useCallback((event: React.MouseEvent<HTMLElement>) => {
@@ -55,40 +62,46 @@ const ChatNotifications = () => {
 
   const handleClose = useCallback(() => setAnchorEl(null), []);
 
-  const handleOpenChat = useCallback((chat: Chat) => {
-    dispatch({ type: "OPEN_CHAT", chatId: chat.id });
-    handleClose();
-  }, [dispatch, handleClose]);
+  const handleOpenChat = useCallback(
+    (chat: Chat) => {
+      dispatch({ type: "OPEN_CHAT", chatId: chat.id });
+      handleClose();
+    },
+    [dispatch, handleClose],
+  );
 
-  const handleCloseChat = useCallback((chatId: string) => {
-    dispatch({ type: "CLOSE_CHAT_WINDOW", chatId });
-  }, [dispatch]);
+  const handleCloseChat = useCallback(
+    (chatId: string) => {
+      dispatch({ type: "CLOSE_CHAT_WINDOW", chatId });
+    },
+    [dispatch],
+  );
 
+  const getOtherUser = useCallback(
+    (chat: Chat) => {
+      if (chat.name !== "private_chat") return null;
 
-const getOtherUser = useCallback(
-  (chat: Chat) => {
-    if (chat.name !== "private_chat") return null;
+      const otherMember = chat.members.find(
+        (m) => m.toString() !== profile?.id,
+      );
 
-    const otherMember = chat.members.find(
-      (m) => m.toString() !== profile?.id,
-    );
+      if (!otherMember) return null;
 
-    if (!otherMember) return null;
+      // Check if other member is oDoc CEO
+      const ODOC_CEO_ID =
+        "tgwpc-6xuon-k3a6y-ey7lt-xksjs-qx22h-ikhbt-4yp3a-6stco-rymbe-pqe";
+      if (otherMember.toString() === ODOC_CEO_ID) {
+        return {
+          id: ODOC_CEO_ID,
+          name: "oDoc",
+          photo: "/logo.png",
+        };
+      }
 
-    // Check if other member is oDoc CEO
-    const ODOC_CEO_ID = "tgwpc-6xuon-k3a6y-ey7lt-xksjs-qx22h-ikhbt-4yp3a-6stco-rymbe-pqe";
-    if (otherMember.toString() === ODOC_CEO_ID) {
-      return {
-        id: ODOC_CEO_ID,
-        name: "oDoc",
-        photo: "/logo.png"
-      };
-    }
-
-    return all_friends.find((f) => f.id === otherMember.toString());
-  },
-  [all_friends, profile?.id],
-);
+      return all_friends.find((f) => f.id === otherMember.toString());
+    },
+    [all_friends, profile?.id],
+  );
 
   const getChatDisplayName = useCallback(
     (chat: Chat) => {
@@ -256,10 +269,7 @@ const getOtherUser = useCallback(
                 >
                   <ListItemAvatar>
                     {chat.name === "private_chat" ? (
-                      <Avatar
-                        src={otherUser?.photo}
-                        alt={displayName}
-                      >
+                      <Avatar src={otherUser?.photo} alt={displayName}>
                         {displayName.charAt(0).toUpperCase()}
                       </Avatar>
                     ) : (
@@ -347,11 +357,13 @@ const getOtherUser = useCallback(
         currentWorkspace={currentWorkspace}
       />
 
- {/* Open Chat Windows - now using Redux state */}
+      {/* Open Chat Windows - now using Redux state */}
       {Object.keys(openChatWindows).map((chatId) => {
         const chat = chats.find((c) => c.id === chatId);
         if (!chat) return null;
-        return <ChatWindow key={chatId} chat={chat} onClose={handleCloseChat} />;
+        return (
+          <ChatWindow key={chatId} chat={chat} onClose={handleCloseChat} />
+        );
       })}
     </>
   );

@@ -67,24 +67,24 @@ export class AICasesService {
             calendarEventsCount: this.calendar?.events?.length,
             googleEvents: this.googleEvents,
             googleEventsCount: this.googleEvents?.length,
-            isGoogleConnected: this.isGoogleConnected
+            isGoogleConnected: this.isGoogleConnected,
           });
 
           const allEvents = [
             ...(this.calendar?.events || []),
             ...(this.googleEvents || []),
           ];
-          
+
           console.log("  - Combined events:", {
             allEventsCount: allEvents.length,
             backendEventsCount: this.calendar?.events?.length || 0,
             googleEventsCount: this.googleEvents?.length || 0,
-            allEventsPreview: allEvents.map(e => ({
+            allEventsPreview: allEvents.map((e) => ({
               id: e.id,
               title: e.title,
               isGoogleEvent: e.isGoogleEvent,
-              start_time: e.start_time
-            }))
+              start_time: e.start_time,
+            })),
           });
 
           const calendarContext = {
@@ -103,7 +103,7 @@ export class AICasesService {
             backend_events: calendarContext.backend_events,
             google_events_count: calendarContext.google_events_count,
             is_google_connected: calendarContext.is_google_connected,
-            eventsInContext: calendarContext.events?.length
+            eventsInContext: calendarContext.events?.length,
           });
 
           const currentDateTime = new Date(now / 1e6);
@@ -131,9 +131,9 @@ export class AICasesService {
 
           console.log("📤 FINAL MESSAGE TO AI:", {
             messageLength: finalMessage.length,
-            calendarDataIncluded: finalMessage.includes('Calendar Data:'),
+            calendarDataIncluded: finalMessage.includes("Calendar Data:"),
             totalEventsInMessage: calendarContext.total_events,
-            messagePreview: finalMessage.substring(0, 500) + '...'
+            messagePreview: finalMessage.substring(0, 500) + "...",
           });
 
           return finalMessage;

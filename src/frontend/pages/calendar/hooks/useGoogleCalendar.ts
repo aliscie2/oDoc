@@ -77,152 +77,154 @@ export const useGoogleCalendar = () => {
     setIsConnected(!!hasToken);
   }, [getGoogleIds, isSharedCalendar, profile]);
 
-  
-
   const connectGoogleCalendar = useCallback(async () => {
-  return new Promise((resolve, reject) => {
-    setError("");
-    setLoading(true);
+    return new Promise((resolve, reject) => {
+      setError("");
+      setLoading(true);
 
-    if (!window.google) {
-      setLoading(false);
-      setError("Google OAuth not available");
-      return reject(new Error("Google OAuth not available"));
-    }
+      if (!window.google) {
+        setLoading(false);
+        setError("Google OAuth not available");
+        return reject(new Error("Google OAuth not available"));
+      }
 
-    window.google.accounts.oauth2
-      .initTokenClient({
-        client_id: CLIENT_ID,
-        scope: SCOPES,
-        hint: "",
-        callback: async (response: any) => {
-          if (!response.access_token) {
-            setLoading(false);
-            setError("No access token received");
-            return reject(new Error("No access token received"));
-          }
+      window.google.accounts.oauth2
+        .initTokenClient({
+          client_id: CLIENT_ID,
+          scope: SCOPES,
+          hint: "",
+          callback: async (response: any) => {
+            if (!response.access_token) {
+              setLoading(false);
+              setError("No access token received");
+              return reject(new Error("No access token received"));
+            }
 
-          try {
-            const userRes = await fetch(
-              "https://www.googleapis.com/oauth2/v2/userinfo",
-              { headers: { Authorization: `Bearer ${response.access_token}` } }
-            );
-
-            if (!userRes.ok) throw new Error("Failed to fetch user information");
-
-            const userInfo = await userRes.json();
-            const userId = profile?.id;
-
-            // 🔗 GENERATE iCal PUBLIC URL
-            const icalPublicUrl = `https://calendar.google.com/calendar/ical/${encodeURIComponent(userInfo.email)}/public/basic.ics`;
-            
-            // 🔓 Make calendar public via ACL (so the iCal URL works)
             try {
-              await fetch(
-                `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(userInfo.email)}/acl`,
+              const userRes = await fetch(
+                "https://www.googleapis.com/oauth2/v2/userinfo",
                 {
-                  method: "POST",
-                  headers: {
-                    Authorization: `Bearer ${response.access_token}`,
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({
-                    role: "reader",
-                    scope: { type: "default" },
-                  }),
-                }
+                  headers: { Authorization: `Bearer ${response.access_token}` },
+                },
               );
-            } catch (aclError) {
-              // Calendar might already be public, continue
-              console.log("ACL already set or error:", aclError);
-            }
 
-            localStorage.setItem(
-              `googleCalendarToken_${userId}_${userInfo.email}`,
-              response.access_token
-            );
-            localStorage.setItem(
-              `googleCalendarToken_${userId}`,
-              response.access_token
-            );
+              if (!userRes.ok)
+                throw new Error("Failed to fetch user information");
 
-            if (userId) {
-              const currentEmails = getGoogleIds();
-              const updatedEmails = [...currentEmails, userInfo.email];
-              localStorage.setItem(
-                `userGoogleEmails_${userId}`,
-                JSON.stringify(updatedEmails)
-              );
-              setEmails(updatedEmails);
-            }
+              const userInfo = await userRes.json();
+              const userId = profile?.id;
 
-            if (isSharedCalendar) {
+              // 🔗 GENERATE iCal PUBLIC URL
+              const icalPublicUrl = `https://calendar.google.com/calendar/ical/${encodeURIComponent(userInfo.email)}/public/basic.ics`;
+
+              // 🔓 Make calendar public via ACL (so the iCal URL works)
               try {
-                const myCalendar = await backendActor.get_my_calendar();
-                if (myCalendar?.id) {
+                await fetch(
+                  `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(userInfo.email)}/acl`,
+                  {
+                    method: "POST",
+                    headers: {
+                      Authorization: `Bearer ${response.access_token}`,
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                      role: "reader",
+                      scope: { type: "default" },
+                    }),
+                  },
+                );
+              } catch (aclError) {
+                // Calendar might already be public, continue
+                console.log("ACL already set or error:", aclError);
+              }
+
+              localStorage.setItem(
+                `googleCalendarToken_${userId}_${userInfo.email}`,
+                response.access_token,
+              );
+              localStorage.setItem(
+                `googleCalendarToken_${userId}`,
+                response.access_token,
+              );
+
+              if (userId) {
+                const currentEmails = getGoogleIds();
+                const updatedEmails = [...currentEmails, userInfo.email];
+                localStorage.setItem(
+                  `userGoogleEmails_${userId}`,
+                  JSON.stringify(updatedEmails),
+                );
+                setEmails(updatedEmails);
+              }
+
+              if (isSharedCalendar) {
+                try {
+                  const myCalendar = await backendActor.get_my_calendar();
+                  if (myCalendar?.id) {
+                    const result = await backendActor.add_google_calendar_id(
+                      myCalendar.id,
+                      [userInfo.email],
+                    );
+                    if ("Ok" in result) {
+                      dispatch({
+                        type: "SET_USER_CALENDAR",
+                        calendar: myCalendar,
+                      });
+                    }
+                  }
+                } catch (err) {
+                  console.error("Error updating user's calendar:", err);
+                }
+              } else {
+                if (calendar?.id) {
+                  // Store Google Calendar ID
                   const result = await backendActor.add_google_calendar_id(
-                    myCalendar.id,
-                    [userInfo.email]
+                    calendar.id,
+                    [userInfo.email],
                   );
                   if ("Ok" in result) {
                     dispatch({
-                      type: "SET_USER_CALENDAR",
-                      calendar: myCalendar,
+                      type: "ADD_CALENDAR_EMAIL",
+                      id: result.Ok,
+                      email: userInfo.email,
                     });
                   }
-                }
-              } catch (err) {
-                console.error("Error updating user's calendar:", err);
-              }
-            } else {
-              if (calendar?.id) {
-                // Store Google Calendar ID
-                const result = await backendActor.add_google_calendar_id(
-                  calendar.id,
-                  [userInfo.email]
-                );
-                if ("Ok" in result) {
-                  dispatch({
-                    type: "ADD_CALENDAR_EMAIL",
-                    id: result.Ok,
-                    email: userInfo.email,
-                  });
-                }
 
-                // Store iCal public URL in backend
-                try {
-                  await backendActor.store_calendar_public_url(calendar.id, icalPublicUrl);
-                  console.log("✅ Stored iCal public URL:", icalPublicUrl);
-                } catch (urlError) {
-                  console.error("Error storing iCal URL:", urlError);
+                  // Store iCal public URL in backend
+                  try {
+                    await backendActor.store_calendar_public_url(
+                      calendar.id,
+                      icalPublicUrl,
+                    );
+                    console.log("✅ Stored iCal public URL:", icalPublicUrl);
+                  } catch (urlError) {
+                    console.error("Error storing iCal URL:", urlError);
+                  }
                 }
               }
+
+              setIsConnected(true);
+              setLoading(false);
+              resolve({ email: userInfo.email });
+            } catch (err: unknown) {
+              setLoading(false);
+              setError(err.message || "Failed to connect");
+              reject(err);
             }
-
-            setIsConnected(true);
+          },
+          error_callback: (error: unknown) => {
             setLoading(false);
-            resolve({ email: userInfo.email });
-          } catch (err: unknown) {
-            setLoading(false);
-            setError(err.message || "Failed to connect");
-            reject(err);
-          }
-        },
-        error_callback: (error: unknown) => {
-          setLoading(false);
-          setError(
-            error.type === "popup_closed"
-              ? "Connection cancelled"
-              : "Authentication failed"
-          );
-          reject(new Error(`OAuth failed: ${error.type}`));
-        },
-      })
-      .requestAccessToken();
-  });
-}, [calendar, dispatch, isSharedCalendar, profile, getGoogleIds]);
-
-
+            setError(
+              error.type === "popup_closed"
+                ? "Connection cancelled"
+                : "Authentication failed",
+            );
+            reject(new Error(`OAuth failed: ${error.type}`));
+          },
+        })
+        .requestAccessToken();
+    });
+  }, [calendar, dispatch, isSharedCalendar, profile, getGoogleIds]);
 
   const refreshGoogleCalendarEvents = useCallback(async () => {
     if (emails.length === 0) return;
