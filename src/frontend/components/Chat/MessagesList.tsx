@@ -159,6 +159,7 @@ export const MessagesList = memo<MessagesListProps>(
                   <Typography
                     variant="caption"
                     sx={{
+                      color: "rgba(255, 255, 255, 0.7)", // Light white with transparency
                       opacity: 0.7,
                       fontSize: "0.7rem",
                       display: "block",

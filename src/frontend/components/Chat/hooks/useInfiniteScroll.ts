@@ -32,7 +32,7 @@ export const useInfiniteScroll = ({
 
         try {
           const olderMessages = await backendActor.load_more_messages(
-            chat.id,
+            chat?.id,
             chat.messages.length,
           );
 
@@ -61,8 +61,8 @@ export const useInfiniteScroll = ({
     },
     [
       backendActor,
-      chat.id,
-      chat.messages.length,
+      chat?.id,
+      chat?.messages.length,
       isLoadingMore,
       hasMoreMessages,
       onLoadMore,

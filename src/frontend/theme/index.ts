@@ -161,24 +161,20 @@ const createComponents = (palette: ReturnType<typeof createPalette>) => {
       },
     },
 
-    MuiIconButton: {
-      styleOverrides: {
-        root: {
-          borderRadius: 12,
-          transition: "all 0.3s ease",
-          boxShadow: isDark
-            ? "4px 4px 8px rgba(0,0,0,0.4), -2px -2px 6px rgba(60,60,60,0.1)"
-            : "4px 4px 8px rgba(163,177,198,0.2), -2px -2px 6px rgba(255,255,255,0.7)",
-          "&:hover": {
-            backgroundColor: palette.action.hover,
-            boxShadow: isDark
-              ? "6px 6px 12px rgba(0,0,0,0.5), -3px -3px 8px rgba(60,60,60,0.15)"
-              : "6px 6px 12px rgba(163,177,198,0.3), -3px -3px 8px rgba(255,255,255,0.8)",
-          },
-          "&:active": { transform: "scale(0.96)" },
-        },
+   MuiIconButton: {
+  styleOverrides: {
+    root: {
+      borderRadius: 12,
+      transition: "all 0.3s ease",
+      boxShadow: "none", // REMOVE default shadows
+      "&:hover": {
+        backgroundColor: palette.action.hover,
+        boxShadow: "none", // REMOVE hover shadows
       },
+      "&:active": { transform: "scale(0.96)" },
     },
+  },
+},
 
     MuiToggleButton: {
       styleOverrides: {
@@ -202,18 +198,16 @@ const createComponents = (palette: ReturnType<typeof createPalette>) => {
       },
     },
 
-    MuiAvatar: {
-      styleOverrides: {
-        root: {
-          backgroundColor: palette.background.paper,
-          color: palette.text.primary,
-          fontWeight: 600,
-          boxShadow: isDark
-            ? "4px 4px 8px rgba(0,0,0,0.4), -2px -2px 6px rgba(60,60,60,0.1)"
-            : "4px 4px 8px rgba(163,177,198,0.2), -2px -2px 6px rgba(255,255,255,0.7)",
-        },
-      },
+ MuiAvatar: {
+  styleOverrides: {
+    root: {
+      backgroundColor: palette.background.paper,
+      color: palette.text.primary,
+      fontWeight: 600,
+      boxShadow: "none", // REMOVE default shadows
     },
+  },
+},
 
     MuiDivider: {
       styleOverrides: {

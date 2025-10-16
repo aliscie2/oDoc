@@ -141,61 +141,61 @@ const useMobileScrollBehavior = (isMobile) => {
 };
 
 // Custom hook for desktop navbar visibility based on mouse position only
-const useDesktopNavbarMouseVisibility = (isMobile) => {
-  const [isVisible, setIsVisible] = useState(true);
-  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+// const useDesktopNavbarMouseVisibility = (isMobile) => {
+//   const [isVisible, setIsVisible] = useState(true);
+//   const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    if (isMobile) return;
+//   useEffect(() => {
+//     if (isMobile) return;
 
-    const handleMouseMove = (e: MouseEvent) => {
-      const shouldShow = e.clientY < 350; // Show when mouse is within 250px of top
+//     const handleMouseMove = (e: MouseEvent) => {
+//       const shouldShow = e.clientY < 350; // Show when mouse is within 250px of top
 
-      if (shouldShow) {
-        // Clear any pending hide timeout
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current);
-          timeoutRef.current = null;
-        }
-        // Show immediately
-        setIsVisible(true);
-      } else {
-        // Only set timeout if not already set
-        if (!timeoutRef.current) {
-          // Delay hiding to avoid flickering
-          timeoutRef.current = setTimeout(() => {
-            setIsVisible(false);
-            timeoutRef.current = null;
-          }, 500);
-        }
-      }
-    };
+//       if (shouldShow) {
+//         // Clear any pending hide timeout
+//         if (timeoutRef.current) {
+//           clearTimeout(timeoutRef.current);
+//           timeoutRef.current = null;
+//         }
+//         // Show immediately
+//         setIsVisible(true);
+//       } else {
+//         // Only set timeout if not already set
+//         if (!timeoutRef.current) {
+//           // Delay hiding to avoid flickering
+//           timeoutRef.current = setTimeout(() => {
+//             setIsVisible(false);
+//             timeoutRef.current = null;
+//           }, 500);
+//         }
+//       }
+//     };
 
-    // Throttle mouse move events to reduce re-renders
-    let rafId: number | null = null;
-    const throttledMouseMove = (e: MouseEvent) => {
-      if (rafId) return;
-      rafId = requestAnimationFrame(() => {
-        handleMouseMove(e);
-        rafId = null;
-      });
-    };
+//     // Throttle mouse move events to reduce re-renders
+//     let rafId: number | null = null;
+//     const throttledMouseMove = (e: MouseEvent) => {
+//       if (rafId) return;
+//       rafId = requestAnimationFrame(() => {
+//         handleMouseMove(e);
+//         rafId = null;
+//       });
+//     };
 
-    window.addEventListener("mousemove", throttledMouseMove, { passive: true });
+//     window.addEventListener("mousemove", throttledMouseMove, { passive: true });
 
-    return () => {
-      window.removeEventListener("mousemove", throttledMouseMove);
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      if (rafId) {
-        cancelAnimationFrame(rafId);
-      }
-    };
-  }, [isMobile]);
+//     return () => {
+//       window.removeEventListener("mousemove", throttledMouseMove);
+//       if (timeoutRef.current) {
+//         clearTimeout(timeoutRef.current);
+//       }
+//       if (rafId) {
+//         cancelAnimationFrame(rafId);
+//       }
+//     };
+//   }, [isMobile]);
 
-  return isVisible;
-};
+//   return isVisible;
+// };
 
 // Navigation item factory
 const createNavItem = (key, config, state, handlers) => {
@@ -660,6 +660,10 @@ export default function TopNavBar() {
     );
   };
 
+
+  const location = useLocation();
+  const hideBottomNav = location.pathname.startsWith('/chat/');
+
   return (
     <>
       <AppBar
@@ -674,7 +678,7 @@ export default function TopNavBar() {
         {state.isFetching && <LinearProgress />}
         <DesktopNav />
       </AppBar>
-      {state.isMobile && <MobileNav />}
+      {!hideBottomNav&&state.isMobile && <MobileNav />}
     </>
   );
 }

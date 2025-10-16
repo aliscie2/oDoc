@@ -23,12 +23,15 @@ import React, { memo, useCallback, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../redux/reducers";
 import { backendActor } from "../../utils/backendUtils";
-import { ChatWindow } from "./ChatWindow";
+import { ChatFloatingWindow } from "./chatFoatingWindowPage";
 import { CreateGroupDialog } from "./CreateGroupDialog";
 import { Chat } from "./types";
 import { getUnreadCount } from "./utils";
+import { useNavigate } from "react-router-dom";
+
 const ChatNotifications = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate(); // Add this
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [createGroupOpen, setCreateGroupOpen] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -62,13 +65,19 @@ const ChatNotifications = () => {
 
   const handleClose = useCallback(() => setAnchorEl(null), []);
 
-  const handleOpenChat = useCallback(
+    const handleOpenChat = useCallback(
     (chat: Chat) => {
-      dispatch({ type: "OPEN_CHAT", chatId: chat.id });
+      // Check if mobile
+      if (window.innerWidth < 600) {
+        navigate(`/chat/${chat.id}`);
+      } else {
+        dispatch({ type: "OPEN_CHAT", chatId: chat.id });
+      }
       handleClose();
     },
-    [dispatch, handleClose],
+    [dispatch, handleClose, navigate]
   );
+
 
   const handleCloseChat = useCallback(
     (chatId: string) => {
@@ -185,8 +194,9 @@ const ChatNotifications = () => {
   const open = Boolean(anchorEl);
 
   return (
-    <>
-      {/* Chat Icon Button */}
+    
+    
+     <>
       <IconButton
         onClick={handleClick}
         aria-controls={open ? "chat-menu" : undefined}
@@ -199,7 +209,6 @@ const ChatNotifications = () => {
         </Badge>
       </IconButton>
 
-      {/* Chat List Menu */}
       <Menu
         id="chat-menu"
         anchorEl={anchorEl}
@@ -207,31 +216,18 @@ const ChatNotifications = () => {
         onClose={handleClose}
         slotProps={{
           paper: {
-            sx: {
-              maxHeight: 500,
-              width: 320,
-            },
+            sx: { maxHeight: 500, width: 320 },
           },
         }}
         transformOrigin={{ horizontal: "right", vertical: "top" }}
         anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
       >
-        {/* Create Group Button */}
-        <MenuItem
-          sx={{
-            justifyContent: "center",
-            borderBottom: 1,
-            borderColor: "divider",
-          }}
-        >
+        <MenuItem sx={{ justifyContent: "center", borderBottom: 1, borderColor: "divider" }}>
           <Button
             startIcon={<AddIcon />}
             variant="outlined"
             fullWidth
-            onClick={() => {
-              setCreateGroupOpen(true);
-              handleClose();
-            }}
+            onClick={() => { setCreateGroupOpen(true); handleClose(); }}
           >
             Create New Group
           </Button>
@@ -239,21 +235,14 @@ const ChatNotifications = () => {
 
         {filteredChats.length === 0 ? (
           <MenuItem disabled>
-            <Typography variant="body2" color="text.secondary">
-              No chats yet
-            </Typography>
+            <Typography variant="body2" color="text.secondary">No chats yet</Typography>
           </MenuItem>
         ) : (
           <List sx={{ padding: 0, width: "100%" }}>
             {filteredChats.map((chat) => {
-              const unreadCount = profile?.id
-                ? getUnreadCount(chat.messages, profile.id)
-                : 0;
+              const unreadCount = profile?.id ? getUnreadCount(chat.messages, profile.id) : 0;
               const otherUser = getOtherUser(chat);
               const displayName = getChatDisplayName(chat);
-
-              // ⚠️ CRITICAL: MESSAGE ORDERING
-              // Messages are stored newest first, so index 0 is the LATEST message
               const lastMessage = chat.messages[0]?.message || "No messages";
 
               return (
@@ -273,43 +262,20 @@ const ChatNotifications = () => {
                         {displayName.charAt(0).toUpperCase()}
                       </Avatar>
                     ) : (
-                      <Avatar>
-                        <GroupIcon />
-                      </Avatar>
+                      <Avatar><GroupIcon /></Avatar>
                     )}
                   </ListItemAvatar>
                   <ListItemText
                     primary={
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                        }}
-                      >
-                        <Typography
-                          variant="subtitle2"
-                          sx={{
-                            fontWeight: unreadCount > 0 ? 600 : 400,
-                          }}
-                        >
+                      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: unreadCount > 0 ? 600 : 400 }}>
                           {displayName}
                         </Typography>
-                        {unreadCount > 0 && (
-                          <Badge badgeContent={unreadCount} color="error" />
-                        )}
+                        {unreadCount > 0 && <Badge badgeContent={unreadCount} color="error" />}
                       </Box>
                     }
                     secondary={
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
+                      <Typography variant="body2" color="text.secondary" sx={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {lastMessage}
                       </Typography>
                     }
@@ -320,18 +286,8 @@ const ChatNotifications = () => {
           </List>
         )}
 
-        {/* Load More Button */}
         {filteredChats.length > 0 && hasMoreChats && (
-          <MenuItem
-            onClick={handleLoadMore}
-            disabled={isLoadingMore}
-            sx={{
-              justifyContent: "center",
-              borderTop: 1,
-              borderColor: "divider",
-              py: 1.5,
-            }}
-          >
+          <MenuItem onClick={handleLoadMore} disabled={isLoadingMore} sx={{ justifyContent: "center", borderTop: 1, borderColor: "divider", py: 1.5 }}>
             {isLoadingMore ? (
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                 <CircularProgress size={16} />
@@ -347,8 +303,7 @@ const ChatNotifications = () => {
         )}
       </Menu>
 
-      {/* Create Group Dialog */}
-      <CreateGroupDialog
+       <CreateGroupDialog
         open={createGroupOpen}
         onClose={() => setCreateGroupOpen(false)}
         onSubmit={handleCreateGroup}
@@ -357,15 +312,14 @@ const ChatNotifications = () => {
         currentWorkspace={currentWorkspace}
       />
 
-      {/* Open Chat Windows - now using Redux state */}
-      {Object.keys(openChatWindows).map((chatId) => {
+      {/* Floating Chat Windows - Stacked from right */}
+     {window.innerWidth >= 600 && Object.keys(openChatWindows).map((chatId, index) => {
         const chat = chats.find((c) => c.id === chatId);
         if (!chat) return null;
-        return (
-          <ChatWindow key={chatId} chat={chat} onClose={handleCloseChat} />
-        );
+        return <ChatFloatingWindow key={chatId} chat={chat} index={index} />;
       })}
     </>
+    
   );
 };
 

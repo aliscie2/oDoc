@@ -36,6 +36,24 @@ export function chatsReducer(
       };
     }
 
+    case "TOGGLE_CHAT_MINIMIZE": {
+      const { chatId } = action;
+      const window = state.openChatWindows[chatId];
+      if (!window) return state;
+      
+      return {
+        ...state,
+        openChatWindows: {
+          ...state.openChatWindows,
+          [chatId]: {
+            ...window,
+            isMinimized: !window.isMinimized,
+          },
+        },
+      };
+    }
+
+
     case "CLOSE_CHAT_WINDOW": {
       const { chatId } = action;
       const { [chatId]: removed, ...remaining } = state.openChatWindows;

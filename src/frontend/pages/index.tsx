@@ -10,6 +10,7 @@ import ICPJobsLandingPage from "./LandingPage";
 import AffiliateRedirect from "./affiliateRedirect";
 // import CalendarView from "./calendar";
 import NotFound from "@/pages/notFound404";
+import { ChatMobilePage } from "./chatMobilePage";
 
 // Lazy imports for heavy components
 const JobsPage = React.lazy(() => import("./jobs"));
@@ -115,6 +116,7 @@ const Pages = React.memo(() => {
         <Route path="/posts" element={<Posts />} />
         <Route path="/jobs*" element={<JobPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/chat/:chatId" element={<ChatMobilePage />} />
       </Routes>
     </Suspense>
   );

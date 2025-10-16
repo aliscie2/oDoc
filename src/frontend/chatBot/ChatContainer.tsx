@@ -10,11 +10,9 @@ import { useGoogleCalendar } from "../pages/calendar/googleAccounts/useGoogleCal
 import { useLocation } from "react-router-dom";
 
 const ChatContainer = () => {
-
-
   // Define paths where chat should NOT be shown
- const location = useLocation();
-  
+  const location = useLocation();
+
   // Paths where chat should be visible
   const chatEnabledPaths = [
     "/",
@@ -26,9 +24,9 @@ const ChatContainer = () => {
 
   // Check if current path matches any enabled path
   const isChatEnabled = chatEnabledPaths.some((path) =>
-    path === "/" 
-      ? location.pathname === "/" 
-      : location.pathname.startsWith(path)
+    path === "/"
+      ? location.pathname === "/"
+      : location.pathname.startsWith(path),
   );
 
   if (!isChatEnabled) {
