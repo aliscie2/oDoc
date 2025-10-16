@@ -2,16 +2,39 @@ import React, { useMemo, useRef, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { useChatState } from "./hooks/useChatState";
 import { useChatActions, UseChatActionsConfig } from "./hooks/useChatActions";
-import {
-  useTriggeredMessages,
-} from "./hooks/useTriggeredMessages";
+import { useTriggeredMessages } from "./hooks/useTriggeredMessages";
 import { useMessageProcessor } from "./hooks/useMessageProcessor";
 import { ChatWindow } from "./components/ChatWindow";
 import { AIInput } from "./components/AIInput";
 import { useGoogleCalendar } from "../pages/calendar/googleAccounts/useGoogleCalendar";
+import { useLocation } from "react-router-dom";
 
 const ChatContainer = () => {
-    const {
+
+
+  // Define paths where chat should NOT be shown
+ const location = useLocation();
+  
+  // Paths where chat should be visible
+  const chatEnabledPaths = [
+    "/",
+    "/contract",
+    "/contracts",
+    "/calendar",
+    "/share_calendar",
+  ];
+
+  // Check if current path matches any enabled path
+  const isChatEnabled = chatEnabledPaths.some((path) =>
+    path === "/" 
+      ? location.pathname === "/" 
+      : location.pathname.startsWith(path)
+  );
+
+  if (!isChatEnabled) {
+    return null;
+  }
+  const {
     assistantName,
     chatHistory,
     setChatHistory,
@@ -26,17 +49,14 @@ const ChatContainer = () => {
     handleTypingComplete,
   } = useChatState();
 
-    const handleMinimize = useCallback(() => {
-    sessionStorage.setItem('chatMinimized', 'true');
+  const handleMinimize = useCallback(() => {
+    sessionStorage.setItem("chatMinimized", "true");
     setIsMinimized(true);
   }, [setIsMinimized]);
   const handleMaximize = useCallback(() => {
-    sessionStorage.removeItem('chatMinimized');
+    sessionStorage.removeItem("chatMinimized");
     setIsMinimized(false);
   }, [setIsMinimized]);
-
-
-
 
   const prevProfileCompletionRef = useRef<number | null>(null);
   const { calendar, is_google_connected } = useSelector(
@@ -46,7 +66,8 @@ const ChatContainer = () => {
   const currentJob = jobs?.find((job: any) => job.id === currentJobId);
 
   const isHomePage = ["", "/"].includes(window.location.pathname);
-  const shouldCenterChat = isHomePage && (!currentJob | !jobs || jobs.length === 0);
+  const shouldCenterChat =
+    isHomePage && (!currentJob | !jobs || jobs.length === 0);
 
   const messageProcessor = useMessageProcessor();
   const { executeGoogleAction } = useGoogleCalendar();
@@ -148,7 +169,7 @@ const ChatContainer = () => {
     setIsMinimized,
   ]);
 
-    const chatProps = {
+  const chatProps = {
     assistantName,
     credits,
     isLoading,
@@ -159,8 +180,6 @@ const ChatContainer = () => {
     onRetry: handleRetry,
     onTypingComplete: handleTypingComplete,
   };
-
-
 
   const inputProps = {
     onSendMessage: handleChatSend,
