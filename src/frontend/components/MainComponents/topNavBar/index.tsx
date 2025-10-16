@@ -518,8 +518,19 @@ export default function TopNavBar() {
               anchorEl={mobileMenuAnchor}
               open={Boolean(mobileMenuAnchor)}
               onClose={() => setMobileMenuAnchor(null)}
-              anchorOrigin={{ vertical: "top", horizontal: "center" }}
-              transformOrigin={{ vertical: "bottom", horizontal: "center" }}
+              anchorOrigin={{ vertical: "top", horizontal: "right" }}
+              transformOrigin={{ vertical: "bottom", horizontal: "right" }}
+              slotProps={{
+                paper: {
+                  sx: {
+                    bottom: 56, // Height of BottomNavigation
+                    top: "auto !important",
+                    right: 8,
+                    left: "auto !important",
+                    position: "fixed",
+                  },
+                },
+              }}
             >
               {handlers.profileMenuOptions.map((option, index) => (
                 <MenuItem
@@ -660,9 +671,8 @@ export default function TopNavBar() {
     );
   };
 
-
   const location = useLocation();
-  const hideBottomNav = location.pathname.startsWith('/chat/');
+  const hideBottomNav = location.pathname.startsWith("/chat/");
 
   return (
     <>
@@ -678,7 +688,7 @@ export default function TopNavBar() {
         {state.isFetching && <LinearProgress />}
         <DesktopNav />
       </AppBar>
-      {!hideBottomNav&&state.isMobile && <MobileNav />}
+      {!hideBottomNav && state.isMobile && <MobileNav />}
     </>
   );
 }
