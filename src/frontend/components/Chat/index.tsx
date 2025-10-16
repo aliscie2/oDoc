@@ -267,12 +267,14 @@ const handleOpenChat = useCallback(
         </Box>
 
         {filteredChats.length === 0 ? (
-          <Box sx={{ p: 4, textAlign: "center" }}>
-            <Typography variant="body2" color="text.secondary">
-              No chats yet
-            </Typography>
-          </Box>
-        ) : (
+  <Box sx={{ p: 4, textAlign: "center" }}>
+    <Typography variant="body2" color="text.secondary">
+      {currentWorkspace?.name && currentWorkspace.name !== "default" 
+        ? `"${currentWorkspace.name}" has no chats yet` 
+        : "No chats yet"}
+    </Typography>
+  </Box>
+) : (
           <List sx={{ p: 0, pb: 1 }}>
           {filteredChats.map((chat) => {
   const unreadCount = profile?.id ? getUnreadCount(chat.messages, profile.id) : 0;
