@@ -13,9 +13,23 @@ import { Link } from "react-router-dom";
 
 
 
-const sectionSx = { minHeight: '100vh', display: 'flex', alignItems: 'center', py: 3, pb: 12 };
-const cardSx = { p: 2, borderRadius: 2, border: 1, borderColor: 'divider' };
-const glassSx = { ...cardSx, backdropFilter: 'blur(10px)', bgcolor: 'rgba(255,255,255,0.02)' };
+const sectionSx = { minHeight: '100vh', display: 'flex', alignItems: 'center', py: 2, pb: 8 };
+
+const cardSx = { 
+  p: 2, 
+  borderRadius: 4, 
+  border: 'none',
+  boxShadow: (theme) => theme.palette.mode === 'dark' 
+    ? '6px 6px 12px rgba(0,0,0,0.4), -6px -6px 12px rgba(60,60,60,0.1)'
+    : '6px 6px 12px rgba(163,177,198,0.25), -6px -6px 12px rgba(255,255,255,0.7)',
+  bgcolor: 'background.paper'
+};
+
+const glassSx = { 
+  ...cardSx, 
+  backdropFilter: 'blur(10px)', 
+  bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.5)'
+};
 
 
 
@@ -70,6 +84,7 @@ const SEOComponent = () => (
     </script>
   </Helmet>
 );
+
 const HeroWithDemo = () => {
   const theme = useTheme();
   const [messages, setMessages] = useState([]);
@@ -111,7 +126,7 @@ const HeroWithDemo = () => {
   return (
     <Box sx={sectionSx}>
       <Container maxWidth="sm" sx={{ px: 2 }}>
-        <Box sx={{ textAlign: 'center', mb: 3 }}>
+        <Box sx={{ textAlign: 'center', mb: 2.5 }}>
           <Typography variant="h2" sx={{ fontSize: '1.75rem', fontWeight: 400, mb: 1.5, lineHeight: 1.2 }}>
             Your AI<br />
             <Box component="span" sx={{ color: 'primary.main', fontWeight: 500 }}>Personal Secretary</Box>
@@ -129,25 +144,32 @@ const HeroWithDemo = () => {
                 <Box sx={{ display: 'flex', justifyContent: msg.type === 'user' ? 'flex-end' : 'flex-start' }}>
                   {msg.type === 'bot' ? (
                     <Box sx={{ display: 'flex', gap: 1, maxWidth: '90%' }}>
-                      <Avatar 
-                        src={msg.avatar} 
-                        sx={{ 
-                          width: 28, 
-                          height: 28, 
-                          bgcolor: 'primary.main',
-                          opacity: theme.palette.mode === 'dark' ? 0.85 : 1
-                        }} 
-                      />
+                      <Avatar src={msg.avatar} sx={{ width: 28, height: 28, bgcolor: 'primary.main' }} />
                       <Box>
                         {msg.text && (
-                          <Box sx={{ px: 2, py: 1, border: 1, borderColor: 'divider', borderRadius: 2, mb: msg.candidates || msg.meeting || msg.contract ? 1 : 0 }}>
+                          <Box sx={{ 
+                            px: 2, py: 1, 
+                            borderRadius: 3,
+                            boxShadow: theme.palette.mode === 'dark'
+                              ? 'inset 2px 2px 4px rgba(0,0,0,0.3), inset -2px -2px 4px rgba(60,60,60,0.1)'
+                              : 'inset 2px 2px 4px rgba(163,177,198,0.2), inset -2px -2px 4px rgba(255,255,255,0.7)',
+                            bgcolor: 'background.paper',
+                            mb: msg.candidates || msg.meeting || msg.contract ? 1 : 0 
+                          }}>
                             <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>{msg.text}</Typography>
                           </Box>
                         )}
                         {msg.candidates && (
                           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                             {msg.candidates.map((c, i) => (
-                              <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.75, borderRadius: 2, border: 1, borderColor: 'divider' }}>
+                              <Box key={i} sx={{ 
+                                display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.75, 
+                                borderRadius: 3,
+                                boxShadow: theme.palette.mode === 'dark'
+                                  ? '3px 3px 6px rgba(0,0,0,0.4), -2px -2px 4px rgba(60,60,60,0.1)'
+                                  : '3px 3px 6px rgba(163,177,198,0.2), -2px -2px 4px rgba(255,255,255,0.7)',
+                                bgcolor: 'background.paper'
+                              }}>
                                 <Avatar src={c.avatar} sx={{ width: 24, height: 24 }} />
                                 <Box>
                                   <Typography variant="caption" fontWeight={600} sx={{ fontSize: '0.75rem' }}>{c.name}</Typography>
@@ -158,14 +180,26 @@ const HeroWithDemo = () => {
                           </Box>
                         )}
                         {msg.meeting && (
-                          <Box sx={{ p: 1.5, borderRadius: 2, border: 1, borderColor: 'primary.main' }}>
+                          <Box sx={{ 
+                            p: 1.5, borderRadius: 3,
+                            boxShadow: theme.palette.mode === 'dark'
+                              ? '4px 4px 8px rgba(58,141,255,0.25), -2px -2px 6px rgba(60,60,60,0.1)'
+                              : '4px 4px 8px rgba(58,141,255,0.2), -2px -2px 6px rgba(255,255,255,0.7)',
+                            bgcolor: theme.palette.mode === 'dark' ? 'rgba(58,141,255,0.1)' : 'rgba(58,141,255,0.05)'
+                          }}>
                             <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>Meeting Scheduled</Typography>
                             <Typography variant="caption" display="block" color="text.secondary">{msg.meeting.time}</Typography>
                             <Typography variant="caption" color="text.secondary">{msg.meeting.attendees}</Typography>
                           </Box>
                         )}
                         {msg.contract && (
-                          <Box sx={{ p: 1.5, borderRadius: 2, border: 1, borderColor: 'primary.main' }}>
+                          <Box sx={{ 
+                            p: 1.5, borderRadius: 3,
+                            boxShadow: theme.palette.mode === 'dark'
+                              ? '4px 4px 8px rgba(58,141,255,0.25), -2px -2px 6px rgba(60,60,60,0.1)'
+                              : '4px 4px 8px rgba(58,141,255,0.2), -2px -2px 6px rgba(255,255,255,0.7)',
+                            bgcolor: theme.palette.mode === 'dark' ? 'rgba(58,141,255,0.1)' : 'rgba(58,141,255,0.05)'
+                          }}>
                             <Typography variant="body2" fontWeight={600} sx={{ mb: 0.5 }}>Escrow Created</Typography>
                             <Typography variant="caption" display="block" fontWeight={600} color="primary.main">
                               {msg.contract.amount} → {msg.contract.recipient}
@@ -175,7 +209,15 @@ const HeroWithDemo = () => {
                       </Box>
                     </Box>
                   ) : (
-                    <Box sx={{ px: 2, py: 1, maxWidth: '75%', bgcolor: 'primary.main', color: 'primary.contrastText', borderRadius: 2 }}>
+                    <Box sx={{ 
+                      px: 2, py: 1, maxWidth: '75%', 
+                      bgcolor: 'primary.main', 
+                      color: 'primary.contrastText', 
+                      borderRadius: 3,
+                      boxShadow: theme.palette.mode === 'dark'
+                        ? '4px 4px 8px rgba(0,0,0,0.4), -2px -2px 6px rgba(60,60,60,0.1)'
+                        : '4px 4px 8px rgba(58,141,255,0.25), -2px -2px 6px rgba(255,255,255,0.7)'
+                    }}>
                       <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>{msg.text}</Typography>
                     </Box>
                   )}
@@ -188,6 +230,8 @@ const HeroWithDemo = () => {
     </Box>
   );
 };
+
+
 
 const SocialProofSection = () => {
   const theme = useTheme();

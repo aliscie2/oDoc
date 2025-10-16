@@ -1,4 +1,4 @@
-import { Close, WorkOutline, CalendarMonth, Handshake } from "@mui/icons-material";
+import { Close, WorkOutline } from "@mui/icons-material";
 import { Box, IconButton, Typography } from "@mui/material";
 import { useLocation } from "react-router-dom";
 import { useThemeStyles } from "../hooks/useThemeStyles";
@@ -26,18 +26,17 @@ export const ChatHeader = ({
     const path = location.pathname.toLowerCase();
     
     if (path === "" || path === "/") {
-      return { icon: WorkOutline, text: "Hiring Intelligence" };
+      return {  text: "Hiring Intelligence" };
     } else if (path.includes("calendar")) {
-      return { icon: CalendarMonth, text: "Calendar Assistant" };
+      return { text: "Calendar Assistant" };
     } else if (path.includes("contract")) {
-      return { icon: Handshake, text: "Contract Assistant" };
+      return { text: "Contract Assistant" };
     } else {
       return { icon: WorkOutline, text: "Hiring Intelligence" };
     }
   };
 
   const titleConfig = getTitleConfig();
-  const TitleIcon = titleConfig.icon;
 
   return (
     <Box
@@ -56,12 +55,6 @@ export const ChatHeader = ({
       <Box display="flex" alignItems="center" gap={1.5}>
         <AICreditsComponent />
         <Box display="flex" alignItems="center" gap={1}>
-          <TitleIcon 
-            sx={{ 
-              fontSize: "1.1rem",
-              color: isDark ? theme.palette.primary.light : theme.palette.primary.main,
-            }} 
-          />
           <Typography
             variant="body1"
             sx={{

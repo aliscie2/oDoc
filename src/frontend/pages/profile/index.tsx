@@ -420,8 +420,33 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
       </Grid>
 
       {/* Chart */}
-      <Card sx={{ mb: 4 }}>
-        <CardContent>
+      <Card 
+  sx={{ 
+    mb: 4,
+    background: isDarkMode 
+      ? '#242424'
+      : 'linear-gradient(135deg, #F0F4F8 0%, #E8EDF2 100%)',
+    boxShadow: isDarkMode
+      ? '12px 12px 24px rgba(0,0,0,0.5), -12px -12px 24px rgba(60,60,60,0.1)'
+      : '12px 12px 24px rgba(163,177,198,0.35), -12px -12px 24px rgba(255,255,255,0.9), inset 2px 2px 4px rgba(255,255,255,0.1)',
+    borderRadius: 3,
+    position: 'relative',
+    overflow: 'hidden',
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: -100,
+      right: -100,
+      width: 300,
+      height: 300,
+      background: isDarkMode 
+        ? 'radial-gradient(circle, rgba(58,141,255,0.08) 0%, transparent 70%)'
+        : 'radial-gradient(circle, rgba(255,255,255,0.6) 0%, transparent 70%)',
+      pointerEvents: 'none',
+    },
+  }}
+>
+  <CardContent sx={{ p: { xs: 3, sm: 4, md: 5 }, position: 'relative', zIndex: 1 }}>
           <Box sx={{ height: { xs: 300, sm: 400 } }}>
             {actionRatingsData.length > 0 ? (
               <AgCharts options={chartOptions} />

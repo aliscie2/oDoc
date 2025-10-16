@@ -183,6 +183,8 @@ const AISecretaryChat = () => {
   );
 };
 
+
+
 const HeroSection = () => {
   const theme = useTheme();
   const buttonStyles = getButtonStyles(theme);
@@ -243,21 +245,35 @@ const HeroSection = () => {
   }, [isVisible, hasAnimated]);
 
   return (
-    <Box ref={statsRef} sx={{ height: "100vh", display: "flex", alignItems: "center", position: "relative", overflow: "hidden",
-      "&::before": { content: '""', position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
-        background: `radial-gradient(circle at 30% 20%, ${theme.palette.primary.main}08 0%, transparent 50%)`, pointerEvents: "none" } }}>
+    <Box ref={statsRef} sx={{ 
+      minHeight: "100vh", 
+      display: "flex", 
+      alignItems: "center", 
+      position: "relative", 
+      overflow: "hidden",
+      py: 8,
+      "&::before": { 
+        content: '""', 
+        position: "absolute", 
+        top: -200, 
+        right: -200, 
+        width: 500, 
+        height: 500,
+        background: `radial-gradient(circle, ${theme.palette.mode === 'dark' ? 'rgba(58,141,255,0.08)' : 'rgba(255,255,255,0.6)'} 0%, transparent 70%)`,
+        pointerEvents: "none" 
+      } 
+    }}>
       <Container maxWidth="lg">
-        <Box sx={{ display: "flex", alignItems: "center", gap: 4 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 6 }}>
           <Box sx={{ flex: "1 1 50%" }}>
-            <Typography variant="h1" sx={{ fontSize: "4rem", fontWeight: 400, mb: 2, lineHeight: 1.2,
-              fontFamily: "Google Sans, -apple-system, BlinkMacSystemFont, sans-serif" }}>
+            <Typography variant="h1" sx={{ fontSize: "3.5rem", fontWeight: 400, mb: 2, lineHeight: 1.2 }}>
               Your AI<br />
-              <Box component="span" sx={{ color: theme.palette.primary.main, fontWeight: 500 }}>Personal Secretary</Box>
+              <Box component="span" sx={{ color: 'primary.main', fontWeight: 500 }}>Personal Secretary</Box>
             </Typography>
-            <Typography variant="h5" sx={{ mb: 3, color: theme.palette.text.secondary, fontWeight: 400, lineHeight: 1.6, fontSize: "1.25rem" }}>
+            <Typography variant="h5" sx={{ mb: 3, color: 'text.secondary', fontWeight: 400, lineHeight: 1.6, fontSize: "1.15rem" }}>
               The first and only AI personal secretary on Web3. Find jobs and talent, schedule meetings, manage teams & payments.
             </Typography>
-            <Stack direction="row" spacing={2} sx={{ mb: 4 }}>
+            <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
               <LoginButton variant="contained" size="large" userType={"JOB"} sx={buttonStyles.contained} isMobile={false}>
                 <Search sx={{ mr: 1, fontSize: "1.2rem" }} />Find Talent
               </LoginButton>
@@ -274,7 +290,6 @@ const HeroSection = () => {
     </Box>
   );
 };
-
 
 const CalendarStep = () => {
   const theme = useTheme();
@@ -298,20 +313,37 @@ const CalendarStep = () => {
   }, []);
 
   return (
-    <Box sx={{ height: "100vh", display: "flex", alignItems: "center" }}>
+    <Box sx={{ minHeight: "100vh", display: "flex", alignItems: "center", py: 8 }}>
       <Container maxWidth="lg">
         <Grid2 container spacing={6} alignItems="center">
           <Grid2 xs={6}>
-            <Typography variant="h3" sx={{ mb: 2, fontWeight: 600, fontSize: "2.5rem" }}>Smart Calendar</Typography>
-            <Typography variant="body1" sx={{ color: "text.secondary", lineHeight: 1.7, fontSize: "1.1rem" }}>
+            <Typography variant="h3" sx={{ mb: 2, fontWeight: 600, fontSize: "2.25rem" }}>Smart Calendar</Typography>
+            <Typography variant="body1" sx={{ color: "text.secondary", lineHeight: 1.7, fontSize: "1.05rem" }}>
               Chat with your calendar to set availability and schedule meetings naturally.
             </Typography>
           </Grid2>
           <Grid2 xs={6}>
-            <Box sx={{ width: "100%", maxWidth: 520, bgcolor: "background.paper", borderRadius: 2, border: `1px solid ${theme.palette.divider}`, p: 3 }}>
+            <Box sx={{ 
+              width: "100%", 
+              maxWidth: 520, 
+              bgcolor: "background.paper", 
+              borderRadius: 4,
+              boxShadow: theme.palette.mode === 'dark'
+                ? '12px 12px 24px rgba(0,0,0,0.5), -12px -12px 24px rgba(60,60,60,0.1)'
+                : '12px 12px 24px rgba(163,177,198,0.3), -12px -12px 24px rgba(255,255,255,0.8)',
+              p: 3 
+            }}>
               <Stack spacing={2}>
                 <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-                  <Box sx={{ px: 2.5, py: 1.5, maxWidth: "80%", bgcolor: "primary.main", color: "primary.contrastText", borderRadius: 2 }}>
+                  <Box sx={{ 
+                    px: 2.5, py: 1.5, maxWidth: "80%", 
+                    bgcolor: "primary.main", 
+                    color: "primary.contrastText", 
+                    borderRadius: 3,
+                    boxShadow: theme.palette.mode === 'dark'
+                      ? '4px 4px 8px rgba(0,0,0,0.4), -2px -2px 6px rgba(60,60,60,0.1)'
+                      : '4px 4px 8px rgba(58,141,255,0.25), -2px -2px 6px rgba(255,255,255,0.7)'
+                  }}>
                     <Typography variant="body1">{currentPhase.text}</Typography>
                   </Box>
                 </Box>
@@ -324,15 +356,29 @@ const CalendarStep = () => {
                         <>
                           <Typography variant="body1" sx={{ fontWeight: 600, mb: 1 }}>Availability set</Typography>
                           {calendarSlots.map((slot, i) => (
-                            <Box key={i} sx={{ display: "flex", alignItems: "center", gap: 2, p: 1.5, bgcolor: theme.palette.mode === "dark" ? "rgba(76, 175, 80, 0.15)" : "rgba(76, 175, 80, 0.1)",
-                              borderRadius: 1, border: `1px solid ${theme.palette.success.main}40` }}>
+                            <Box key={i} sx={{ 
+                              display: "flex", alignItems: "center", gap: 2, p: 1.5,
+                              borderRadius: 2,
+                              boxShadow: theme.palette.mode === 'dark'
+                                ? 'inset 3px 3px 6px rgba(0,0,0,0.4), inset -3px -3px 6px rgba(60,60,60,0.15)'
+                                : 'inset 3px 3px 6px rgba(163,177,198,0.25), inset -3px -3px 6px rgba(255,255,255,0.8)',
+                              bgcolor: 'background.paper'
+                            }}>
                               <Typography variant="body2" sx={{ fontWeight: 600, minWidth: 40 }}>{slot.day}</Typography>
                               <Typography variant="body2" sx={{ opacity: 0.8 }}>{slot.hours}</Typography>
                             </Box>
                           ))}
                         </>
                       ) : (
-                        <Box sx={{ p: 2, bgcolor: "primary.main", borderRadius: 2, color: "white" }}>
+                        <Box sx={{ 
+                          p: 2, 
+                          bgcolor: "primary.main", 
+                          borderRadius: 3, 
+                          color: "white",
+                          boxShadow: theme.palette.mode === 'dark'
+                            ? '4px 4px 8px rgba(58,141,255,0.4), -2px -2px 6px rgba(60,60,60,0.1)'
+                            : '4px 4px 8px rgba(58,141,255,0.3), -2px -2px 6px rgba(255,255,255,0.7)'
+                        }}>
                           <Typography variant="body1" sx={{ fontWeight: 600, mb: 0.5 }}>Tomorrow • 10:00 AM</Typography>
                           <Typography variant="body2">Meeting with Sarah</Typography>
                         </Box>
@@ -348,7 +394,6 @@ const CalendarStep = () => {
     </Box>
   );
 };
-
 
 
 const FunnelOverviewSection = () => {

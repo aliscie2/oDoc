@@ -203,11 +203,11 @@ const PromiseCardHeader = memo<{
     }, [contract.creator, profile.id, promise, notifications]);
 
     const firstCellTitle =
-      promise.cells?.[0]?.value
+      promise.cells?.[0]?.value ? promise.cells?.[0]?.value
         ?.replace(/_/g, " ")
         .split(" ")
         .slice(0, 5)
-        .join(" ") + "..." || "Agreement";
+        .join(" ") + "..." || "Agreement": "Untitled";
 
     const handleHeaderClick = async (e: React.MouseEvent) => {
       if (isExpanded && (e.target as HTMLElement).closest(".editable-field")) {

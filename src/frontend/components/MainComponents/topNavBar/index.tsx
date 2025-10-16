@@ -508,16 +508,16 @@ const imgStyles = {
 };
 
 const DesktopNav = () => {
- const imgStyles = { 
-  width: 28, 
-  height: 28, 
-  objectFit: "contain", 
-  filter: state?.theme?.palette?.mode === 'dark'
-    ? 'brightness(0.85) contrast(0.9) saturate(1.1) drop-shadow(0 2px 6px rgba(0,0,0,0.8))' 
-    : 'brightness(1.05) contrast(1.05) drop-shadow(0 2px 6px rgba(0,0,0,0.7))',
-  opacity: state?.theme?.palette?.mode === 'dark' ? 0.9 : 1,
-  transition: 'all 0.2s ease'
-};
+  const imgStyles = { 
+    width: 28, 
+    height: 28, 
+    objectFit: "contain", 
+    filter: state?.theme?.palette?.mode === 'dark'
+      ? 'brightness(0.85) contrast(0.9) saturate(1.1) drop-shadow(0 2px 4px rgba(0,0,0,0.4))' 
+      : 'brightness(1.05) contrast(1.05) drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
+    opacity: state?.theme?.palette?.mode === 'dark' ? 0.9 : 1,
+    transition: 'all 0.2s ease'
+  };
 
   return (
     <Toolbar
