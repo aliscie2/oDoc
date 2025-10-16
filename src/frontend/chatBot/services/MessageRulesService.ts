@@ -35,12 +35,15 @@ export class MessageRulesService {
   private GENERAL_DETAILS =
     "\nWhat are you looking for Job or Talent? Tell me in details.";
 
-  constructor(
-  private jobs: unknown[],
-  private calendar: unknown,
-  private jobSearchStage: number,
-  private currentJobId: string | null,
-) {}
+constructor(
+    private jobs: unknown[],
+    private calendar: unknown,
+    private jobSearchStage: number,
+    private currentJobId: string | null,
+    private chatHistory?: unknown[],
+    private pathname: string = '',
+  ) {}
+
 
   private get currentJob(): Job | undefined {
     return this.jobs.find((job) => job.id === this.currentJobId);
@@ -144,13 +147,16 @@ export class MessageRulesService {
           profileCompletion: this.currentJob?.profile_completion || 0
         },
       },
-      {
+  {
         id: "new-profile",
         type: "immediate",
         priority: 2,
-        condition: () => this.jobs && !this.currentJob,
-        message:
-          "Ready to build a new profile? I can help you create a compelling professional profile and provide consultation on how to make it stand out.",
+        condition: () => 
+          this.jobs && 
+          !this.currentJob && 
+          !this.pathname.includes('calendar') && 
+          !this.pathname.includes('contract'),
+        message: "Ready to build a new profile? I can help you create a compelling professional profile and provide consultation on how to make it stand out.",
         actionType: "NEW_PROFILE_MESSAGE",
         canUndo: false,
         canRetry: false,

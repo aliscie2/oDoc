@@ -2,27 +2,28 @@ import { useMemo } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/reducers";
 import { MessageRulesService } from "../services/MessageRulesService";
+import { useLocation } from "react-router-dom";
 
 // Re-export types
 export type {
   MessageContent,
   MessageRule,
 } from "../services/MessageRulesService";
-
 export const useMessageRules = () => {
+  const location = useLocation();
   const { calendar, currentJobId, jobs, jobSearchStage, chatHistory } = useSelector(
     (state: RootState) => ({
       calendar: state.calendarState.calendar,
       currentJobId: state.jobState.currentJobId,
       jobs: state.jobState.jobs,
       jobSearchStage: state.jobState.jobSearchStage,
-      chatHistory: state.chatState?.chatHistory, // Add this
+      chatHistory: state.chatState?.chatHistory,
     }),
   );
 
   const messageRulesService = useMemo(
-    () => new MessageRulesService(jobs || [], calendar, jobSearchStage, currentJobId, chatHistory),
-    [jobs, calendar, jobSearchStage, currentJobId, chatHistory],
+    () => new MessageRulesService(jobs || [], calendar, jobSearchStage, currentJobId, chatHistory, location.pathname),
+    [jobs, calendar, jobSearchStage, currentJobId, chatHistory, location.pathname],
   );
 
   return useMemo(() => ({
