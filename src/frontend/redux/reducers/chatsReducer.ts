@@ -40,7 +40,7 @@ export function chatsReducer(
       const { chatId } = action;
       const window = state.openChatWindows[chatId];
       if (!window) return state;
-      
+
       return {
         ...state,
         openChatWindows: {
@@ -52,7 +52,6 @@ export function chatsReducer(
         },
       };
     }
-
 
     case "CLOSE_CHAT_WINDOW": {
       const { chatId } = action;

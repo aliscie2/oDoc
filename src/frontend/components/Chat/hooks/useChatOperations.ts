@@ -121,7 +121,7 @@ export const useChatOperations = ({
           chat_id: message.chat_id,
         };
         const res = await backendActor.message_is_seen(messageForBackend);
-        console.log("message_is_seen",{useChatOper: res})
+        console.log("message_is_seen", { useChatOper: res });
       } catch (error) {
         onError?.(error as Error);
       }

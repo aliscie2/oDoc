@@ -79,7 +79,8 @@ export const CreateGroupDialog: React.FC<CreateGroupDialogProps> = ({
         name: "",
         members: [],
         admins: [],
-        workspace: currentWorkspace?.name !== "default" ? [currentWorkspace] : [],
+        workspace:
+          currentWorkspace?.name !== "default" ? [currentWorkspace] : [],
       });
     } finally {
       setIsSubmitting(false);
@@ -93,7 +94,8 @@ export const CreateGroupDialog: React.FC<CreateGroupDialogProps> = ({
         name: "",
         members: [],
         admins: [],
-        workspace: currentWorkspace?.name !== "default" ? [currentWorkspace] : [],
+        workspace:
+          currentWorkspace?.name !== "default" ? [currentWorkspace] : [],
       });
     }
   }, [isSubmitting, onClose, currentWorkspace]);
@@ -117,10 +119,16 @@ export const CreateGroupDialog: React.FC<CreateGroupDialogProps> = ({
             getOptionLabel={(option) => option.name}
             value={formData.members}
             onChange={(_, newValue) => handleMembersChange(newValue)}
-            renderInput={(params) => <TextField {...params} label="Select Members" />}
+            renderInput={(params) => (
+              <TextField {...params} label="Select Members" />
+            )}
             renderTags={(value, getTagProps) =>
               value.map((option, index) => (
-                <Chip key={option.id} label={option.name} {...getTagProps({ index })} />
+                <Chip
+                  key={option.id}
+                  label={option.name}
+                  {...getTagProps({ index })}
+                />
               ))
             }
           />
@@ -131,10 +139,16 @@ export const CreateGroupDialog: React.FC<CreateGroupDialogProps> = ({
             getOptionLabel={(option) => option.name}
             value={formData.admins}
             onChange={(_, newValue) => handleAdminsChange(newValue)}
-            renderInput={(params) => <TextField {...params} label="Select Admins" />}
+            renderInput={(params) => (
+              <TextField {...params} label="Select Admins" />
+            )}
             renderTags={(value, getTagProps) =>
               value.map((option, index) => (
-                <Chip key={option.id} label={option.name} {...getTagProps({ index })} />
+                <Chip
+                  key={option.id}
+                  label={option.name}
+                  {...getTagProps({ index })}
+                />
               ))
             }
             disabled={formData.members.length === 0}
@@ -146,10 +160,16 @@ export const CreateGroupDialog: React.FC<CreateGroupDialogProps> = ({
             getOptionLabel={(option) => option.name}
             value={formData.workspace}
             onChange={(_, newValue) => handleWorkspaceChange(newValue)}
-            renderInput={(params) => <TextField {...params} label="Workspaces" />}
+            renderInput={(params) => (
+              <TextField {...params} label="Workspaces" />
+            )}
             renderTags={(value, getTagProps) =>
               value.map((option, index) => (
-                <Chip key={option.id} label={option.name} {...getTagProps({ index })} />
+                <Chip
+                  key={option.id}
+                  label={option.name}
+                  {...getTagProps({ index })}
+                />
               ))
             }
           />

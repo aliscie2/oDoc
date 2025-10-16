@@ -38,29 +38,30 @@ export const getUnreadCount = (
   messages: Message[],
   currentUserId: string,
 ): number => {
-  const usrs = []
-  
+  const usrs = [];
+
   return messages.reduce((count, message) => {
-    const senderStr = message.sender instanceof Principal 
-      ? message.sender.toString() 
-      : message.sender;
-    
+    const senderStr =
+      message.sender instanceof Principal
+        ? message.sender.toString()
+        : message.sender;
+
     // Skip if current user is the sender
     if (senderStr === currentUserId) {
       return count;
     }
-    
+
     // Skip if current user has seen this message
-    const isSeen = message.seen_by.some(user => {
+    const isSeen = message.seen_by.some((user) => {
       const userStr = user instanceof Principal ? user.toString() : user;
-      console.log({userStr,currentUserId})
+      console.log({ userStr, currentUserId });
       return userStr === currentUserId;
     });
-    
+
     if (isSeen) {
       return count;
     }
-    
+
     // Message is unread
     return count + 1;
   }, 0);

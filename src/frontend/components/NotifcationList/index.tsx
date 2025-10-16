@@ -23,16 +23,15 @@ import FriendshipButton from "../FriendshipButton";
 import UserAvatarMenu from "../MainComponents/UserAvatarMenu";
 import PaymentDialog from "./paymentDialog";
 
-
 const mapNotificationToCardProps = (notification: any, profileId: string) => {
   const contentType = Object.keys(notification.content)[0];
-  
+
   switch (contentType) {
     case "FriendRequest": {
       const { friend } = notification.content.FriendRequest;
       const isCurrentUserSender = friend.sender.id === profileId;
       const otherUser = isCurrentUserSender ? friend.receiver : friend.sender;
-      
+
       return {
         id: notification.id,
         type: "FriendRequest",
@@ -46,24 +45,23 @@ const mapNotificationToCardProps = (notification: any, profileId: string) => {
         isSender: isCurrentUserSender,
       };
     }
-    
-   case "CPaymentContract": {
-  const payment = notification.content.CPaymentContract[0];
-  return {
-    id: notification.id,
-    type: "Payment",
-    is_seen: notification.is_seen,
-    time: notification.time,
-    amount: payment.amount,
-    status: Object.keys(payment.status)[0],
-    senderId: payment.sender,
-    contractId: payment.id,
-    ownerId: payment.owner,
-    fullPayment: payment,
-  };
-}
 
-    
+    case "CPaymentContract": {
+      const payment = notification.content.CPaymentContract[0];
+      return {
+        id: notification.id,
+        type: "Payment",
+        is_seen: notification.is_seen,
+        time: notification.time,
+        amount: payment.amount,
+        status: Object.keys(payment.status)[0],
+        senderId: payment.sender,
+        contractId: payment.id,
+        ownerId: payment.owner,
+        fullPayment: payment,
+      };
+    }
+
     case "AcceptFriendRequest": {
       const acceptData = notification.content.AcceptFriendRequest;
       return {
@@ -74,7 +72,7 @@ const mapNotificationToCardProps = (notification: any, profileId: string) => {
         user: acceptData,
       };
     }
-    
+
     case "NewMessage": {
       const msgData = notification.content.NewMessage;
       return {
@@ -86,130 +84,184 @@ const mapNotificationToCardProps = (notification: any, profileId: string) => {
         message: msgData.message,
       };
     }
-    
+
     default:
       return null;
   }
 };
 
-const NotificationCard = ({ notification, onAccept, onDecline, onMarkRead }: any) => {
+const NotificationCard = ({
+  notification,
+  onAccept,
+  onDecline,
+  onMarkRead,
+}: any) => {
   const { type, is_seen, time, isSender } = notification;
 
+  const cardStyles = {
+    mb: 1,
+    mx: 1,
+    opacity: is_seen ? 0.7 : 1,
+    transition: "all 0.3s ease",
+    "&:hover": { transform: "translateY(-1px)" },
+  };
 
-const cardStyles = {
-  mb: 1,
-  mx: 1,
-  opacity: is_seen ? 0.7 : 1,
-  transition: "all 0.3s ease",
-  "&:hover": { transform: "translateY(-1px)" },
-};
+  // NotificationCard changes in notifications component
+  if (type === "FriendRequest" && !isSender) {
+    return (
+      <Card sx={cardStyles}>
+        <CardContent sx={{ p: 1.5, "&:last-child": { pb: 1.5 } }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
+            <UserAvatarMenu user_id={notification?.user?.id} dispalyName />
 
-
-// NotificationCard changes in notifications component
-if (type === "FriendRequest" && !isSender) {
-  return (
-    <Card sx={cardStyles}>
-      <CardContent sx={{ p: 1.5, "&:last-child": { pb: 1.5 } }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
-          <UserAvatarMenu user_id={notification?.user?.id} dispalyName />
-
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-
-            <Typography variant="caption" color="text.secondary">
-              sent you a friend request
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography variant="caption" color="text.secondary">
+                sent you a friend request
+              </Typography>
+            </Box>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{
+                fontSize: "0.7rem",
+                whiteSpace: "nowrap",
+                alignSelf: "flex-start",
+              }}
+            >
+              {formatRelativeTime(time)}
             </Typography>
           </Box>
-          <Typography 
-            variant="caption" 
-            color="text.secondary"
-            sx={{ 
-              fontSize: "0.7rem",
-              whiteSpace: "nowrap",
-              alignSelf: "flex-start"
-            }}
-          >
-            {formatRelativeTime(time)}
-          </Typography>
-        </Box>
-        <Box sx={{ ml: 6.5 }}>
-          <FriendshipButton user={notification.user} />
-        </Box>
-      </CardContent>
-    </Card>
-  );
-}
+          <Box sx={{ ml: 6.5 }}>
+            <FriendshipButton user={notification.user} />
+          </Box>
+        </CardContent>
+      </Card>
+    );
+  }
 
-
-if (type === "Payment") {
-  return (
-    <Card 
-      sx={{ 
-        ...cardStyles, 
-        cursor: "pointer",
-      }} 
-      onClick={() => setSelectedPayment(notification)}
-    >
-      <CardContent sx={{ p: 1.5, "&:last-child": { pb: 1.5 } }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <UserAvatarMenu 
-            dispalyName
+  if (type === "Payment") {
+    return (
+      <Card
+        sx={{
+          ...cardStyles,
+          cursor: "pointer",
+        }}
+        onClick={() => setSelectedPayment(notification)}
+      >
+        <CardContent sx={{ p: 1.5, "&:last-child": { pb: 1.5 } }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+            <UserAvatarMenu
+              dispalyName
               user_id={notification.senderId.toString()}
               sx={{ width: 40, height: 40 }}
             />
-            
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 0.25 }}>
 
-               <Typography variant="caption" color="text.secondary">
-              New promise
-            </Typography>
-              <Chip 
-                label={notification.status} 
-                size="small" 
-                color={notification.status === "Pending" ? "warning" : "success"}
-                sx={{ height: 18, fontSize: "0.65rem" }}
-              />
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 0.75,
+                  mb: 0.25,
+                }}
+              >
+                <Typography variant="caption" color="text.secondary">
+                  New promise
+                </Typography>
+                <Chip
+                  label={notification.status}
+                  size="small"
+                  color={
+                    notification.status === "Pending" ? "warning" : "success"
+                  }
+                  sx={{ height: 18, fontSize: "0.65rem" }}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                sx={{ fontWeight: 600, color: "primary.main" }}
+              >
+                {notification.amount}$
+              </Typography>
             </Box>
-            <Typography variant="body2" sx={{ fontWeight: 600, color: "primary.main" }}>
-              {notification.amount}$
+
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{
+                fontSize: "0.7rem",
+                whiteSpace: "nowrap",
+                alignSelf: "flex-start",
+              }}
+            >
+              {formatRelativeTime(time)}
             </Typography>
           </Box>
-          
-          <Typography 
-            variant="caption" 
-            color="text.secondary"
-            sx={{ 
-              fontSize: "0.7rem",
-              whiteSpace: "nowrap",
-              alignSelf: "flex-start"
-            }}
-          >
-            {formatRelativeTime(time)}
-          </Typography>
-        </Box>
-      </CardContent>
-    </Card>
-  );
-}
+        </CardContent>
+      </Card>
+    );
+  }
 
-if (type === "AcceptFriendRequest") {
+  if (type === "AcceptFriendRequest") {
+    return (
+      <Card sx={cardStyles} onClick={() => onMarkRead(notification.id)}>
+        <CardContent sx={{ p: 1.5, "&:last-child": { pb: 1.5 } }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+            <Avatar
+              src={notification.user.photo}
+              sx={{ width: 36, height: 36 }}
+            />
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography variant="body2">
+                <strong>{notification.user.name}</strong> accepted your friend
+                request
+              </Typography>
+            </Box>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{
+                fontSize: "0.7rem",
+                whiteSpace: "nowrap",
+                alignSelf: "flex-start",
+              }}
+            >
+              {formatRelativeTime(time)}
+            </Typography>
+          </Box>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card sx={cardStyles} onClick={() => onMarkRead(notification.id)}>
       <CardContent sx={{ p: 1.5, "&:last-child": { pb: 1.5 } }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-          <Avatar src={notification.user.photo} sx={{ width: 36, height: 36 }} />
+          <MessageIcon color="primary" sx={{ fontSize: 36 }} />
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography variant="body2">
-              <strong>{notification.user.name}</strong> accepted your friend request
+            <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.25 }}>
+              {notification.sender}
+            </Typography>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {notification.message}
             </Typography>
           </Box>
-          <Typography 
-            variant="caption" 
+          <Typography
+            variant="caption"
             color="text.secondary"
-            sx={{ 
+            sx={{
               fontSize: "0.7rem",
               whiteSpace: "nowrap",
-              alignSelf: "flex-start"
+              alignSelf: "flex-start",
             }}
           >
             {formatRelativeTime(time)}
@@ -218,46 +270,6 @@ if (type === "AcceptFriendRequest") {
       </CardContent>
     </Card>
   );
-}
-
- return (
-  <Card sx={cardStyles} onClick={() => onMarkRead(notification.id)}>
-    <CardContent sx={{ p: 1.5, "&:last-child": { pb: 1.5 } }}>
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-        <MessageIcon color="primary" sx={{ fontSize: 36 }} />
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.25 }}>
-            {notification.sender}
-          </Typography>
-          <Typography 
-            variant="body2" 
-            color="text.secondary"
-            sx={{
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap"
-            }}
-          >
-            {notification.message}
-          </Typography>
-        </Box>
-        <Typography 
-          variant="caption" 
-          color="text.secondary"
-          sx={{ 
-            fontSize: "0.7rem",
-            whiteSpace: "nowrap",
-            alignSelf: "flex-start"
-          }}
-        >
-          {formatRelativeTime(time)}
-        </Typography>
-      </Box>
-    </CardContent>
-  </Card>
-);
-
-
 };
 
 const NotificationsButton = () => {
@@ -267,12 +279,16 @@ const NotificationsButton = () => {
   const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
   const { profile } = useSelector((state: RootState) => state.filesState);
-  const { notifications } = useSelector((state: RootState) => state.notificationState);
+  const { notifications } = useSelector(
+    (state: RootState) => state.notificationState,
+  );
 
   const unreadCount = notifications.filter((n: any) => !n.is_seen).length;
 
   const handleMarkRead = async (notificationId: string) => {
-    const notification = notifications.find((n: any) => n.id === notificationId);
+    const notification = notifications.find(
+      (n: any) => n.id === notificationId,
+    );
     if (!notification || notification.is_seen) return;
 
     try {
@@ -280,7 +296,7 @@ const NotificationsButton = () => {
       dispatch({
         type: "UPDATE_NOT_LIST",
         new_list: notifications.map((n: any) =>
-          n.id === notificationId ? { ...n, is_seen: true } : n
+          n.id === notificationId ? { ...n, is_seen: true } : n,
         ),
       });
     } catch (error) {
@@ -290,12 +306,14 @@ const NotificationsButton = () => {
 
   const handleAcceptFriend = async (notification: any) => {
     try {
-      const result = await backendActor?.accept_friend_request(notification.user.id);
+      const result = await backendActor?.accept_friend_request(
+        notification.user.id,
+      );
       if (result && "Err" in result) {
         enqueueSnackbar(result.Err, { variant: "error" });
         return;
       }
-      
+
       if (result && "Ok" in result) {
         const friend = {
           id: result.Ok.id,
@@ -319,7 +337,9 @@ const NotificationsButton = () => {
 
   const handleDeclineFriend = async (notification: any) => {
     try {
-      const result = await backendActor?.reject_friend_request(notification.user.id);
+      const result = await backendActor?.reject_friend_request(
+        notification.user.id,
+      );
       if (result && "Err" in result) {
         enqueueSnackbar(result.Err, { variant: "error" });
         return;
@@ -337,7 +357,9 @@ const NotificationsButton = () => {
   };
 
   const handleMarkAllRead = async () => {
-    const unreadIds = notifications.filter((n: any) => !n.is_seen).map((n: any) => n.id);
+    const unreadIds = notifications
+      .filter((n: any) => !n.is_seen)
+      .map((n: any) => n.id);
     if (unreadIds.length === 0) return;
 
     try {
@@ -345,7 +367,7 @@ const NotificationsButton = () => {
       dispatch({
         type: "UPDATE_NOT_LIST",
         new_list: notifications.map((n: any) =>
-          unreadIds.includes(n.id) ? { ...n, is_seen: true } : n
+          unreadIds.includes(n.id) ? { ...n, is_seen: true } : n,
         ),
       });
     } catch (error) {
@@ -375,7 +397,14 @@ const NotificationsButton = () => {
         transformOrigin={{ horizontal: "right", vertical: "top" }}
         anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
       >
-        <Box sx={{ p: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <Box
+          sx={{
+            p: 2,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           <Typography variant="h6" sx={{ fontWeight: 600 }}>
             Notifications
           </Typography>
@@ -395,7 +424,10 @@ const NotificationsButton = () => {
         ) : (
           <List sx={{ p: 0, pb: 1 }}>
             {notifications.map((notification: any) => {
-              const mappedNotification = mapNotificationToCardProps(notification, profile.id);
+              const mappedNotification = mapNotificationToCardProps(
+                notification,
+                profile.id,
+              );
               return mappedNotification ? (
                 <NotificationCard
                   key={notification.id}
@@ -411,20 +443,18 @@ const NotificationsButton = () => {
       </Menu>
 
       {selectedPayment && (
-  <PaymentDialog
-    payment={selectedPayment.fullPayment}
-    onClose={() => {
-      setSelectedPayment(null);
-      setAnchorEl(null);
-    }}
-    onAction={() => {
-      setSelectedPayment(null);
-      setAnchorEl(null);
-    }}
-  />
-)}
-
-
+        <PaymentDialog
+          payment={selectedPayment.fullPayment}
+          onClose={() => {
+            setSelectedPayment(null);
+            setAnchorEl(null);
+          }}
+          onAction={() => {
+            setSelectedPayment(null);
+            setAnchorEl(null);
+          }}
+        />
+      )}
     </>
   );
 };

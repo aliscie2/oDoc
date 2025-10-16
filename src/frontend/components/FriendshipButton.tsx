@@ -194,54 +194,26 @@ const FriendshipButton: React.FC<FriendshipButtonProps> = ({ user }) => {
     },
   };
 
- 
-if (isFriend) {
-  return (
-    <Button
-      onClick={handleUnfriend}
-      variant="outlined"
-      color="error"
-      size="small"
-      startIcon={<PersonRemoveIcon />}
-      disabled={isLoading}
-      sx={{ borderRadius: 2 }}
-    >
-      {isLoading ? "Processing..." : "Unfriend"}
-    </Button>
-  );
-}
-
-if (isRequestSender) {
-  return (
-    <Button
-      onClick={handleCancelRequest}
-      variant="outlined"
-      color="error"
-      size="small"
-      startIcon={<CancelIcon />}
-      disabled={isLoading}
-      sx={{ borderRadius: 2 }}
-    >
-      {isLoading ? "Processing..." : "Cancel Request"}
-    </Button>
-  );
-}
-
-if (isRequestReceiver) {
-  return (
-    <Box sx={{ display: "flex", gap: 1 }}>
+  if (isFriend) {
+    return (
       <Button
-        onClick={handleAcceptRequest}
-        variant="contained"
+        onClick={handleUnfriend}
+        variant="outlined"
+        color="error"
         size="small"
-        startIcon={<CheckCircleIcon />}
+        startIcon={<PersonRemoveIcon />}
         disabled={isLoading}
         sx={{ borderRadius: 2 }}
       >
-        {isLoading ? "Processing..." : "Accept"}
+        {isLoading ? "Processing..." : "Unfriend"}
       </Button>
+    );
+  }
+
+  if (isRequestSender) {
+    return (
       <Button
-        onClick={handleRejectRequest}
+        onClick={handleCancelRequest}
         variant="outlined"
         color="error"
         size="small"
@@ -249,24 +221,51 @@ if (isRequestReceiver) {
         disabled={isLoading}
         sx={{ borderRadius: 2 }}
       >
-        {isLoading ? "Processing..." : "Decline"}
+        {isLoading ? "Processing..." : "Cancel Request"}
       </Button>
-    </Box>
-  );
-}
+    );
+  }
 
-return (
-  <Button
-    onClick={handleSendRequest}
-    variant="contained"
-    size="small"
-    startIcon={<PersonAddIcon />}
-    disabled={isLoading}
-    sx={{ borderRadius: 2 }}
-  >
-    {isLoading ? "Processing..." : "Add Friend"}
-  </Button>
-);
+  if (isRequestReceiver) {
+    return (
+      <Box sx={{ display: "flex", gap: 1 }}>
+        <Button
+          onClick={handleAcceptRequest}
+          variant="contained"
+          size="small"
+          startIcon={<CheckCircleIcon />}
+          disabled={isLoading}
+          sx={{ borderRadius: 2 }}
+        >
+          {isLoading ? "Processing..." : "Accept"}
+        </Button>
+        <Button
+          onClick={handleRejectRequest}
+          variant="outlined"
+          color="error"
+          size="small"
+          startIcon={<CancelIcon />}
+          disabled={isLoading}
+          sx={{ borderRadius: 2 }}
+        >
+          {isLoading ? "Processing..." : "Decline"}
+        </Button>
+      </Box>
+    );
+  }
+
+  return (
+    <Button
+      onClick={handleSendRequest}
+      variant="contained"
+      size="small"
+      startIcon={<PersonAddIcon />}
+      disabled={isLoading}
+      sx={{ borderRadius: 2 }}
+    >
+      {isLoading ? "Processing..." : "Add Friend"}
+    </Button>
+  );
 };
 
 export default FriendshipButton;

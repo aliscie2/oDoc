@@ -33,7 +33,7 @@ interface UserAvatarMenuProps {
   hide?: string[];
   user_id?: string;
   onMessageClick?: (user: User) => void;
-  dispalyName?: boolean
+  dispalyName?: boolean;
 }
 
 const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
@@ -212,7 +212,7 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
           {user.name?.charAt(0) || "A"}
         </Avatar>
       </IconButton>
-       {dispalyName && (
+      {dispalyName && (
         <Typography variant="h6" sx={{ fontWeight: 500 }}>
           {user.name || "Anonymous"}
         </Typography>

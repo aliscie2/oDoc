@@ -20,7 +20,9 @@ export const ChatMobilePage: React.FC = () => {
   const dispatch = useDispatch();
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
 
-  const { profile, all_friends, workspaces } = useSelector((state: RootState) => state.filesState);
+  const { profile, all_friends, workspaces } = useSelector(
+    (state: RootState) => state.filesState,
+  );
   const { chats } = useSelector((state: RootState) => state.chatsState);
 
   const chat = chats.find((c) => c.id === chatId);
@@ -31,7 +33,10 @@ export const ChatMobilePage: React.FC = () => {
   const { sendMessage, updateChat, deleteChat, isSending } = useChatOperations({
     backendActor,
     onSuccess: () => {
-      setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+      setTimeout(
+        () => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }),
+        100,
+      );
     },
   });
 
@@ -41,7 +46,7 @@ export const ChatMobilePage: React.FC = () => {
       if (success) dispatch({ type: "UPDATE_CHAT", chat: updatedChat });
       return success;
     },
-    [updateChat, dispatch]
+    [updateChat, dispatch],
   );
 
   const handleDeleteChat = useCallback(() => {
@@ -56,7 +61,10 @@ export const ChatMobilePage: React.FC = () => {
     backendActor,
     onLoadMore: (olderMessages) => {
       if (!chat) return;
-      dispatch({ type: "UPDATE_CHAT", chat: { ...chat, messages: [...chat.messages, ...olderMessages] } });
+      dispatch({
+        type: "UPDATE_CHAT",
+        chat: { ...chat, messages: [...chat.messages, ...olderMessages] },
+      });
     },
   });
 
@@ -71,7 +79,8 @@ export const ChatMobilePage: React.FC = () => {
     const container = messagesContainerRef.current;
     if (container && infiniteScroll.previousScrollHeight.current > 0) {
       const newScrollHeight = container.scrollHeight;
-      const scrollDifference = newScrollHeight - infiniteScroll.previousScrollHeight.current;
+      const scrollDifference =
+        newScrollHeight - infiniteScroll.previousScrollHeight.current;
       container.scrollTop = scrollDifference;
       infiniteScroll.previousScrollHeight.current = 0;
     }
@@ -90,12 +99,15 @@ export const ChatMobilePage: React.FC = () => {
           message: messageText,
           chat_id: chat?.id,
         };
-        dispatch({ type: "UPDATE_CHAT", chat: { ...chat, messages: [newMessage, ...chat.messages] } });
+        dispatch({
+          type: "UPDATE_CHAT",
+          chat: { ...chat, messages: [newMessage, ...chat.messages] },
+        });
         infiniteScroll.setIsScrolledToBottom(true);
       }
       return success;
     },
-    [chat, profile?.id, sendMessage, dispatch, infiniteScroll]
+    [chat, profile?.id, sendMessage, dispatch, infiniteScroll],
   );
 
   const getChatTitle = () => {
@@ -104,13 +116,21 @@ export const ChatMobilePage: React.FC = () => {
     const otherMember = chat.members.find((m) => m.toString() !== profile?.id);
     if (!otherMember) return "Chat";
     const friend = all_friends.find((f) => f.id === otherMember.toString());
-    console.log({friend,all_friends,otherMember })
+    console.log({ friend, all_friends, otherMember });
     return friend?.name || "";
   };
 
   if (!chat) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh", pb: 0  }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          pb: 0,
+        }}
+      >
         <Typography>Chat not found</Typography>
       </Box>
     );
@@ -121,33 +141,63 @@ export const ChatMobilePage: React.FC = () => {
   const showSettings = !isPrivateChat && isCreator;
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", height: "100vh", bgcolor: "background.default" }}>
-    <AppBar position="static" elevation={0} sx={{ bgcolor: 'background.paper', color: 'text.primary' }}>  
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100vh",
+        bgcolor: "background.default",
+      }}
+    >
+      <AppBar
+        position="static"
+        elevation={0}
+        sx={{ bgcolor: "background.paper", color: "text.primary" }}
+      >
+        <Toolbar>
+          <IconButton edge="start" color="inherit" onClick={() => navigate(-1)}>
+            <ArrowBack />
+          </IconButton>
+          <UserAvatarMenu
+            dispalyName={true}
+            user_id={
+              isPrivateChat
+                ? chat.members
+                    .find((m) => m.toString() !== profile?.id)
+                    ?.toString()
+                : undefined
+            }
+            user={
+              !isPrivateChat
+                ? ({
+                    id: chat.creator?.toString() || "",
+                    name: chat.name,
+                  } as User)
+                : undefined
+            }
+            sx={{ width: 40, height: 40 }}
+            hide={["Review"]}
+          />
+          <Typography variant="h6" sx={{ flex: 1, ml: 1 }}>
+            {getChatTitle()}
+          </Typography>
+          {showSettings && (
+            <IconButton color="inherit" onClick={() => setIsSettingsOpen(true)}>
+              <Settings />
+            </IconButton>
+          )}
+        </Toolbar>
+      </AppBar>
 
-  <Toolbar>
-    <IconButton edge="start" color="inherit" onClick={() => navigate(-1)}>
-      <ArrowBack />
-    </IconButton>
-    <UserAvatarMenu
-      dispalyName={true}
-      user_id={isPrivateChat ? chat.members.find((m) => m.toString() !== profile?.id)?.toString() : undefined}
-      user={!isPrivateChat ? { id: chat.creator?.toString() || "", name: chat.name } as User : undefined}
-      sx={{ width: 40, height: 40 }}
-      hide={["Review"]}
-    />
-    <Typography variant="h6" sx={{ flex: 1, ml: 1 }}>
-      {getChatTitle()}
-    </Typography>
-    {showSettings && (
-      <IconButton color="inherit" onClick={() => setIsSettingsOpen(true)}>
-        <Settings />
-      </IconButton>
-    )}
-  </Toolbar>
-</AppBar>
-
-      <Box sx={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0, overflow: "hidden" }}>
-
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          flex: 1,
+          minHeight: 0,
+          overflow: "hidden",
+        }}
+      >
         <MessagesList
           chat={chat}
           currentUserId={profile?.id || ""}

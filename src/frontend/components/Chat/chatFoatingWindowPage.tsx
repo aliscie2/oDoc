@@ -18,23 +18,28 @@ interface ChatFloatingWindowProps {
   index: number;
 }
 
-export const ChatFloatingWindow: React.FC<ChatFloatingWindowProps> = ({ chat, index }) => {
- const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
+export const ChatFloatingWindow: React.FC<ChatFloatingWindowProps> = ({
+  chat,
+  index,
+}) => {
+  const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
   // const [isMinimized, setIsMinimized] = React.useState(false);
-  
+
   const dispatch = useDispatch();
-  const { openChatWindows } = useSelector((state: RootState) => state.chatsState);
+  const { openChatWindows } = useSelector(
+    (state: RootState) => state.chatsState,
+  );
   const isMinimized = openChatWindows[chat.id]?.isMinimized || false;
-    const toggleMinimize = () => {
-      dispatch({ 
-        type: "TOGGLE_CHAT_MINIMIZE", 
-        chatId: chat.id 
-      });
-    };
+  const toggleMinimize = () => {
+    dispatch({
+      type: "TOGGLE_CHAT_MINIMIZE",
+      chatId: chat.id,
+    });
+  };
 
-
-
-  const { profile, all_friends, workspaces } = useSelector((state: RootState) => state.filesState);
+  const { profile, all_friends, workspaces } = useSelector(
+    (state: RootState) => state.filesState,
+  );
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -42,7 +47,10 @@ export const ChatFloatingWindow: React.FC<ChatFloatingWindowProps> = ({ chat, in
   const { sendMessage, updateChat, deleteChat, isSending } = useChatOperations({
     backendActor,
     onSuccess: () => {
-      setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+      setTimeout(
+        () => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }),
+        100,
+      );
     },
   });
 
@@ -52,7 +60,7 @@ export const ChatFloatingWindow: React.FC<ChatFloatingWindowProps> = ({ chat, in
       if (success) dispatch({ type: "UPDATE_CHAT", chat: updatedChat });
       return success;
     },
-    [updateChat, dispatch]
+    [updateChat, dispatch],
   );
 
   const handleDeleteChat = useCallback(() => {
@@ -65,7 +73,10 @@ export const ChatFloatingWindow: React.FC<ChatFloatingWindowProps> = ({ chat, in
     chat,
     backendActor,
     onLoadMore: (olderMessages) => {
-      dispatch({ type: "UPDATE_CHAT", chat: { ...chat, messages: [...chat.messages, ...olderMessages] } });
+      dispatch({
+        type: "UPDATE_CHAT",
+        chat: { ...chat, messages: [...chat.messages, ...olderMessages] },
+      });
     },
   });
 
@@ -80,7 +91,8 @@ export const ChatFloatingWindow: React.FC<ChatFloatingWindowProps> = ({ chat, in
     const container = messagesContainerRef.current;
     if (container && infiniteScroll.previousScrollHeight.current > 0) {
       const newScrollHeight = container.scrollHeight;
-      const scrollDifference = newScrollHeight - infiniteScroll.previousScrollHeight.current;
+      const scrollDifference =
+        newScrollHeight - infiniteScroll.previousScrollHeight.current;
       container.scrollTop = scrollDifference;
       infiniteScroll.previousScrollHeight.current = 0;
     }
@@ -99,12 +111,15 @@ export const ChatFloatingWindow: React.FC<ChatFloatingWindowProps> = ({ chat, in
           message: messageText,
           chat_id: chat?.id,
         };
-        dispatch({ type: "UPDATE_CHAT", chat: { ...chat, messages: [newMessage, ...chat.messages] } });
+        dispatch({
+          type: "UPDATE_CHAT",
+          chat: { ...chat, messages: [newMessage, ...chat.messages] },
+        });
         infiniteScroll.setIsScrolledToBottom(true);
       }
       return success;
     },
-    [chat, profile?.id, sendMessage, dispatch, infiniteScroll]
+    [chat, profile?.id, sendMessage, dispatch, infiniteScroll],
   );
 
   const getChatTitle = () => {
@@ -142,81 +157,114 @@ export const ChatFloatingWindow: React.FC<ChatFloatingWindowProps> = ({ chat, in
               : "8px 8px 16px rgba(163,177,198,0.3), -8px -8px 16px rgba(255,255,255,0.8)",
         }}
       >
-      <Box
-  sx={{
-    display: "flex",
-    alignItems: "center",
-    p: { xs: 2, sm: 1.5 },
-    borderBottom: isMinimized ? 0 : 1,
-    borderColor: "divider",
-    bgcolor: "background.paper", 
-    color: "text.primary",  
-    cursor: { xs: "default", sm: "pointer" },
-    minHeight: { xs: 56, sm: 48 },
-    borderRadius: { xs: 0, sm: isMinimized ? "16px 16px 0 0" : "16px 16px 0 0" },
-    boxShadow: (theme) =>
-      theme.palette.mode === "dark"
-        ? "inset 2px 2px 4px rgba(0,0,0,0.3)"
-        : "inset 2px 2px 4px rgba(58,141,255,0.2)",
-  }}
-  onClick={() => {
-    // Only toggle on desktop
-    if (window.innerWidth >= 600) {
-      setIsMinimized(!isMinimized);
-    }
-  }}
->
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            p: { xs: 2, sm: 1.5 },
+            borderBottom: isMinimized ? 0 : 1,
+            borderColor: "divider",
+            bgcolor: "background.paper",
+            color: "text.primary",
+            cursor: { xs: "default", sm: "pointer" },
+            minHeight: { xs: 56, sm: 48 },
+            borderRadius: {
+              xs: 0,
+              sm: isMinimized ? "16px 16px 0 0" : "16px 16px 0 0",
+            },
+            boxShadow: (theme) =>
+              theme.palette.mode === "dark"
+                ? "inset 2px 2px 4px rgba(0,0,0,0.3)"
+                : "inset 2px 2px 4px rgba(58,141,255,0.2)",
+          }}
+          onClick={() => {
+            // Only toggle on desktop
+            if (window.innerWidth >= 600) {
+              setIsMinimized(!isMinimized);
+            }
+          }}
+        >
+          <UserAvatarMenu
+            dispalyName={true}
+            user_id={
+              isPrivateChat
+                ? chat.members
+                    .find((m) => m.toString() !== profile?.id)
+                    ?.toString()
+                : undefined
+            }
+            user={
+              !isPrivateChat
+                ? ({
+                    id: chat.creator?.toString() || "",
+                    name: chat.name,
+                  } as User)
+                : undefined
+            }
+            sx={{ width: 40, height: 40 }}
+            hide={["Review"]}
+          />
+          <Typography
+            variant="subtitle2"
+            sx={{
+              flex: 1,
+              fontWeight: 600,
+              ml: 1,
+              fontSize: { xs: "1rem", sm: "0.875rem" },
+            }}
+          >
+            {getChatTitle()}
+          </Typography>
 
-   <UserAvatarMenu
-        dispalyName={true}
-        user_id={isPrivateChat ? chat.members.find((m) => m.toString() !== profile?.id)?.toString() : undefined}
-        user={!isPrivateChat ? { id: chat.creator?.toString() || "", name: chat.name } as User : undefined}
-        sx={{ width: 40, height: 40 }}
-        hide={["Review"]}
-      />
-  <Typography variant="subtitle2" sx={{ flex: 1, fontWeight: 600, ml: 1, fontSize: { xs: "1rem", sm: "0.875rem" } }}>
-    {getChatTitle()}
-  </Typography>
-  
-  {/* Hide minimize button on mobile */}
-  <IconButton
-    size="small"
-    sx={{ color: "inherit", display: { xs: "none", sm: "inline-flex" } }}
-    onClick={(e) => {
-      e.stopPropagation();
-      toggleMinimize();
-    }}
-  >
-    <Remove />
-  </IconButton>
+          {/* Hide minimize button on mobile */}
+          <IconButton
+            size="small"
+            sx={{
+              color: "inherit",
+              display: { xs: "none", sm: "inline-flex" },
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleMinimize();
+            }}
+          >
+            <Remove />
+          </IconButton>
 
-  {showSettings && (
-    <IconButton
-      size="small"
-      sx={{ color: "inherit" }}
-      onClick={(e) => {
-        e.stopPropagation();
-        setIsSettingsOpen(true);
-      }}
-    >
-      <Settings />
-    </IconButton>
-  )}
+          {showSettings && (
+            <IconButton
+              size="small"
+              sx={{ color: "inherit" }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsSettingsOpen(true);
+              }}
+            >
+              <Settings />
+            </IconButton>
+          )}
 
-  <IconButton
-    size="small"
-    sx={{ color: "inherit" }}
-    onClick={(e) => {
-      e.stopPropagation();
-      dispatch({ type: "CLOSE_CHAT_WINDOW", chatId: chat.id });
-    }}
-  >
-    <Close />
-  </IconButton>
-</Box>
+          <IconButton
+            size="small"
+            sx={{ color: "inherit" }}
+            onClick={(e) => {
+              e.stopPropagation();
+              dispatch({ type: "CLOSE_CHAT_WINDOW", chatId: chat.id });
+            }}
+          >
+            <Close />
+          </IconButton>
+        </Box>
 
         {!isMinimized && (
-          <Box sx={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              flex: 1,
+              minHeight: 0,
+            }}
+          >
             <MessagesList
               chat={chat}
               currentUserId={profile?.id || ""}
@@ -227,12 +275,15 @@ export const ChatFloatingWindow: React.FC<ChatFloatingWindowProps> = ({ chat, in
               isLoadingMore={infiniteScroll.isLoadingMore}
               hasMoreMessages={infiniteScroll.hasMoreMessages}
             />
-            <MessageInput onSendMessage={handleSendMessage} isSending={isSending} />
+            <MessageInput
+              onSendMessage={handleSendMessage}
+              isSending={isSending}
+            />
           </Box>
         )}
       </Paper>
 
-       <ChatSettingsDialog
+      <ChatSettingsDialog
         open={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
         chat={chat}

@@ -507,61 +507,61 @@ const HeroSection = () => {
     return () => observer.disconnect();
   }, [hasAnimated]);
 
-useEffect(() => {
-  if (!isVisible || hasAnimated === false) return;
+  useEffect(() => {
+    if (!isVisible || hasAnimated === false) return;
 
-  const timers = [];
+    const timers = [];
 
-  const animateCount = (target, key) => {
-    let current = 0;
-    const increment = target / 50;
-    const timer = setInterval(() => {
-      current += increment;
-      if (current >= target) {
-        setStats((prev) => ({ ...prev, [key]: Math.floor(target) }));
-        clearInterval(timer);
-      } else {
-        setStats((prev) => ({ ...prev, [key]: Math.floor(current) }));
+    const animateCount = (target, key) => {
+      let current = 0;
+      const increment = target / 50;
+      const timer = setInterval(() => {
+        current += increment;
+        if (current >= target) {
+          setStats((prev) => ({ ...prev, [key]: Math.floor(target) }));
+          clearInterval(timer);
+        } else {
+          setStats((prev) => ({ ...prev, [key]: Math.floor(current) }));
+        }
+      }, 30);
+      timers.push(timer);
+    };
+
+    const fetchStats = async () => {
+      try {
+        const [snsResponse, balance] = await Promise.all([
+          backendActor.get_sns_status(),
+          getckUsdcBalance(ckUSDCActor, canisterId),
+        ]);
+
+        if (snsResponse.Ok) {
+          const { number_users, active_users, jobs_count, talents_count } =
+            snsResponse.Ok;
+
+          animateCount(number_users, "users");
+          animateCount(active_users, "activeUsers");
+          animateCount(Number(balance) / 1000000, "totalDeposit");
+          animateCount(jobs_count, "jobsCount");
+          animateCount(talents_count, "talentsCount");
+        }
+      } catch (error) {
+        console.error("Failed to fetch stats:", error);
+        // Use fallback data on error
+        animateCount(1250, "users");
+        animateCount(342, "activeUsers");
+        animateCount(45000, "totalDeposit");
+        animateCount(89, "jobsCount");
+        animateCount(456, "talentsCount");
       }
-    }, 30);
-    timers.push(timer);
-  };
+    };
 
-  const fetchStats = async () => {
-    try {
-      const [snsResponse, balance] = await Promise.all([
-        backendActor.get_sns_status(),
-        getckUsdcBalance(ckUSDCActor, canisterId),
-      ]);
-      
-      if (snsResponse.Ok) {
-        const { number_users, active_users, jobs_count, talents_count } =
-          snsResponse.Ok;
-        
-        animateCount(number_users, "users");
-        animateCount(active_users, "activeUsers");
-        animateCount(Number(balance) / 1000000, "totalDeposit");
-        animateCount(jobs_count, "jobsCount");
-        animateCount(talents_count, "talentsCount");
-      }
-    } catch (error) {
-      console.error("Failed to fetch stats:", error);
-      // Use fallback data on error
-      animateCount(1250, "users");
-      animateCount(342, "activeUsers");
-      animateCount(45000, "totalDeposit");
-      animateCount(89, "jobsCount");
-      animateCount(456, "talentsCount");
-    }
-  };
+    fetchStats();
 
-  fetchStats();
-
-  // Return cleanup function directly
-  return () => {
-    timers.forEach((t) => clearInterval(t));
-  };
-}, [isVisible, hasAnimated]);
+    // Return cleanup function directly
+    return () => {
+      timers.forEach((t) => clearInterval(t));
+    };
+  }, [isVisible, hasAnimated]);
   return (
     <Box
       ref={statsRef}
@@ -743,7 +743,12 @@ const CalendarStep = () => {
                   >
                     <Avatar
                       src="/calendar.png"
-                      sx={{ width: 36, height: 36, bgcolor: "background.paper",color: "text.primary"    }}
+                      sx={{
+                        width: 36,
+                        height: 36,
+                        bgcolor: "background.paper",
+                        color: "text.primary",
+                      }}
                     />
                     <Stack spacing={1.5} sx={{ flex: 1 }}>
                       {currentPhase.type === "availability" ? (

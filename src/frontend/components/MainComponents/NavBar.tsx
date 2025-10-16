@@ -238,37 +238,38 @@ const NavBar = (props: any) => {
             </List>
 
             {isLoggedIn && (
-  <>
-    <Divider sx={{ my: 3, mx: 2 }} />
-    {defaultItems.length === 0 ? (
-      <Box sx={{ p: 2, textAlign: "center" }}>
-        <Typography variant="body2" color="text.secondary">
-          {currentWorkspace?.name && currentWorkspace.name !== "default"
-            ? `"${currentWorkspace.name}" has no files yet`
-            : "No files yet"}
-        </Typography>
-      </Box>
-    ) : (
-      <SortableTree
-        key={defaultItems + defaultItems.map((i) => i.workspaces)}
-        dragEnd={dragEnd}
-        defaultItems={defaultItems}
-      />
-    )}
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 1.5,
-        mt: 2,
-        px: 1,
-      }}
-    >
-      <CreateFile />
-      <GetMoreFiles />
-    </Box>
-  </>
-)}
+              <>
+                <Divider sx={{ my: 3, mx: 2 }} />
+                {defaultItems.length === 0 ? (
+                  <Box sx={{ p: 2, textAlign: "center" }}>
+                    <Typography variant="body2" color="text.secondary">
+                      {currentWorkspace?.name &&
+                      currentWorkspace.name !== "default"
+                        ? `"${currentWorkspace.name}" has no files yet`
+                        : "No files yet"}
+                    </Typography>
+                  </Box>
+                ) : (
+                  <SortableTree
+                    key={defaultItems + defaultItems.map((i) => i.workspaces)}
+                    dragEnd={dragEnd}
+                    defaultItems={defaultItems}
+                  />
+                )}
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 1.5,
+                    mt: 2,
+                    px: 1,
+                  }}
+                >
+                  <CreateFile />
+                  <GetMoreFiles />
+                </Box>
+              </>
+            )}
           </ContentWrapper>
         </StyledDrawerPaper>
       </Drawer>
