@@ -20,11 +20,6 @@ interface ContextMenuProps {
   disabled?: boolean;
 }
 
-interface MenuPosition {
-  mouseX: number;
-  mouseY: number;
-}
-
 export default function ContextMenu({
   children,
   options,
@@ -32,61 +27,23 @@ export default function ContextMenu({
   className,
   disabled = false,
 }: ContextMenuProps) {
-  const [contextMenu, setContextMenu] = useState<MenuPosition | null>(null);
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
 
   const handleContextMenu = (event: MouseEvent) => {
     if (disabled) return;
-
     event.preventDefault();
     event.stopPropagation();
-
-    setContextMenu(
-      contextMenu === null
-        ? {
-            mouseX: event.clientX + 2,
-            mouseY: event.clientY - 6,
-          }
-        : null,
-    );
+    setContextMenu({ x: event.clientX + 2, y: event.clientY - 6 });
   };
 
-  const handleClose = () => {
-    setContextMenu(null);
-  };
+  const handleClose = () => setContextMenu(null);
 
-  const renderMenuItem = (item: MenuOption, index: number) => {
-    if (item.pure) {
-      return (
-        <Box key={index} onClick={() => !item.preventClose && handleClose()}>
-          {item.content}
-          {item.divider && <Divider />}
-        </Box>
-      );
-    }
-
-    return (
-      <Box key={index}>
-        <MenuItem
-          onClick={() => {
-            !item.preventClose && handleClose();
-            item.onClick?.();
-          }}
-          sx={{
-            minWidth: "240px",
-            px: 3, // Add more horizontal padding
-            "&:hover": {
-              backgroundColor: "action.hover",
-            },
-          }}
-        >
-          {item.icon && (
-            <ListItemIcon sx={{ minWidth: 36 }}>{item.icon}</ListItemIcon>
-          )}
-          <ListItemText primary={item.content} />
-        </MenuItem>
-        {item.divider && <Divider />}
-      </Box>
-    );
+  const handleItemClick = (item: MenuOption) => {
+    if (!item.preventClose) handleClose();
+    item.onClick?.();
   };
 
   return (
@@ -98,34 +55,44 @@ export default function ContextMenu({
     >
       {children}
       <Menu
-        open={contextMenu !== null}
+        open={!!contextMenu}
         onClose={handleClose}
         anchorReference="anchorPosition"
         anchorPosition={
-          contextMenu !== null
-            ? { top: contextMenu.mouseY, left: contextMenu.mouseX }
-            : undefined
+          contextMenu ? { top: contextMenu.y, left: contextMenu.x } : undefined
         }
-        elevation={3}
-        sx={{
-          "& .MuiPaper-root": {
-            boxShadow: "0px 5px 15px rgba(0, 0, 0, 0.2)",
-            borderRadius: "8px",
-            minWidth: "280px", // Add minimum width for the entire menu
-          },
-          "& .MuiList-root": {
-            padding: "4px 0",
-          },
-          "& .MuiMenuItem-root": {
-            padding: "8px 24px",
-            typography: "body2",
-            "&:hover": {
-              backgroundColor: "action.hover",
+        slotProps={{
+          paper: {
+            sx: {
+              minWidth: 200,
+              borderRadius: 2,
+              py: 0.5,
             },
           },
         }}
       >
-        {options.map((item, index) => renderMenuItem(item, index))}
+        {options.map((item, i) => (
+          <Box key={i}>
+            {item.pure ? (
+              <Box onClick={() => handleItemClick(item)} sx={{ px: 2, py: 1 }}>
+                {item.content}
+              </Box>
+            ) : (
+              <MenuItem
+                onClick={() => handleItemClick(item)}
+                sx={{ px: 2, gap: 1.5 }}
+              >
+                {item.icon && (
+                  <ListItemIcon sx={{ minWidth: "auto" }}>
+                    {item.icon}
+                  </ListItemIcon>
+                )}
+                <ListItemText primary={item.content} />
+              </MenuItem>
+            )}
+            {item.divider && <Divider />}
+          </Box>
+        ))}
       </Menu>
     </div>
   );

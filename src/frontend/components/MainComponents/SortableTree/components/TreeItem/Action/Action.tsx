@@ -17,16 +17,7 @@ export function Action({ active, className, cursor, style, ...props }: Props) {
       {...props}
       className={classNames(styles.Action, className)}
       tabIndex={0}
-      style={
-        {
-          ...style,
-          cursor,
-          "--fill": active?.fill,
-          "--background": active?.background,
-          paddingLeft: "5px",
-          paddingRight: "5px",
-        } as CSSProperties
-      }
+      style={{ ...style, cursor, padding: "15px 5px" } as CSSProperties}
     />
   );
 }

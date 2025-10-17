@@ -5,7 +5,7 @@ interface MarkdownMessageProps {
   isUser?: boolean;
 }
 
-const MarkdownMessage = ({ message, isUser = false }: MarkdownMessageProps) => {
+const MarkdownMessage = ({ message }: MarkdownMessageProps) => {
   const theme = useTheme();
 
   // Simple markdown renderer for common markdown elements

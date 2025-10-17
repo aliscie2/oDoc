@@ -24,6 +24,7 @@ import { formatRelativeTime } from "../../utils/time";
 import EditProfile from "./editeProfile";
 import CopyButton from "../../components/MuiComponents/copyButton";
 import EmailComposer from "./sendEmail";
+import MarkdownMessage from "@/chatBot/markDownMessageRdnder";
 interface ProfilePageProps {
   profile: any;
   history: any;
@@ -200,85 +201,25 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
               }}
             >
               {profile && !isEditing && (
-                <Box
+                <UserAvatarMenu
+                  hide={["Profile"]}
                   sx={{
-                    flexShrink: 0,
-                    position: "relative",
-                    "&::after": {
-                      content: '""',
-                      position: "absolute",
-                      inset: -4,
-                      border: `3px solid ${isDarkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`,
-                      borderRadius: "50%",
-                    },
+                    width: { xs: 100, sm: 120 },
+                    height: { xs: 100, sm: 120 },
                   }}
-                >
-                  <UserAvatarMenu
-                    hide={["Profile"]}
-                    sx={{
-                      width: { xs: 100, sm: 120 },
-                      height: { xs: 100, sm: 120 },
-                      position: "relative",
-                      zIndex: 1,
-                    }}
-                    user={profile}
-                  />
-                </Box>
+                  user={profile}
+                  dispalyName
+                  displayDescription
+                  displayId
+                />
               )}
-
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                {isEditing ? (
+                {isEditing && (
                   <EditProfile
                     setIsEditing={setIsEditing}
                     profile={safeProfile}
                     onCancel={() => setIsEditing(false)}
                   />
-                ) : (
-                  <Stack spacing={1.5}>
-                    <Typography
-                      variant="h3"
-                      sx={{
-                        fontSize: { xs: "1.75rem", sm: "2.5rem" },
-                        fontWeight: 700,
-                        letterSpacing: -0.5,
-                      }}
-                    >
-                      {name}
-                    </Typography>
-                    <Typography
-                      variant="body1"
-                      sx={{
-                        fontSize: { xs: "0.95rem", sm: "1.1rem" },
-                        opacity: 0.85,
-                        fontWeight: 500,
-                      }}
-                    >
-                      {email}
-                    </Typography>
-                    {description && (
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          opacity: 0.75,
-                          lineHeight: 1.6,
-                          mt: 1,
-                        }}
-                      >
-                        {description}
-                      </Typography>
-                    )}
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        opacity: 0.6,
-                        wordBreak: "break-all",
-                        fontFamily: "monospace",
-                        fontSize: "0.8rem",
-                      }}
-                    >
-                      {id}
-                    </Typography>
-                  </Stack>
                 )}
               </Box>
             </Box>

@@ -1,11 +1,12 @@
 import React from "react";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
-import { Action, ActionProps } from "../Action";
+import { ActionProps } from "../Action";
+import { IconButton } from "@mui/material";
 
 export function Handle(props: ActionProps) {
   return (
-    <Action cursor="grab" data-cypress="draggable-handle" {...props}>
+    <IconButton size="small" sx={{ cursor: "grab" }} {...props}>
       <DragIndicatorIcon />
-    </Action>
+    </IconButton>
   );
 }

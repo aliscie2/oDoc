@@ -165,7 +165,7 @@ const useColumnConfig = (profile: any, all_friends: any, wallet: any) =>
           return false;
         },
         validation: (params) =>
-          params.data.sender.toString() === params.receiver.toString()
+          params.data?.sender?.toString() === params.receiver.toString()
             ? "Error: You can't send to yourself"
             : null,
       },

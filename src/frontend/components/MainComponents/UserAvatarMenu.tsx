@@ -26,6 +26,8 @@ import { randomString } from "@/DataProcessing/dataSamples";
 import { RootState } from "@/redux/reducers";
 import { backendActor } from "@/utils/backendUtils";
 import FriendshipButton from "../FriendshipButton";
+import { Tooltip } from "@mui/material";
+import MarkdownMessage from "@/chatBot/markDownMessageRdnder";
 
 interface UserAvatarMenuProps {
   user?: User;
@@ -34,8 +36,10 @@ interface UserAvatarMenuProps {
   user_id?: string;
   onMessageClick?: (user: User) => void;
   dispalyName?: boolean;
+  displayDescription?: boolean;
+  displayId?: boolean;
+  maxWords?: number;
 }
-
 const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
   user: initialUser,
   sx,
@@ -43,6 +47,9 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
   user_id,
   onMessageClick,
   dispalyName = false,
+  displayDescription = false,
+  displayId = false,
+  maxWords = 50,
 }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -59,6 +66,8 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCalled, setCalled] = useState(false);
   const [isLoading, setLoading] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [copyTooltip, setCopyTooltip] = useState("Click to copy User ID");
 
   useEffect(() => {
     setUser(initialUser);
@@ -95,6 +104,26 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
     if (user.photo?.length > 0) return user.photo;
     const userPost = posts.find((p) => p.creator.id === user.id);
     return userPost?.creator.photo?.length > 0 ? userPost.creator.photo : null;
+  };
+
+  const truncateDescription = (text: string) => {
+    const maxChars = maxWords * 10;
+    if (text.length <= maxChars) return text;
+    return text.slice(0, maxChars);
+  };
+
+  const shouldShowReadMore = (text: string) => {
+    return text.length > maxWords * 10;
+  };
+
+  const handleCopyId = async () => {
+    try {
+      await navigator.clipboard.writeText(user.id);
+      setCopyTooltip("Copied ✓");
+      setTimeout(() => setCopyTooltip("Click to copy User ID"), 2000);
+    } catch {
+      enqueueSnackbar("Failed to copy ID", { variant: "error" });
+    }
   };
 
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -201,22 +230,92 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
     }
   };
 
+  const currentPath = window.location.pathname;
+  const urlParams = new URLSearchParams(window.location.search);
+  const pageUserId = urlParams.get("id");
+  const isProfilePage = currentPath === "/profile" && user.id === profile?.id;
+  const isUserPageSameUser = currentPath === "/user" && pageUserId === user.id;
+
   return (
     <>
-      <IconButton
-        disabled={user.id === profile?.id}
-        onMouseEnter={handleOpen}
-        onClick={handleOpen}
-      >
-        <Avatar src={getUserPhoto() || undefined} alt={user.name} sx={sx}>
-          {user.name?.charAt(0) || "A"}
-        </Avatar>
-      </IconButton>
-      {dispalyName && (
-        <Typography variant="h6" sx={{ fontWeight: 500 }}>
-          {user.name || "Anonymous"}
-        </Typography>
-      )}
+      <Box sx={{ display: "flex", gap: 2, alignItems: "flex-start" }}>
+        <IconButton
+          disabled={user.id === profile?.id || isProfilePage}
+          onMouseEnter={isProfilePage ? undefined : handleOpen}
+          onClick={isProfilePage ? undefined : handleOpen}
+          sx={{ p: 0 }}
+        >
+          <Avatar src={getUserPhoto() || undefined} alt={user.name} sx={sx}>
+            {user.name?.charAt(0) || "A"}
+          </Avatar>
+        </IconButton>
+        {(dispalyName || displayDescription || displayId) && (
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            {dispalyName && (
+              <Typography variant="h6" sx={{ fontWeight: 500 }}>
+                {user.name || "Anonymous"}
+              </Typography>
+            )}
+            {displayId && (
+              <Tooltip title={copyTooltip} arrow>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{
+                    cursor: "pointer",
+                    fontFamily: "monospace",
+                    display: "inline-block",
+                    "&:hover": { textDecoration: "underline" },
+                  }}
+                  onClick={handleCopyId}
+                >
+                  {user.id}
+                </Typography>
+              </Tooltip>
+            )}
+            {displayDescription && user.description && (
+              <Box>
+                <Box
+                  sx={{
+                    maxHeight: isExpanded ? 300 : "auto",
+                    overflowY: isExpanded ? "auto" : "visible",
+                    "&::-webkit-scrollbar": {
+                      width: "6px",
+                    },
+                    "&::-webkit-scrollbar-thumb": {
+                      backgroundColor: "rgba(0,0,0,.2)",
+                      borderRadius: "3px",
+                    },
+                  }}
+                >
+                  <MarkdownMessage
+                    message={
+                      isExpanded
+                        ? user.description
+                        : truncateDescription(user.description)
+                    }
+                  />
+                </Box>
+                {shouldShowReadMore(user.description) && (
+                  <Typography
+                    variant="caption"
+                    color="primary"
+                    sx={{
+                      cursor: "pointer",
+                      fontWeight: 500,
+                      display: "block",
+                      mt: 0.5,
+                    }}
+                    onClick={() => setIsExpanded(!isExpanded)}
+                  >
+                    {isExpanded ? "show less" : "read more..."}
+                  </Typography>
+                )}
+              </Box>
+            )}
+          </Box>
+        )}
+      </Box>
 
       <Menu
         anchorEl={anchorEl}
@@ -247,69 +346,76 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
         transformOrigin={{ horizontal: "right", vertical: "top" }}
         anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
       >
-        <Box sx={{ p: 2.5 }}>
-          <Box
-            sx={{ display: "flex", alignItems: "flex-start", gap: 2, mb: 1.5 }}
-          >
-            <Avatar
-              src={getUserPhoto() || undefined}
-              alt={user.name}
+        {!isUserPageSameUser && (
+          <Box sx={{ p: 2.5 }}>
+            <Box
               sx={{
-                width: 56,
-                height: 56,
-                border: "3px solid",
-                borderColor: "divider",
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 2,
+                mb: 1.5,
               }}
             >
-              {user.name?.charAt(0) || "A"}
-            </Avatar>
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography
-                variant="h6"
-                sx={{ fontWeight: 600, mb: 0.5, fontSize: "1.1rem" }}
+              <Avatar
+                src={getUserPhoto() || undefined}
+                alt={user.name}
+                sx={{
+                  width: 56,
+                  height: 56,
+                  border: "3px solid",
+                  borderColor: "divider",
+                }}
               >
-                {user.name || "Anonymous"}
-              </Typography>
-              {user.description && (
+                {user.name?.charAt(0) || "A"}
+              </Avatar>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{
-                    fontSize: "0.875rem",
-                    lineHeight: 1.5,
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    display: "-webkit-box",
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: "vertical",
-                  }}
+                  variant="h6"
+                  sx={{ fontWeight: 600, mb: 0.5, fontSize: "1.1rem" }}
                 >
-                  {user.description}
+                  {user.name || "Anonymous"}
                 </Typography>
-              )}
+                {user.description && (
+                  <Box
+                    sx={{
+                      maxHeight: 60,
+                      overflowY: "auto",
+                      fontSize: "0.875rem",
+                      lineHeight: 1.5,
+                      "&::-webkit-scrollbar": {
+                        width: "4px",
+                      },
+                      "&::-webkit-scrollbar-thumb": {
+                        backgroundColor: "rgba(0,0,0,.2)",
+                        borderRadius: "2px",
+                      },
+                    }}
+                  >
+                    <MarkdownMessage message={user.description} />
+                  </Box>
+                )}
+              </Box>
             </Box>
+
+            {user && profile && user.id !== profile.id && (
+              <Box sx={{ mt: 2 }}>
+                <FriendshipButton user={user} />
+              </Box>
+            )}
           </Box>
+        )}
 
-          {user && profile && user.id !== profile.id && (
-            <Box sx={{ mt: 2 }}>
-              <FriendshipButton
-                user={user}
-                profile={profile}
-                friends={friends || []}
-              />
-            </Box>
-          )}
-        </Box>
-
-        <Box sx={{ borderTop: 1, borderColor: "divider", py: 1 }}>
+        <Box
+          sx={{
+            borderTop: isUserPageSameUser ? 0 : 1,
+            borderColor: "divider",
+            py: 1,
+          }}
+        >
           {!hide.includes("Profile") && (
             <MenuItem
               onClick={handleProfile}
-              sx={{
-                px: 2.5,
-                py: 1.25,
-                "&:hover": { bgcolor: "action.hover" },
-              }}
+              sx={{ px: 2.5, py: 1.25, "&:hover": { bgcolor: "action.hover" } }}
             >
               <Person sx={{ mr: 2, fontSize: 22, color: "text.secondary" }} />
               <Typography variant="body2" sx={{ fontWeight: 500 }}>
@@ -320,11 +426,7 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
           {!hide.includes("Message") && (
             <MenuItem
               onClick={handleMessage}
-              sx={{
-                px: 2.5,
-                py: 1.25,
-                "&:hover": { bgcolor: "action.hover" },
-              }}
+              sx={{ px: 2.5, py: 1.25, "&:hover": { bgcolor: "action.hover" } }}
             >
               <MessageIcon
                 sx={{ mr: 2, fontSize: 22, color: "text.secondary" }}
@@ -337,11 +439,7 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
           {!hide.includes("Review") && (
             <MenuItem
               onClick={handleReviewClick}
-              sx={{
-                px: 2.5,
-                py: 1.25,
-                "&:hover": { bgcolor: "action.hover" },
-              }}
+              sx={{ px: 2.5, py: 1.25, "&:hover": { bgcolor: "action.hover" } }}
             >
               <Star sx={{ mr: 2, fontSize: 22, color: "text.secondary" }} />
               <Typography variant="body2" sx={{ fontWeight: 500 }}>

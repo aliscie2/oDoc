@@ -1,25 +1,16 @@
 import React from "react";
-import { List, ListItem, ListItemText } from "@mui/material";
+import {
+  List,
+  ListItem,
+  Box,
+  Typography,
+  Stack,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import UserAvatarMenu from "../../components/MainComponents/UserAvatarMenu";
 import FriendshipButton from "../../components/FriendshipButton";
 import { useSelector } from "react-redux";
-
-interface Review {
-  rating: number;
-  comment: string;
-  timestamp: string;
-  reviewerId: string;
-  reviewerName: string;
-}
-
-interface User {
-  id: string;
-  name: string;
-  description: string;
-  photo: string;
-  reviews?: Review[];
-  averageRating?: number;
-}
 
 interface FEFriend {
   id: string;
@@ -30,22 +21,11 @@ interface FEFriend {
   photo: Uint8Array | number[];
 }
 
-interface Chat {
+interface User {
   id: string;
   name: string;
-  messages: Array<{
-    id: string;
-    sender: string;
-    content: string;
-    timestamp: string;
-  }>;
-  members: string[];
-  admins: string[];
-}
-
-interface ChatWindowPosition {
-  x: number;
-  y: number;
+  description: string;
+  photo: string;
 }
 
 interface FriendsListProps {
@@ -60,47 +40,74 @@ interface FriendsListProps {
 }
 
 const FriendsList: React.FC<FriendsListProps> = ({ friends, currentUser }) => {
-  const { Anonymous, profile } = useSelector((state: any) => state.filesState);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isTablet = useMediaQuery(theme.breakpoints.down("md"));
+  const { profile } = useSelector((state: any) => state.filesState);
+
+  const truncateText = (text: string, maxLength: number) => {
+    if (!text) return "";
+    return text.length > maxLength
+      ? `${text.substring(0, maxLength)}...`
+      : text;
+  };
 
   return (
-    <>
-      <List>
-        {friends.map((friend) => {
-          // FEFriend contains the friend's info directly
-          const friendUser = {
-            id: friend.id,
-            name: friend.name,
-            description: friend.description,
-            email: friend.email,
-            photo: friend.photo,
-          };
-          return (
-            <ListItem
-              key={friend.id}
-              secondaryAction={
-                currentUser &&
-                currentUser.id == profile.id && (
-                  <FriendshipButton
-                    profile={currentUser}
-                    user={friendUser}
-                    friends={friends}
-                  />
-                )
-              }
-            >
+    <List sx={{ p: 0 }}>
+      {friends.map((friend) => {
+        const friendUser = {
+          id: friend.id,
+          name: friend.name,
+          description: friend.description,
+          email: friend.email,
+          photo: friend.photo,
+        };
+
+        return (
+          <ListItem
+            key={friend.id}
+            sx={{
+              flexDirection: { xs: "column", sm: "row" },
+              alignItems: { xs: "stretch", sm: "flex-start" },
+              gap: 2,
+              py: 2,
+              px: { xs: 1, sm: 2 },
+              borderBottom: 1,
+              borderColor: "divider",
+              "&:hover": {
+                bgcolor: "action.hover",
+              },
+            }}
+          >
+            <Box sx={{ flex: 1, minWidth: 0 }}>
               <UserAvatarMenu
+                maxWords={10}
+                displayDescription
+                dispalyName
                 user={friendUser}
-                // onMessageClick={() => setSelectedUser(friendUser)}
+                sx={{
+                  width: { xs: 40, sm: 48 },
+                  height: { xs: 40, sm: 48 },
+                }}
               />
-              <ListItemText
-                primary={friend.name}
-                secondary={friend.description}
-              />
-            </ListItem>
-          );
-        })}
-      </List>
-    </>
+            </Box>
+
+            {currentUser && currentUser.id === profile.id && (
+              <Box
+                sx={{
+                  flexShrink: 0,
+                  alignSelf: { xs: "stretch", sm: "flex-start" },
+                  mt: { xs: 0, sm: 0.5 },
+                  width: { xs: "100%", sm: "auto" },
+                }}
+              >
+                <FriendshipButton user={friendUser} />
+              </Box>
+            )}
+          </ListItem>
+        );
+      })}
+    </List>
   );
 };
 

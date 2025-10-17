@@ -37,6 +37,8 @@ pub enum PaymentAction {
 
 #[derive(PartialEq, Clone, Debug, CandidType, Deserialize)]
 pub enum NoteContent {
+    RejectFriendRequest, // Add this
+    CancelFriendRequest, // Add this
     FriendRequest(FriendRequestNotification),
     ContractUpdate(ContractNotification),
     // SharePayment(SharesContract),

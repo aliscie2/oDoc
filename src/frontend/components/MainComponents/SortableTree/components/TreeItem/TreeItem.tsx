@@ -1,18 +1,17 @@
-import React, { forwardRef, HTMLAttributes } from "react";
+import React, { forwardRef, HTMLAttributes, useCallback, useMemo } from "react";
 import classNames from "classnames";
-
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import { IconButton, Tooltip } from "@mui/material";
 import { Action } from "./Action";
 import { Handle } from "./Handle";
-import { Remove } from "./Remove";
-import styles from "./TreeItem.module.css";
-import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import ContextMenu from "../../../../MuiComponents/ContextMenu";
 import DeleteFile from "../../../../Actions/DeleteFile";
 import ChangeWorkSpace from "../../../../Actions/ChangeWorkSpaceFile";
+import styles from "./TreeItem.module.css";
+import type { RootState } from "../../../../../redux/reducers";
 
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { RootState } from "../../../../../redux/reducers";
 export interface Props extends HTMLAttributes<HTMLLIElement> {
   childCount?: number;
   clone?: boolean;
@@ -28,6 +27,7 @@ export interface Props extends HTMLAttributes<HTMLLIElement> {
   onCollapse?(): void;
   onRemove?(): void;
   wrapperRef?(node: HTMLLIElement): void;
+  id?: string;
 }
 
 export const TreeItem = forwardRef<HTMLDivElement, Props>(
@@ -35,37 +35,56 @@ export const TreeItem = forwardRef<HTMLDivElement, Props>(
     {
       childCount,
       clone,
+      collapsed,
       depth,
-      disableSelection,
       disableInteraction,
+      disableSelection,
       ghost,
       handleProps,
+      id,
       indentationWidth,
       indicator,
-      collapsed,
       onCollapse,
       onRemove,
       style,
       value,
       wrapperRef,
-      id,
       ...props
     },
     ref,
   ) => {
-    const { profile, profile_history, current_file, files } = useSelector(
-      (state: RootState) => state.filesState,
-    );
-    const navigate = useNavigate();
     const dispatch = useDispatch();
-    const handleItemClick = () => {
-      navigate(id);
-      const file = files.find((file) => file.id === id);
-      dispatch({ type: "CURRENT_FILE", file });
-    };
+    const navigate = useNavigate();
+    const files = useSelector((state: RootState) => state.filesState.files);
+
+    const handleClick = useCallback(() => {
+      if (!id) return;
+      const file = files.find((f) => f.id === id);
+      if (file) {
+        dispatch({ type: "CURRENT_FILE", file });
+        navigate(id);
+      }
+    }, [id, files, dispatch, navigate]);
+
+    const contextOptions = useMemo(
+      () => [
+        {
+          content: <DeleteFile item={{ id, name: value }} />,
+          preventClose: true,
+          pure: true,
+        },
+        {
+          content: <ChangeWorkSpace item={{ id, name: value }} />,
+          preventClose: true,
+          pure: true,
+        },
+      ],
+      [id, value],
+    );
 
     return (
       <li
+        ref={wrapperRef}
         className={classNames(
           styles.Wrapper,
           clone && styles.clone,
@@ -74,7 +93,6 @@ export const TreeItem = forwardRef<HTMLDivElement, Props>(
           disableSelection && styles.disableSelection,
           disableInteraction && styles.disableInteraction,
         )}
-        ref={wrapperRef}
         style={
           {
             "--spacing": `${indentationWidth * depth}px`,
@@ -82,7 +100,7 @@ export const TreeItem = forwardRef<HTMLDivElement, Props>(
         }
         {...props}
       >
-        <div className={styles.TreeItem} ref={ref} style={style}>
+        <div ref={ref} className={styles.TreeItem} style={style}>
           <Handle {...handleProps} />
           {onCollapse && (
             <Action
@@ -92,33 +110,29 @@ export const TreeItem = forwardRef<HTMLDivElement, Props>(
                 collapsed && styles.collapsed,
               )}
             >
-              <KeyboardArrowUpIcon />
+              <IconButton size="small" onClick={onCollapse}>
+                <KeyboardArrowUpIcon />
+              </IconButton>
             </Action>
           )}
-          <ContextMenu
-            options={[
-              {
-                content: <DeleteFile item={{ id, name: value }} />,
-                preventClose: true,
-                pure: true,
-              },
-              {
-                content: <ChangeWorkSpace item={{ id, name: value }} />,
-                pure: true,
-                preventClose: true,
-              },
-            ]}
-          >
-            <span onMouseDown={handleItemClick} className={styles.Text}>
-              {value}
-            </span>
+          <ContextMenu options={contextOptions}>
+            <Tooltip title="Right-click for options" placement="right" arrow>
+              <span
+                onClick={handleClick}
+                className={styles.Text}
+                style={{ cursor: "context-menu" }}
+              >
+                {value}
+              </span>
+            </Tooltip>
           </ContextMenu>
-          {!clone && onRemove && <Remove onClick={onRemove} />}
-          {clone && childCount && childCount > 1 ? (
+          {clone && childCount && childCount > 1 && (
             <span className={styles.Count}>{childCount}</span>
-          ) : null}
+          )}
         </div>
       </li>
     );
   },
 );
+
+TreeItem.displayName = "TreeItem";

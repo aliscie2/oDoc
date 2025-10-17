@@ -526,6 +526,8 @@ export const idlFactory = ({ IDL }) => {
     'ApproveShareRequest' : IDL.Text,
     'CPaymentContract' : IDL.Tuple(CPayment, PaymentAction),
     'Unfriend' : IDL.Null,
+    'CancelFriendRequest' : IDL.Null,
+    'RejectFriendRequest' : IDL.Null,
     'ReceivedDeposit' : IDL.Text,
     'ApplyShareRequest' : IDL.Text,
     'NewMessage' : Message,

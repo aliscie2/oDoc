@@ -54,7 +54,7 @@ pub fn accept_friend_request(user_principal: String) -> Result<User, String> {
     let id = user_principal.clone() + &caller().to_string();
     let id2 = format!("{}{}", caller(), user_principal.clone());
     let friend = Friend {
-        id: user_principal.clone() + &caller().to_string(),
+        id: id.clone(), // Clone here to preserve ownership
         sender,
         receiver: User::get(&caller().to_string()).unwrap(),
         confirmed: true,
@@ -67,7 +67,8 @@ pub fn accept_friend_request(user_principal: String) -> Result<User, String> {
         note_content,
     );
     new_note.save();
-    let note = Notification::get(user_principal.clone(), id);
+
+    let note = Notification::get(caller().to_string(), id.clone()); // Now id is still available
     if let Some(mut notification) = note {
         notification.is_seen = true;
         notification.pure_save();
@@ -103,16 +104,17 @@ pub fn cancel_friend_request(user_principal: String) -> Result<User, String> {
     let id2 = user_principal.clone() + &caller().to_string();
     let friend = Friend::get(&id).unwrap();
     friend.delete();
-    let receiver = Principal::from_text(user_principal.clone()).unwrap();
+
     let note = Notification::get(user_principal.clone(), id2.clone());
     if let Some(mut notification) = note {
         notification.is_seen = true;
-        notification.save();
+        notification.pure_save();
     }
 
+    let receiver = Principal::from_text(user_principal.clone()).unwrap();
     let new_note = Notification {
         id: id.clone(),
-        content: NoteContent::FriendRequest(FriendRequestNotification { friend }),
+        content: NoteContent::CancelFriendRequest, // Changed
         sender: caller(),
         receiver,
         is_seen: false,
@@ -128,11 +130,17 @@ pub fn reject_friend_request(user_principal: String) -> Result<User, String> {
     let id = user_principal.clone() + &caller().to_string();
     let friend = Friend::get(&id).unwrap();
     friend.delete();
+
+    let note = Notification::get(id.clone(), caller().to_string());
+    if let Some(mut notification) = note {
+        notification.is_seen = true;
+        notification.pure_save();
+    }
+
     let receiver = Principal::from_text(user_principal.clone()).unwrap();
     let new_note = Notification {
-        // id: caller().to_string() + &user.clone().unwrap().id + "Unfriend",
-        id,
-        content: NoteContent::FriendRequest(FriendRequestNotification { friend }),
+        id: id.clone(),
+        content: NoteContent::RejectFriendRequest, // Changed
         sender: caller(),
         receiver,
         is_seen: false,

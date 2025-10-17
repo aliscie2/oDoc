@@ -2,85 +2,73 @@
   list-style: none;
   box-sizing: border-box;
   padding-left: var(--spacing);
-  margin-bottom: -1px;
+}
 
-  &.clone {
-    display: inline-block;
-    pointer-events: none;
-    padding: 0;
-    margin-left: 10px;
-    margin-top: 5px;
+.Wrapper.clone {
+  display: inline-block;
+  pointer-events: none;
+  padding: 0;
+  margin: 5px 0 0 10px;
+}
 
-    .TreeItem {
-      --vertical-padding: 5px;
-      padding-right: 24px;
-      border-radius: 4px;
-      box-shadow: 0px 15px 15px 0 rgba(34, 33, 81, 0.1);
-    }
-  }
+.Wrapper.clone .TreeItem {
+  --vertical-padding: 5px;
+  padding-right: 24px;
+  border-radius: 4px;
+  box-shadow: 0 15px 15px rgba(34, 33, 81, 0.1);
+}
 
-  &.ghost {
-    &.indicator {
-      opacity: 1;
-      position: relative;
-      z-index: 1;
-      margin-bottom: -1px;
+.Wrapper.ghost {
+  opacity: 0.5;
+}
 
-      .TreeItem {
-        position: relative;
-        padding: 0;
-        height: 8px;
-        border-color: #2389ff;
-        background-color: #56a1f8;
+.Wrapper.ghost.indicator {
+  opacity: 1;
+  position: relative;
+  z-index: 1;
+}
 
-        &:before {
-          position: absolute;
-          left: -8px;
-          top: -4px;
-          display: block;
-          content: "";
-          width: 12px;
-          height: 12px;
-          border-radius: 50%;
-          border: 1px solid #2389ff;
-          background-color: #ffffff;
-        }
+.Wrapper.ghost.indicator .TreeItem {
+  position: relative;
+  padding: 0;
+  height: 8px;
+  border-color: #2389ff;
+  background-color: #56a1f8;
+}
 
-        > * {
-          /* Items are hidden using height and opacity to retain focus */
-          opacity: 0;
-          height: 0;
-        }
-      }
-    }
+.Wrapper.ghost.indicator .TreeItem::before {
+  position: absolute;
+  left: -8px;
+  top: -4px;
+  content: "";
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid #2389ff;
+  background-color: #fff;
+}
 
-    &:not(.indicator) {
-      opacity: 0.5;
-    }
-
-    .TreeItem > * {
-      box-shadow: none;
-      background-color: transparent;
-    }
-  }
+.Wrapper.ghost.indicator .TreeItem > * {
+  opacity: 0;
+  height: 0;
 }
 
 .TreeItem {
   --vertical-padding: 10px;
-  background-color: var(--background-color);
-  position: relative;
   display: flex;
   align-items: center;
   padding: var(--vertical-padding) 10px;
   box-sizing: border-box;
+  position: relative;
 }
 
 .Text {
-  flex-grow: 1;
+  flex: 1;
   padding-left: 0.5rem;
   white-space: nowrap;
-  text-overflow: ellipsis;
   overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
 }
 
 .Count {
@@ -99,28 +87,31 @@
   color: #fff;
 }
 
+.Collapse {
+  padding: 5px;
+  transition: background-color 0.2s;
+}
+
+.Collapse:hover {
+  background-color: var(--action-hover);
+}
+
+.Collapse svg {
+  transition: transform 250ms ease;
+}
+
+.Collapse.collapsed svg {
+  transform: rotate(-90deg);
+}
+
 .disableInteraction {
   pointer-events: none;
 }
 
-.disableSelection,
-.clone {
-  .Text,
-  .Count {
-    user-select: none;
-    -webkit-user-select: none;
-  }
-}
-.Collapse:hover {
-  background-color: gray;
-}
-
-.Collapse {
-  svg {
-    transition: transform 250ms ease;
-  }
-
-  &.collapsed svg {
-    transform: rotate(-90deg);
-  }
+.disableSelection .Text,
+.disableSelection .Count,
+.clone .Text,
+.clone .Count {
+  user-select: none;
+  -webkit-user-select: none;
 }

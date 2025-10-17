@@ -402,6 +402,8 @@ export type NoteContent = { 'CustomContract' : [string, CPayment] } |
   { 'ApproveShareRequest' : string } |
   { 'CPaymentContract' : [CPayment, PaymentAction] } |
   { 'Unfriend' : null } |
+  { 'CancelFriendRequest' : null } |
+  { 'RejectFriendRequest' : null } |
   { 'ReceivedDeposit' : string } |
   { 'ApplyShareRequest' : string } |
   { 'NewMessage' : Message } |

@@ -367,6 +367,8 @@ type NoteContent = variant {
   ApproveShareRequest : text;
   CPaymentContract : record { CPayment; PaymentAction };
   Unfriend;
+  CancelFriendRequest;
+  RejectFriendRequest;
   ReceivedDeposit : text;
   ApplyShareRequest : text;
   NewMessage : Message;

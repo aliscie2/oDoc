@@ -1,8 +1,7 @@
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Button, CircularProgress } from "@mui/material";
-import { useDispatch } from "react-redux";
-
 import { useState } from "react";
+import { useDispatch } from "react-redux";
 import { backendActor } from "../../utils/backendUtils";
 
 interface DeleteFileProps {
@@ -13,38 +12,38 @@ interface DeleteFileProps {
 }
 
 const DeleteFile: React.FC<DeleteFileProps> = ({ item }) => {
-  const [isLoading, setLoding] = useState(false);
-  // Using direct backendActor import
+  const [isLoading, setLoading] = useState(false);
   const dispatch = useDispatch();
 
   const handleDeleteFile = async () => {
-    setLoding(true);
-    if (!window.confirm(`Are you sure you want to delete ${item.name}?`)) {
-      return;
-    }
+    if (!window.confirm(`Delete ${item.name}?`)) return;
 
+    setLoading(true);
     await backendActor?.delete_file(item.id);
-    setLoding(false);
     dispatch({ type: "REMOVE_FILE", id: item.id });
-    return { Ok: "File Deleted" };
+    setLoading(false);
   };
 
   return (
     <Button
-      disabled={isLoading}
+      variant="outlined"
       color="error"
-      variant="contained"
-      onClick={handleDeleteFile}
       size="small"
-      sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
+      onClick={handleDeleteFile}
+      disabled={isLoading}
+      startIcon={
+        isLoading ? (
+          <CircularProgress size={18} color="inherit" />
+        ) : (
+          <DeleteIcon fontSize="small" />
+        )
+      }
+      sx={{
+        textTransform: "none",
+        "&:hover": { bgcolor: "error.dark", color: "white" },
+      }}
     >
-      {isLoading ? (
-        <CircularProgress />
-      ) : (
-        <>
-          <DeleteIcon fontSize="small" /> Delete
-        </>
-      )}
+      Delete File
     </Button>
   );
 };

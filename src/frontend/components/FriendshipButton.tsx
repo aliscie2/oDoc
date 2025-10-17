@@ -7,6 +7,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
+
 interface FEFriend {
   id: string;
   is_sender: boolean;
@@ -26,172 +27,208 @@ interface User {
 }
 
 interface FriendshipButtonProps {
-  profile?: User;
   user: User;
-  friends: FEFriend[];
+  onActionComplete?: () => void;
 }
 
-const FriendshipButton: React.FC<FriendshipButtonProps> = ({ user }) => {
+const FriendshipButton: React.FC<FriendshipButtonProps> = ({
+  user,
+  onActionComplete,
+}) => {
   const dispatch = useDispatch();
+  const { enqueueSnackbar } = useSnackbar();
+  const [isLoading, setIsLoading] = useState(false);
 
   const { profile, friends } = useSelector(
     (state: { filesState: { profile: User; friends: FEFriend[] } }) =>
       state.filesState,
   );
-  // Using direct backendActor import
-  const [isLoading, setIsLoading] = useState(false);
 
-  const [localFriends, setLocalFriends] = useState(friends);
+  const { notifications } = useSelector(
+    (state: { notificationState: { notifications: any[] } }) =>
+      state.notificationState,
+  );
 
-  const { enqueueSnackbar } = useSnackbar();
+  const markNotificationAsSeen = async (userId: string) => {
+    const notification = notifications.find((n) => {
+      const contentType = Object.keys(n.content)[0];
+      if (contentType === "FriendRequest") {
+        const friendReq = n.content.FriendRequest;
+        // Check if userId is in the concatenated friend ID or in sender/receiver
+        return (
+          friendReq?.friend?.id?.includes(userId) ||
+          friendReq?.sender?.id === userId ||
+          friendReq?.receiver?.id === userId
+        );
+      }
+      return false;
+    });
 
+    if (notification) {
+      try {
+        await backendActor?.see_notifications([notification.id]);
+        dispatch({ type: "NOTIFICATION_SEEN", id: notification.id });
+      } catch (error) {
+        throw error;
+      }
+    } else {
+    }
+
+    if (onActionComplete) onActionComplete();
+  };
   const handleAction = async (
-    action: () => Promise<{ Ok?: User; Err?: string }>,
-    updateFunction: () => void,
+    action: () => Promise<{ Ok?: any; Err?: string }>,
+    successCallback: () => void,
+    shouldMarkNotification: boolean = false,
   ) => {
-    if (!backendActor || isLoading) return;
+    if (!backendActor || isLoading || !user) {
+      return;
+    }
+
     setIsLoading(true);
+
     try {
       const result = await action();
+
       if (result && "Err" in result) {
         enqueueSnackbar(result.Err, { variant: "error" });
+
         return;
       }
-      updateFunction();
+
+      if (result && "Ok" in result) {
+        successCallback();
+
+        if (shouldMarkNotification) {
+          await markNotificationAsSeen(user.id);
+        }
+
+        enqueueSnackbar("Action completed successfully", {
+          variant: "success",
+        });
+      }
     } catch (error) {
-      console.error("Error performing friend action:", error);
       enqueueSnackbar("Failed to perform action", { variant: "error" });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSendRequest = () =>
+  const handleSendRequest = () => {
     handleAction(
       async () => {
         const res = await backendActor.send_friend_request(user.id);
+
         if ("Ok" in res) {
-          const friend = {
-            id: res.Ok.id,
-            is_sender: true,
-            confirmed: false,
-            name: res.Ok.name,
-            description: res.Ok.description,
-            email: res.Ok.email,
-            photo: res.Ok.photo,
-          };
-          dispatch({ type: "ADD_FRIEND", friend, user: res.Ok });
+          dispatch({
+            type: "ADD_FRIEND",
+            friend: {
+              id: res.Ok.id,
+              is_sender: true,
+              confirmed: false,
+              name: res.Ok.name,
+              description: res.Ok.description,
+              email: res.Ok.email,
+              photo: res.Ok.photo,
+            },
+            user: res.Ok,
+          });
         }
         return res;
       },
+      () => {},
+      false,
+    );
+  };
+
+  const handleAcceptRequest = () => {
+    handleAction(
+      async () => {
+        const res = await backendActor.accept_friend_request(user.id);
+
+        return res;
+      },
       () => {
-        const newFriend = {
+        dispatch({
+          type: "UPDATE_FRIEND",
           id: user.id,
-          is_sender: true,
-          confirmed: false,
-          name: user.name,
-          description: user.description,
-          email: user.email,
-          photo: user.photo,
-        };
-        setLocalFriends([...localFriends, newFriend]);
+          confirmed: true,
+        });
       },
+      true,
     );
+  };
 
-  const handleAcceptRequest = () =>
+  const handleRejectRequest = () => {
     handleAction(
       async () => {
-        return await backendActor.accept_friend_request(user.id);
+        const res = await backendActor.reject_friend_request(user.id);
+
+        return res;
       },
       () => {
-        setLocalFriends(
-          localFriends.map((friend: FEFriend) =>
-            friend.id === user.id ? { ...friend, confirmed: true } : friend,
-          ),
-        );
+        dispatch({
+          type: "REMOVE_FRIEND",
+          id: user.id,
+        });
       },
+      true,
     );
+  };
 
-  const handleRejectRequest = () =>
+  const handleCancelRequest = () => {
     handleAction(
       async () => {
-        return await backendActor.reject_friend_request(user.id);
+        const res = await backendActor.cancel_friend_request(user.id);
+
+        return res;
       },
       () => {
-        setLocalFriends(
-          localFriends.filter((friend: FEFriend) => friend.id !== user.id),
-        );
+        dispatch({
+          type: "REMOVE_FRIEND",
+          id: user.id,
+        });
       },
+      false,
     );
+  };
 
-  const handleCancelRequest = () =>
+  const handleUnfriend = () => {
     handleAction(
       async () => {
-        return await backendActor.cancel_friend_request(user.id);
+        const res = await backendActor.unfriend(user.id);
+
+        return res;
       },
       () => {
-        setLocalFriends(
-          localFriends.filter(
-            (friend: FEFriend) => !(friend.id === user.id && friend.is_sender),
-          ),
-        );
+        dispatch({
+          type: "REMOVE_FRIEND",
+          id: user.id,
+        });
       },
+      false,
     );
+  };
 
-  const handleUnfriend = () =>
-    handleAction(
-      async () => {
-        return await backendActor.unfriend(user.id);
-      },
-      () => {
-        setLocalFriends(
-          localFriends.filter((friend: FEFriend) => friend.id !== user.id),
-        );
-      },
-    );
-  if (!profile || !user) return null;
+  if (!profile || !user) {
+    return null;
+  }
 
-  const friendRelation = localFriends.find(
-    (friend: FEFriend) => friend.id === user.id,
-  );
+  const friendRelation = friends.find((friend) => friend.id === user.id);
 
-  // Determine the relationship status based on confirmed and is_sender fields
-  // If friend exists and confirmed is true, we are friends
-  // If friend exists, confirmed is false, and is_sender is true, we sent a pending request
-  // If friend exists, confirmed is false, and is_sender is false, we received a pending request
-  // If no friend relation exists, we can send a request
-  const isFriend = friendRelation && friendRelation.confirmed;
+  const isFriend = friendRelation?.confirmed;
   const isRequestSender =
     friendRelation && !friendRelation.confirmed && friendRelation.is_sender;
   const isRequestReceiver =
     friendRelation && !friendRelation.confirmed && !friendRelation.is_sender;
 
-  const buttonStyle = {
-    padding: "8px 16px",
-    borderRadius: "4px",
-    border: "none",
-    cursor: "pointer",
-    fontWeight: "bold",
-    transition: "background-color 0.2s",
-    margin: "4px",
-  };
-
-  const primaryButton = {
-    ...buttonStyle,
-    backgroundColor: "#1976d2",
-    color: "white",
-    "&:hover": {
-      backgroundColor: "#1565c0",
-    },
-  };
-
-  const secondaryButton = {
-    ...buttonStyle,
-    backgroundColor: "#dc3545",
-    color: "white",
-    "&:hover": {
-      backgroundColor: "#c82333",
-    },
+  const buttonSx = {
+    borderRadius: 2,
+    px: { xs: 2, sm: 3 },
+    py: { xs: 0.5, sm: 1 },
+    fontSize: { xs: "0.75rem", sm: "0.875rem" },
+    minWidth: { xs: "auto", sm: 120 },
+    whiteSpace: "nowrap",
   };
 
   if (isFriend) {
@@ -203,9 +240,9 @@ const FriendshipButton: React.FC<FriendshipButtonProps> = ({ user }) => {
         size="small"
         startIcon={<PersonRemoveIcon />}
         disabled={isLoading}
-        sx={{ borderRadius: 2 }}
+        sx={buttonSx}
       >
-        {isLoading ? "Processing..." : "Unfriend"}
+        {isLoading ? "..." : "Unfriend"}
       </Button>
     );
   }
@@ -219,25 +256,27 @@ const FriendshipButton: React.FC<FriendshipButtonProps> = ({ user }) => {
         size="small"
         startIcon={<CancelIcon />}
         disabled={isLoading}
-        sx={{ borderRadius: 2 }}
+        sx={buttonSx}
       >
-        {isLoading ? "Processing..." : "Cancel Request"}
+        {isLoading ? "..." : "Cancel"}
       </Button>
     );
   }
 
   if (isRequestReceiver) {
     return (
-      <Box sx={{ display: "flex", gap: 1 }}>
+      <Box
+        sx={{ display: "flex", gap: 1, flexWrap: { xs: "wrap", sm: "nowrap" } }}
+      >
         <Button
           onClick={handleAcceptRequest}
           variant="contained"
           size="small"
           startIcon={<CheckCircleIcon />}
           disabled={isLoading}
-          sx={{ borderRadius: 2 }}
+          sx={buttonSx}
         >
-          {isLoading ? "Processing..." : "Accept"}
+          {isLoading ? "..." : "Accept"}
         </Button>
         <Button
           onClick={handleRejectRequest}
@@ -246,9 +285,9 @@ const FriendshipButton: React.FC<FriendshipButtonProps> = ({ user }) => {
           size="small"
           startIcon={<CancelIcon />}
           disabled={isLoading}
-          sx={{ borderRadius: 2 }}
+          sx={buttonSx}
         >
-          {isLoading ? "Processing..." : "Decline"}
+          {isLoading ? "..." : "Decline"}
         </Button>
       </Box>
     );
@@ -261,9 +300,9 @@ const FriendshipButton: React.FC<FriendshipButtonProps> = ({ user }) => {
       size="small"
       startIcon={<PersonAddIcon />}
       disabled={isLoading}
-      sx={{ borderRadius: 2 }}
+      sx={buttonSx}
     >
-      {isLoading ? "Processing..." : "Add Friend"}
+      {isLoading ? "..." : "Add Friend"}
     </Button>
   );
 };

@@ -1,48 +1,59 @@
-import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { TextField, Autocomplete } from "@mui/material";
+import type { RootState } from "../../redux/reducers";
+
+interface UpdateFileWorkspacesPayload {
+  id: string;
+  workspaces: string[];
+}
+
+export const updateFileWorkspaces = (payload: UpdateFileWorkspacesPayload) => ({
+  type: "UPDATE_FILE_WORKSPACES" as const,
+  payload,
+});
+
+interface Workspace {
+  id: string;
+  name: string;
+}
 
 const ChangeWorkSpace = ({ readOnly }: { readOnly?: boolean }) => {
   const dispatch = useDispatch();
-  const { workspaces, files } = useSelector((state: any) => state.filesState);
+  const { workspaces, files } = useSelector(
+    (state: RootState) => state.filesState,
+  );
 
   const fileId = window.location.pathname.split("/")[1];
-  const currentFile = files.find((file: any) => file.id === fileId);
+  const currentFile = files.find((file) => file.id === fileId);
 
   if (!currentFile) return null;
 
-  const filteredWorkspaces = currentFile.workspaces.filter(
-    (w: string) => w === "default" || workspaces.find((ws: any) => ws.id === w),
-  );
-
-  const selectedWorkspaces = filteredWorkspaces.map((workspaceId: string) => {
-    const workspace = workspaces.find((w: any) => w.id === workspaceId);
-    return { title: workspace?.name, id: workspace?.id };
-  });
-
-  const workspaceOptions = workspaces.map((workspace: any) => ({
-    title: workspace.name,
-    id: workspace.id,
-  }));
-
-  const handleChange = (value: any) => {
-    dispatch({
-      type: "UPDATE_FILE_WORKSPACES",
-      id: currentFile.id,
-      workspaces: value.map((w: any) => w.id),
-    });
-  };
+  const selectedWorkspaces = currentFile.workspaces
+    .map((id) => workspaces.find((w) => w.id === id))
+    .filter((w): w is Workspace => w !== undefined);
 
   return (
     <Autocomplete
       multiple
       disabled={readOnly}
-      onChange={(_, value) => handleChange(value)}
+      onChange={(_, value) =>
+        dispatch(
+          updateFileWorkspaces({
+            id: fileId,
+            workspaces: value.map((w) => w.id),
+          }),
+        )
+      }
       limitTags={3}
-      options={workspaceOptions}
-      getOptionLabel={(option) => option.title}
+      options={workspaces}
+      getOptionLabel={(option) => option.name}
       value={selectedWorkspaces}
-      renderInput={(params) => <TextField {...params} label="workspaces" />}
+      size="small"
+      sx={{
+        minWidth: 200,
+        "& .MuiChip-root": { height: 24, fontSize: "0.8125rem" },
+      }}
+      renderInput={(params) => <TextField {...params} label="Workspaces" />}
     />
   );
 };

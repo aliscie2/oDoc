@@ -45,6 +45,14 @@ export function notificationReducer(
         notifications: state.notifications.filter((n) => n.id !== action.id),
       };
 
+    case "NOTIFICATION_SEEN":
+      return {
+        ...state,
+        notifications: state.notifications.map((n) =>
+          n.id === action.id ? { ...n, is_seen: true } : n,
+        ),
+      };
+
     default:
       return state;
   }

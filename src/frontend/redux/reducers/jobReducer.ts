@@ -178,6 +178,12 @@ export function jobReducer(
   state: JobState = initialState,
   action: JobAction,
 ): JobState {
+  function isValidCurrentJob(state: JobState): boolean {
+    return !!(
+      state.currentJobId && state.jobs.some((j) => j.id === state.currentJobId)
+    );
+  }
+
   switch (action.type) {
     case "SET_CURRENT_JOB_ID":
       return { ...state, currentJobId: action.job?.id };
@@ -242,7 +248,7 @@ export function jobReducer(
         });
       }
 
-      if (!state.currentJobId) {
+      if (!isValidCurrentJob(state)) {
         const newJob = applyFieldUpdates(
           generateDummyJob(),
           action.updates,
@@ -405,7 +411,7 @@ export function jobReducer(
     }
     case "UPDATE_MATCHES": {
       const currentJob = state.jobs.find((j) => j.id === state.currentJobId);
-      if (!currentJob) return state;
+      if (!isValidCurrentJob(state)) return state;
 
       const updatedMatches =
         currentJob.matches?.map((existingMatch) => {
@@ -467,10 +473,7 @@ export function jobReducer(
     }
 
     case "DELETE_MATCH":
-      const newMatches =
-        state.jobs
-          .find((j) => j.id === state.currentJobId)
-          ?.matches.filter((match) => match.job_id !== action.id) || [];
+      if (!isValidCurrentJob(state)) return state;
 
       return {
         ...state,
@@ -561,7 +564,7 @@ export function jobReducer(
       };
 
     case "UPDATE_REQUIRED_MATCH_SCORE":
-      if (!state.currentJobId) return state;
+      if (!isValidCurrentJob(state)) return state;
 
       const updatedJob = state.jobs.find((j) => j.id === state.currentJobId);
       if (!updatedJob) return state;

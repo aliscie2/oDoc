@@ -1,4 +1,4 @@
-use super::pallet::{Category, Job, Match};
+use super::pallet::{Category, Job};
 use ic_cdk::caller;
 
 impl Job {
@@ -164,50 +164,7 @@ impl Job {
             }
         })
     }
-    pub fn update_matches(job_id: String, matches: Vec<Match>) -> Result<(), String> {
-        crate::JOBS_MATCH_STORE.with(|store| {
-            let mut store = store.borrow_mut();
-            let mut job = match store.get(&job_id) {
-                Some(j) => j.clone(),
-                None => return Err("Job not found".to_string()),
-            };
 
-            // Validate all match scores are in 0.0-1.0 range
-            for match_item in &matches {
-                if match_item.score < 0.0 || match_item.score > 1.0 {
-                    return Err("Match score must be between 0.0 and 1.0".to_string());
-                }
-            }
-
-            // All scores are valid, use them directly (no normalization needed)
-            let validated_matches: Vec<Match> = matches;
-
-            job.matches = validated_matches;
-
-            store.insert(job_id.clone(), job.clone());
-
-            // Create reciprocal matches
-            for match_item in &job.matches {
-                if let Some(mut other_job) = store.get(&match_item.job_id) {
-                    let reciprocal_match = Match {
-                        score: match_item.score, // Already normalized
-                        job_id: job_id.clone(),
-                        user_id: other_job.user_id.clone(),
-                        missmatching_skills: match_item.missmatching_skills.clone(),
-                        date_updated: ic_cdk::api::time() as f64,
-                        is_connected: match_item.is_connected,
-                        cover_letter: match_item.cover_letter.clone(),
-                    };
-
-                    // Remove any existing reciprocal match and add the new one
-                    other_job.matches.retain(|m| m.job_id != job_id);
-                    other_job.matches.push(reciprocal_match);
-                    store.insert(match_item.job_id.clone(), other_job);
-                }
-            }
-            Ok(())
-        })
-    }
     pub fn get_all_user_emails() -> Vec<String> {
         crate::JOBS_MATCH_STORE.with(|store| {
             store

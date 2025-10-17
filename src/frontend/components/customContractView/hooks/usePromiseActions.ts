@@ -68,7 +68,8 @@ export const usePromiseActions = (
         const isReceiver = profile?.id === promise.receiver.toString();
 
         // Check if current user is the contract creator
-        if (promise.sender.toString() === profile?.id) {
+        //TODO Good: Added optional chaining But: Should handle the null case explicitly rather than silently failing
+        if (promise?.sender?.toString() === profile?.id) {
           dispatch({
             type: "UPDATE_PROMISE",
             contract_id: promise.contract_id,
@@ -139,7 +140,7 @@ export const usePromiseActions = (
         return;
       }
 
-      if (promise.sender.toString() === user.id) {
+      if (promise?.sender?.toString() === user.id) {
         enqueueSnackbar("Error: You can't send to yourself", {
           variant: "error",
         });

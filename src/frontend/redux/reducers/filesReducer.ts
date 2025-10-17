@@ -1650,35 +1650,30 @@ export function filesReducer(
         },
       };
 
-    case "UPDATE_FILE_WORKSPACES":
+    case "UPDATE_FILE_WORKSPACES": {
+      const { id, workspaces } = action.payload;
+
+      const updateFile = (file: File) =>
+        file.id === id ? { ...file, workspaces } : file;
+
+      const updatedFile = state.files.find((f) => f.id === id);
+      if (!updatedFile) return state;
+
       return {
         ...state,
-        files: state.files.map((file) =>
-          file.id === action.id
-            ? { ...file, workspaces: action.workspaces }
-            : file,
-        ),
+        files: state.files.map(updateFile),
         current_file:
-          state.current_file?.id === action.id
-            ? { ...state.current_file, workspaces: action.workspaces }
+          state.current_file?.id === id
+            ? { ...state.current_file, workspaces }
             : state.current_file,
         changes: {
           ...state.changes,
-          files: state.changes.files.find((f) => f.id === action.id)
-            ? state.changes.files.map((f) =>
-                f.id === action.id
-                  ? { ...f, workspaces: action.workspaces }
-                  : f,
-              )
-            : [
-                ...state.changes.files,
-                {
-                  ...state.files.find((f) => f.id === action.id)!,
-                  workspaces: action.workspaces,
-                },
-              ],
+          files: state.changes.files.some((f) => f.id === id)
+            ? state.changes.files.map(updateFile)
+            : [...state.changes.files, { ...updatedFile, workspaces }],
         },
       };
+    }
 
     case "UPDATE_FILE_TITLE":
       return {
@@ -1734,22 +1729,11 @@ export function filesReducer(
       };
 
     case "REMOVE_FRIEND":
-      function checkf(f: any) {
-        let sender = f.sender.id;
-        let receiver = f.receiver.id;
-        if (typeof sender != "string") {
-          sender = sender.toString();
-        }
-        if (typeof receiver != "string") {
-          receiver = receiver.toString();
-        }
-
-        return sender !== action.id && receiver !== action.id;
-      }
-
-      const friends = state.friends.filter((f) => checkf(f));
-
-      return { ...state, friends };
+      return {
+        ...state,
+        friends: state.friends.filter((f) => f.id !== action.id),
+        all_friends: state.all_friends.filter((u) => u.id !== action.id),
+      };
 
     case "ADD_FRIEND":
       return {
