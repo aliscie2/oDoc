@@ -1,4 +1,4 @@
-import { backendActor, ckUSDCActor } from "@/utils/backendUtils";
+import { backendActor, getCkUSDCActor } from "@/utils/backendUtils";
 import UserAvatarMenu from "@/components/MainComponents/UserAvatarMenu";
 import {
   AttachMoney,
@@ -31,12 +31,12 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import { Link } from "react-router-dom";
 import getckUsdcBalance from "@/utils/getBalance";
-import { canisterId } from "$/declarations/ckusdc_ledger";
+import { canisterId } from "$/declarations/backend";
 
 const sectionSx = {
   minHeight: "100vh",
@@ -186,14 +186,18 @@ const HeroWithDemo = () => {
   const theme = useTheme();
   const [messages, setMessages] = useState([]);
   const scrollRef = useRef(null);
-  const candidatePhotos = [
-    "https://i.pravatar.cc/150?img=47",
-    "https://i.pravatar.cc/150?img=13",
-    "https://i.pravatar.cc/150?img=32",
-  ];
 
-  useEffect(() => {
-    const sequence = [
+  const candidatePhotos = useMemo(
+    () => [
+      "https://i.pravatar.cc/150?img=47",
+      "https://i.pravatar.cc/150?img=13",
+      "https://i.pravatar.cc/150?img=32",
+    ],
+    [],
+  );
+
+  const sequence = useMemo(
+    () => [
       { id: 1, type: "user", text: "Find full-stack developers", delay: 0 },
       {
         id: 2,
@@ -240,8 +244,11 @@ const HeroWithDemo = () => {
         avatar: "/contract.png",
         contract: { amount: "$100", recipient: "Sarah Chen" },
       },
-    ];
+    ],
+    [candidatePhotos],
+  );
 
+  useEffect(() => {
     const runSequence = () => {
       setMessages([]);
       let totalDelay = 0;
@@ -257,7 +264,7 @@ const HeroWithDemo = () => {
     };
 
     return runSequence();
-  }, []);
+  }, [sequence]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({
@@ -516,6 +523,7 @@ const HeroWithDemo = () => {
   );
 };
 
+
 const SocialProofSection = () => {
   const theme = useTheme();
   const [stats, setStats] = useState({
@@ -531,19 +539,13 @@ const SocialProofSection = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const actor = await getCkUSDCActor();
         const [res, balance] = await Promise.all([
           backendActor.get_sns_status(),
-          getckUsdcBalance(ckUSDCActor, canisterId),
+          getckUsdcBalance(actor, canisterId),
         ]);
         if (res.Ok) {
-          const {
-            number_users,
-            active_users,
-            jobs_count,
-            talents_count,
-            latest_jobs,
-            latest_talents,
-          } = res.Ok;
+          const { number_users, active_users, jobs_count, talents_count, latest_jobs, latest_talents } = res.Ok;
           setStats({
             users: Math.floor(number_users),
             activeUsers: Math.floor(active_users),
@@ -552,7 +554,7 @@ const SocialProofSection = () => {
             talentsCount: Math.floor(talents_count),
           });
           const combined = [...(latest_jobs || []), ...(latest_talents || [])];
-          setOpportunities([...combined, ...combined, ...combined]);
+          if (combined.length) setOpportunities([...combined, ...combined, ...combined]);
         }
       } catch (error) {
         console.error("Failed to fetch stats:", error);
@@ -562,133 +564,66 @@ const SocialProofSection = () => {
   }, []);
 
   useEffect(() => {
-    if (opportunities.length === 0) return;
-    const interval = setInterval(() => setScrollPos((prev) => prev + 0.5), 20);
+    if (!opportunities.length) return;
+    const interval = setInterval(() => setScrollPos(prev => prev + 0.5), 20);
     return () => clearInterval(interval);
-  }, [opportunities]);
+  }, [opportunities.length]);
 
   return (
     <Box sx={sectionSx}>
       <Container maxWidth="sm" sx={{ px: 2 }}>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            gap: 3,
-            mb: 4,
-            flexWrap: "wrap",
-          }}
-        >
-          <StatCard value={stats.users} label="Users" />
-          <StatCard value={stats.activeUsers} label="Active" />
-          <StatCard value={`$${stats.totalDeposit}`} label="Value" />
-          <StatCard value={stats.jobsCount} label="Jobs" />
-          <StatCard value={stats.talentsCount} label="Talents" />
+        <Box sx={{ display: "flex", justifyContent: "center", gap: 2, mb: 4, flexWrap: "wrap" }}>
+          {[
+            { value: stats.users, label: "Users" },
+            { value: stats.activeUsers, label: "Active" },
+            { value: `$${stats.totalDeposit}`, label: "Value" },
+            { value: stats.jobsCount, label: "Jobs" },
+            { value: stats.talentsCount, label: "Talents" },
+          ].map((stat, i) => (
+            <StatCard key={i} value={stat.value} label={stat.label} />
+          ))}
         </Box>
 
         {opportunities.length > 0 && (
           <Box sx={{ height: 320, overflow: "hidden", position: "relative" }}>
-            <Box
-              sx={{
+            {[
+              { pos: "top", dir: "to bottom" },
+              { pos: "bottom", dir: "to top" }
+            ].map(({ pos, dir }) => (
+              <Box key={pos} sx={{
                 position: "absolute",
-                top: 0,
+                [pos]: 0,
                 left: 0,
                 right: 0,
                 height: 40,
-                background: `linear-gradient(to bottom, ${theme.palette.background.default}, transparent)`,
+                background: `linear-gradient(${dir}, ${theme.palette.background.default}, transparent)`,
                 zIndex: 1,
                 pointerEvents: "none",
-              }}
-            />
-            <Box
-              sx={{
-                position: "absolute",
-                bottom: 0,
-                left: 0,
-                right: 0,
-                height: 40,
-                background: `linear-gradient(to top, ${theme.palette.background.default}, transparent)`,
-                zIndex: 1,
-                pointerEvents: "none",
-              }}
-            />
+              }} />
+            ))}
 
-            <Box
-              sx={{
-                transform: `translateY(-${scrollPos % ((opportunities.length / 3) * 70)}px)`,
-                willChange: "transform",
-              }}
-            >
+            <Box sx={{ transform: `translateY(-${scrollPos % ((opportunities.length / 3) * 70)}px)`, willChange: "transform" }}>
               <Stack spacing={1.5}>
                 {opportunities.map((job, i) => {
-                  const category = job.category
-                    ? Object.keys(job.category)[0]
-                    : "Job";
+                  const category = job.category ? Object.keys(job.category)[0] : "Job";
                   return (
-                    <Box
-                      key={`${job.id}-${i}`}
-                      sx={{
-                        ...cardSx,
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1.5,
-                      }}
-                    >
+                    <Box key={`${job.id}-${i}`} sx={{ ...cardSx, display: "flex", alignItems: "center", gap: 1.5 }}>
                       {job.user_id ? (
-                        <UserAvatarMenu
-                          user_id={job.user_id}
-                          hide={["Profile", "Message", "Review"]}
-                          sx={{ width: 36, height: 36, pointerEvents: "none" }}
-                        />
+                        <UserAvatarMenu user_id={job.user_id} hide={["Profile", "Message", "Review"]} sx={{ width: 36, height: 36, pointerEvents: "none" }} />
                       ) : (
-                        <Avatar
-                          sx={{
-                            width: 36,
-                            height: 36,
-                            bgcolor: "primary.main",
-                          }}
-                        >
-                          {job.job_titles?.[0]?.[0]?.toUpperCase() ||
-                            category[0]}
+                        <Avatar sx={{ width: 36, height: 36, bgcolor: "primary.main" }}>
+                          {job.job_titles?.[0]?.[0]?.toUpperCase() || category[0]}
                         </Avatar>
                       )}
                       <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            fontWeight: 600,
-                            fontSize: "0.875rem",
-                            mb: 0.25,
-                          }}
-                        >
+                        <Typography variant="body2" sx={{ fontWeight: 600, fontSize: "0.875rem", mb: 0.25 }}>
                           {job.job_titles?.[0] || `${category} Position`}
                         </Typography>
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            opacity: 0.7,
-                            fontSize: "0.75rem",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                            display: "block",
-                          }}
-                        >
-                          {job.skills?.slice(0, 3).join(", ") ||
-                            "Skills not specified"}
+                        <Typography variant="caption" sx={{ opacity: 0.7, fontSize: "0.75rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "block" }}>
+                          {job.skills?.slice(0, 3).join(", ") || "Skills not specified"}
                         </Typography>
                       </Box>
-                      <Chip
-                        label={category}
-                        size="small"
-                        sx={{
-                          bgcolor: "primary.main",
-                          color: "white",
-                          fontWeight: 600,
-                          fontSize: "0.7rem",
-                          height: 22,
-                        }}
-                      />
+                      <Chip label={category} size="small" sx={{ bgcolor: "primary.main", color: "white", fontWeight: 600, fontSize: "0.7rem", height: 22 }} />
                     </Box>
                   );
                 })}
@@ -700,6 +635,8 @@ const SocialProofSection = () => {
     </Box>
   );
 };
+
+
 const EmailNotificationsStep = () => {
   const theme = useTheme();
 

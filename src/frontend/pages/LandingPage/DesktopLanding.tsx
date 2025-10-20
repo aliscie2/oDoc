@@ -1,7 +1,7 @@
 import { canisterId } from "$/declarations/backend";
 import AIJobMatchingFlow from "@/components/landingPageAnimations";
 import LoginButton from "@/components/MainComponents/topNavBar/loginButton";
-import { backendActor, ckUSDCActor } from "@/utils/backendUtils";
+import { backendActor, getCkUSDCActor } from "@/utils/backendUtils";
 import getckUsdcBalance from "@/utils/getBalance";
 import {
   AttachMoney,
@@ -529,11 +529,12 @@ const HeroSection = () => {
 
     const fetchStats = async () => {
       try {
+        const actor = await getCkUSDCActor();
         const [snsResponse, balance] = await Promise.all([
           backendActor.get_sns_status(),
-          getckUsdcBalance(ckUSDCActor, canisterId),
+          getckUsdcBalance(actor, canisterId),
         ]);
-
+        console.log({ snsResponse, balance });
         if (snsResponse.Ok) {
           const { number_users, active_users, jobs_count, talents_count } =
             snsResponse.Ok;
@@ -656,159 +657,104 @@ const HeroSection = () => {
     </Box>
   );
 };
-
 const CalendarStep = () => {
   const theme = useTheme();
   const [phase, setPhase] = useState(0);
 
   const phases = [
     { type: "availability", text: "Set me available Mon-Wed 9 AM - 1 PM" },
-    { type: "event", text: "Find me a good time to meet Sarah tomorrow." },
+    { type: "event", text: "Find me a good time to meet Sarah tomorrow" },
   ];
 
-  const currentPhase = phases[phase % 2];
-  const calendarSlots = [
-    { day: "Mon", hours: "9:00 AM - 1:00 PM" },
-    { day: "Tue", hours: "9:00 AM - 1:00 PM" },
-    { day: "Wed", hours: "9:00 AM - 1:00 PM" },
-  ];
+  const slots = ["Mon", "Tue", "Wed"].map(day => ({ day, hours: "9:00 AM - 1:00 PM" }));
 
   useEffect(() => {
-    const timer = setInterval(() => setPhase((prev) => prev + 1), 3000);
+    const timer = setInterval(() => setPhase(prev => prev + 1), 3000);
     return () => clearInterval(timer);
   }, []);
 
+  const current = phases[phase % 2];
+  const isDark = theme.palette.mode === "dark";
+
   return (
-    <Box
-      sx={{ minHeight: "100vh", display: "flex", alignItems: "center", py: 8 }}
-    >
+    <Box sx={{ minHeight: "100vh", display: "flex", alignItems: "center", py: 8 }}>
       <Container maxWidth="lg">
-        <Grid2 container spacing={6} alignItems="center">
-          <Grid2 xs={6}>
-            <Typography
-              variant="h3"
-              sx={{ mb: 2, fontWeight: 600, fontSize: "2.25rem" }}
-            >
+        <Grid2 container spacing={6} alignItems="center" justifyContent="center">
+          <Grid2 size={{ xs: 12, md: 5 }} sx={{ textAlign: { xs: "center", md: "left" } }}>
+            <Typography variant="h3" sx={{ mb: 2, fontWeight: 600, fontSize: { xs: "2rem", md: "2.25rem" } }}>
               Smart Calendar
             </Typography>
-            <Typography
-              variant="body1"
-              sx={{
-                color: "text.secondary",
-                lineHeight: 1.7,
-                fontSize: "1.05rem",
-              }}
-            >
-              Chat with your calendar to set availability and schedule meetings
-              naturally.
+            <Typography variant="body1" sx={{ color: "text.secondary", lineHeight: 1.7, fontSize: "1.05rem", maxWidth: { xs: "100%", md: 400 }, mx: { xs: "auto", md: 0 } }}>
+              Chat with your calendar to set availability and schedule meetings naturally
             </Typography>
           </Grid2>
-          <Grid2 xs={6}>
-            <Box
-              sx={{
-                width: "100%",
-                maxWidth: 520,
-                bgcolor: "background.paper",
-                borderRadius: 4,
-                boxShadow:
-                  theme.palette.mode === "dark"
-                    ? "12px 12px 24px rgba(0,0,0,0.5), -12px -12px 24px rgba(60,60,60,0.1)"
-                    : "12px 12px 24px rgba(163,177,198,0.3), -12px -12px 24px rgba(255,255,255,0.8)",
-                p: 3,
-              }}
-            >
+
+          <Grid2 size={{ xs: 12, md: 7 }}>
+            <Box sx={{
+              maxWidth: 520,
+              mx: "auto",
+              bgcolor: "background.paper",
+              borderRadius: 4,
+              boxShadow: isDark 
+                ? "12px 12px 24px rgba(0,0,0,0.5), -12px -12px 24px rgba(60,60,60,0.1)"
+                : "12px 12px 24px rgba(163,177,198,0.3), -12px -12px 24px rgba(255,255,255,0.8)",
+              p: 3,
+            }}>
               <Stack spacing={2}>
                 <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-                  <Box
-                    sx={{
-                      px: 2.5,
-                      py: 1.5,
-                      maxWidth: "80%",
-                      bgcolor: "primary.main",
-                      color: "primary.contrastText",
-                      borderRadius: 3,
-                      boxShadow:
-                        theme.palette.mode === "dark"
-                          ? "4px 4px 8px rgba(0,0,0,0.4), -2px -2px 6px rgba(60,60,60,0.1)"
-                          : "4px 4px 8px rgba(58,141,255,0.25), -2px -2px 6px rgba(255,255,255,0.7)",
-                    }}
-                  >
-                    <Typography variant="body1">{currentPhase.text}</Typography>
+                  <Box sx={{
+                    px: 2.5,
+                    py: 1.5,
+                    maxWidth: "80%",
+                    bgcolor: "primary.main",
+                    color: "primary.contrastText",
+                    borderRadius: 3,
+                    boxShadow: isDark
+                      ? "4px 4px 8px rgba(0,0,0,0.4), -2px -2px 6px rgba(60,60,60,0.1)"
+                      : "4px 4px 8px rgba(58,141,255,0.25), -2px -2px 6px rgba(255,255,255,0.7)",
+                  }}>
+                    <Typography variant="body1">{current.text}</Typography>
                   </Box>
                 </Box>
 
                 <Fade in timeout={600} key={phase}>
-                  <Box
-                    sx={{ display: "flex", gap: 2, alignItems: "flex-start" }}
-                  >
-                    <Avatar
-                      src="/calendar.png"
-                      sx={{
-                        width: 36,
-                        height: 36,
-                        bgcolor: "background.paper",
-                        color: "text.primary",
-                      }}
-                    />
+                  <Box sx={{ display: "flex", gap: 2, alignItems: "flex-start" }}>
+                    <Avatar src="/calendar.png" sx={{ width: 36, height: 36, bgcolor: "background.paper", color: "text.primary" }} />
                     <Stack spacing={1.5} sx={{ flex: 1 }}>
-                      {currentPhase.type === "availability" ? (
+                      {current.type === "availability" ? (
                         <>
-                          <Typography
-                            variant="body1"
-                            sx={{ fontWeight: 600, mb: 1 }}
-                          >
+                          <Typography variant="body1" sx={{ fontWeight: 600, mb: 1 }}>
                             Availability set
                           </Typography>
-                          {calendarSlots.map((slot, i) => (
-                            <Box
-                              key={i}
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 2,
-                                p: 1.5,
-                                borderRadius: 2,
-                                boxShadow:
-                                  theme.palette.mode === "dark"
-                                    ? "inset 3px 3px 6px rgba(0,0,0,0.4), inset -3px -3px 6px rgba(60,60,60,0.15)"
-                                    : "inset 3px 3px 6px rgba(163,177,198,0.25), inset -3px -3px 6px rgba(255,255,255,0.8)",
-                                bgcolor: "background.paper",
-                              }}
-                            >
-                              <Typography
-                                variant="body2"
-                                sx={{ fontWeight: 600, minWidth: 40 }}
-                              >
-                                {slot.day}
-                              </Typography>
-                              <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                                {slot.hours}
-                              </Typography>
+                          {slots.map((slot, i) => (
+                            <Box key={i} sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 2,
+                              p: 1.5,
+                              borderRadius: 2,
+                              boxShadow: isDark
+                                ? "inset 3px 3px 6px rgba(0,0,0,0.4), inset -3px -3px 6px rgba(60,60,60,0.15)"
+                                : "inset 3px 3px 6px rgba(163,177,198,0.25), inset -3px -3px 6px rgba(255,255,255,0.8)",
+                              bgcolor: "background.paper",
+                            }}>
+                              <Typography variant="body2" sx={{ fontWeight: 600, minWidth: 40 }}>{slot.day}</Typography>
+                              <Typography variant="body2" sx={{ opacity: 0.8 }}>{slot.hours}</Typography>
                             </Box>
                           ))}
                         </>
                       ) : (
-                        <Box
-                          sx={{
-                            p: 2,
-                            bgcolor: "primary.main",
-                            borderRadius: 3,
-                            color: "white",
-                            boxShadow:
-                              theme.palette.mode === "dark"
-                                ? "4px 4px 8px rgba(58,141,255,0.4), -2px -2px 6px rgba(60,60,60,0.1)"
-                                : "4px 4px 8px rgba(58,141,255,0.3), -2px -2px 6px rgba(255,255,255,0.7)",
-                          }}
-                        >
-                          <Typography
-                            variant="body1"
-                            sx={{ fontWeight: 600, mb: 0.5 }}
-                          >
-                            Tomorrow • 10:00 AM
-                          </Typography>
-                          <Typography variant="body2">
-                            Meeting with Sarah
-                          </Typography>
+                        <Box sx={{
+                          p: 2,
+                          bgcolor: "primary.main",
+                          borderRadius: 3,
+                          color: "white",
+                          boxShadow: isDark
+                            ? "4px 4px 8px rgba(58,141,255,0.4), -2px -2px 6px rgba(60,60,60,0.1)"
+                            : "4px 4px 8px rgba(58,141,255,0.3), -2px -2px 6px rgba(255,255,255,0.7)",
+                        }}>
+                          <Typography variant="body1" sx={{ fontWeight: 600, mb: 0.5 }}>Tomorrow • 10:00 AM</Typography>
+                          <Typography variant="body2">Meeting with Sarah</Typography>
                         </Box>
                       )}
                     </Stack>
@@ -822,7 +768,6 @@ const CalendarStep = () => {
     </Box>
   );
 };
-
 const FunnelOverviewSection = () => {
   const theme = useTheme();
   const isDark = theme.palette.mode === "dark";
@@ -1119,73 +1064,37 @@ const CryptoAgreementStep = () => {
   const [visibleFields, setVisibleFields] = useState(0);
 
   useEffect(() => {
-    const fields = 4;
-    let timer;
-    if (visibleFields < fields) {
-      timer = setTimeout(() => setVisibleFields((prev) => prev + 1), 600);
-    } else {
-      timer = setTimeout(() => setVisibleFields(0), 3000);
-    }
+    const timer = visibleFields < 4
+      ? setTimeout(() => setVisibleFields(prev => prev + 1), 600)
+      : setTimeout(() => setVisibleFields(0), 3000);
     return () => clearTimeout(timer);
   }, [visibleFields]);
 
+  const isDark = theme.palette.mode === "dark";
+
   return (
-    <Box
-      sx={{ minHeight: "100vh", display: "flex", alignItems: "center", pt: 10 }}
-    >
+    <Box sx={{ minHeight: "100vh", display: "flex", alignItems: "center", pt: 10 }}>
       <Container maxWidth="lg">
         <Grid2 container spacing={8} alignItems="center">
           <Grid2 xs={5}>
-            <Typography
-              variant="h3"
-              sx={{
-                fontWeight: 700,
-                mb: 3,
-                fontSize: "2.75rem",
-                lineHeight: 1.2,
-              }}
-            >
+            <Typography variant="h3" sx={{ fontWeight: 700, mb: 3, fontSize: "2.75rem", lineHeight: 1.2 }}>
               Secure Escrow Agreements
             </Typography>
-            <Typography
-              variant="body1"
-              sx={{
-                color: "text.secondary",
-                lineHeight: 1.8,
-                fontSize: "1.125rem",
-              }}
-            >
-              Create transparent blockchain contracts with automated escrow
-              protection. Define terms, lock funds, and release upon completion.
+            <Typography variant="body1" sx={{ color: "text.secondary", lineHeight: 1.8, fontSize: "1.125rem" }}>
+              Create transparent blockchain contracts with automated escrow protection. Define terms, lock funds, and release upon completion.
             </Typography>
           </Grid2>
 
           <Grid2 xs={7}>
-            <Box
-              sx={{
-                bgcolor: "background.paper",
-                borderRadius: 3,
-                border: `1px solid ${theme.palette.divider}`,
-                boxShadow:
-                  theme.palette.mode === "dark"
-                    ? "0 8px 32px rgba(0,0,0,0.4)"
-                    : "0 2px 12px rgba(0,0,0,0.08)",
-              }}
-            >
-              <Box
-                sx={{
-                  px: 3,
-                  py: 2.5,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 2,
-                }}
-              >
+            <Box sx={{
+              bgcolor: "background.paper",
+              borderRadius: 3,
+              border: `1px solid ${theme.palette.divider}`,
+              boxShadow: isDark ? "0 8px 32px rgba(0,0,0,0.4)" : "0 2px 12px rgba(0,0,0,0.08)"
+            }}>
+              <Box sx={{ px: 3, py: 2.5, display: "flex", alignItems: "center", gap: 2 }}>
                 <Avatar src="/contract.png" sx={{ width: 36, height: 36 }} />
-                <Typography
-                  variant="h6"
-                  sx={{ fontWeight: 600, fontSize: "1rem" }}
-                >
+                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: "1rem" }}>
                   Escrow Contract
                 </Typography>
               </Box>
@@ -1194,39 +1103,16 @@ const CryptoAgreementStep = () => {
                 <Grid2 container spacing={2.5}>
                   <Grid2 xs={7}>
                     <Fade in={visibleFields >= 1} timeout={600}>
-                      <Box
-                        sx={{
-                          p: 2.5,
-                          borderRadius: 2,
-                          bgcolor:
-                            theme.palette.mode === "dark"
-                              ? "rgba(33, 150, 243, 0.1)"
-                              : "rgba(33, 150, 243, 0.05)",
-                          border: `1px solid ${theme.palette.primary.main}20`,
-                        }}
-                      >
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: "text.secondary",
-                            textTransform: "uppercase",
-                            letterSpacing: 1,
-                            fontWeight: 700,
-                            fontSize: "0.65rem",
-                            mb: 1,
-                            display: "block",
-                          }}
-                        >
+                      <Box sx={{
+                        p: 2.5,
+                        borderRadius: 2,
+                        bgcolor: isDark ? "rgba(33, 150, 243, 0.1)" : "rgba(33, 150, 243, 0.05)",
+                        border: `1px solid ${theme.palette.primary.main}20`
+                      }}>
+                        <Typography variant="caption" sx={{ color: "text.secondary", textTransform: "uppercase", letterSpacing: 1, fontWeight: 700, fontSize: "0.65rem", mb: 1, display: "block" }}>
                           Amount
                         </Typography>
-                        <Typography
-                          variant="h3"
-                          sx={{
-                            fontWeight: 700,
-                            color: "primary.main",
-                            fontSize: "2.5rem",
-                          }}
-                        >
+                        <Typography variant="h3" sx={{ fontWeight: 700, color: "primary.main", fontSize: "2.5rem" }}>
                           500 USDC
                         </Typography>
                       </Box>
@@ -1235,33 +1121,17 @@ const CryptoAgreementStep = () => {
 
                   <Grid2 xs={5}>
                     <Fade in={visibleFields >= 2} timeout={600}>
-                      <Box
-                        sx={{
-                          p: 2.5,
-                          borderRadius: 2,
-                          bgcolor:
-                            theme.palette.mode === "dark"
-                              ? "rgba(255,255,255,0.03)"
-                              : "rgba(0,0,0,0.02)",
-                          border: `1px solid ${theme.palette.divider}`,
-                          height: "100%",
-                          display: "flex",
-                          flexDirection: "column",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: "text.secondary",
-                            textTransform: "uppercase",
-                            letterSpacing: 1,
-                            fontWeight: 700,
-                            fontSize: "0.65rem",
-                            mb: 1,
-                            display: "block",
-                          }}
-                        >
+                      <Box sx={{
+                        p: 2.5,
+                        borderRadius: 2,
+                        bgcolor: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)",
+                        border: `1px solid ${theme.palette.divider}`,
+                        height: "100%",
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center"
+                      }}>
+                        <Typography variant="caption" sx={{ color: "text.secondary", textTransform: "uppercase", letterSpacing: 1, fontWeight: 700, fontSize: "0.65rem", mb: 1, display: "block" }}>
                           Staking
                         </Typography>
                         <Typography variant="h5" sx={{ fontWeight: 700 }}>
@@ -1273,56 +1143,22 @@ const CryptoAgreementStep = () => {
 
                   <Grid2 xs={12}>
                     <Fade in={visibleFields >= 3} timeout={600}>
-                      <Box
-                        sx={{
-                          p: 2.5,
-                          borderRadius: 2,
-                          bgcolor:
-                            theme.palette.mode === "dark"
-                              ? "rgba(255,255,255,0.03)"
-                              : "rgba(0,0,0,0.02)",
-                          border: `1px solid ${theme.palette.divider}`,
-                        }}
-                      >
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: "text.secondary",
-                            textTransform: "uppercase",
-                            letterSpacing: 1,
-                            fontWeight: 700,
-                            fontSize: "0.65rem",
-                            mb: 1.5,
-                            display: "block",
-                          }}
-                        >
+                      <Box sx={{
+                        p: 2.5,
+                        borderRadius: 2,
+                        bgcolor: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)",
+                        border: `1px solid ${theme.palette.divider}`
+                      }}>
+                        <Typography variant="caption" sx={{ color: "text.secondary", textTransform: "uppercase", letterSpacing: 1, fontWeight: 700, fontSize: "0.65rem", mb: 1.5, display: "block" }}>
                           Recipient
                         </Typography>
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", gap: 2 }}
-                        >
-                          <Avatar
-                            sx={{ width: 44, height: 44 }}
-                            src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face"
-                          />
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                          <Avatar sx={{ width: 44, height: 44 }} src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face" />
                           <Box>
-                            <Typography
-                              variant="body1"
-                              sx={{
-                                fontWeight: 600,
-                                mb: 0.25,
-                                fontSize: "0.95rem",
-                              }}
-                            >
+                            <Typography variant="body1" sx={{ fontWeight: 600, mb: 0.25, fontSize: "0.95rem" }}>
                               John Smith
                             </Typography>
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                color: "text.secondary",
-                                fontSize: "0.8rem",
-                              }}
-                            >
+                            <Typography variant="body2" sx={{ color: "text.secondary", fontSize: "0.8rem" }}>
                               Senior ICP Developer
                             </Typography>
                           </Box>
@@ -2069,6 +1905,7 @@ const DesktopLanding = () => {
       document.documentElement.style.scrollBehavior = "";
     };
   }, []);
+  console.log("tttt");
 
   return (
     <Box>

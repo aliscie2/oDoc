@@ -54,7 +54,7 @@ import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
 import LOGOSVG, { SECRUTYSVG } from "@/components/creature/logoSVG";
 import getckUsdcBalance from "@/utils/getBalance";
 import { canisterId } from "$/declarations/backend";
-import { backendActor, ckUSDCActor } from "@/utils/backendUtils";
+import { backendActor, getCkUSDCActor } from "@/utils/backendUtils";
 import { Helmet } from "react-helmet-async";
 import ProgressiveTutorialMobile from "./promiseTutorial";
 import LoginButton from "@/components/MainComponents/topNavBar/loginButton";
@@ -98,11 +98,11 @@ const HeroSection = ({ isMobile }) => {
     };
 
     const fetchStats = async () => {
-      console.log({ ckUSDCActor });
       try {
+        const actor = await getCkUSDCActor();
         const [snsResponse, balance] = await Promise.all([
           backendActor.get_sns_status(),
-          getckUsdcBalance(ckUSDCActor, canisterId),
+          getckUsdcBalance(actor, canisterId),
         ]);
 
         if (snsResponse.Ok) {
@@ -130,7 +130,7 @@ const HeroSection = ({ isMobile }) => {
     };
 
     fetchStats();
-  }, [isVisible, backendActor, ckUSDCActor]);
+  }, [isVisible, backendActor]);
 
   const statsData = [
     {
