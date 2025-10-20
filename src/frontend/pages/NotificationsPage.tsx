@@ -4,13 +4,11 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   AppBar,
   Box,
-  IconButton,
   List,
   Toolbar,
   Typography,
   Button,
 } from "@mui/material";
-import { ArrowBack } from "@mui/icons-material";
 import { RootState } from "@/redux/reducers";
 import { backendActor } from "@/utils/backendUtils";
 import { Notification as NotificationType } from "$/declarations/backend/backend.did";

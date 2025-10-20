@@ -8,7 +8,6 @@ import { ChatWindow } from "./components/ChatWindow";
 import { AIInput } from "./components/AIInput";
 import { useGoogleCalendar } from "../pages/calendar/googleAccounts/useGoogleCalendar";
 import { useLocation } from "react-router-dom";
-import { backendActor } from "@/utils/backendUtils";
 import { RootState } from "@/redux/reducers";
 
 const ChatContainer = () => {

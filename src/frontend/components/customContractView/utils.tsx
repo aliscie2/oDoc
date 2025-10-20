@@ -1,7 +1,6 @@
 import { Principal } from "@dfinity/principal";
 import { CPayment } from "$/declarations/backend/backend.did";
 import { randomString } from "../../DataProcessing/dataSamples";
-import { getAvailableStatusTransitions } from "./utils/promiseVlidationRules";
 
 export function createNewPromis(
   sender: Principal,

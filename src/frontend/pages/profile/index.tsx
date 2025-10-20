@@ -24,7 +24,6 @@ import { formatRelativeTime } from "../../utils/time";
 import EditProfile from "./editeProfile";
 import CopyButton from "../../components/MuiComponents/copyButton";
 import EmailComposer from "./sendEmail";
-import MarkdownMessage from "@/chatBot/markDownMessageRdnder";
 interface ProfilePageProps {
   profile: any;
   history: any;

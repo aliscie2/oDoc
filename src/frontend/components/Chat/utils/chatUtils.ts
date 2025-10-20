@@ -1,5 +1,4 @@
 import { Principal } from "@dfinity/principal";
-import { Chat } from "$/declarations/backend/backend.did";
 
 /**
  * Utility functions for chat operations

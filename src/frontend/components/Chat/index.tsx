@@ -24,7 +24,6 @@ import { CreateGroupDialog } from "./CreateGroupDialog";
 import { Chat } from "$/declarations/backend/backend.did";
 import { getUnreadCount } from "./utils";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Principal } from "@dfinity/principal";
 import { useIsMobile } from "./hooks/useIsMobile";
 import { useToast } from "./hooks/useToast";
 import { useChatErrorHandler } from "./hooks/useChatErrorHandler";

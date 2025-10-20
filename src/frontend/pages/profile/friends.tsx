@@ -3,8 +3,6 @@ import {
   List,
   ListItem,
   Box,
-  Typography,
-  Stack,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
