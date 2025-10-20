@@ -24,11 +24,8 @@ const ChatsPage: React.FC = () => {
   );
 
   // Use custom hooks
-  const {
-    getOtherUser,
-    handleOpenChat,
-    shouldShowSettings,
-  } = useChatListOperations({ profile });
+  const { getOtherUser, handleOpenChat, shouldShowSettings } =
+    useChatListOperations({ profile });
 
   const {
     isSettingsOpen,

@@ -127,8 +127,7 @@ export const ChatMobilePage: React.FC = () => {
         flexDirection: "column",
         bgcolor: "background.default",
         overflow: "hidden",
-                height: "90dvh", // Use dynamic viewport height
-                
+        height: "90dvh", // Use dynamic viewport height
       }}
     >
       <ChatHeader
@@ -156,8 +155,7 @@ export const ChatMobilePage: React.FC = () => {
           flexDirection: "column",
           minHeight: 0,
           overflow: "hidden",
-              pb: 7, // Add padding here for bottom navbar
-
+          pb: 7, // Add padding here for bottom navbar
         }}
       >
         <MessagesList

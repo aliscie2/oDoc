@@ -1,14 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  AppBar,
-  Box,
-  List,
-  Toolbar,
-  Typography,
-  Button,
-} from "@mui/material";
+import { AppBar, Box, List, Toolbar, Typography, Button } from "@mui/material";
 import { RootState } from "@/redux/reducers";
 import { backendActor } from "@/utils/backendUtils";
 import { Notification as NotificationType } from "$/declarations/backend/backend.did";
@@ -75,8 +68,7 @@ const NotificationsPage: React.FC = () => {
         height: { xs: "calc(100vh - 56px)", sm: "100vh" }, // Account for bottom nav on mobile
         bgcolor: "background.default",
         pb: { xs: 1, sm: 0 }, // Small padding on mobile to ensure no overlap
-                mx: { xs: 0, md: 16, lg: 29 }, // Add horizontal margin on desktop
-
+        mx: { xs: 0, md: 16, lg: 29 }, // Add horizontal margin on desktop
       }}
     >
       <AppBar
@@ -112,11 +104,17 @@ const NotificationsPage: React.FC = () => {
               p: 4,
             }}
           >
-            <NotificationsIcon sx={{ fontSize: 64, color: "text.secondary", mb: 2 }} />
+            <NotificationsIcon
+              sx={{ fontSize: 64, color: "text.secondary", mb: 2 }}
+            />
             <Typography variant="h6" color="text.secondary" gutterBottom>
               No notifications
             </Typography>
-            <Typography variant="body2" color="text.secondary" textAlign="center">
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              textAlign="center"
+            >
               You&apos;re all caught up! New notifications will appear here.
             </Typography>
           </Box>

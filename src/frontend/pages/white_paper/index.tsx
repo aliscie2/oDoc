@@ -35,7 +35,7 @@ import {
   Close as CloseIcon,
 } from "@mui/icons-material";
 import { Z_INDEX_BANNER } from "../../constants/zIndex";
-import { backendActor, ckUSDCActor } from "../../utils/backendUtils";
+import { backendActor, getCkUSDCActor } from "../../utils/backendUtils";
 import { canisterId } from "../../../declarations/backend";
 import getckUsdcBalance from "../../utils/getBalance";
 import StatsDisplay from "./StatsDisplay";
@@ -316,7 +316,8 @@ const SNSVoting: React.FC = () => {
     const fetchSNSStatus = async () => {
       try {
         if (backendActor) {
-          const odocBalance = await getckUsdcBalance(ckUSDCActor, canisterId);
+          const actor = await getCkUSDCActor();
+          const odocBalance = await getckUsdcBalance(actor, canisterId);
           setBalance(Number(odocBalance) / 1000000);
         }
 

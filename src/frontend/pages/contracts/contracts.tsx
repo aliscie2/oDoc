@@ -328,9 +328,7 @@ const ContractCard: React.FC<ContractCardProps> = ({
                 }}
               >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <HandshakeIcon
-                    sx={{ color: "white", fontSize: 18 }}
-                  />
+                  <HandshakeIcon sx={{ color: "white", fontSize: 18 }} />
                   <Typography variant="body2" fontWeight={500}>
                     Promises
                   </Typography>

@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  List,
-  ListItem,
-  Box,
-  useMediaQuery,
-  useTheme,
-} from "@mui/material";
+import { List, ListItem, Box, useMediaQuery, useTheme } from "@mui/material";
 import UserAvatarMenu from "../../components/MainComponents/UserAvatarMenu";
 import FriendshipButton from "../../components/FriendshipButton";
 import { useSelector } from "react-redux";
