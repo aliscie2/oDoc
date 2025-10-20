@@ -74,13 +74,6 @@ impl User {
         })
     }
 
-    pub fn get_user_from_principal(id: Principal) -> Option<User> {
-        PROFILE_STORE.with(|profile_store| {
-            let store = profile_store.borrow();
-            store.get(&id.to_string())
-        })
-    }
-
     pub fn user_profile() -> Option<Self> {
         let principal_id = ic_cdk::api::caller();
 

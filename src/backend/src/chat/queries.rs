@@ -1,6 +1,4 @@
 use crate::chat::{Chat, Message};
-use crate::user::User;
-use candid::{CandidType, Deserialize, Principal};
 use ic_cdk_macros::query;
 
 #[query]
