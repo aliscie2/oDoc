@@ -247,15 +247,6 @@ export type ExchangeType = { 'Withdraw' : null } |
 export type Execute = { 'Nft' : null } |
   { 'Usdt' : CPayment } |
   { 'Token' : null };
-export interface FEChat {
-  'id' : string,
-  'creator' : UserFE,
-  'members' : Array<Principal>,
-  'messages' : Array<Message>,
-  'name' : string,
-  'workspaces' : Array<string>,
-  'admins' : Array<UserFE>,
-}
 export interface FEFriend {
   'id' : string,
   'is_sender' : boolean,
@@ -722,7 +713,7 @@ export interface _SERVICE {
     [Array<FileNode>, Array<[string, Array<ContentNode>]>]
   >,
   'get_my_calendar' : ActorMethod<[], Calendar>,
-  'get_my_chats' : ActorMethod<[bigint], Array<FEChat>>,
+  'get_my_chats' : ActorMethod<[bigint], Array<Chat>>,
   'get_my_jobs' : ActorMethod<[], GetJobs>,
   'get_owners' : ActorMethod<[], Array<Principal>>,
   'get_post' : ActorMethod<[string], Result_13>,

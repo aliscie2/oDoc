@@ -230,15 +230,6 @@ type Exchange = record {
 };
 type ExchangeType = variant { Withdraw; Deposit; LocalSend; LocalReceive };
 type Execute = variant { Nft; Usdt : CPayment; Token };
-type FEChat = record {
-  id : text;
-  creator : UserFE;
-  members : vec principal;
-  messages : vec Message;
-  name : text;
-  workspaces : vec text;
-  admins : vec UserFE;
-};
 type FEFriend = record {
   id : text;
   is_sender : bool;
@@ -645,7 +636,7 @@ service : () -> {
       vec record { text; vec ContentNode },
     ) query;
   get_my_calendar : () -> (Calendar) query;
-  get_my_chats : (nat64) -> (vec FEChat) query;
+  get_my_chats : (nat64) -> (vec Chat) query;
   get_my_jobs : () -> (GetJobs) query;
   get_owners : () -> (vec principal) query;
   get_post : (text) -> (Result_13) query;

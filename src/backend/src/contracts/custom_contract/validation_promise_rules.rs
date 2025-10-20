@@ -142,6 +142,82 @@ pub const VALIDATION_RULES: &[ValidationRule] = &[
         actions: &["delete"],
     },
     ValidationRule {
+        name: "no_update_objected_promise",
+        validator: |payment, old_payment| {
+            if let Some(old) = old_payment {
+                if matches!(old.status, PaymentStatus::Objected(_)) && payment.sender == caller() {
+                    return Err(
+                        "Cannot update objected promises. Only receiver can resolve objections"
+                            .to_string(),
+                    );
+                }
+            }
+            Ok(())
+        },
+        actions: &["update"],
+    },
+    ValidationRule {
+        name: "no_delete_objected",
+        validator: |payment, _| {
+            if matches!(payment.status, PaymentStatus::Objected(_)) {
+                Err("Cannot delete objected promises. Resolve objection first".to_string())
+            } else {
+                Ok(())
+            }
+        },
+        actions: &["delete"],
+    },
+    ValidationRule {
+        name: "no_update_cancellation_requested",
+        validator: |payment, old_payment| {
+            if let Some(old) = old_payment {
+                if matches!(old.status, PaymentStatus::RequestCancellation)
+                    && payment.sender == caller()
+                {
+                    // Allow status change to Released (sender fulfilling promise instead of canceling)
+                    if !matches!(payment.status, PaymentStatus::Released) {
+                        return Err("Cannot update promise with pending cancellation request. Wait for receiver's response or release the payment".to_string());
+                    }
+                }
+            }
+            Ok(())
+        },
+        actions: &["update"],
+    },
+    ValidationRule {
+        name: "no_delete_cancellation_requested",
+        validator: |payment, _| {
+            if matches!(payment.status, PaymentStatus::RequestCancellation) {
+                Err("Cannot delete promise with pending cancellation request. Wait for receiver's response".to_string())
+            } else {
+                Ok(())
+            }
+        },
+        actions: &["delete"],
+    },
+    ValidationRule {
+        name: "no_update_confirmed_by_sender",
+        validator: |payment, old_payment| {
+            if let Some(old) = old_payment {
+                if matches!(
+                    old.status,
+                    PaymentStatus::Confirmed | PaymentStatus::ApproveHighPromise
+                ) && payment.sender == caller()
+                {
+                    // Allow only status changes to RequestCancellation or Released
+                    if !matches!(
+                        payment.status,
+                        PaymentStatus::RequestCancellation | PaymentStatus::Released
+                    ) {
+                        return Err("Cannot update confirmed promises. Only status change to cancellation request or release is allowed".to_string());
+                    }
+                }
+            }
+            Ok(())
+        },
+        actions: &["update"],
+    },
+    ValidationRule {
         name: "no_delete_confirmed",
         validator: |payment, _| {
             if matches!(

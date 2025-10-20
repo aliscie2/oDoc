@@ -457,14 +457,14 @@ export const idlFactory = ({ IDL }) => {
     'message' : IDL.Text,
     'chat_id' : IDL.Text,
   });
-  const FEChat = IDL.Record({
+  const Chat = IDL.Record({
     'id' : IDL.Text,
-    'creator' : UserFE,
+    'creator' : IDL.Principal,
     'members' : IDL.Vec(IDL.Principal),
     'messages' : IDL.Vec(Message),
     'name' : IDL.Text,
     'workspaces' : IDL.Vec(IDL.Text),
-    'admins' : IDL.Vec(UserFE),
+    'admins' : IDL.Vec(IDL.Principal),
   });
   const GetJobs = IDL.Record({
     'jobs' : IDL.Vec(Job),
@@ -577,15 +577,6 @@ export const idlFactory = ({ IDL }) => {
   });
   const Result_17 = IDL.Variant({ 'Ok' : UserProfile, 'Err' : IDL.Text });
   const Result_18 = IDL.Variant({ 'Ok' : IDL.Bool, 'Err' : IDL.Text });
-  const Chat = IDL.Record({
-    'id' : IDL.Text,
-    'creator' : IDL.Principal,
-    'members' : IDL.Vec(IDL.Principal),
-    'messages' : IDL.Vec(Message),
-    'name' : IDL.Text,
-    'workspaces' : IDL.Vec(IDL.Text),
-    'admins' : IDL.Vec(IDL.Principal),
-  });
   const Result_19 = IDL.Variant({ 'Ok' : IDL.Null, 'Err' : IDL.Null });
   const TableUpdates = IDL.Record({
     'id' : IDL.Text,
@@ -781,7 +772,7 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'get_my_calendar' : IDL.Func([], [Calendar], ['query']),
-    'get_my_chats' : IDL.Func([IDL.Nat64], [IDL.Vec(FEChat)], ['query']),
+    'get_my_chats' : IDL.Func([IDL.Nat64], [IDL.Vec(Chat)], ['query']),
     'get_my_jobs' : IDL.Func([], [GetJobs], ['query']),
     'get_owners' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
     'get_post' : IDL.Func([IDL.Text], [Result_13], ['query']),

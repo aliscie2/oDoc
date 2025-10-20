@@ -4,23 +4,10 @@ use crate::user::User;
 use candid::{CandidType, Deserialize, Principal};
 use ic_cdk_macros::query;
 
-#[derive(Clone, Debug, Deserialize, CandidType)]
-pub struct FEChat {
-    // FE == FrontEnd
-    pub id: String,
-    pub name: String,
-    // this used only for groups
-    pub admins: Vec<UserFE>,
-    // for private chats both users are admonish and members will be empty
-    pub members: Vec<Principal>,
-    // this used only for groups
-    pub messages: Vec<Message>,
-    pub creator: UserFE,
-    pub workspaces: Vec<String>,
-}
+
 
 #[query]
-fn get_my_chats(chats_length: usize) -> Vec<FEChat> {
+fn get_my_chats(chats_length: usize) -> Vec<Chat> {
     const PAGE_SIZE: usize = 15;
 
     let chats: Vec<Chat> = Chat::get_my_chats();
@@ -36,46 +23,7 @@ fn get_my_chats(chats_length: usize) -> Vec<FEChat> {
 
     // Get the slice starting from current length
     let page_chats = &chats[start_index..end_index];
-
-    let mut fe_chats: Vec<FEChat> = Vec::new();
-
-    for chat in page_chats {
-        let creator_user = match User::get_user_from_principal(chat.creator) {
-            Some(user) => user,
-            None => continue, // Skip this chat if user is not found
-        };
-        let creator_fe_user = UserFE {
-            id: creator_user.id,
-            name: creator_user.name,
-            photo: vec![],
-        };
-
-        let admins_fe: Vec<UserFE> = chat
-            .admins
-            .iter()
-            .filter_map(|admin_principal| User::get_user_from_principal(*admin_principal))
-            .map(|admin_user| UserFE {
-                id: admin_user.id,
-                name: admin_user.name,
-                // photo: admin_user.photo,
-                photo: vec![],
-            })
-            .collect();
-
-        let fe_chat = FEChat {
-            id: chat.id.clone(),
-            name: chat.name.clone(),
-            admins: admins_fe,
-            members: chat.members.clone(),
-            messages: chat.messages.clone(),
-            creator: creator_fe_user,
-            workspaces: chat.workspaces.clone(),
-        };
-
-        fe_chats.push(fe_chat);
-    }
-
-    fe_chats
+    page_chats.to_vec()
 }
 
 #[query]

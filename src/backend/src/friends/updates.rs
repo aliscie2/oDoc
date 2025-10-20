@@ -4,7 +4,7 @@ use ic_cdk_macros::update;
 
 use crate::friends::Friend;
 use crate::user::User;
-use crate::websocket::{FriendRequestNotification, NoteContent, Notification};
+use crate::websocket::{NoteContent, Notification};
 use crate::{websocket, FRIENDS_STORE};
 
 #[update]
