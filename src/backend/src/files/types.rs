@@ -54,8 +54,12 @@ impl Storable for FileNodeVector {
 
 impl FileNode {
     pub fn new(name: String, parent: Option<FileId>) -> Self {
-        // Similar ID generation
-        let id: FileId = COUNTER.fetch_add(1, Ordering::Relaxed).to_string();
+        Self::new_with_id(None, name, parent)
+    }
+
+    pub fn new_with_id(id: Option<FileId>, name: String, parent: Option<FileId>) -> Self {
+        // Use provided ID or generate a new one
+        let id: FileId = id.unwrap_or_else(|| COUNTER.fetch_add(1, Ordering::Relaxed).to_string());
         let file = FileNode {
             workspaces: vec![],
             id: id.clone(),
@@ -193,7 +197,7 @@ impl FileNode {
                 .files
                 .iter()
                 .position(|f| f.id == file_id)
-                .ok_or("File not found".to_string())?;
+                .ok_or_else(|| format!("File not found: {} (user has {} files)", file_id, user_files.files.len()))?;
 
             // First, update any parent's children list
             let old_parent_id = user_files.files[old_index].parent.clone();
@@ -219,7 +223,18 @@ impl FileNode {
     }
 
     pub fn save(&self) -> Result<Self, String> {
-        if caller().to_string() != self.author {
+        // Check if this is a new file (not in storage yet) or an update
+        let is_new_file = USER_FILES.with(|files_store| {
+            let principal_id = ic_cdk::api::caller();
+            let user_files_vec = files_store.borrow().get(&principal_id.to_text());
+            
+            user_files_vec
+                .map(|files| !files.files.iter().any(|f| f.id == self.id))
+                .unwrap_or(true)
+        });
+
+        // For existing files, check permissions
+        if !is_new_file && caller().to_string() != self.author {
             let can_update = self.check_permission(ShareFilePermission::CanUpdate);
             if !can_update {
                 return Err("You don't have permission to update this file".to_string());
