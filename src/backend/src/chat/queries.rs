@@ -1,10 +1,7 @@
 use crate::chat::{Chat, Message};
-use crate::discover::UserFE;
 use crate::user::User;
 use candid::{CandidType, Deserialize, Principal};
 use ic_cdk_macros::query;
-
-
 
 #[query]
 fn get_my_chats(chats_length: usize) -> Vec<Chat> {
