@@ -36,7 +36,6 @@ const useWorkspaceOperations = () => {
   const { workspaces, currentWorkspace, profile } = useSelector(
     (state: { filesState: FilesState }) => state.filesState,
   );
-  console.log({currentWorkspace})
 
   const selectWorkspace = useCallback(
     (workspace: Workspace) => {

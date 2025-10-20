@@ -53,9 +53,8 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
   displayId = false,
   maxWords = 50,
   forceDisplayName = false,
-  variant="body2"
+  variant = "body2",
 }) => {
-  console.log("UserAvatarMenu", { initialUser, user_id });
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
@@ -65,7 +64,7 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
   );
 
   const [user, setUser] = useState<User | undefined>(initialUser);
-  console.log("UserAvatarMenu", { user });
+
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [rating, setRating] = useState<number>(0);
@@ -293,15 +292,15 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
           displayId) && (
           <Box sx={{ flex: 1, minWidth: 0 }}>
             {(dispalyName || forceDisplayName) && (
-              <Typography 
-              
-              variant={variant}
-                sx={{ 
+              <Typography
+                variant={variant}
+                sx={{
                   fontWeight: 500,
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
-                }}>
+                }}
+              >
                 {forceDisplayName
                   ? user.name || "Anonymous"
                   : profile?.id === user.id

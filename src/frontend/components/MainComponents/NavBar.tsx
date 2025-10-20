@@ -31,6 +31,7 @@ import {
   LightMode as LightModeIcon,
 } from "@mui/icons-material";
 import { useAuth } from "@/hooks/useAuth";
+import { RootState } from "@/redux/reducers";
 // Styled components for theme-aware styling
 const StyledDrawerPaper = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
@@ -88,11 +89,13 @@ const ContentWrapper = styled(Box)(({ theme }) => ({
 const NavBar = (props: any) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const { files, profile_history, currentWorkspace } = useSelector(
-    (state: any) => state.filesState,
+  const { files, currentWorkspace } = useSelector(
+    (state: RootState) => state.filesState,
   );
   const dispatch = useDispatch();
-  const { isNavOpen, isDarkMode } = useSelector((state: any) => state.uiState);
+  const { isNavOpen, isDarkMode } = useSelector(
+    (state: RootState) => state.uiState,
+  );
   const { isLoggedIn } = useAuth();
   const [defaultItems, setDefaultItems] = useState([]);
 
@@ -160,9 +163,11 @@ const NavBar = (props: any) => {
 
   useEffect(() => {
     let x = buildTree(files);
-    if (currentWorkspace?.id != "default") {
-      x = x.filter((f) => f.workspaces.includes(currentWorkspace.id));
+
+    if (currentWorkspace?.id && currentWorkspace.id !== "default") {
+      x = x.filter((f) => f.workspaces?.includes(currentWorkspace.id));
     }
+
     setDefaultItems(x);
   }, [files, currentWorkspace]);
 

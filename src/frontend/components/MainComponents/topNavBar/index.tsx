@@ -120,7 +120,6 @@ const useNavigationState = () => {
   };
 };
 
-
 // Navigation item factory
 const createNavItem = (key, config, state, handlers) => {
   const itemConfigs = {
@@ -405,12 +404,15 @@ export default function TopNavBar() {
         ));
     };
 
-  const location = useLocation();
-  
-  const includesAny = (str, arr) => arr.some(item => str.includes(item));
-  const hideToggleNav = includesAny(location.pathname, ["notification", "chat", "chsts"]);
+    const location = useLocation();
 
-console.log("Render");
+    const includesAny = (str, arr) => arr.some((item) => str.includes(item));
+    const hideToggleNav = includesAny(location.pathname, [
+      "notification",
+      "chat",
+      "chsts",
+    ]);
+
     return (
       <>
         {!hideToggleNav && state.isLoggedIn && (
@@ -599,7 +601,7 @@ console.log("Render");
       </Toolbar>
     );
   };
-console.log("TopNavBar")
+  
   return (
     <>
       <AppBar
@@ -614,7 +616,7 @@ console.log("TopNavBar")
         {state.isFetching && <LinearProgress />}
         <DesktopNav />
       </AppBar>
-      { state.isMobile && <MobileNav />}
+      {state.isMobile && <MobileNav />}
     </>
   );
 }
