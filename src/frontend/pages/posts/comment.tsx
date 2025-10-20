@@ -167,7 +167,7 @@ const Comment: React.FC<ICommentProps> = ({ post, onUpdate }) => {
   return (
     <CommentContainer>
       <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-        <UserAvatarMenu sx={{ mr: 2 }} user={post.creator} />
+        <UserAvatarMenu sx={{ mr: 2 }} user={post.creator.id} />
         <Box>
           <Typography variant="caption" sx={{ color: "#9CA3AF" }}>
             {post.creator.name}

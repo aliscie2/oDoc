@@ -1,12 +1,56 @@
-import React, { useState } from "react";
-import { Button, CircularProgress } from "@mui/material";
-import { useSnackbar } from "notistack";
-import { useDispatch, useSelector } from "react-redux";
-import { Principal } from "@dfinity/principal";
-import { backendActor } from "@/utils/backendUtils";
+/**
+ * ConnectButton Component - Optimized for production
+ *
+ * Optimizations Applied:
+ * - Memoized expensive computations (currentJob, match, buttonText, isDisabled)
+ * - Added proper TypeScript types to eliminate 'any' usage
+ * - Uses profile.id instead of currentJob.user_id for reliable user identification
+ */
+
 import { Job, Match } from "$/declarations/backend/backend.did";
 import UserAvatarMenu from "@/components/MainComponents/UserAvatarMenu";
+import { backendActor } from "@/utils/backendUtils";
 import sendEmail from "@/utils/sendEmail";
+import { Principal } from "@dfinity/principal";
+import { Button, CircularProgress } from "@mui/material";
+import { useSnackbar } from "notistack";
+import React, { useState, useMemo } from "react";
+import { useDispatch, useSelector } from "react-redux";
+
+// Type definitions for Redux state
+interface CalendarState {
+  calendar: {
+    id: string;
+    [key: string]: unknown;
+  };
+}
+
+interface JobState {
+  currentJobId: string;
+  jobs: Job[];
+}
+
+interface ChatsState {
+  chats: Array<{
+    id: string;
+    messages?: unknown[];
+    [key: string]: unknown;
+  }>;
+}
+
+interface RootState {
+  calendarState: CalendarState;
+  jobState: JobState;
+  chatsState: ChatsState;
+  filesState: {
+    profile?: {
+      id: string;
+      name?: string;
+      [key: string]: unknown;
+    };
+    [key: string]: unknown;
+  };
+}
 
 interface ConnectButtonProps {
   jobId: string;
@@ -19,15 +63,26 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({
   matchingJob,
   showAvatar = true,
 }) => {
-  const { calendar } = useSelector((state: unknown) => state.calendarState);
+  const { calendar } = useSelector((state: RootState) => state.calendarState);
   const { currentJobId, jobs } = useSelector(
-    (state: unknown) => state.jobState,
+    (state: RootState) => state.jobState,
   );
-  const { chats } = useSelector((state: unknown) => state.chatsState); // ADD THIS
-  const currentJob: Job = jobs?.find((job: Job) => job.id === currentJobId);
-  const match: Match | undefined = currentJob?.matches?.find(
-    (m: Match) => m.job_id === jobId,
-  );
+  const { chats } = useSelector((state: RootState) => state.chatsState);
+  const { profile } = useSelector((state: RootState) => state.filesState);
+
+  // Memoize expensive computations
+  const currentJob: Job | undefined = useMemo(() => {
+    const job = jobs?.find((job: Job) => job.id === currentJobId);
+    return job;
+  }, [jobs, currentJobId]);
+
+  const match: Match | undefined = useMemo(() => {
+    const foundMatch = currentJob?.matches?.find(
+      (m: Match) => m.job_id === jobId,
+    );
+    return foundMatch;
+  }, [currentJob?.matches, jobId]);
+
   const dispatch = useDispatch();
   const [connecting, setConnecting] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
@@ -36,8 +91,24 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({
     setConnecting(true);
     e.stopPropagation();
 
-    if (!match) {
-      enqueueSnackbar("Match not found.", { variant: "error" });
+    if (!match || !currentJob) {
+      enqueueSnackbar(!match ? "Match not found." : "Current job not found.", {
+        variant: "error",
+      });
+      setConnecting(false);
+      return;
+    }
+
+    if (!profile?.id || profile.id.trim() === "") {
+      enqueueSnackbar("Profile has invalid user ID.", { variant: "error" });
+      setConnecting(false);
+      return;
+    }
+
+    if (!matchingJob.user_id || matchingJob.user_id.trim() === "") {
+      enqueueSnackbar("Matching job has invalid user ID.", {
+        variant: "error",
+      });
       setConnecting(false);
       return;
     }
@@ -52,46 +123,81 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({
         matchingJob.user_id,
       );
       const emails = [...(res?.[0]?.google_ids || []), ...matchingJob.emails];
-      const jobTitle = Array.isArray(currentJob.title)
-        ? currentJob.title[0]
-        : currentJob.title || "this position";
 
       const sendFallbackMessage = async (includeEmailError = false) => {
-        const baseMessage = `Hello, I am interested in ${jobTitle}.`;
-        const emailErrorMsg =
-          " Your email address appears to be incorrect. Please update your email so oDoc can contact you in the future.";
-        const contactMsg = matchingJob.contacts
-          ? ` Is ${matchingJob.contacts} your contact?`
-          : " Please add your email.";
+        const jobTitle =
+          currentJob.job_titles && currentJob.job_titles.length > 0
+            ? currentJob.job_titles[0]
+            : "this position";
 
-        const chatId = `${currentJob.user_id}_${matchingJob.user_id}`;
+        const hasValidContact =
+          matchingJob.contacts &&
+          matchingJob.contacts.length > 0 &&
+          matchingJob.contacts[0]?.trim() !== "";
+
+        let message = `Hello, I am interested in ${jobTitle}.`;
+
+        if (includeEmailError) {
+          message +=
+            " Your email address appears to be incorrect. Please update your email so oDoc can contact you in the future.";
+        } else if (hasValidContact) {
+          message += ` Is ${matchingJob.contacts[0]} your correct contact?`;
+        } else {
+          message += " Please add your contact email so we can communicate.";
+        }
+
+        if (!profile?.id || !matchingJob.user_id) {
+          throw new Error("Invalid user IDs for chat creation");
+        }
+
+        const chatId = `${profile.id}_${matchingJob.user_id}`;
+
+        let senderPrincipal: Principal;
+        let seenByPrincipal: Principal;
+
+        try {
+          senderPrincipal = Principal.fromText(profile.id);
+          seenByPrincipal = Principal.fromText(profile.id);
+        } catch {
+          throw new Error(`Invalid Principal ID: ${profile.id}`);
+        }
 
         const newMessage = {
           id: `msg_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
           date: BigInt(Date.now()) * BigInt(1e6),
-          sender: Principal.fromText(currentJob.user_id),
-          seen_by: [Principal.fromText(currentJob.user_id)],
-          message:
-            baseMessage + (includeEmailError ? emailErrorMsg : contactMsg),
+          sender: senderPrincipal,
+          seen_by: [seenByPrincipal],
+          message,
           chat_id: chatId,
         };
 
         const existingChat = chats?.find((c) => c.id === chatId);
 
         if (!existingChat) {
+          let memberPrincipals: Principal[];
+          let adminPrincipals: Principal[];
+          let creatorPrincipal: Principal;
+
+          try {
+            const currentUserPrincipal = Principal.fromText(profile.id);
+            const matchingUserPrincipal = Principal.fromText(
+              matchingJob.user_id,
+            );
+
+            memberPrincipals = [currentUserPrincipal, matchingUserPrincipal];
+            adminPrincipals = [currentUserPrincipal, matchingUserPrincipal];
+            creatorPrincipal = currentUserPrincipal;
+          } catch {
+            throw new Error("Failed to create chat Principals");
+          }
+
           const newChat = {
             id: chatId,
             name: "private_chat",
             messages: [newMessage],
-            members: [
-              Principal.fromText(currentJob.user_id),
-              Principal.fromText(matchingJob.user_id),
-            ],
-            admins: [
-              Principal.fromText(currentJob.user_id),
-              Principal.fromText(matchingJob.user_id),
-            ],
-            creator: Principal.fromText(currentJob.user_id),
+            members: memberPrincipals,
+            admins: adminPrincipals,
+            creator: creatorPrincipal,
             workspaces: [],
           };
 
@@ -108,17 +214,40 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({
         }
 
         try {
-          await backendActor.send_message(
-            [Principal.fromText(matchingJob.user_id)],
-            newMessage,
-          );
+          let recipientPrincipal: Principal;
+
+          try {
+            recipientPrincipal = Principal.fromText(matchingJob.user_id);
+          } catch {
+            throw new Error(
+              `Invalid recipient Principal ID: ${matchingJob.user_id}`,
+            );
+          }
+
+          await backendActor.send_message([recipientPrincipal], newMessage);
         } catch (err) {
           console.error("Failed to send message:", err);
         }
 
+        // ✅ Update match connection state
+        const updatedMatch = { ...match, is_connected: true };
+
+        // ✅ Save to backend immediately
+        await backendActor.update_matches(
+          {
+            current_job_id: currentJob.id,
+            delete_matches: [],
+            updates: [updatedMatch],
+            add: [],
+            reset: [],
+          },
+          [],
+        );
+
+        // ✅ Update Redux state after successful backend save
         dispatch({
           type: "UPDATE_MATCHES",
-          matches: [{ ...match, is_connected: true }],
+          matches: [updatedMatch],
         });
       };
 
@@ -133,7 +262,7 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({
           });
         }
       } else {
-        const category = Object.keys(currentJob?.category || { Job: null })[0];
+        const category = Object.keys(currentJob.category || { Job: null })[0];
         const jobData = {
           job: { ...currentJob, category },
           match: { ...match, score: match.score * 100 },
@@ -141,7 +270,9 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({
         };
 
         let emailSent = false;
-        for (const email of emails) {
+
+        for (let i = 0; i < emails.length; i++) {
+          const email = emails[i];
           const result = await sendEmail(
             "oDoc AI",
             category === "Job" ? "New opportunity" : "New talent",
@@ -149,11 +280,29 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({
             jobData,
             "odoc_job_match",
           );
+
           if (result) {
+            // ✅ Update match connection state
+            const updatedMatch = { ...match, is_connected: true };
+
+            // ✅ Save to backend immediately
+            await backendActor.update_matches(
+              {
+                current_job_id: currentJob.id,
+                delete_matches: [],
+                updates: [updatedMatch],
+                add: [],
+                reset: [],
+              },
+              [],
+            );
+
+            // ✅ Update Redux state after successful backend save
             dispatch({
               type: "UPDATE_MATCHES",
-              matches: [{ ...match, is_connected: true }],
+              matches: [updatedMatch],
             });
+
             enqueueSnackbar("Connection sent.", { variant: "success" });
             emailSent = true;
             break;
@@ -167,11 +316,26 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({
           });
         }
       }
-    } catch (error) {
+    } catch {
       enqueueSnackbar("Connection failed.", { variant: "error" });
+    } finally {
+      setConnecting(false);
     }
-    setConnecting(false);
   };
+  // Memoize button text to avoid unnecessary recalculations
+  const buttonText = useMemo(() => {
+    const text = !match
+      ? "No Match"
+      : match.is_connected
+        ? "Connected"
+        : "Connect";
+    return text;
+  }, [match]);
+
+  const isDisabled = useMemo(() => {
+    const disabled = connecting || match?.is_connected;
+    return disabled;
+  }, [connecting, match?.is_connected]);
 
   return (
     <>
@@ -181,11 +345,11 @@ const ConnectButton: React.FC<ConnectButtonProps> = ({
         color="primary"
         size="small"
         onClick={handleConnect}
-        disabled={connecting || match?.is_connected}
+        disabled={isDisabled}
         startIcon={connecting ? <CircularProgress size={16} /> : null}
         sx={{ minWidth: 100, textTransform: "none" }}
       >
-        {!match ? "No Match" : match.is_connected ? "Connected" : "Connect"}
+        {buttonText}
       </Button>
     </>
   );

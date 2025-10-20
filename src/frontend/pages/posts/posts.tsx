@@ -1,3 +1,9 @@
+// Backend optimization: For posts by the same creator, only the first post contains
+// the full photo data. Subsequent posts from the same creator have an empty photo array.
+// This reduces bandwidth significantly (e.g., instead of sending 50KB * 3 posts = 150KB,
+// we send 50KB + 0KB + 0KB = 50KB). The frontend should cache creator photos and reuse
+// them across all posts by the same creator based on the creator.id.
+
 import { useAuth } from "@/hooks/useAuth";
 import { RootState } from "@/redux/reducers";
 import { backendActor } from "@/utils/backendUtils";
@@ -32,7 +38,7 @@ const Posts: React.FC = () => {
           BigInt(0),
           BigInt(10),
         );
-        console.log("Fetched posts:", fetchedPosts);
+        console.log("Fetched posts:", { fetchedPosts });
 
         if (fetchedPosts.length > 0) {
           dispatch({ type: "ADD_POSTS", posts: fetchedPosts });

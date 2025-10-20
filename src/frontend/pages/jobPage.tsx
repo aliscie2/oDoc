@@ -135,30 +135,29 @@ const JobPage = () => {
           if (currentJob) {
             setJob(currentJob);
 
-            // Generate SEO-friendly thumbnail
-            const jobTitle = currentJob.job_titles?.[0] || "Job Opportunity";
-            const jobDescription =
-              currentJob.description ||
-              "Explore this job opportunity on ICPJobs";
-            const jobSkills = currentJob.skills || [];
-
-            // Setup complete SEO for the job page
-            const generateThumbnail = async (
-              userPhoto?: Uint8Array | number[],
-            ) => {
+            const generateThumbnail = async (userData?: User) => {
               try {
-                // Use the consolidated SEO component
-                const thumbnailUrl = await jobSEO.setupJobSEO(currentJob, {
-                  ...user,
-                  photo: userPhoto,
-                });
+                console.log(
+                  "🔍 Generating thumbnail for user:",
+                  userData?.name,
+                );
+                console.log(
+                  "🔍 User photo (blob URL):",
+                  userData?.photo?.substring(0, 50),
+                );
 
-                setThumbnailUrl(complexThumbnailUrl || simpleThumbnailUrl);
+                const thumbnailUrl = await jobSEO.setupJobSEO(
+                  currentJob,
+                  userData || null,
+                );
 
-                // Set the thumbnail URL for display
+                console.log(
+                  "✅ Thumbnail generated:",
+                  thumbnailUrl.substring(0, 50),
+                );
                 setThumbnailUrl(thumbnailUrl);
               } catch (error) {
-                console.error("Failed to setup SEO:", error);
+                console.error("❌ Failed to setup SEO:", error);
                 setThumbnailUrl("");
               }
             };
@@ -167,9 +166,11 @@ const JobPage = () => {
               const userResponse = await backendActor.get_user(
                 currentJob.user_id,
               );
+              console.log("🔍 User response:", userResponse);
+
               if ("Ok" in userResponse) {
                 setUser(userResponse.Ok);
-                await generateThumbnail(userResponse.Ok.photo);
+                await generateThumbnail(userResponse.Ok);
               } else {
                 await generateThumbnail();
               }

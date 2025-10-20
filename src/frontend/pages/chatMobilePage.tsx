@@ -2,7 +2,7 @@
 import React, { useRef, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { Box } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { MessagesList } from "@/components/Chat/MessagesList";
 import { ChatSettingsDialog } from "@/components/Chat/ChatSettingsDialog";
 import { ChatHeader } from "@/components/Chat/components/ChatHeader";
@@ -25,7 +25,6 @@ export const ChatMobilePage: React.FC = () => {
 
   const chat = chats.find((c) => c.id === chatId);
 
-  // Use custom hooks
   const {
     isSettingsOpen,
     openSettings,
@@ -109,7 +108,7 @@ export const ChatMobilePage: React.FC = () => {
           justifyContent: "center",
           alignItems: "center",
           height: "100vh",
-          pb: 0,
+          pb: 7,
         }}
       >
         <Typography>Chat not found</Typography>
@@ -126,12 +125,12 @@ export const ChatMobilePage: React.FC = () => {
       sx={{
         display: "flex",
         flexDirection: "column",
-        height: "100vh",
         bgcolor: "background.default",
         overflow: "hidden",
+                height: "90dvh", // Use dynamic viewport height
+                
       }}
     >
-      {/* Fixed Header */}
       <ChatHeader
         title={isPrivateChat ? "Chat" : chat.name}
         showSettings={showSettings}
@@ -150,7 +149,6 @@ export const ChatMobilePage: React.FC = () => {
         }}
       />
 
-      {/* Scrollable Messages Area */}
       <Box
         sx={{
           flex: 1,
@@ -158,6 +156,8 @@ export const ChatMobilePage: React.FC = () => {
           flexDirection: "column",
           minHeight: 0,
           overflow: "hidden",
+              pb: 7, // Add padding here for bottom navbar
+
         }}
       >
         <MessagesList
@@ -173,7 +173,6 @@ export const ChatMobilePage: React.FC = () => {
         />
       </Box>
 
-      {/* Fixed Input */}
       <Box
         sx={{
           flexShrink: 0,

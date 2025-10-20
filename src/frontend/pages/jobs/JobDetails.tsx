@@ -13,6 +13,9 @@ import {
   TextField,
   Tooltip,
   LinearProgress,
+  IconButton,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -21,8 +24,11 @@ import DescriptionIcon from "@mui/icons-material/Description";
 import EmailIcon from "@mui/icons-material/Email";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import SecurityIcon from "@mui/icons-material/Security";
+import CloseIcon from "@mui/icons-material/Close";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { formatRelativeTime } from "@/utils/time";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { backendActor } from "@/utils/backendUtils";
 import MarkdownMessage from "@/chatBot/markDownMessageRdnder";
 import { debounce } from "lodash";
@@ -32,9 +38,18 @@ interface JobDetailsProps {
   job: Job;
   match: Match | null;
   showEmails?: boolean;
+  onClose?: () => void;
 }
 
-const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
+const JobDetails: React.FC<JobDetailsProps> = ({
+  job,
+  match,
+  showEmails,
+  onClose,
+}) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const navigate = useNavigate();
   const [expandedSection, setExpandedSection] = React.useState<string | false>(
     "basic",
   );
@@ -60,6 +75,32 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
 
   const canEdit = Object.keys(job.category)[0] !== "Talent";
   const dispatch = useDispatch();
+
+  // Generic close handler that works with or without onClose prop
+  const handleClose = React.useCallback(() => {
+    if (onClose) {
+      onClose();
+    } else {
+      // Fallback: navigate back or to jobs list
+      if (window.history.length > 1) {
+        navigate(-1);
+      } else {
+        navigate("/jobs");
+      }
+    }
+  }, [onClose, navigate]);
+
+  // Keyboard support for ESC key
+  React.useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        handleClose();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [handleClose]);
 
   const handleSaveCoverLetter = async () => {
     if (!match) return;
@@ -233,8 +274,83 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
         mx: "auto",
         px: { xs: 2, sm: 3, md: 4 },
         py: { xs: 2, sm: 3 },
+        position: "relative",
       }}
     >
+      {/* Close Button - Always visible and accessible */}
+      {
+        <Box
+          sx={{
+            position: { xs: "sticky", sm: "absolute" },
+            top: { xs: 0, sm: 16 },
+            right: { xs: 0, sm: 16 },
+            zIndex: 1000,
+            mb: { xs: 2, sm: 0 },
+            display: "flex",
+            justifyContent: { xs: "space-between", sm: "flex-end" },
+            alignItems: "center",
+            bgcolor: { xs: "background.paper", sm: "transparent" },
+            py: { xs: 1, sm: 0 },
+            px: { xs: 1, sm: 0 },
+            borderRadius: { xs: 1, sm: 0 },
+            boxShadow: { xs: "0 2px 8px rgba(0,0,0,0.1)", sm: "none" },
+          }}
+        >
+          {/* Mobile: Back button with text */}
+          {isMobile && (
+            <Button
+              startIcon={<ArrowBackIcon />}
+              onClick={handleClose}
+              variant="text"
+              sx={{
+                color: "text.primary",
+                fontWeight: 600,
+                textTransform: "none",
+              }}
+            >
+              Back
+            </Button>
+          )}
+
+          {/* Desktop: Close X button */}
+          {!isMobile && (
+            <IconButton
+              onClick={handleClose}
+              sx={{
+                bgcolor: "background.paper",
+                border: "1px solid",
+                borderColor: "divider",
+                boxShadow: 2,
+                "&:hover": {
+                  bgcolor: "action.hover",
+                  transform: "scale(1.05)",
+                },
+                transition: "all 0.2s ease",
+              }}
+              size="small"
+            >
+              <CloseIcon />
+            </IconButton>
+          )}
+
+          {/* Mobile: Close X button as secondary option */}
+          {isMobile && (
+            <IconButton
+              onClick={handleClose}
+              sx={{
+                bgcolor: "action.hover",
+                "&:hover": {
+                  bgcolor: "action.selected",
+                },
+              }}
+              size="small"
+            >
+              <CloseIcon />
+            </IconButton>
+          )}
+        </Box>
+      }
+
       <Paper
         elevation={0}
         sx={{
@@ -243,6 +359,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({ job, match, showEmails }) => {
           bgcolor: "background.paper",
           border: "1px solid",
           borderColor: "divider",
+          mt: { xs: onClose ? 0 : 0, sm: 0 },
         }}
       >
         {/* Header Section */}

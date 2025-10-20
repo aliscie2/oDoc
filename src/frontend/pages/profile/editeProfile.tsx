@@ -117,12 +117,17 @@ const EditProfile = ({ setIsEditing, profile, onCancel = false }) => {
       if (result.Ok) {
         enqueueSnackbar("Profile updated successfully", { variant: "success" });
 
-        const profileWithBlobUrl = {
+        const updatedProfile = {
           ...result.Ok,
-          photo: photo ? convertToBlobLink(result.Ok.photo) : result.Ok.photo,
+          photo:
+            result.Ok.photo?.length > 0
+              ? convertToBlobLink(result.Ok.photo)
+              : photo
+                ? photoPreview
+                : result.Ok.photo,
         };
 
-        dispatch({ type: "UPDATE_PROFILE", profile: profileWithBlobUrl });
+        dispatch({ type: "UPDATE_PROFILE", profile: updatedProfile });
         setIsUpdating(false);
         setIsEditing(false);
       } else if (result.Err) {

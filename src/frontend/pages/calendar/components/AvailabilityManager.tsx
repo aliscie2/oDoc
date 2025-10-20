@@ -13,10 +13,8 @@ import {
   FormControl,
   InputLabel,
   Select,
-  Chip,
   Stack,
   Typography,
-  Box,
   Switch,
   FormControlLabel,
   Divider,
@@ -47,7 +45,8 @@ interface Availability {
 const AvailabilityManager: React.FC = () => {
   const dispatch = useDispatch();
   const { calendar } = useSelector((state: any) => state.calendarState);
-  const { profile } = useSelector((state: any) => state.filesState);
+  const { profile } = useSelector((state: unknown) => state.filesState);
+  console.log({ calendar });
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -118,9 +117,33 @@ const AvailabilityManager: React.FC = () => {
     }
   };
 
-  const formatDays = (days: number[]) => {
+  const formatDays = (days: number[] | Uint32Array) => {
     const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-    return days.map((day) => dayNames[day - 1]).join(", ");
+    // Convert Uint32Array to regular array if needed
+    const daysArray = Array.from(days);
+
+    // Handle special cases for better UX
+    if (daysArray.length === 7) {
+      return "Every day";
+    }
+    if (
+      daysArray.length === 5 &&
+      daysArray.every((day) => day >= 1 && day <= 5)
+    ) {
+      return "Weekdays";
+    }
+    if (
+      daysArray.length === 2 &&
+      daysArray.includes(6) &&
+      daysArray.includes(7)
+    ) {
+      return "Weekends";
+    }
+
+    return daysArray
+      .map((day) => dayNames[day - 1])
+      .filter(Boolean)
+      .join(", ");
   };
 
   return (
@@ -145,20 +168,32 @@ const AvailabilityManager: React.FC = () => {
           <MenuItem
             key={availability.id}
             onClick={() => handleDialogOpen(availability)}
+            sx={{ py: 1.5 }}
           >
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <Typography>
-                {availability.title[0] || "Untitled"}
-                {availability.schedule_type.WeeklyRecurring && (
-                  <Typography component="span" color="text.secondary">
-                    {" • "}
-                    {formatDays(
-                      availability.schedule_type.WeeklyRecurring.days,
-                    )}
-                  </Typography>
+            <Stack
+              direction="column"
+              alignItems="flex-start"
+              spacing={0.5}
+              sx={{ width: "100%" }}
+            >
+              <Stack
+                direction="row"
+                alignItems="center"
+                spacing={1}
+                sx={{ width: "100%" }}
+              >
+                <Typography variant="body2" fontWeight="medium">
+                  {availability.title[0] || "Untitled"}
+                </Typography>
+                {availability.is_blocked && (
+                  <DoNotDisturbIcon color="error" fontSize="small" />
                 )}
-              </Typography>
-              {availability.is_blocked && <DoNotDisturbIcon color="error" />}
+              </Stack>
+              {availability.schedule_type.WeeklyRecurring && (
+                <Typography variant="caption" color="text.secondary">
+                  {formatDays(availability.schedule_type.WeeklyRecurring.days)}
+                </Typography>
+              )}
             </Stack>
           </MenuItem>
         ))}
@@ -208,59 +243,119 @@ const AvailabilityManager: React.FC = () => {
               />
 
               {selectedAvailability.schedule_type.WeeklyRecurring && (
-                <FormControl fullWidth>
-                  <InputLabel>Days</InputLabel>
-                  <Select
-                    multiple
-                    value={
-                      selectedAvailability.schedule_type.WeeklyRecurring.days
-                    }
-                    onChange={(e) => {
-                      const days = e.target.value as number[];
-                      setSelectedAvailability({
-                        ...selectedAvailability,
-                        schedule_type: {
-                          WeeklyRecurring: {
-                            ...selectedAvailability.schedule_type
-                              .WeeklyRecurring!,
-                            days: days,
+                <>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Quick Presets
+                  </Typography>
+                  <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => {
+                        setSelectedAvailability({
+                          ...selectedAvailability,
+                          schedule_type: {
+                            WeeklyRecurring: {
+                              ...selectedAvailability.schedule_type
+                                .WeeklyRecurring!,
+                              days: [1, 2, 3, 4, 5, 6, 7],
+                            },
                           },
-                        },
-                      });
-                    }}
-                    disabled={!isOwner}
-                    renderValue={(selected) => (
-                      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-                        {(selected as number[]).map((day) => (
-                          <Chip
-                            key={day}
-                            label={
-                              ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][
-                                day - 1
-                              ]
-                            }
-                          />
-                        ))}
-                      </Box>
-                    )}
-                  >
-                    {[1, 2, 3, 4, 5, 6, 7].map((day) => (
-                      <MenuItem key={day} value={day}>
-                        {
-                          [
-                            "Monday",
-                            "Tuesday",
-                            "Wednesday",
-                            "Thursday",
-                            "Friday",
-                            "Saturday",
-                            "Sunday",
-                          ][day - 1]
-                        }
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                        });
+                      }}
+                      disabled={!isOwner}
+                    >
+                      Every day
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => {
+                        setSelectedAvailability({
+                          ...selectedAvailability,
+                          schedule_type: {
+                            WeeklyRecurring: {
+                              ...selectedAvailability.schedule_type
+                                .WeeklyRecurring!,
+                              days: [1, 2, 3, 4, 5],
+                            },
+                          },
+                        });
+                      }}
+                      disabled={!isOwner}
+                    >
+                      Weekdays
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => {
+                        setSelectedAvailability({
+                          ...selectedAvailability,
+                          schedule_type: {
+                            WeeklyRecurring: {
+                              ...selectedAvailability.schedule_type
+                                .WeeklyRecurring!,
+                              days: [6, 7],
+                            },
+                          },
+                        });
+                      }}
+                      disabled={!isOwner}
+                    >
+                      Weekends
+                    </Button>
+                  </Stack>
+
+                  <FormControl fullWidth>
+                    <InputLabel>Custom Days</InputLabel>
+                    <Select
+                      multiple
+                      value={Array.from(
+                        selectedAvailability.schedule_type.WeeklyRecurring
+                          .days || [],
+                      )}
+                      onChange={(e) => {
+                        const days = e.target.value as number[];
+                        setSelectedAvailability({
+                          ...selectedAvailability,
+                          schedule_type: {
+                            WeeklyRecurring: {
+                              ...selectedAvailability.schedule_type
+                                .WeeklyRecurring!,
+                              days: days,
+                            },
+                          },
+                        });
+                      }}
+                      disabled={!isOwner}
+                      renderValue={(selected) => {
+                        const selectedArray = Array.from(selected as number[]);
+                        return (
+                          <Typography variant="body2" color="text.secondary">
+                            {formatDays(selectedArray)}
+                          </Typography>
+                        );
+                      }}
+                    >
+                      {[1, 2, 3, 4, 5, 6, 7].map((day) => (
+                        <MenuItem key={day} value={day}>
+                          {
+                            [
+                              "Monday",
+                              "Tuesday",
+                              "Wednesday",
+                              "Thursday",
+                              "Friday",
+                              "Saturday",
+                              "Sunday",
+                            ][day - 1]
+                          }
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </>
               )}
             </Stack>
           )}

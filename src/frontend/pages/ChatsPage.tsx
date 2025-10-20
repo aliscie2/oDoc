@@ -26,7 +26,6 @@ const ChatsPage: React.FC = () => {
   // Use custom hooks
   const {
     getOtherUser,
-    getChatDisplayName,
     handleOpenChat,
     shouldShowSettings,
   } = useChatListOperations({ profile });
@@ -149,6 +148,7 @@ const ChatsPage: React.FC = () => {
         height: { xs: "calc(100vh - 56px)", sm: "100vh" }, // Account for bottom nav on mobile
         bgcolor: "background.default",
         pb: { xs: 1, sm: 0 }, // Small padding on mobile to ensure no overlap
+        mx: { xs: 0, md: 16, lg: 29 }, // Add horizontal margin on desktop
       }}
     >
       <ChatHeader
@@ -199,7 +199,6 @@ const ChatsPage: React.FC = () => {
                 ? getUnreadCount(chat.messages, profile.id)
                 : 0;
               const otherUser = getOtherUser(chat);
-              const displayName = getChatDisplayName(chat);
               const lastMessage = chat.messages[0]?.message || "No messages";
 
               return (
@@ -207,7 +206,6 @@ const ChatsPage: React.FC = () => {
                   key={chat.id}
                   chat={chat}
                   unreadCount={unreadCount}
-                  displayName={displayName}
                   lastMessage={lastMessage}
                   otherUser={otherUser}
                   showSettings={shouldShowSettings(chat)}

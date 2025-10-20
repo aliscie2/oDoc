@@ -100,7 +100,6 @@ const Pages = React.memo(() => {
         />
         <Route path="/share/*" element={<ShareFilePage />} />
         <Route path="/user/*" element={<UserProfile />} />
-        {/*<Route path="/chats/*" element={<ChatsPage />} />*/}
 
         <Route path="/contract*" element={<ContractPage />} />
         <Route path="/contracts*" element={<ContractsHistory />} />

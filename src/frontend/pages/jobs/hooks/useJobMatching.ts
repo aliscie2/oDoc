@@ -91,7 +91,6 @@ export const useJobMatching = (currentJob: Job | null) => {
         (currentJob.skills || []).map((s) => s.toLowerCase()),
         getLookingForCategory(currentJob),
       );
-      console.log({ candidateJobs });
 
       dispatch({ type: "IS_LOOKING_NEW_MATCHES", stage: 1 });
 
@@ -110,7 +109,6 @@ export const useJobMatching = (currentJob: Job | null) => {
         import.meta.env.VITE_GROQ_API_KEY,
         credits,
       );
-      console.log({ aiJobMatchResponse });
 
       if (!aiJobMatchResponse || "Err" in aiJobMatchResponse) {
         throw new Error(aiJobMatchResponse?.Err || "AI no response");
@@ -128,15 +126,8 @@ export const useJobMatching = (currentJob: Job | null) => {
 
       dispatch({ type: "IS_LOOKING_NEW_MATCHES", stage: 2 });
 
-      dispatch({
-        type: "UPDATE_MATCHING_JOBS",
-        matchingJobs: candidateJobs,
-        matches: processedMatches,
-      });
-
-      console.log({ processedMatches });
-
-      const res = await backendActor.update_matches(
+      // ✅ Save matches to backend immediately
+      await backendActor.update_matches(
         {
           current_job_id: currentJob.id,
           delete_matches: [],
@@ -146,6 +137,13 @@ export const useJobMatching = (currentJob: Job | null) => {
         },
         [credits],
       );
+
+      // ✅ Update local state only after successful backend save
+      dispatch({
+        type: "UPDATE_MATCHING_JOBS",
+        matchingJobs: candidateJobs,
+        matches: processedMatches,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load matches");
     } finally {

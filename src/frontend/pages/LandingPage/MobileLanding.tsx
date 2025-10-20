@@ -1,4 +1,4 @@
-import { backendActor } from "@/utils/backendUtils";
+import { backendActor, ckUSDCActor } from "@/utils/backendUtils";
 import UserAvatarMenu from "@/components/MainComponents/UserAvatarMenu";
 import {
   AttachMoney,
@@ -35,6 +35,8 @@ import { useEffect, useRef, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import { Link } from "react-router-dom";
+import getckUsdcBalance from "@/utils/getBalance";
+import { canisterId } from "$/declarations/ckusdc_ledger";
 
 const sectionSx = {
   minHeight: "100vh",
@@ -518,6 +520,8 @@ const SocialProofSection = () => {
   const theme = useTheme();
   const [stats, setStats] = useState({
     users: 0,
+    activeUsers: 0,
+    totalDeposit: 0,
     jobsCount: 0,
     talentsCount: 0,
   });
@@ -527,10 +531,14 @@ const SocialProofSection = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await backendActor.get_sns_status();
+        const [res, balance] = await Promise.all([
+          backendActor.get_sns_status(),
+          getckUsdcBalance(ckUSDCActor, canisterId),
+        ]);
         if (res.Ok) {
           const {
             number_users,
+            active_users,
             jobs_count,
             talents_count,
             latest_jobs,
@@ -538,6 +546,8 @@ const SocialProofSection = () => {
           } = res.Ok;
           setStats({
             users: Math.floor(number_users),
+            activeUsers: Math.floor(active_users),
+            totalDeposit: Math.floor(Number(balance) / 1000000),
             jobsCount: Math.floor(jobs_count),
             talentsCount: Math.floor(talents_count),
           });
@@ -569,8 +579,10 @@ const SocialProofSection = () => {
             flexWrap: "wrap",
           }}
         >
-          <StatCard value={stats.users} label="Active Users" />
-          <StatCard value={stats.jobsCount} label="Open Jobs" />
+          <StatCard value={stats.users} label="Users" />
+          <StatCard value={stats.activeUsers} label="Active" />
+          <StatCard value={`$${stats.totalDeposit}`} label="Value" />
+          <StatCard value={stats.jobsCount} label="Jobs" />
           <StatCard value={stats.talentsCount} label="Talents" />
         </Box>
 
@@ -688,7 +700,6 @@ const SocialProofSection = () => {
     </Box>
   );
 };
-
 const EmailNotificationsStep = () => {
   const theme = useTheme();
 

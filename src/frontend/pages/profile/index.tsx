@@ -202,13 +202,14 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
             >
               {profile && !isEditing && (
                 <UserAvatarMenu
+                  variant="h4"
                   hide={["Profile"]}
                   sx={{
                     width: { xs: 100, sm: 120 },
                     height: { xs: 100, sm: 120 },
                   }}
                   user={profile}
-                  dispalyName
+                  forceDisplayName
                   displayDescription
                   displayId
                 />
