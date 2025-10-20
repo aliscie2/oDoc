@@ -23,8 +23,9 @@ import { useSnackbar } from "notistack";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import AgreementView from "./agreementView";
-import { createNewPromis, getStatusOptions } from "./utils";
 import DeleteContractButton from "./deleteContractButton";
+import { createNewPromis } from "./utils";
+import { getAvailableStatusTransitions } from "./utils/promiseVlidationRules";
 
 ModuleRegistry.registerModules([
   ClientSideRowModelModule,
@@ -117,7 +118,7 @@ const useColumnConfig = (profile: any, all_friends: any, wallet: any) =>
         headerName: "Status",
         cellEditor: "agSelectCellEditor",
         cellEditorParams: (p) => ({
-          values: getStatusOptions(p.data, profile.id),
+          values: getAvailableStatusTransitions(p.data, profile.id),
         }),
         valueGetter: (p) => {
           const key = Object.keys(p.data.status || {})[0] || "None";

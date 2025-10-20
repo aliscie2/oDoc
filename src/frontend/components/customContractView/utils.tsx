@@ -1,6 +1,7 @@
 import { Principal } from "@dfinity/principal";
 import { CPayment } from "$/declarations/backend/backend.did";
 import { randomString } from "../../DataProcessing/dataSamples";
+import { getAvailableStatusTransitions } from "./utils/promiseVlidationRules";
 
 export function createNewPromis(
   sender: Principal,
@@ -78,36 +79,4 @@ export const NotificationPromiesContextMenu = (_params: any) => {
     { name: "release all promises" },
     { name: "release selected promises" },
   ];
-};
-
-export const getStatusOptions = (payment: CPayment, profileId: string) => {
-  if (!payment.status) {
-    return ["None"]; // or whatever default you want
-  }
-
-  const isSender = profileId === payment.sender.toString();
-  const isReceiver = profileId === payment.receiver.toString();
-  const currentStatus = Object.keys(payment.status)[0];
-
-  if (isSender) {
-    switch (currentStatus) {
-      case "ApproveHighPromise":
-      case "Confirmed":
-        return ["RequestCancellation", "Released"];
-      default:
-        return ["None", "Released", "HighPromise"];
-    }
-  } else if (isReceiver) {
-    switch (currentStatus) {
-      case "HighPromise":
-        return ["Objected", "ApproveHighPromise"];
-      case "RequestCancellation":
-        return ["Objected", "ConfirmedCancellation"];
-      default:
-        return ["Objected", "Confirmed"];
-    }
-  } else {
-    // If user is neither sender nor receiver, they can't change status
-    return [];
-  }
 };

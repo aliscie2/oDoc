@@ -1,5 +1,4 @@
 import { CPayment, CustomContract } from "$/declarations/backend/backend.did";
-import { RootState } from "@/redux/reducers";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import AddIcon from "@mui/icons-material/Add";
 import DateRangeIcon from "@mui/icons-material/DateRange";
@@ -37,26 +36,30 @@ import {
   useTheme,
 } from "@mui/material";
 import { debounce } from "lodash";
-import { memo, useCallback, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { backendActor } from "../../utils/backendUtils";
 import { createShortContractUrl } from "../../utils/urlEncoder";
 import UserAvatarMenu from "../MainComponents/UserAvatarMenu";
 import CopyButton from "../MuiComponents/copyButton";
+import { FIELD_CONFIGS, RESPONSIVE_STYLES } from "./constants";
 import DeleteContractButton from "./deleteContractButton";
-import { getStatusOptions } from "./utils";
-import { backendActor } from "../../utils/backendUtils";
 import { useAgreementView } from "./hooks/useAgreementView";
 import { usePromiseActions } from "./hooks/usePromiseActions";
 import { useUserData } from "./hooks/useUserData";
-import { RESPONSIVE_STYLES, FIELD_CONFIGS } from "./constants";
-import { formatStatus, getStatusConfig } from "./utils/statusUtils";
 import {
   findUnseenNotificationForPromise,
   isNotificationAlreadyCalled,
   markNotificationAsCalled,
   removeNotificationFromProcessing,
 } from "./utils/notificationUtils";
+import {
+  getAvailableStatusTransitions,
+  validatePayment,
+} from "./utils/promiseVlidationRules";
+import { formatStatus, getStatusConfig } from "./utils/statusUtils";
+import { RootState } from "@/redux/reducers";
 
 interface AppState {
   filesState: {
@@ -153,382 +156,8 @@ const ConditionCell = memo<{
     </ListItem>
   );
 });
+ConditionCell.displayName = "ConditionCell";
 
-// Optimized Promise Card Header
-const PromiseCardHeader = memo<{
-  promise: CPayment;
-  isExpanded: boolean;
-  onToggle: () => void;
-  onStatusChange: (status: string) => Promise<void>;
-  onAmountChange: (amount: string) => Promise<void>;
-  onReceiverChange: (receiver: string) => Promise<void>;
-  isEditable: boolean;
-  canEditStatus: (promise: CPayment) => boolean;
-  viewMode?: "promises" | "payments";
-  contract: CustomContract;
-}>(
-  ({
-    promise,
-    isExpanded,
-    onToggle,
-    onStatusChange,
-    onAmountChange,
-    onReceiverChange,
-    isEditable,
-    canEditStatus,
-    viewMode = "promises",
-    contract,
-  }) => {
-    const getUserData = useUserData();
-    const { profile, all_friends } = useSelector(
-      (state: AppState) => state.filesState,
-    );
-    const { notifications } = useSelector(
-      (state: AppState) => state.notificationState,
-    );
-    // Using direct backendActor import
-    const dispatch = useDispatch();
-
-    const statusConfig = getStatusConfig(promise.status);
-    const senderData = getUserData(promise.sender);
-    const receiverData = getUserData(promise.receiver);
-    const statusOptions = useMemo(
-      () => getStatusOptions(promise, profile.id),
-      [promise, profile.id],
-    );
-
-    const unseenNotification = useMemo(() => {
-      if (contract.creator?.toString() === profile.id) return null;
-      return findUnseenNotificationForPromise(promise, notifications);
-    }, [contract.creator, profile.id, promise, notifications]);
-
-    const firstCellTitle = promise.cells?.[0]?.value
-      ? promise.cells?.[0]?.value
-          ?.replace(/_/g, " ")
-          .split(" ")
-          .slice(0, 5)
-          .join(" ") + "..." || "Agreement"
-      : "Untitled";
-
-    const handleHeaderClick = async (e: React.MouseEvent) => {
-      if (isExpanded && (e.target as HTMLElement).closest(".editable-field")) {
-        e.stopPropagation();
-        return;
-      }
-
-      if (
-        unseenNotification &&
-        backendActor &&
-        !isNotificationAlreadyCalled(unseenNotification.id)
-      ) {
-        try {
-          markNotificationAsCalled(unseenNotification.id);
-          await backendActor.see_notifications([unseenNotification.id]);
-
-          // Update notification state using dispatch
-          const updatedNotifications = notifications.map((notification) => {
-            if (notification.id === unseenNotification.id) {
-              return { ...notification, is_seen: true };
-            }
-            return notification;
-          });
-
-          dispatch({
-            type: "UPDATE_NOT_LIST",
-            new_list: updatedNotifications,
-          });
-        } catch (error) {
-          console.error("Error marking notification as seen:", error);
-          removeNotificationFromProcessing(unseenNotification.id);
-        }
-      }
-      onToggle();
-    };
-
-    const shouldShowReceiver =
-      viewMode === "promises" ||
-      receiverData.name !== "Unknown" ||
-      (promise.amount && promise.amount > 0);
-    const shouldShowAmount =
-      (viewMode === "promises" ||
-        receiverData.name !== "Unknown" ||
-        (promise.amount && promise.amount > 0)) &&
-      !(promise.sender.toString() !== profile.id && promise.amount === 0);
-
-    return (
-      <Box
-        onClick={handleHeaderClick}
-        sx={{
-          p: isExpanded ? 3 : 1,
-          cursor: "pointer",
-          background: "background.header",
-          borderBottom: "1px solid",
-          borderColor: "divider",
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: { xs: 1, sm: 2 },
-            minHeight: "48px",
-          }}
-        >
-          {/* Title and Status */}
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: { xs: 1, sm: 2 },
-              flex: "1 1 auto",
-              minWidth: 0, // Allow shrinking
-              maxWidth: { xs: "100%", sm: "40%" },
-              order: { xs: 1, sm: 1 },
-            }}
-          >
-            <Typography
-              variant={isExpanded ? "h6" : "body1"}
-              fontWeight={700}
-              sx={{
-                color: "primary.main",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                flex: "1 1 auto",
-                minWidth: 0,
-              }}
-            >
-              {firstCellTitle}
-            </Typography>
-            {isExpanded ? (
-              <Box
-                className="editable-field"
-                onClick={(e) => e.stopPropagation()}
-                sx={{ flex: "0 0 auto" }}
-              >
-                <TextField
-                  label="Status"
-                  select
-                  size="small"
-                  value={Object.keys(promise.status)[0] || "None"}
-                  onChange={(e) => onStatusChange(e.target.value)}
-                  disabled={!canEditStatus(promise)}
-                  sx={{ minWidth: 120 }}
-                >
-                  {statusOptions.map((s) => (
-                    <MenuItem key={s} value={s}>
-                      {s}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Box>
-            ) : (
-              <Chip
-                label={`${statusConfig.icon} ${formatStatus(promise.status)}`}
-                size="small"
-                sx={{
-                  bgcolor: statusConfig.bg,
-                  color: statusConfig.color,
-                  fontWeight: 600,
-                  flex: "0 0 auto",
-                }}
-              />
-            )}
-          </Box>
-
-          {/* Sender and Receiver */}
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              flex: "1 1 auto",
-              justifyContent: "center",
-              minWidth: 0, // Allow shrinking
-              maxWidth: { xs: "100%", sm: "35%" },
-              order: { xs: 3, sm: 2 },
-            }}
-          >
-            <UserAvatarMenu user_id={promise.sender.toString()} />
-            <Typography
-              variant={isExpanded ? "body2" : "caption"}
-              fontWeight={600}
-              sx={{
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                maxWidth: "80px",
-              }}
-            >
-              {(() => {
-                const displayName =
-                  profile.id === promise.sender.toString() && isExpanded
-                    ? "You"
-                    : senderData.name;
-                console.log(
-                  "Sender display name:",
-                  displayName,
-                  "profile.id:",
-                  profile.id,
-                  "promise.sender:",
-                  promise.sender.toString(),
-                  "senderData:",
-                  senderData,
-                  "isExpanded:",
-                  isExpanded,
-                );
-                return displayName;
-              })()}
-            </Typography>
-
-            {shouldShowReceiver && (
-              <>
-                <Box sx={{ mx: 1 }}>→</Box>
-                {isExpanded &&
-                isEditable &&
-                profile.id !== promise.receiver.toString() ? (
-                  <Box
-                    className="editable-field"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <TextField
-                      label="Receiver"
-                      select
-                      size="small"
-                      value={(() => {
-                        const receiverName =
-                          all_friends?.find(
-                            (x) => x.id === promise.receiver.toString(),
-                          )?.name || getUserData(promise.receiver).name;
-                        console.log(
-                          "Receiver dropdown value:",
-                          receiverName,
-                          "promise.receiver:",
-                          promise.receiver.toString(),
-                          "all_friends:",
-                          all_friends,
-                        );
-                        return receiverName;
-                      })()}
-                      onChange={(e) => onReceiverChange(e.target.value)}
-                      disabled={!isEditable}
-                      sx={{ minWidth: 120 }}
-                    >
-                      {all_friends
-                        ?.map((user: any) => {
-                          // all_friends contains User objects, not Friend objects
-                          if (!user || !user.name || user.id === profile.id)
-                            return null;
-                          return (
-                            <MenuItem key={user.id} value={user.name}>
-                              {user.name}
-                            </MenuItem>
-                          );
-                        })
-                        .filter(Boolean)}
-                    </TextField>
-                  </Box>
-                ) : (
-                  <>
-                    <UserAvatarMenu user_id={promise.receiver.toString()} />
-                    <Typography
-                      variant={isExpanded ? "body2" : "caption"}
-                      fontWeight={600}
-                      sx={{
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                        maxWidth: "80px",
-                      }}
-                    >
-                      {(() => {
-                        const displayName =
-                          profile.id === promise.receiver.toString() &&
-                          isExpanded
-                            ? "You"
-                            : receiverData.name;
-                        console.log(
-                          "Receiver display name:",
-                          displayName,
-                          "profile.id:",
-                          profile.id,
-                          "promise.receiver:",
-                          promise.receiver.toString(),
-                          "isExpanded:",
-                          isExpanded,
-                        );
-                        return displayName;
-                      })()}
-                    </Typography>
-                  </>
-                )}
-              </>
-            )}
-          </Box>
-
-          {/* Amount */}
-          {shouldShowAmount && (
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-                flex: "0 0 auto",
-                justifyContent: "flex-end",
-                minWidth: "120px",
-                maxWidth: "200px",
-                order: { xs: 2, sm: 3 },
-              }}
-            >
-              <AccountBalanceWalletIcon color="success" fontSize="small" />
-              {isExpanded && isEditable ? (
-                <Box
-                  className="editable-field"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <TextField
-                    label="Amount"
-                    type="number"
-                    size="small"
-                    value={promise.amount || 0}
-                    onChange={(e) => onAmountChange(e.target.value)}
-                    disabled={!isEditable}
-                    slotProps={{
-                      input: {
-                        startAdornment: (
-                          <InputAdornment position="start">$</InputAdornment>
-                        ),
-                      },
-                    }}
-                    sx={{ minWidth: 120 }}
-                  />
-                </Box>
-              ) : (
-                <Typography
-                  variant={isExpanded ? "h6" : "body2"}
-                  sx={{
-                    fontWeight: 700,
-                    color: "success.main",
-                    fontFamily: "monospace",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  ${promise.amount?.toLocaleString() || 0}
-                </Typography>
-              )}
-            </Box>
-          )}
-        </Box>
-      </Box>
-    );
-  },
-);
-
-// Optimized Contract Header
 const ContractHeader = memo<{
   contract: CustomContract;
   viewMode: "promises" | "payments";
@@ -630,12 +259,7 @@ const ContractHeader = memo<{
             onChange={handleContractNameChange}
             disabled={contract.creator?.toString() !== profile.id}
             size="small"
-            sx={{
-              flex: 1,
-              minWidth: { xs: 120, sm: 180 },
-              maxWidth: { xs: 200, sm: 280 },
-              ...FIELD_CONFIGS.standardTextField.sx,
-            }}
+
             {...FIELD_CONFIGS.standardTextField}
             slotProps={{
               input: {
@@ -766,6 +390,7 @@ const ContractHeader = memo<{
     );
   },
 );
+ContractHeader.displayName = "ContractHeader";
 
 // Optimized Promise Card
 const PromiseCard = memo<{
@@ -788,6 +413,8 @@ const PromiseCard = memo<{
     viewMode = "promises",
     contract,
   }) => {
+    const { wallet } = useSelector((state: RootState) => state.filesState);
+
     const {
       updatePromise,
       handleStatusChange,
@@ -795,28 +422,143 @@ const PromiseCard = memo<{
       handleReceiverChange,
       handleDeletePromise,
     } = usePromiseActions(promise, isEditable, canEditStatus(promise));
-    const { profile } = useSelector((state: AppState) => state.filesState);
+    const getUserData = useUserData();
+    const { profile, all_friends } = useSelector(
+      (state: AppState) => state.filesState,
+    );
     const { notifications } = useSelector(
       (state: AppState) => state.notificationState,
     );
+    const dispatch = useDispatch();
+
+    const [localAmount, setLocalAmount] = useState(
+      promise.amount?.toString() || "0",
+    );
+    const [amountError, setAmountError] = useState<string>("");
+
+    useEffect(() => {
+      setLocalAmount(promise.amount?.toString() || "0");
+    }, [promise.amount]);
+
+    const maxAvailable = useMemo(
+      () => wallet.balance - wallet.total_debt,
+      [wallet.balance, wallet.total_debt],
+    );
+
+    const statusConfig = getStatusConfig(promise.status);
+    const statusOptions = useMemo(
+      () => getAvailableStatusTransitions(promise, profile.id),
+      [promise, profile.id],
+    );
+    const currentStatusValue = useMemo(
+      () => Object.keys(promise.status)[0] || "None",
+      [promise.status],
+    );
+
+    const unseenNotification = useMemo(() => {
+      if (contract.creator?.toString() === profile.id) return null;
+      return findUnseenNotificationForPromise(promise, notifications);
+    }, [contract.creator, profile.id, promise, notifications]);
+
+    const firstCellTitle = promise.cells?.[0]?.value
+      ? promise.cells[0].value
+          .replace(/_/g, " ")
+          .split(" ")
+          .slice(0, 5)
+          .join(" ") + "..."
+      : "Untitled";
+
+    const shouldShowReceiver =
+      viewMode === "promises" ||
+      getUserData(promise.receiver).name !== "Unknown" ||
+      (promise.amount && promise.amount > 0);
+    const shouldShowAmount =
+      shouldShowReceiver &&
+      !(promise.sender.toString() !== profile.id && promise.amount === 0) &&
+      (isExpanded || promise.amount > 0);
+
+    const deleteValidation = useMemo(() => {
+      if (!isEditable) return { canDelete: false, tooltip: "Not editable" };
+      const error = validatePayment(promise, profile.id, "delete");
+      return { canDelete: !error, tooltip: error || "Delete this agreement" };
+    }, [promise, profile.id, isEditable]);
+
+    const handleHeaderClick = async (e: React.MouseEvent) => {
+      if (isExpanded && (e.target as HTMLElement).closest(".editable-field")) {
+        e.stopPropagation();
+        return;
+      }
+
+      if (
+        unseenNotification &&
+        backendActor &&
+        !isNotificationAlreadyCalled(unseenNotification.id)
+      ) {
+        try {
+          markNotificationAsCalled(unseenNotification.id);
+          await backendActor.see_notifications([unseenNotification.id]);
+          dispatch({
+            type: "UPDATE_NOT_LIST",
+            new_list: notifications.map((n) =>
+              n.id === unseenNotification.id ? { ...n, is_seen: true } : n,
+            ),
+          });
+        } catch (error) {
+          console.error("Error marking notification as seen:", error);
+          removeNotificationFromProcessing(unseenNotification.id);
+        }
+      }
+      onToggle();
+    };
+
+    const handleAmountInputChange = useCallback(
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setLocalAmount(value);
+
+        const numValue = parseFloat(value) || 0;
+        if (numValue > maxAvailable) {
+          setAmountError(
+            `Amount cannot exceed ${maxAvailable.toFixed(2)} (balance - debt)`,
+          );
+        } else if (numValue < 0) {
+          setAmountError("Amount must be positive");
+        } else {
+          setAmountError("");
+        }
+      },
+      [maxAvailable],
+    );
+
+    const handleAmountBlur = useCallback(() => {
+      const numValue = parseFloat(localAmount) || 0;
+      if (numValue <= maxAvailable && numValue >= 0) {
+        handleAmountChange(localAmount);
+      } else {
+        setLocalAmount(promise.amount?.toString() || "0");
+        setAmountError("");
+      }
+    }, [localAmount, maxAvailable, handleAmountChange, promise.amount]);
 
     const handleCellActions = useMemo(
       () => ({
         updateField: (oldField: string, newField: string) => {
-          const cells =
-            promise.cells?.map((c) =>
-              c.field === oldField
-                ? { ...c, field: newField, id: `${promise.id}_${newField}` }
-                : c,
-            ) || [];
-          updatePromise({ cells });
+          updatePromise({
+            cells:
+              promise.cells?.map((c) =>
+                c.field === oldField
+                  ? { ...c, field: newField, id: `${promise.id}_${newField}` }
+                  : c,
+              ) || [],
+          });
         },
         updateValue: (field: string, value: string) => {
-          const cells =
-            promise.cells?.map((c) =>
-              c.field === field ? { ...c, value } : c,
-            ) || [];
-          updatePromise({ cells });
+          updatePromise({
+            cells:
+              promise.cells?.map((c) =>
+                c.field === field ? { ...c, value } : c,
+              ) || [],
+          });
         },
         add: () => {
           if (!isEditable) return;
@@ -824,26 +566,26 @@ const PromiseCard = memo<{
             promise.cells?.filter((c) => c.field.startsWith("condition"))
               .length || 0;
           const field = `condition_${existingCount + 1}`;
-          const newCell = { id: `${promise.id}_${field}`, field, value: "" };
-          updatePromise({ cells: [...(promise.cells || []), newCell] });
+          updatePromise({
+            cells: [
+              ...(promise.cells || []),
+              { id: `${promise.id}_${field}`, field, value: "" },
+            ],
+          });
         },
         remove: (field: string) => {
           if (!isEditable) return;
-          const cells = promise.cells?.filter((c) => c.field !== field) || [];
-          updatePromise({ cells });
+          updatePromise({
+            cells: promise.cells?.filter((c) => c.field !== field) || [],
+          });
         },
       }),
       [promise.cells, promise.id, updatePromise, isEditable],
     );
 
-    const hasUnseenNotification = useMemo(() => {
-      if (contract.creator?.toString() === profile.id) return false;
-      return findUnseenNotificationForPromise(promise, notifications) !== null;
-    }, [contract.creator, profile.id, promise, notifications]);
-
     return (
       <Box sx={{ position: "relative" }}>
-        {hasUnseenNotification && (
+        {unseenNotification && (
           <Badge
             badgeContent="New"
             color="error"
@@ -865,77 +607,264 @@ const PromiseCard = memo<{
         <Card
           elevation={0}
           sx={{
-            border: "1px solid",
+            border: unseenNotification ? "2px solid #dc2626" : "1px solid",
             borderColor: isDarkMode ? "grey.800" : "grey.200",
+            borderRadius: 1,
             "&:hover": { boxShadow: 4, transform: "translateY(-2px)" },
-            ...(hasUnseenNotification && {
-              border: "2px solid #dc2626",
-              borderRadius: 1,
-            }),
           }}
         >
-          <PromiseCardHeader
-            promise={promise}
-            isExpanded={isExpanded}
-            onToggle={onToggle}
-            onStatusChange={handleStatusChange}
-            onAmountChange={handleAmountChange}
-            onReceiverChange={handleReceiverChange}
-            isEditable={isEditable}
-            canEditStatus={canEditStatus}
-            viewMode={viewMode}
-            contract={contract}
-          />
+          <Box
+            onClick={handleHeaderClick}
+            sx={{
+              p: isExpanded ? 3 : 1,
+              cursor: "pointer",
+              background: "background.header",
+              borderBottom: isExpanded ? "1px solid" : "none",
+              borderColor: "divider",
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+                gap: { xs: 1, sm: 2 },
+                minHeight: "48px",
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: { xs: 1, sm: 2 },
+                  flex: "1 1 auto",
+                  minWidth: 0,
+                  maxWidth: { xs: "100%", sm: "40%" },
+                  order: { xs: 1, sm: 1 },
+                }}
+              >
+                <Typography
+                  variant={isExpanded ? "h6" : "body1"}
+                  fontWeight={700}
+                  sx={{
+                    color: "primary.main",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    flex: "1 1 auto",
+                    minWidth: 0,
+                  }}
+                >
+                  {firstCellTitle}
+                </Typography>
+                {isExpanded ? (
+                  <Box
+                    className="editable-field"
+                    onClick={(e) => e.stopPropagation()}
+                    sx={{ flex: "0 0 auto" }}
+                  >
+                    <TextField
+                      label="Status"
+                      select
+                      size="small"
+                      value={currentStatusValue}
+                      onChange={(e) => handleStatusChange(e.target.value)}
+                      disabled={!canEditStatus(promise)}
+                      sx={{ minWidth: 120 }}
+                    >
+                      {statusOptions.map((s) => (
+                        <MenuItem key={s} value={s}>
+                          {s}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Box>
+                ) : (
+                  <Chip
+                    label={`${statusConfig.icon} ${formatStatus(promise.status)}`}
+                    size="small"
+                    sx={{
+                      bgcolor: statusConfig.bg,
+                      color: statusConfig.color,
+                      fontWeight: 600,
+                      flex: "0 0 auto",
+                    }}
+                  />
+                )}
+              </Box>
+
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  flex: "1 1 auto",
+                  justifyContent: "center",
+                  minWidth: 0,
+                  maxWidth: { xs: "100%", sm: "35%" },
+                  order: { xs: 3, sm: 2 },
+                }}
+              >
+                <UserAvatarMenu
+                  user_id={promise.sender?.toString()}
+                  dispalyName={isExpanded}
+                />
+
+                {shouldShowReceiver && (
+                  <>
+                    <Box sx={{ mx: 1 }}>→</Box>
+                    {isExpanded &&
+                    isEditable &&
+                    profile.id !== promise.receiver.toString() ? (
+                      <Box
+                        className="editable-field"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <TextField
+                          label="Receiver"
+                          select
+                          size="small"
+                          value={
+                            all_friends?.find(
+                              (x) => x.id === promise.receiver.toString(),
+                            )?.name || getUserData(promise.receiver).name
+                          }
+                          onChange={(e) => handleReceiverChange(e.target.value)}
+                          disabled={!isEditable}
+                          sx={{ minWidth: 120 }}
+                        >
+                          {all_friends
+                            ?.map((user: any) => {
+                              if (!user || !user.name || user.id === profile.id)
+                                return null;
+                              return (
+                                <MenuItem key={user.id} value={user.name}>
+                                  {user.name}
+                                </MenuItem>
+                              );
+                            })
+                            .filter(Boolean)}
+                        </TextField>
+                      </Box>
+                    ) : (
+                      <UserAvatarMenu
+                        user_id={promise.receiver.toString()}
+                        dispalyName={isExpanded}
+                      />
+                    )}
+                  </>
+                )}
+              </Box>
+
+              {shouldShowAmount && (
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                    flex: "0 0 auto",
+                    justifyContent: "flex-end",
+                    minWidth: "120px",
+                    maxWidth: "200px",
+                    order: { xs: 2, sm: 3 },
+                  }}
+                >
+                  <AccountBalanceWalletIcon color="success" fontSize="small" />
+                  {isExpanded && isEditable ? (
+                    <Box
+                      className="editable-field"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <TextField
+                        label="Amount"
+                        type="number"
+                        size="small"
+                        value={localAmount}
+                        onChange={handleAmountInputChange}
+                        onBlur={handleAmountBlur}
+                        disabled={!isEditable}
+                        error={!!amountError}
+                        helperText={
+                          amountError || `Max: $${maxAvailable.toFixed(2)}`
+                        }
+                        slotProps={{
+                          input: {
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                $
+                              </InputAdornment>
+                            ),
+                          },
+                        }}
+                        sx={{ minWidth: 120 }}
+                      />
+                    </Box>
+                  ) : (
+                    <Typography
+                      variant={isExpanded ? "h6" : "body2"}
+                      sx={{
+                        fontWeight: 700,
+                        color: "success.main",
+                        fontFamily: "monospace",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      ${promise.amount?.toLocaleString() || 0}
+                    </Typography>
+                  )}
+                </Box>
+              )}
+            </Box>
+          </Box>
 
           <Collapse in={isExpanded}>
             <CardContent>
-              <Box>
-                <Box
-                  sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}
+              <Box
+                sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}
+              >
+                <DescriptionIcon color="primary" />
+                <Typography variant="h6" fontWeight={600}>
+                  Agreement Conditions
+                </Typography>
+              </Box>
+
+              {promise.cells?.length ? (
+                <List
+                  sx={{ width: "100%", bgcolor: "background.paper", mb: 3 }}
                 >
-                  <DescriptionIcon color="primary" />
-                  <Typography variant="h6" fontWeight={600}>
-                    Agreement Conditions
+                  {promise.cells.map((cell, index) => (
+                    <Box key={cell.id}>
+                      <ConditionCell
+                        cell={cell}
+                        onUpdateField={handleCellActions.updateField}
+                        onUpdateValue={handleCellActions.updateValue}
+                        onRemove={handleCellActions.remove}
+                        isEditable={isEditable}
+                      />
+                      {index < promise.cells.length - 1 && (
+                        <Divider variant="inset" component="li" />
+                      )}
+                    </Box>
+                  ))}
+                </List>
+              ) : (
+                <Box
+                  sx={{
+                    textAlign: "center",
+                    py: 3,
+                    color: "text.secondary",
+                    mb: 3,
+                  }}
+                >
+                  <DescriptionIcon sx={{ fontSize: 48, opacity: 0.3, mb: 1 }} />
+                  <Typography variant="body2">
+                    No conditions defined yet.
                   </Typography>
                 </Box>
-
-                {promise.cells?.length ? (
-                  <List
-                    sx={{ width: "100%", bgcolor: "background.paper", mb: 3 }}
-                  >
-                    {promise.cells.map((cell, index) => (
-                      <Box key={cell.id}>
-                        <ConditionCell
-                          cell={cell}
-                          onUpdateField={handleCellActions.updateField}
-                          onUpdateValue={handleCellActions.updateValue}
-                          onRemove={handleCellActions.remove}
-                          isEditable={isEditable}
-                        />
-                        {index < promise.cells.length - 1 && (
-                          <Divider variant="inset" component="li" />
-                        )}
-                      </Box>
-                    ))}
-                  </List>
-                ) : (
-                  <Box
-                    sx={{
-                      textAlign: "center",
-                      py: 3,
-                      color: "text.secondary",
-                      mb: 3,
-                    }}
-                  >
-                    <DescriptionIcon
-                      sx={{ fontSize: 48, opacity: 0.3, mb: 1 }}
-                    />
-                    <Typography variant="body2">
-                      No conditions defined yet.
-                    </Typography>
-                  </Box>
-                )}
-              </Box>
+              )}
 
               <Box
                 sx={{
@@ -970,15 +899,20 @@ const PromiseCard = memo<{
                     >
                       Add Condition
                     </Button>
-                    <Button
-                      onClick={handleDeletePromise}
-                      variant="outlined"
-                      color="error"
-                      startIcon={<DeleteIcon />}
-                      size="small"
-                    >
-                      Delete
-                    </Button>
+                    <Tooltip title={deleteValidation.tooltip} arrow>
+                      <span>
+                        <Button
+                          onClick={handleDeletePromise}
+                          variant="outlined"
+                          color="error"
+                          startIcon={<DeleteIcon />}
+                          size="small"
+                          disabled={!deleteValidation.canDelete}
+                        >
+                          Delete
+                        </Button>
+                      </span>
+                    </Tooltip>
                   </Box>
                 )}
               </Box>
@@ -989,6 +923,8 @@ const PromiseCard = memo<{
     );
   },
 );
+
+PromiseCard.displayName = "PromiseCard";
 
 // Main Optimized Agreement View Component
 const AgreementView = memo<{
@@ -1009,6 +945,7 @@ const AgreementView = memo<{
     toggleCard,
     handleAddPromise,
     handleViewModeChange,
+    isUpdating,
   } = useAgreementView(contract);
 
   if (!contract?.id) {
@@ -1117,5 +1054,6 @@ const AgreementView = memo<{
     </Box>
   );
 });
+AgreementView.displayName = "AgreementView";
 
 export default AgreementView;

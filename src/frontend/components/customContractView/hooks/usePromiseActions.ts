@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSnackbar } from "notistack";
 import { Principal } from "@dfinity/principal";
@@ -18,6 +18,8 @@ export const usePromiseActions = (
   isEditable: boolean,
   canEditStatus?: boolean,
 ) => {
+  const [isUpdating, setIsUpdating] = useState(false);
+
   const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
   // Using direct backendActor import
@@ -62,20 +64,20 @@ export const usePromiseActions = (
         reason = inputReason || "";
         statusMap.Objected = { Objected: reason };
       }
-
+      setIsUpdating(true);
       try {
-        // Call backend function based on status and user role
         const isReceiver = profile?.id === promise.receiver.toString();
+        const isSender = profile?.id === promise.sender.toString();
 
-        // Check if current user is the contract creator
-        //TODO Good: Added optional chaining But: Should handle the null case explicitly rather than silently failing
-        if (promise?.sender?.toString() === profile?.id) {
-          dispatch({
-            type: "UPDATE_PROMISE",
-            contract_id: promise.contract_id,
-            promise: { ...promise, status: statusMap[newStatus] },
-          });
-        } else if (newStatus === "Confirmed" && isReceiver) {
+        // Optimistically update local state first
+        dispatch({
+          type: "SET_PROMISE_STATUS",
+          contract_id: promise.contract_id,
+          promise: { ...promise, status: statusMap[newStatus] },
+        });
+
+        // Call backend and refetch contract
+        if (newStatus === "Confirmed" && isReceiver) {
           await backendActor.confirmed_c_payment(promise);
         } else if (newStatus === "ConfirmedCancellation" && isReceiver) {
           await backendActor.confirmed_cancellation(promise);
@@ -83,25 +85,53 @@ export const usePromiseActions = (
           await backendActor.approve_high_promise(promise);
         } else if (newStatus === "Objected" && isReceiver) {
           await backendActor.object_on_cancel(promise, reason);
-        } else {
-          // Update local state for other cases
+        } else if (isSender) {
+          // Sender updates go through multi_updates
           dispatch({
-            type: "SET_PROMISE_STATUS",
+            type: "UPDATE_PROMISE",
             contract_id: promise.contract_id,
             promise: { ...promise, status: statusMap[newStatus] },
           });
+          return; // No need to refetch for local updates
         }
 
-        enqueueSnackbar("Status updated successfully", { variant: "success" });
-      } catch (error) {
+        // Refetch contract after backend call
+        const result = await backendActor.get_contract(
+          promise.sender.toString(),
+          promise.contract_id,
+        );
+
+        if ("Ok" in result && "CustomContract" in result.Ok) {
+          // ✅ Use SET_CONTRACT instead of dispatching the whole contract
+          dispatch({
+            type: "SET_CONTRACT",
+            contract: result.Ok.CustomContract,
+          });
+
+          // ✅ IMPORTANT: Remove this promise from changes since backend handled it
+          dispatch({
+            type: "REMOVE_PROMISE_FROM_CHANGES",
+            contract_id: promise.contract_id,
+            promise_id: promise.id,
+          });
+
+          enqueueSnackbar("Status updated successfully", {
+            variant: "success",
+          });
+        }
+      } catch (error: any) {
         console.error("Error updating status:", error);
-        // Revert local state on backend error (no backend save)
+        // Revert optimistic update on error
         dispatch({
           type: "SET_PROMISE_STATUS",
           contract_id: promise.contract_id,
-          promise: promise, // Revert to original state
+          promise: promise,
         });
-        enqueueSnackbar("Failed to update status", { variant: "error" });
+        enqueueSnackbar(error?.toString() || "Failed to update status", {
+          variant: "error",
+        });
+      } finally {
+        setIsUpdating(false);
       }
     },
     [
@@ -113,7 +143,6 @@ export const usePromiseActions = (
       enqueueSnackbar,
     ],
   );
-
   const handleAmountChange = useCallback(
     (newAmount: string) => {
       if (!isEditable) return;
@@ -160,8 +189,6 @@ export const usePromiseActions = (
   );
 
   const handleDeletePromise = useCallback(() => {
-    if (!isEditable) return;
-
     if (window.confirm("Delete this agreement?")) {
       dispatch({
         type: "DELETE_PROMISE",
@@ -169,7 +196,7 @@ export const usePromiseActions = (
         id: promise.id,
       });
     }
-  }, [dispatch, promise, isEditable]);
+  }, [dispatch, promise.contract_id, promise.id]);
 
   return {
     updatePromise,
@@ -177,5 +204,6 @@ export const usePromiseActions = (
     handleAmountChange,
     handleReceiverChange,
     handleDeletePromise,
+    isUpdating, // Return loading state
   };
 };
