@@ -10,10 +10,10 @@ export function buildContractPrompt(
   contractId: string,
 ) {
   const currentTime = Date.now() * 1000000; // nanoseconds
-  const defaultReceiver = friends[0]?.name || "Alex";
+  const defaultReceiver = friends[0]?.name || "";
   const currentUser = profile?.name || "CurrentUser";
 
-  if (profile.id != contract.creator) {
+  if (profile.id != contract?.creator) {
     return `
           Act as contract helper who helps people understnd about thier contradcts, You can help users with quatsions, but users not allowed to preform any updates (actions)
 
@@ -54,7 +54,7 @@ Each response should follow this exact format:
 - Contract ID: ${contractId}
 - Current Time: ${currentTime}
 - Contract Name: ${contract?.name || "New Contract"}
-- Contract Owner: ${contract?.owner || profile?.id || "unknown"}
+- Contract Owner: ${contract?.creator || profile?.id || "unknown"}
 - Existing Promises Count: ${contract?.promises?.length || 0}
 - Existing Promises: ${JSON.stringify(contract?.promises || [], null, 2)}
 - Existing payments: ${JSON.stringify(contract?.payments || [], null, 2)}

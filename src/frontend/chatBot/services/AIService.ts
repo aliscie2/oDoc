@@ -35,6 +35,7 @@ export class AIService {
       import.meta.env.VITE_GROQ_API_KEY,
       config.credits,
     );
+    console.log("AI Response:", { aiResponse });
 
     if (!aiResponse || "Err" in aiResponse) {
       throw new Error(

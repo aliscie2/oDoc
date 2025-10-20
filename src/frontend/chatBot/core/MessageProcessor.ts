@@ -27,6 +27,11 @@ export interface ProcessedMessage {
   required_match_score?: number;
 }
 
+export interface ClassificationResult {
+  type: string;
+  feedback?: string;
+}
+
 export interface MessageProcessorConfig {
   calendar: any;
   jobs: any[];
@@ -312,8 +317,27 @@ Provide a helpful and accurate answer based only on the documentation provided. 
       actualPrompt = message;
     }
 
+    console.log("🔍 DEBUG processProductionMode:", {
+      aiCaseId: aiCase.id,
+      aiCaseClass: aiCase.class,
+      promptLength: actualPrompt.length,
+      systemPromptLength: systemPrompt.length,
+    });
+
     const config = this.aiService.createAIConfig(actualPrompt, systemPrompt);
     const aiResult = await this.aiService.sendAIMessage(config, abortSignal);
+
+    console.log("🔍 DEBUG AI result received:", {
+      hasAiResult: !!aiResult,
+      hasParsedData: !!aiResult?.parsedData,
+      parsedDataType: typeof aiResult?.parsedData,
+      parsedDataKeys: aiResult?.parsedData
+        ? Object.keys(aiResult.parsedData)
+        : [],
+      parsedData: aiResult?.parsedData,
+      aiCaseClass: aiCase?.class,
+      fullAiResultJSON: JSON.stringify(aiResult, null, 2),
+    });
 
     if (aiResult?.parsedData && aiCase?.class === "CALENDAR") {
       return this.validateCalendarResponse(aiResult.parsedData);
@@ -1123,14 +1147,22 @@ Provide a helpful and accurate answer based only on the documentation provided. 
       if (friend) {
         action.promise.receiver = Principal.fromText(friend.id);
       } else {
-        try {
-          action.promise.receiver = Principal.fromText(action.promise.receiver);
-        } catch (error) {
-          console.error(
-            `Invalid principal format: ${action.promise.receiver}`,
-            error,
-          );
-          return;
+        // If receiver name matches current user, use current user's ID
+        if (action.promise.receiver === this.config.profile?.name) {
+          action.promise.receiver = Principal.fromText(this.config.profile.id);
+        } else {
+          try {
+            action.promise.receiver = Principal.fromText(
+              action.promise.receiver,
+            );
+          } catch (error) {
+            console.error(
+              `Invalid principal format: ${action.promise.receiver}, falling back to default principal`,
+              error,
+            );
+            // Fallback to default principal if receiver is invalid
+            action.promise.receiver = Principal.fromText("2vxsx-fae");
+          }
         }
       }
     }
@@ -1159,25 +1191,72 @@ Provide a helpful and accurate answer based only on the documentation provided. 
    * Processes job-specific actions
    */
   private async processJobActions(result: any): Promise<void> {
+    console.log("🔍 DEBUG processJobActions called with result:", {
+      result: result,
+      resultType: typeof result,
+      hasResult: !!result,
+      resultKeys: result ? Object.keys(result) : [],
+      profileCompletion: result?.profile_completion,
+      type: result?.type,
+      updates: result?.updates,
+      updatesType: typeof result?.updates,
+      updatesIsArray: Array.isArray(result?.updates),
+      updatesLength: result?.updates?.length,
+      feedback: result?.feedback,
+      category: result?.category,
+      fullResultJSON: JSON.stringify(result, null, 2),
+    });
+
     if (result?.profile_completion === 1) {
       this.dispatcher.dispatch({ type: "IS_PROFILE_COMPELETE" });
     }
 
-    // Handle JOBS_QUERY responses (they only have feedback, no updates)
     if (result?.type === "JOBS_QUERY") {
-      return; // Just return, feedback will be handled in buildProcessedMessage
+      console.log("✅ JOBS_QUERY detected, returning early");
+      return;
     }
 
-    // Validation
-    this.validateJobActions(result);
+    console.log("🔍 DEBUG validation check:", {
+      currentJobId: this.config.currentJobId,
+      resultCategory: result?.category,
+      jobsCount: this.config.jobs.length,
+      jobsCategories: this.config.jobs.map((j) => Object.keys(j.category)[0]),
+    });
+
+    try {
+      this.validateJobActions(result);
+      console.log("✅ Validation passed");
+    } catch (validationError) {
+      console.error("❌ Validation failed:", validationError);
+      throw validationError;
+    }
 
     if (!result?.updates) {
+      console.error("❌ CRITICAL: result.updates is missing!", {
+        result: result,
+        hasUpdates: !!result?.updates,
+        updatesValue: result?.updates,
+        updatesType: typeof result?.updates,
+        allResultKeys: result ? Object.keys(result) : [],
+        rawResult: JSON.stringify(result, null, 2),
+      });
+
       throw new Error(
         "Something went wrong please try again. Report the issue on x.com/odoc_ic",
       );
     }
 
+    console.log("✅ Updates exist, normalizing...", {
+      updates: result.updates,
+      updatesLength: result.updates.length,
+    });
+
     const normalizedUpdates = this.normalizeJobUpdates(result?.updates || []);
+
+    console.log("✅ Normalized updates:", {
+      normalizedUpdates: normalizedUpdates,
+      normalizedLength: normalizedUpdates.length,
+    });
 
     this.dispatcher.dispatch({
       type: "UPDATE_FIELDS",
@@ -1187,12 +1266,13 @@ Provide a helpful and accurate answer based only on the documentation provided. 
       feedback: result?.feedback,
       profile_completion: result?.profile_completion,
     });
-  }
 
+    console.log("✅ Job actions processed successfully");
+  }
   /**
    * Validates job actions before processing
    */
-  private validateJobActions(result: any): void {
+  private validateJobActions(result: unknown): void {
     if (!this.config.currentJobId) {
       if (
         result?.category === "Talent" &&
@@ -1212,7 +1292,7 @@ Provide a helpful and accurate answer based only on the documentation provided. 
   /**
    * Normalizes job updates to ensure consistent format
    */
-  private normalizeJobUpdates(updates: any[]): any[] {
+  private normalizeJobUpdates(updates: unknown[]): unknown[] {
     return updates.map((update: unknown) => {
       if (typeof update === "object" && update.field && update.values) {
         return {
@@ -1248,6 +1328,60 @@ Provide a helpful and accurate answer based only on the documentation provided. 
               ...item.data,
             },
           };
+        }
+
+        // Fix poor availability responses
+        if (item.data.type === "ADD_AVAILABILITY" && item.data.availability) {
+          const availability = item.data.availability;
+
+          // Fix poor Daily schedule types that should be WeeklyRecurring
+          if (availability.schedule_type?.Daily) {
+            console.log(
+              "🔧 Fixing poor Daily availability to WeeklyRecurring:",
+              {
+                original: availability.schedule_type,
+                feedback: item.feedback,
+              },
+            );
+
+            // Convert to WeeklyRecurring with all days
+            availability.schedule_type = {
+              WeeklyRecurring: {
+                days: [1, 2, 3, 4, 5, 6, 7], // All days
+                valid_until: [],
+              },
+            };
+
+            // Update feedback to reflect the change
+            item.feedback =
+              item.feedback?.replace(/today/gi, "every day") ||
+              "I've set your availability every day.";
+
+            // Update title if it mentions "today"
+            if (availability.title?.toLowerCase().includes("today")) {
+              availability.title = availability.title.replace(
+                /today/gi,
+                "Daily Availability",
+              );
+            }
+          }
+
+          // Ensure proper structure
+          if (!availability.id || typeof availability.id !== "string") {
+            availability.id = `avail_${Date.now()}_${index}`;
+          }
+
+          if (!availability.title || typeof availability.title !== "string") {
+            availability.title = "Daily Availability";
+          }
+
+          if (typeof availability.is_blocked !== "boolean") {
+            availability.is_blocked = false;
+          }
+
+          if (!Array.isArray(availability.slots)) {
+            availability.slots = [];
+          }
         }
 
         if (
@@ -1397,7 +1531,7 @@ Provide a helpful and accurate answer based only on the documentation provided. 
   private async classifyMessage(
     message: string,
     abortSignal?: AbortSignal,
-  ): Promise<unknown> {
+  ): Promise<ClassificationResult> {
     const trimmedMessage = this.trimMessageForClassifier(message);
     const config = this.aiService.createAIConfig(
       `current classifier: ${this.navigation.location.pathname === "/" ? "Job" : this.navigation.location.pathname.replace("/", "")}\nMessage:${trimmedMessage}`,
@@ -1405,13 +1539,13 @@ Provide a helpful and accurate answer based only on the documentation provided. 
       true,
     );
     const result = await this.aiService.sendAIMessage(config, abortSignal);
-    return result.parsedData;
+    return result.parsedData as ClassificationResult;
   }
 
   /**
    * Handles navigation based on message classification
    */
-  private handleNavigation(parsed: unknown): void {
+  private handleNavigation(parsed: ClassificationResult): void {
     if (parsed.type === "JOB" && this.navigation.location.pathname !== "/") {
       this.navigation.navigate("/");
     }
@@ -1450,7 +1584,7 @@ Provide a helpful and accurate answer based only on the documentation provided. 
    * Handles other message types (QUESTIONS, LOCAL_HELP, etc.)
    */
   private async handleOtherCases(
-    parsed: unknown,
+    parsed: ClassificationResult,
     message: string,
     abortSignal?: AbortSignal,
   ): Promise<ProcessedMessage> {

@@ -8,6 +8,8 @@ import { ChatWindow } from "./components/ChatWindow";
 import { AIInput } from "./components/AIInput";
 import { useGoogleCalendar } from "../pages/calendar/googleAccounts/useGoogleCalendar";
 import { useLocation } from "react-router-dom";
+import { backendActor } from "@/utils/backendUtils";
+import { RootState } from "@/redux/reducers";
 
 const ChatContainer = () => {
   // Define paths where chat should NOT be shown
@@ -110,6 +112,8 @@ const ChatContainer = () => {
     setIsMinimized,
   });
 
+  const { profile } = useSelector((state: RootState) => state.filesState);
+
   useEffect(() => {
     if (!currentJob) return;
 
@@ -130,12 +134,26 @@ const ChatContainer = () => {
           let thumbnailUrl = "";
           try {
             const { jobSEO } = await import("../components/jobSeoComponent");
+
+            const userPhoto = profile?.photo; // Already a blob URL from caster
+            console.log(
+              "🔍 Profile Photo (blob URL):",
+              userPhoto?.substring(0, 50),
+            );
+
             thumbnailUrl = await jobSEO.generateThumbnail(
               currentJob.job_titles?.[0] || "Job Opportunity",
               currentJob.description || "Explore this job opportunity",
               currentJob.skills || [],
+              userPhoto,
             );
-          } catch {}
+            console.log(
+              "✅ Thumbnail generated:",
+              thumbnailUrl.substring(0, 50),
+            );
+          } catch (error) {
+            console.error("❌ Thumbnail generation failed:", error);
+          }
 
           setChatHistory((prev) => [
             ...prev,
