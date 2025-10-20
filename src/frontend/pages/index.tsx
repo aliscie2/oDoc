@@ -33,6 +33,8 @@ const WalletPage = React.lazy(() => import("./walletPage"));
 const JobPage = React.lazy(() => import("./jobPage"));
 const Posts = React.lazy(() => import("./posts/posts"));
 const PrivacyPage = React.lazy(() => import("./privacy"));
+const NotificationsPage = React.lazy(() => import("./NotificationsPage"));
+const ChatsPage = React.lazy(() => import("./ChatsPage"));
 
 // Loading component
 const PageLoader = () => (
@@ -74,6 +76,7 @@ const Pages = React.memo(() => {
           <Route path="/calendar" element={<CalendarView />} />
           <Route path="/share_calendar*" element={<ShareCalendarView />} />
           <Route path="/user/*" element={<UserProfile />} />
+          <Route path="/jobs*" element={<JobPage />} />
         </Routes>
       </Suspense>
     );
@@ -117,6 +120,8 @@ const Pages = React.memo(() => {
         <Route path="/jobs*" element={<JobPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/chat/:chatId" element={<ChatMobilePage />} />
+        <Route path="/notifications" element={<NotificationsPage />} />
+        <Route path="/chats" element={<ChatsPage />} />
       </Routes>
     </Suspense>
   );

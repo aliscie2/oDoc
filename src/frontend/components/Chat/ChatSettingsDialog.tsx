@@ -13,6 +13,9 @@ import {
   Typography,
 } from "@mui/material";
 import { Principal } from "@dfinity/principal";
+import { useSelector } from "react-redux";
+import { Chat } from "$/declarations/backend/backend.did";
+import { RootState } from "@/redux/reducers";
 
 interface User {
   id: string;
@@ -25,21 +28,12 @@ interface Workspace {
   name: string;
 }
 
-interface Chat {
-  id: string;
-  name: string;
-  members: any[];
-  admins: any[];
-  workspaces: string[];
-  creator: any;
-  messages: any[];
-}
+
 
 interface ChatSettingsDialogProps {
   open: boolean;
   onClose: () => void;
   chat: Chat;
-  currentUserId: string;
   allFriends: User[];
   workspaces: Workspace[];
   onSave: (updatedChat: Chat) => Promise<boolean>;
@@ -47,16 +41,11 @@ interface ChatSettingsDialogProps {
 }
 
 export const ChatSettingsDialog = memo<ChatSettingsDialogProps>(
-  ({
-    open,
-    onClose,
-    chat,
-    currentUserId,
-    allFriends,
-    workspaces,
-    onSave,
-    onDelete,
-  }) => {
+  ({ open, onClose, chat, allFriends, onSave, onDelete }) => {
+    const { profile, all_friends, workspaces } = useSelector(
+      (state: RootState) => state.filesState,
+    );
+    console.log({ chat, profile });
     const [formData, setFormData] = useState({
       name: chat.name,
       members: chat.members.map((m) => m.toString()),
@@ -67,7 +56,8 @@ export const ChatSettingsDialog = memo<ChatSettingsDialogProps>(
     const [saveSuccess, setSaveSuccess] = useState(false);
 
     const isPrivateChat = chat.name === "private_chat";
-    const isCreator = chat.creator?.toString() === currentUserId;
+
+    const isCreator = chat?.admins.some(a=>a.toString()==profile?.id)
 
     const handleSave = useCallback(async () => {
       setIsSaving(true);

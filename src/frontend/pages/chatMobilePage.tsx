@@ -1,24 +1,22 @@
 // ChatMobilePage.tsx - NEW FILE
 import React, { useRef, useEffect, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { Box, IconButton, Typography, AppBar, Toolbar } from "@mui/material";
-import { ArrowBack, Settings } from "@mui/icons-material";
+import { Box } from "@mui/material";
 import { MessagesList } from "@/components/Chat/MessagesList";
 import { ChatSettingsDialog } from "@/components/Chat/ChatSettingsDialog";
+import { ChatHeader } from "@/components/Chat/components/ChatHeader";
 import { useChatOperations } from "@/components/Chat/hooks/useChatOperations";
 import { useInfiniteScroll } from "@/components/Chat/hooks/useInfiniteScroll";
+import { useChatSettings } from "@/components/Chat/hooks/useChatSettings";
 import { MessageInput } from "@/components/Chat/MessageInput";
 import { RootState } from "@/redux/reducers";
 import { backendActor } from "@/utils/backendUtils";
 import { User } from "$/declarations/backend/backend.did";
-import UserAvatarMenu from "@/components/MainComponents/UserAvatarMenu";
 
 export const ChatMobilePage: React.FC = () => {
   const { chatId } = useParams<{ chatId: string }>();
-  const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
 
   const { profile, all_friends, workspaces } = useSelector(
     (state: RootState) => state.filesState,
@@ -26,6 +24,15 @@ export const ChatMobilePage: React.FC = () => {
   const { chats } = useSelector((state: RootState) => state.chatsState);
 
   const chat = chats.find((c) => c.id === chatId);
+
+  // Use custom hooks
+  const {
+    isSettingsOpen,
+    openSettings,
+    closeSettings,
+    handleSaveSettings,
+    handleDeleteChat,
+  } = useChatSettings();
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -39,22 +46,6 @@ export const ChatMobilePage: React.FC = () => {
       );
     },
   });
-
-  const handleSaveSettings = useCallback(
-    async (updatedChat: any) => {
-      const success = await updateChat(updatedChat);
-      if (success) dispatch({ type: "UPDATE_CHAT", chat: updatedChat });
-      return success;
-    },
-    [updateChat, dispatch],
-  );
-
-  const handleDeleteChat = useCallback(() => {
-    if (!chat) return;
-    deleteChat(chat.id);
-    dispatch({ type: "DELETE_CHAT", chat_id: chat.id });
-    navigate(-1);
-  }, [deleteChat, chat, dispatch, navigate]);
 
   const infiniteScroll = useInfiniteScroll({
     chat: chat!,
@@ -137,50 +128,34 @@ export const ChatMobilePage: React.FC = () => {
         flexDirection: "column",
         height: "100vh",
         bgcolor: "background.default",
+        overflow: "hidden",
       }}
     >
-      <AppBar
-        position="static"
-        elevation={0}
-        sx={{ bgcolor: "background.paper", color: "text.primary" }}
-      >
-        <Toolbar>
-          <IconButton edge="start" color="inherit" onClick={() => navigate(-1)}>
-            <ArrowBack />
-          </IconButton>
-          <UserAvatarMenu
-            dispalyName={true}
-            user_id={
-              isPrivateChat
-                ? chat.members
-                    .find((m) => m.toString() !== profile?.id)
-                    ?.toString()
-                : undefined
-            }
-            user={
-              !isPrivateChat
-                ? ({
-                    id: chat.creator?.toString() || "",
-                    name: chat.name,
-                  } as User)
-                : undefined
-            }
-            sx={{ width: 40, height: 40 }}
-            hide={["Review"]}
-          />
-          {showSettings && (
-            <IconButton color="inherit" onClick={() => setIsSettingsOpen(true)}>
-              <Settings />
-            </IconButton>
-          )}
-        </Toolbar>
-      </AppBar>
+      {/* Fixed Header */}
+      <ChatHeader
+        title={isPrivateChat ? "Chat" : chat.name}
+        showSettings={showSettings}
+        onSettingsClick={() => openSettings(chat)}
+        avatar={{
+          userId: isPrivateChat
+            ? chat.members.find((m) => m.toString() !== profile?.id)?.toString()
+            : undefined,
+          user: !isPrivateChat
+            ? ({
+                id: chat.creator?.toString() || "",
+                name: chat.name,
+              } as User)
+            : undefined,
+          isPrivateChat,
+        }}
+      />
 
+      {/* Scrollable Messages Area */}
       <Box
         sx={{
+          flex: 1,
           display: "flex",
           flexDirection: "column",
-          flex: 1,
           minHeight: 0,
           overflow: "hidden",
         }}
@@ -196,19 +171,33 @@ export const ChatMobilePage: React.FC = () => {
           hasMoreMessages={infiniteScroll.hasMoreMessages}
           isPrivateChat={isPrivateChat}
         />
+      </Box>
+
+      {/* Fixed Input */}
+      <Box
+        sx={{
+          flexShrink: 0,
+          bgcolor: "background.paper",
+          borderTop: 1,
+          borderColor: "divider",
+          zIndex: 1100,
+        }}
+      >
         <MessageInput onSendMessage={handleSendMessage} isSending={isSending} />
       </Box>
 
-      <ChatSettingsDialog
-        open={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        chat={chat}
-        currentUserId={profile?.id || ""}
-        allFriends={all_friends}
-        workspaces={workspaces}
-        onSave={handleSaveSettings}
-        onDelete={handleDeleteChat}
-      />
+      {chat && (
+        <ChatSettingsDialog
+          open={isSettingsOpen}
+          onClose={closeSettings}
+          chat={chat}
+          currentUserId={profile?.id || ""}
+          allFriends={all_friends}
+          workspaces={workspaces}
+          onSave={handleSaveSettings}
+          onDelete={() => handleDeleteChat(chat.id)}
+        />
+      )}
     </Box>
   );
 };

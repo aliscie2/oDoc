@@ -1,9 +1,9 @@
 import { Principal } from "@dfinity/principal";
 import { useCallback, useState } from "react";
-import { Chat, Message } from "../types";
+import { Chat, Message } from "$/declarations/backend/backend.did";
 
 interface UseChatOperationsProps {
-  backendActor: any;
+  backendActor: unknown;
   onSuccess?: () => void;
   onError?: (error: Error) => void;
 }
@@ -49,32 +49,7 @@ export const useChatOperations = ({
     async (chat: Chat) => {
       setIsSaving(true);
       try {
-        const formattedChat = {
-          ...chat,
-          admins: chat.admins.map((a) =>
-            a instanceof Principal ? a : Principal.fromText(a.toString()),
-          ),
-          creator:
-            chat.creator instanceof Principal
-              ? chat.creator
-              : Principal.fromText(chat.creator.toString()),
-          members: chat.members.map((m) =>
-            m instanceof Principal ? m : Principal.fromText(m.toString()),
-          ),
-          messages: chat.messages.map((msg) => ({
-            ...msg,
-            sender:
-              msg.sender instanceof Principal
-                ? msg.sender
-                : Principal.fromText(msg.sender.toString()),
-            seen_by: msg.seen_by.map((s) =>
-              s instanceof Principal ? s : Principal.fromText(s.toString()),
-            ),
-            date: typeof msg.date === "bigint" ? msg.date : BigInt(msg.date),
-          })),
-        };
-
-        const result = await backendActor.update_chat(formattedChat);
+        const result = await backendActor.update_chat(chat);
         if ("Ok" in result) {
           onSuccess?.();
           return true;

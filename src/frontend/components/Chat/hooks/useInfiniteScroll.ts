@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from "react";
-import { Chat } from "../types";
+import { Chat } from "$/declarations/backend/backend.did";
 
 interface UseInfiniteScrollProps {
   chat: Chat;

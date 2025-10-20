@@ -1,8 +1,14 @@
-import { Box, CircularProgress, Paper, Typography } from "@mui/material";
+import {
+  Box,
+  CircularProgress,
+  Paper,
+  Typography,
+  useTheme,
+} from "@mui/material";
 import React, { memo } from "react";
 import formatTimestamp from "../../utils/time";
 import UserAvatarMenu from "../MainComponents/UserAvatarMenu";
-import { Chat, User } from "./types";
+import { Chat, User } from "$/declarations/backend/backend.did";
 import { getSenderName, isCurrentUser } from "./utils";
 
 interface MessagesListProps {
@@ -29,6 +35,8 @@ export const MessagesList = memo<MessagesListProps>(
     hasMoreMessages,
     isPrivateChat,
   }) => {
+    const theme = useTheme();
+
     const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
       onScroll(e.currentTarget);
     };
@@ -42,10 +50,23 @@ export const MessagesList = memo<MessagesListProps>(
         sx={{
           flex: 1,
           overflow: "auto",
+          overflowX: "hidden",
           p: 2,
           display: "flex",
           flexDirection: "column",
           bgcolor: "background.default",
+          minHeight: 0,
+          maxHeight: "100%",
+          "&::-webkit-scrollbar": {
+            width: "6px",
+          },
+          "&::-webkit-scrollbar-track": {
+            background: "transparent",
+          },
+          "&::-webkit-scrollbar-thumb": {
+            background: "rgba(0,0,0,0.2)",
+            borderRadius: "3px",
+          },
         }}
       >
         {isLoadingMore && (
@@ -84,7 +105,7 @@ export const MessagesList = memo<MessagesListProps>(
               {showSenderInfo && (
                 <UserAvatarMenu
                   user_id={message.sender.toString()}
-                  dispalyName
+                  dispalyName={false}
                 />
               )}
 
@@ -113,6 +134,20 @@ export const MessagesList = memo<MessagesListProps>(
                       : "none",
                   })}
                 >
+                  {showSenderInfo && (
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        fontWeight: 600,
+                        color:
+                          theme.palette.mode === "dark" ? "#a1a1aa" : "#71717a",
+                        mb: 0.5,
+                        display: "block",
+                      }}
+                    >
+                      {senderName}
+                    </Typography>
+                  )}
                   <Typography
                     variant="body2"
                     sx={{ whiteSpace: "pre-wrap", mb: 0.5 }}

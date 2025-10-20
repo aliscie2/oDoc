@@ -1,6 +1,6 @@
 // ChatFloatingWindow.tsx
 import { Close, Remove, Settings } from "@mui/icons-material";
-import { Box, IconButton, Paper } from "@mui/material";
+import { Box, IconButton, Paper, Typography } from "@mui/material";
 import React, { useCallback, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../redux/reducers";
@@ -11,7 +11,10 @@ import { useChatOperations } from "./hooks/useChatOperations";
 import { useInfiniteScroll } from "./hooks/useInfiniteScroll";
 import { MessageInput } from "./MessageInput";
 import { MessagesList } from "./MessagesList";
-import { Chat } from "./types";
+import { Chat } from "$/declarations/backend/backend.did";
+import { isUserCreator, isUserAdmin } from "./utils/chatUtils";
+import { ChatErrorBoundary } from "./ErrorBoundary/ChatErrorBoundary";
+import { useChatErrorHandler } from "./hooks/useChatErrorHandler";
 
 interface ChatFloatingWindowProps {
   chat: Chat;
@@ -26,6 +29,7 @@ export const ChatFloatingWindow: React.FC<ChatFloatingWindowProps> = ({
   // const [isMinimized, setIsMinimized] = React.useState(false);
 
   const dispatch = useDispatch();
+  const { handleError } = useChatErrorHandler();
   const { openChatWindows } = useSelector(
     (state: RootState) => state.chatsState,
   );
@@ -123,12 +127,13 @@ export const ChatFloatingWindow: React.FC<ChatFloatingWindowProps> = ({
   );
 
   const isPrivateChat = chat.name === "private_chat";
-  const isCreator = chat.creator?.toString() === profile?.id;
-  const showSettings = !isPrivateChat && isCreator;
+  const isCreator = isUserCreator(chat.creator, profile?.id);
+  const isAdmin = isUserAdmin(chat.admins, profile?.id);
+  const showSettings = !isPrivateChat && (isCreator || isAdmin);
   const rightOffset = index * 340 + 20;
 
   return (
-    <>
+    <ChatErrorBoundary>
       <Paper
         elevation={0}
         sx={{
@@ -172,30 +177,52 @@ export const ChatFloatingWindow: React.FC<ChatFloatingWindowProps> = ({
           onClick={() => {
             // Only toggle on desktop
             if (window.innerWidth >= 600) {
-              setIsMinimized(!isMinimized);
+              toggleMinimize();
             }
           }}
         >
-          <UserAvatarMenu
-            dispalyName={true}
-            user_id={
-              isPrivateChat
-                ? chat.members
-                    .find((m) => m.toString() !== profile?.id)
-                    ?.toString()
-                : undefined
-            }
-            user={
-              !isPrivateChat
-                ? ({
-                    id: chat.creator?.toString() || "",
-                    name: chat.name,
-                  } as User)
-                : undefined
-            }
-            sx={{ width: 40, height: 40 }}
-            hide={["Review"]}
-          />
+          {isPrivateChat ? (
+            <UserAvatarMenu
+              dispalyName={true}
+              user_id={chat.members
+                .find((m) => m.toString() !== profile?.id)
+                ?.toString()}
+              sx={{ width: 40, height: 40 }}
+              hide={["Review"]}
+            />
+          ) : (
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              <Box
+                sx={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: "50%",
+                  bgcolor: "primary.main",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "white",
+                  fontWeight: 600,
+                  fontSize: "1.1rem",
+                }}
+              >
+                {chat.name.charAt(0).toUpperCase()}
+              </Box>
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  fontWeight: 600,
+                  color: "text.primary",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  maxWidth: "150px",
+                }}
+              >
+                {chat.name}
+              </Typography>
+            </Box>
+          )}
           <Box sx={{ flex: 1 }} />
 
           {/* Hide minimize button on mobile */}
@@ -276,7 +303,7 @@ export const ChatFloatingWindow: React.FC<ChatFloatingWindowProps> = ({
         onSave={handleSaveSettings}
         onDelete={handleDeleteChat}
       />
-    </>
+    </ChatErrorBoundary>
   );
 };
 

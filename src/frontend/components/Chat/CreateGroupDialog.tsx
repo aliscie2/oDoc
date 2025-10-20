@@ -51,7 +51,10 @@ export const CreateGroupDialog: React.FC<CreateGroupDialogProps> = ({
     name: "",
     members: [],
     admins: [],
-    workspace: currentWorkspace?.name !== "default" ? [currentWorkspace] : [],
+    workspace:
+      currentWorkspace?.name !== "default" && currentWorkspace
+        ? [currentWorkspace]
+        : [],
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -60,15 +63,24 @@ export const CreateGroupDialog: React.FC<CreateGroupDialogProps> = ({
   }, []);
 
   const handleMembersChange = useCallback((members: User[]) => {
-    setFormData((prev) => ({ ...prev, members }));
+    const validMembers = members.filter(
+      (member): member is User => member && !!member.id && !!member.name,
+    );
+    setFormData((prev) => ({ ...prev, members: validMembers }));
   }, []);
 
   const handleAdminsChange = useCallback((admins: User[]) => {
-    setFormData((prev) => ({ ...prev, admins }));
+    const validAdmins = admins.filter(
+      (admin): admin is User => admin && !!admin.id && !!admin.name,
+    );
+    setFormData((prev) => ({ ...prev, admins: validAdmins }));
   }, []);
 
   const handleWorkspaceChange = useCallback((workspace: Workspace[]) => {
-    setFormData((prev) => ({ ...prev, workspace }));
+    const validWorkspaces = workspace.filter(
+      (ws): ws is Workspace => ws && !!ws.id && !!ws.name,
+    );
+    setFormData((prev) => ({ ...prev, workspace: validWorkspaces }));
   }, []);
 
   const handleSubmit = useCallback(async () => {
@@ -80,7 +92,9 @@ export const CreateGroupDialog: React.FC<CreateGroupDialogProps> = ({
         members: [],
         admins: [],
         workspace:
-          currentWorkspace?.name !== "default" ? [currentWorkspace] : [],
+          currentWorkspace?.name !== "default" && currentWorkspace
+            ? [currentWorkspace]
+            : [],
       });
     } finally {
       setIsSubmitting(false);
@@ -95,7 +109,9 @@ export const CreateGroupDialog: React.FC<CreateGroupDialogProps> = ({
         members: [],
         admins: [],
         workspace:
-          currentWorkspace?.name !== "default" ? [currentWorkspace] : [],
+          currentWorkspace?.name !== "default" && currentWorkspace
+            ? [currentWorkspace]
+            : [],
       });
     }
   }, [isSubmitting, onClose, currentWorkspace]);
@@ -116,40 +132,54 @@ export const CreateGroupDialog: React.FC<CreateGroupDialogProps> = ({
           <Autocomplete
             multiple
             options={users}
-            getOptionLabel={(option) => option.name}
+            getOptionLabel={(option) => option?.name || "Unknown"}
             value={formData.members}
-            onChange={(_, newValue) => handleMembersChange(newValue)}
+            onChange={(_, newValue) =>
+              handleMembersChange(newValue.filter(Boolean))
+            }
             renderInput={(params) => (
               <TextField {...params} label="Select Members" />
             )}
             renderTags={(value, getTagProps) =>
-              value.map((option, index) => (
-                <Chip
-                  key={option.id}
-                  label={option.name}
-                  {...getTagProps({ index })}
-                />
-              ))
+              value
+                .filter((option) => option && option.id && option.name)
+                .map((option, index) => {
+                  const { key: _key, ...tagProps } = getTagProps({ index });
+                  return (
+                    <Chip
+                      key={`member-${option.id}-${index}`}
+                      label={option.name}
+                      {...tagProps}
+                    />
+                  );
+                })
             }
           />
 
           <Autocomplete
             multiple
             options={formData.members.length > 0 ? formData.members : users}
-            getOptionLabel={(option) => option.name}
+            getOptionLabel={(option) => option?.name || "Unknown"}
             value={formData.admins}
-            onChange={(_, newValue) => handleAdminsChange(newValue)}
+            onChange={(_, newValue) =>
+              handleAdminsChange(newValue.filter(Boolean))
+            }
             renderInput={(params) => (
               <TextField {...params} label="Select Admins" />
             )}
             renderTags={(value, getTagProps) =>
-              value.map((option, index) => (
-                <Chip
-                  key={option.id}
-                  label={option.name}
-                  {...getTagProps({ index })}
-                />
-              ))
+              value
+                .filter((option) => option && option.id && option.name)
+                .map((option, index) => {
+                  const { key: _key, ...tagProps } = getTagProps({ index });
+                  return (
+                    <Chip
+                      key={`admin-${option.id}-${index}`}
+                      label={option.name}
+                      {...tagProps}
+                    />
+                  );
+                })
             }
             disabled={formData.members.length === 0}
           />
@@ -157,20 +187,27 @@ export const CreateGroupDialog: React.FC<CreateGroupDialogProps> = ({
           <Autocomplete
             multiple
             options={workspaces}
-            getOptionLabel={(option) => option.name}
+            getOptionLabel={(option) => option?.name || "Unknown"}
             value={formData.workspace}
-            onChange={(_, newValue) => handleWorkspaceChange(newValue)}
+            onChange={(_, newValue) =>
+              handleWorkspaceChange(newValue.filter(Boolean))
+            }
             renderInput={(params) => (
               <TextField {...params} label="Workspaces" />
             )}
             renderTags={(value, getTagProps) =>
-              value.map((option, index) => (
-                <Chip
-                  key={option.id}
-                  label={option.name}
-                  {...getTagProps({ index })}
-                />
-              ))
+              value
+                .filter((option) => option && option.id && option.name)
+                .map((option, index) => {
+                  const { key: _key, ...tagProps } = getTagProps({ index });
+                  return (
+                    <Chip
+                      key={`workspace-${option.id}-${index}`}
+                      label={option.name}
+                      {...tagProps}
+                    />
+                  );
+                })
             }
           />
         </Box>
