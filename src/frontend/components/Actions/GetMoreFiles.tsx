@@ -33,7 +33,7 @@ const GetMoreFiles: React.FC = () => {
   );
 
   let workspaces = [];
-  if (currentWorkspace.id) {
+  if (currentWorkspace?.id) {
     workspaces = [currentWorkspace.id];
   }
   const [page, setPage] = useState(1);

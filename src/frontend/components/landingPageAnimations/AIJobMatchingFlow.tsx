@@ -10,8 +10,10 @@ import {
   useTheme,
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
-import { backendActor } from "@/utils/backendUtils";
+import { backendActor, ckUSDCActor } from "@/utils/backendUtils";
 import UserAvatarMenu from "@/components/MainComponents/UserAvatarMenu";
+import { canisterId } from "$/declarations/ckusdc_ledger";
+import getckUsdcBalance from "@/utils/getBalance";
 const useTypingAnimation = (texts: string[], speed = 50) => {
   const [idx, setIdx] = useState(0);
   const [text, setText] = useState("");
@@ -44,28 +46,23 @@ const useTypingAnimation = (texts: string[], speed = 50) => {
 
   return text;
 };
-
 const AIJobMatchingFlow = () => {
   const theme = useTheme();
   const [stats, setStats] = useState({
     users: 0,
+    activeUsers: 0,
+    totalDeposit: 0,
     jobsCount: 0,
     talentsCount: 0,
   });
   const [displayStats, setDisplayStats] = useState({
     users: 0,
+    activeUsers: 0,
+    totalDeposit: 0,
     jobsCount: 0,
     talentsCount: 0,
   });
-  const [opportunities, setOpportunities] = useState<
-    Array<{
-      id: string;
-      user_id?: string;
-      job_titles?: string[];
-      skills?: string[];
-      category?: Record<string, null>;
-    }>
-  >([]);
+  const [opportunities, setOpportunities] = useState([]);
   const [scrollPos, setScrollPos] = useState(0);
   const [hasAnimated, setHasAnimated] = useState(false);
 
@@ -82,10 +79,14 @@ const AIJobMatchingFlow = () => {
   useEffect(() => {
     const fetch = async () => {
       try {
-        const res = await backendActor.get_sns_status();
+        const [res, balance] = await Promise.all([
+          backendActor.get_sns_status(),
+          getckUsdcBalance(ckUSDCActor, canisterId),
+        ]);
         if (res.Ok) {
           const {
             number_users,
+            active_users,
             jobs_count,
             talents_count,
             latest_jobs,
@@ -93,6 +94,8 @@ const AIJobMatchingFlow = () => {
           } = res.Ok;
           setStats({
             users: Math.floor(number_users),
+            activeUsers: Math.floor(active_users),
+            totalDeposit: Math.floor(Number(balance) / 1000000),
             jobsCount: Math.floor(jobs_count),
             talentsCount: Math.floor(talents_count),
           });
@@ -108,18 +111,14 @@ const AIJobMatchingFlow = () => {
   }, []);
 
   useEffect(() => {
-    if (
-      hasAnimated ||
-      (!stats.users && !stats.jobsCount && !stats.talentsCount)
-    )
-      return;
+    if (hasAnimated || !stats.users) return;
 
     const duration = 2000,
       steps = 60,
       stepDur = duration / steps;
-    const timers: NodeJS.Timeout[] = [];
+    const timers = [];
 
-    (Object.keys(stats) as Array<keyof typeof stats>).forEach((key) => {
+    Object.keys(stats).forEach((key) => {
       const target = stats[key];
       const inc = target / steps;
       let curr = 0,
@@ -145,12 +144,21 @@ const AIJobMatchingFlow = () => {
     const interval = setInterval(() => setScrollPos((prev) => prev + 0.5), 20);
     return () => clearInterval(interval);
   }, [opportunities.length]);
-
   const statBoxes = useMemo(
     () => [
       {
         value: displayStats.users,
         label: "Users",
+        color: theme.palette.primary.main,
+      },
+      {
+        value: displayStats.activeUsers,
+        label: "Active",
+        color: theme.palette.primary.main,
+      },
+      {
+        value: `$${displayStats.totalDeposit}`,
+        label: "Value",
         color: theme.palette.primary.main,
       },
       {
@@ -273,7 +281,7 @@ const AIJobMatchingFlow = () => {
                   sx={{
                     mt: 3,
                     display: "grid",
-                    gridTemplateColumns: "repeat(3, 1fr)",
+                    gridTemplateColumns: "repeat(5, 1fr)",
                     gap: 1.5,
                   }}
                 >
@@ -301,7 +309,7 @@ const AIJobMatchingFlow = () => {
                         sx={{
                           fontWeight: 700,
                           color: stat.color,
-                          fontSize: "2rem",
+                          fontSize: "1.5rem",
                           mb: 0.5,
                         }}
                       >
@@ -310,7 +318,7 @@ const AIJobMatchingFlow = () => {
                       <Typography
                         variant="caption"
                         sx={{
-                          fontSize: "0.75rem",
+                          fontSize: "0.65rem",
                           opacity: 0.7,
                           textTransform: "uppercase",
                           letterSpacing: 0.5,
@@ -495,5 +503,4 @@ const AIJobMatchingFlow = () => {
     </Box>
   );
 };
-
 export default AIJobMatchingFlow;

@@ -7,6 +7,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
+import { Notification } from "$/declarations/backend/backend.did";
 
 interface FEFriend {
   id: string;
@@ -45,39 +46,34 @@ const FriendshipButton: React.FC<FriendshipButtonProps> = ({
   );
 
   const { notifications } = useSelector(
-    (state: { notificationState: { notifications: any[] } }) =>
+    (state: { notificationState: { notifications: Notification[] } }) =>
       state.notificationState,
   );
 
   const markNotificationAsSeen = async (userId: string) => {
     const notification = notifications.find((n) => {
       const contentType = Object.keys(n.content)[0];
-      if (contentType === "FriendRequest") {
+      if (contentType === "FriendRequest" && "FriendRequest" in n.content) {
         const friendReq = n.content.FriendRequest;
         // Check if userId is in the concatenated friend ID or in sender/receiver
         return (
           friendReq?.friend?.id?.includes(userId) ||
-          friendReq?.sender?.id === userId ||
-          friendReq?.receiver?.id === userId
+          friendReq?.friend?.sender?.id === userId ||
+          friendReq?.friend?.receiver?.id === userId
         );
       }
       return false;
     });
 
     if (notification) {
-      try {
-        await backendActor?.see_notifications([notification.id]);
-        dispatch({ type: "NOTIFICATION_SEEN", id: notification.id });
-      } catch (error) {
-        throw error;
-      }
-    } else {
+      await backendActor?.see_notifications([notification.id]);
+      dispatch({ type: "NOTIFICATION_SEEN", id: notification.id });
     }
 
     if (onActionComplete) onActionComplete();
   };
   const handleAction = async (
-    action: () => Promise<{ Ok?: any; Err?: string }>,
+    action: () => Promise<{ Ok?: unknown; Err?: string }>,
     successCallback: () => void,
     shouldMarkNotification: boolean = false,
   ) => {
@@ -107,7 +103,7 @@ const FriendshipButton: React.FC<FriendshipButtonProps> = ({
           variant: "success",
         });
       }
-    } catch (error) {
+    } catch {
       enqueueSnackbar("Failed to perform action", { variant: "error" });
     } finally {
       setIsLoading(false);

@@ -35,30 +35,29 @@ export const useJobsSave = (): UseJobsSaveReturn => {
     setLoading(true);
 
     try {
-      console.log({ jobChanges });
       const res = await backendActor.update_job(jobChanges, [credits]);
 
       if (res?.Err) {
         enqueueSnackbar(res.Err, { variant: "error" });
         throw new Error(res.Err);
-      } else {
-        enqueueSnackbar("Job changes saved successfully!", {
-          variant: "success",
-        });
-        // Dispatch action to clear changes
-        dispatch({ type: "CLEAR_JOB_CHANGES" });
       }
+
+      enqueueSnackbar("Job changes saved successfully!", {
+        variant: "success",
+      });
+      dispatch({ type: "CLEAR_JOB_CHANGES" });
     } catch (error) {
       console.error({ saveJobsError: error });
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to save job changes";
-      enqueueSnackbar(errorMessage, { variant: "error" });
+      enqueueSnackbar(
+        error instanceof Error ? error.message : "Failed to save job changes",
+        { variant: "error" },
+      );
       throw error;
     } finally {
       setLoading(false);
       saveInProgress.current = false;
     }
-  }, [backendActor, jobChanges, isChanged, dispatch, enqueueSnackbar]);
+  }, [backendActor, jobChanges, isChanged, dispatch, enqueueSnackbar, credits]);
 
   const reset = async () => {
     try {

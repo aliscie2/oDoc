@@ -30,7 +30,7 @@ export class JobSEOManager {
     title: string,
     description: string,
     skills: string[] = [],
-    userPhoto?: Uint8Array | number[],
+    userPhoto?: string,
   ): Promise<string> => {
     return new Promise((resolve) => {
       const canvas = document.createElement("canvas");
@@ -38,20 +38,19 @@ export class JobSEOManager {
       canvas.width = 1200;
       canvas.height = 630;
 
-      // Background gradient
       const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
       gradient.addColorStop(0, "#ffffff");
       gradient.addColorStop(1, "#f8fafc");
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Border
       ctx.strokeStyle = "#e2e8f0";
       ctx.lineWidth = 1;
       ctx.strokeRect(0, 0, canvas.width, canvas.height);
 
-      // Avatar section
-      const avatarX = 60;
+      const leftMargin = 60;
+      const rightMargin = 120; // Increased significantly
+      const avatarX = leftMargin;
       const avatarY = 80;
       const avatarRadius = 50;
 
@@ -66,7 +65,6 @@ export class JobSEOManager {
         );
         gradient.addColorStop(0, "#f8f9fa");
         gradient.addColorStop(1, "#e9ecef");
-
         ctx.fillStyle = gradient;
         ctx.beginPath();
         ctx.arc(
@@ -77,12 +75,9 @@ export class JobSEOManager {
           2 * Math.PI,
         );
         ctx.fill();
-
         ctx.strokeStyle = "#e2e8f0";
         ctx.lineWidth = 2;
         ctx.stroke();
-
-        // Avatar icon
         ctx.fillStyle = "#6c757d";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -91,77 +86,102 @@ export class JobSEOManager {
       };
 
       const finishThumbnail = () => {
+        const titleX = avatarX + avatarRadius * 2 + 40;
+        const titleY = avatarY + 10;
+        const maxWidth = canvas.width - titleX - rightMargin;
+
         // Title
         ctx.fillStyle = "#0f172a";
-        ctx.font = "bold 36px system-ui, Arial, sans-serif";
+        ctx.font = "bold 34px system-ui, Arial, sans-serif"; // Slightly smaller
         ctx.textAlign = "left";
         ctx.textBaseline = "top";
 
-        const titleX = avatarX + avatarRadius * 2 + 50;
-        const titleY = avatarY + 10;
-        const maxWidth = canvas.width - titleX - 40;
-
-        // Wrap title text
         const words = (title || "Job Opportunity").split(" ");
-        let line = "";
-        let y = titleY;
+        let line = "",
+          y = titleY,
+          lineCount = 0;
 
-        for (let i = 0; i < words.length; i++) {
+        for (let i = 0; i < words.length && lineCount < 2; i++) {
           const testLine = line + words[i] + " ";
-          const metrics = ctx.measureText(testLine);
-
-          if (metrics.width > maxWidth && line.length > 0) {
+          if (ctx.measureText(testLine).width > maxWidth && line.length > 0) {
             ctx.fillText(line.trim(), titleX, y);
             line = words[i] + " ";
-            y += 50;
-            if (y > titleY + 50) break; // Max 2 lines
+            y += 45;
+            lineCount++;
           } else {
             line = testLine;
           }
         }
-        if (line.trim()) {
+        if (line.trim() && lineCount < 2) {
           ctx.fillText(line.trim(), titleX, y);
         }
 
         // Description
         ctx.fillStyle = "#475569";
-        ctx.font = "32px system-ui, Arial, sans-serif";
-        const descY = Math.max(y + 60, titleY + 100);
+        ctx.font = "28px system-ui, Arial, sans-serif"; // Slightly smaller
+        const descY = y + 70;
+        const descWords = (
+          description || "Explore this opportunity on ICPJobs"
+        ).split(" ");
         const truncatedDesc =
-          (description || "Explore this opportunity on ICPJobs")
-            .split(" ")
-            .slice(0, 25)
-            .join(" ") + "...";
+          descWords.slice(0, 15).join(" ") +
+          (descWords.length > 15 ? "..." : "");
 
-        ctx.fillText(truncatedDesc, titleX, descY);
-
-        // Skills
-        if (skills && skills.length > 0) {
-          ctx.fillStyle = "#3b82f6";
-          ctx.font = "24px system-ui, Arial, sans-serif";
-          const skillsY = descY + 60;
-          const skillsText = skills.slice(0, 5).join(" • ");
-          ctx.fillText(skillsText, titleX, skillsY);
+        let descLine = "",
+          descY2 = descY,
+          descLineCount = 0;
+        for (const word of truncatedDesc.split(" ")) {
+          const testLine = descLine + word + " ";
+          if (
+            ctx.measureText(testLine).width > maxWidth &&
+            descLine.length > 0
+          ) {
+            ctx.fillText(descLine.trim(), titleX, descY2);
+            descLine = word + " ";
+            descY2 += 36;
+            descLineCount++;
+            if (descLineCount >= 2) break;
+          } else {
+            descLine = testLine;
+          }
+        }
+        if (descLine.trim() && descLineCount < 2) {
+          ctx.fillText(descLine.trim(), titleX, descY2);
         }
 
-        // Branding
+        // Skills
+        if (skills?.length > 0) {
+          ctx.fillStyle = "#3b82f6";
+          ctx.font = "22px system-ui, Arial, sans-serif"; // Slightly smaller
+          const skillsY = descY2 + 50;
+          const skillsText = skills.slice(0, 4).join(" • ");
+
+          let finalSkillsText = skillsText;
+          while (
+            ctx.measureText(finalSkillsText).width > maxWidth &&
+            finalSkillsText.length > 10
+          ) {
+            finalSkillsText =
+              finalSkillsText.substring(0, finalSkillsText.length - 10) + "...";
+          }
+          ctx.fillText(finalSkillsText, titleX, skillsY);
+        }
+
+        // Domain name
         ctx.fillStyle = "#1e293b";
-        ctx.font = "bold 32px system-ui, Arial, sans-serif";
+        ctx.font = "bold 28px system-ui, Arial, sans-serif";
         ctx.textAlign = "right";
         ctx.textBaseline = "bottom";
         ctx.fillText(
           window.location.hostname,
-          canvas.width - 60,
+          canvas.width - rightMargin + 20,
           canvas.height - 40,
         );
 
-        // Convert to data URL
-        const dataUrl = canvas.toDataURL("image/png");
-        resolve(dataUrl);
+        resolve(canvas.toDataURL("image/png"));
       };
 
-      // Handle user photo if provided
-      if (userPhoto && userPhoto.length > 0) {
+      if (userPhoto) {
         const avatarImg = new Image();
         avatarImg.crossOrigin = "anonymous";
         avatarImg.onload = () => {
@@ -189,19 +209,13 @@ export class JobSEOManager {
           drawDefaultAvatar();
           finishThumbnail();
         };
-
-        // Convert Uint8Array to blob URL
-        const blob = new Blob([new Uint8Array(userPhoto)], {
-          type: "image/jpeg",
-        });
-        avatarImg.src = URL.createObjectURL(blob);
+        avatarImg.src = userPhoto;
       } else {
         drawDefaultAvatar();
         finishThumbnail();
       }
     });
   };
-
   // Update meta tags for SEO
   updateMetaTags = (tags: Record<string, string>) => {
     Object.entries(tags).forEach(([property, content]) => {
