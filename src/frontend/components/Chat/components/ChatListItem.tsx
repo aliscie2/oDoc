@@ -56,29 +56,35 @@ export const ChatListItem: React.FC<ChatListItemProps> = ({
           "&:last-child": { pb: compact ? { xs: 1, sm: 1.5 } : 2 },
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", gap: compact ? { xs: 1, sm: 1.5 } : 2 }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: compact ? { xs: 1, sm: 1.5 } : 2,
+          }}
+        >
           {/* Avatar */}
           {isPrivateChat ? (
-            <UserAvatarMenu 
-            dispalyName
-              user_id={typeof otherUser === "string" ? otherUser : otherUser?.id} 
+            <UserAvatarMenu
+              dispalyName
+              user_id={
+                typeof otherUser === "string" ? otherUser : otherUser?.id
+              }
               size={compact ? 40 : 48}
             />
           ) : (
-           <>
-            <Avatar
-              sx={{
-                width: compact ? 40 : 48,
-                height: compact ? 40 : 48,
-                bgcolor: "primary.main",
-              }}
-            >
-              <GroupIcon />
-            </Avatar>
-            <Typography>
-              {chat.name}
-            </Typography>
-           </>
+            <>
+              <Avatar
+                sx={{
+                  width: compact ? 40 : 48,
+                  height: compact ? 40 : 48,
+                  bgcolor: "primary.main",
+                }}
+              >
+                <GroupIcon />
+              </Avatar>
+              <Typography>{chat.name}</Typography>
+            </>
           )}
 
           {/* Chat info */}

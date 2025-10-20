@@ -259,7 +259,6 @@ const ContractHeader = memo<{
             onChange={handleContractNameChange}
             disabled={contract.creator?.toString() !== profile.id}
             size="small"
-
             {...FIELD_CONFIGS.standardTextField}
             slotProps={{
               input: {

@@ -38,7 +38,9 @@ const NotificationCard = ({
   profileId: string;
 }) => {
   const navigate = useNavigate();
-  const contentType = Object.keys(notification.content)[0] as keyof typeof notification.content;
+  const contentType = Object.keys(
+    notification.content,
+  )[0] as keyof typeof notification.content;
 
   const cardStyles = {
     mb: 1,
@@ -50,7 +52,14 @@ const NotificationCard = ({
     borderRadius: { xs: 1, sm: 1 },
   };
 
-  const BaseCard = ({ userId, message, children, onClick, icon, extraContent }: {
+  const BaseCard = ({
+    userId,
+    message,
+    children,
+    onClick,
+    icon,
+    extraContent,
+  }: {
     userId?: string;
     message?: string;
     children?: React.ReactNode;
@@ -58,12 +67,29 @@ const NotificationCard = ({
     icon?: React.ReactNode;
     extraContent?: React.ReactNode;
   }) => (
-    <Card sx={{ ...cardStyles, cursor: onClick ? "pointer" : "default" }} onClick={onClick}>
-      <CardContent sx={{ p: { xs: 1, sm: 1.5 }, "&:last-child": { pb: { xs: 1, sm: 1.5 } } }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 1, sm: 1.5 } }}>
+    <Card
+      sx={{ ...cardStyles, cursor: onClick ? "pointer" : "default" }}
+      onClick={onClick}
+    >
+      <CardContent
+        sx={{
+          p: { xs: 1, sm: 1.5 },
+          "&:last-child": { pb: { xs: 1, sm: 1.5 } },
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: { xs: 1, sm: 1.5 },
+          }}
+        >
           {icon || <UserAvatarMenu user_id={userId!} size={36} />}
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.25, fontSize: "0.95rem" }}>
+            <Typography
+              variant="body2"
+              sx={{ fontWeight: 600, mb: 0.25, fontSize: "0.95rem" }}
+            >
               {message}
             </Typography>
             {children}
@@ -71,7 +97,11 @@ const NotificationCard = ({
           <Typography
             variant="caption"
             color="text.secondary"
-            sx={{ fontSize: "0.7rem", whiteSpace: "nowrap", alignSelf: "flex-start" }}
+            sx={{
+              fontSize: "0.7rem",
+              whiteSpace: "nowrap",
+              alignSelf: "flex-start",
+            }}
           >
             {formatRelativeTime(notification.time)}
           </Typography>
@@ -86,12 +116,15 @@ const NotificationCard = ({
       ? notification.receiver.toString()
       : notification.sender.toString();
 
-  const notificationConfig: Record<string, {
-    userId?: string;
-    message?: string;
-    children?: React.ReactNode;
-    onClick?: () => void;
-  }> = {
+  const notificationConfig: Record<
+    string,
+    {
+      userId?: string;
+      message?: string;
+      children?: React.ReactNode;
+      onClick?: () => void;
+    }
+  > = {
     FriendRequest: {
       userId: notification.sender?.toString(),
       message: "Friend request",
@@ -118,7 +151,10 @@ const NotificationCard = ({
     },
   };
 
-  if (contentType === "NewMessage" && (notification.content as any).NewMessage) {
+  if (
+    contentType === "NewMessage" &&
+    (notification.content as any).NewMessage
+  ) {
     const msg = (notification.content as any).NewMessage;
     notificationConfig.NewMessage = {
       icon: <MessageIcon color="primary" sx={{ fontSize: 36 }} />,
@@ -126,13 +162,22 @@ const NotificationCard = ({
       message: "New message",
       children: (
         <>
-          <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.75rem" }}>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ fontSize: "0.75rem" }}
+          >
             from {msg.sender.toString()}
           </Typography>
           <Typography
             variant="body2"
             color="text.secondary"
-            sx={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", mt: 0.25 }}
+            sx={{
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              mt: 0.25,
+            }}
           >
             {msg.message}
           </Typography>
@@ -164,7 +209,10 @@ const NotificationCard = ({
             color={status === "Pending" ? "warning" : "success"}
             sx={{ height: 18, fontSize: "0.65rem" }}
           />
-          <Typography variant="body2" sx={{ fontWeight: 600, color: "primary.main" }}>
+          <Typography
+            variant="body2"
+            sx={{ fontWeight: 600, color: "primary.main" }}
+          >
             {payment.amount}$
           </Typography>
         </Box>
@@ -176,14 +224,22 @@ const NotificationCard = ({
   if (!config) return null;
 
   if (contentType === "FriendRequest") {
-    if ((notification.content as any).FriendRequest?.sender?.toString() === profileId) return null;
-    
+    if (
+      (notification.content as any).FriendRequest?.sender?.toString() ===
+      profileId
+    )
+      return null;
+
     return (
       <BaseCard
         {...config}
         extraContent={
           <Box sx={{ ml: 5 }}>
-            <FriendshipButton user={(notification.content as unknown).FriendRequest.friend.sender} />
+            <FriendshipButton
+              user={
+                (notification.content as unknown).FriendRequest.friend.sender
+              }
+            />
           </Box>
         }
       />
@@ -245,7 +301,7 @@ const NotificationsButton = () => {
       console.error("Error marking all as read:", error);
     }
   };
-  const isNotificationsPage = useLocation().pathname==="/notifications";
+  const isNotificationsPage = useLocation().pathname === "/notifications";
 
   const handleNotificationClick = (e: React.MouseEvent<HTMLElement>) => {
     if (isMobile) {

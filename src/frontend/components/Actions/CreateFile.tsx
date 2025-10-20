@@ -10,25 +10,34 @@ import {
 import { FileNode } from "../../../declarations/backend/backend.did";
 import { useSnackbar } from "notistack";
 
+interface FilesState {
+  profile: { id: string } | null;
+  currentWorkspace: { id: string } | null;
+  files: FileNode[];
+}
+
 const CreateFile: React.FC = () => {
   const dispatch = useDispatch();
   const { profile, currentWorkspace, files } = useSelector(
-    (state: any) => state.filesState,
+    (state: { filesState: FilesState }) => state.filesState,
   );
 
-  const { closeSnackbar } = useSnackbar();
+  const { closeSnackbar, enqueueSnackbar } = useSnackbar();
 
   const handleCreateFile = async () => {
-    const startTime = performance.now();
-
     const id = randomString();
 
     let workspaces: Array<string> = [];
     if (
-      currentWorkspace.id &&
+      currentWorkspace?.id &&
       currentWorkspace.id.toLowerCase() !== "default"
     ) {
       workspaces = [currentWorkspace.id];
+    }
+
+    if (!profile?.id) {
+      enqueueSnackbar("Error: User profile not loaded", { variant: "error" });
+      return;
     }
 
     const new_file: FileNode = {
@@ -46,20 +55,24 @@ const CreateFile: React.FC = () => {
       parent: [],
     };
 
-    dispatch({
-      type: "ADD_FILE",
-      new_file,
-    });
+    try {
+      dispatch({
+        type: "ADD_FILE",
+        new_file,
+      });
 
-    dispatch({
-      type: "ADD_CONTENT",
-      id,
-      content: fileContentSample,
-    });
+      dispatch({
+        type: "ADD_CONTENT",
+        id,
+        content: fileContentSample,
+      });
 
-    closeSnackbar();
-
-    // enqueueSnackbar("New file is created!", { variant: "success" });
+      closeSnackbar();
+      enqueueSnackbar("New file created!", { variant: "success" });
+    } catch (error) {
+      console.error("Error creating file:", error);
+      enqueueSnackbar("Failed to create file", { variant: "error" });
+    }
   };
   let title = "Create a new document";
   if (files.length === 0) {

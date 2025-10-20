@@ -28,8 +28,6 @@ interface Workspace {
   name: string;
 }
 
-
-
 interface ChatSettingsDialogProps {
   open: boolean;
   onClose: () => void;
@@ -57,7 +55,7 @@ export const ChatSettingsDialog = memo<ChatSettingsDialogProps>(
 
     const isPrivateChat = chat.name === "private_chat";
 
-    const isCreator = chat?.admins.some(a=>a.toString()==profile?.id)
+    const isCreator = chat?.admins.some((a) => a.toString() == profile?.id);
 
     const handleSave = useCallback(async () => {
       setIsSaving(true);

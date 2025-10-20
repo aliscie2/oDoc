@@ -8,9 +8,9 @@ interface UseChatSettingsProps {
   onError?: (error: any, context: string) => void;
 }
 
-export const useChatSettings = ({ 
-  onSuccess, 
-  onError 
+export const useChatSettings = ({
+  onSuccess,
+  onError,
 }: UseChatSettingsProps = {}) => {
   const dispatch = useDispatch();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -46,7 +46,7 @@ export const useChatSettings = ({
         return false;
       }
     },
-    [dispatch, onSuccess, onError]
+    [dispatch, onSuccess, onError],
   );
 
   const handleDeleteChat = useCallback(
@@ -70,7 +70,7 @@ export const useChatSettings = ({
         return false;
       }
     },
-    [dispatch, closeSettings, onSuccess, onError]
+    [dispatch, closeSettings, onSuccess, onError],
   );
 
   return {

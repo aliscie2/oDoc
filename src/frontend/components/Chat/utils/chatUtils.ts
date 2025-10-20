@@ -95,5 +95,3 @@ export const createAdminArray = (
 
   return Array.from(adminIds).map((id) => Principal.fromText(id));
 };
-
-

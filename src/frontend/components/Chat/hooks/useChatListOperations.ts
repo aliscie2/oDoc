@@ -11,35 +11,32 @@ interface UseChatListOperationsProps {
   onWarning?: (message: string) => void;
 }
 
-export const useChatListOperations = ({ 
-  profile, 
-  onWarning 
+export const useChatListOperations = ({
+  profile,
+  onWarning,
 }: UseChatListOperationsProps = {}) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  const getOtherUser = useCallback(
-    (chat: Chat) => {
-      if (chat.name !== "private_chat") return null;
+  const getOtherUser = useCallback((chat: Chat) => {
+    if (chat.name !== "private_chat") return null;
 
-      const ODOC_CEO_ID =
-        "tgwpc-6xuon-k3a6y-ey7lt-xksjs-qx22h-ikhbt-4yp3a-6stco-rymbe-pqe";
+    const ODOC_CEO_ID =
+      "tgwpc-6xuon-k3a6y-ey7lt-xksjs-qx22h-ikhbt-4yp3a-6stco-rymbe-pqe";
 
-      const otherAdmin = chat?.admins?.map(a => a.toString())[0];
+    const otherAdmin = chat?.admins?.map((a) => a.toString())[0];
 
-      if (otherAdmin?.toString() === ODOC_CEO_ID) {
-        return {
-          id: ODOC_CEO_ID,
-          name: "oDoc",
-          photo: "/logo.png",
-        };
-      }
+    if (otherAdmin?.toString() === ODOC_CEO_ID) {
+      return {
+        id: ODOC_CEO_ID,
+        name: "oDoc",
+        photo: "/logo.png",
+      };
+    }
 
-      return otherAdmin;
-    },
-    []
-  );
+    return otherAdmin;
+  }, []);
 
   const handleOpenChat = useCallback(
     async (chat: Chat, closeDropdown?: () => void) => {
@@ -87,21 +84,21 @@ export const useChatListOperations = ({
 
       closeDropdown?.();
     },
-    [dispatch, navigate, backendActor, profile?.id, isMobile, onWarning]
+    [dispatch, navigate, backendActor, profile?.id, isMobile, onWarning],
   );
 
   const isCreator = useCallback(
     (chat: Chat) => {
       return chat.creator?.toString() === profile?.id;
     },
-    [profile?.id]
+    [profile?.id],
   );
 
   const shouldShowSettings = useCallback(
     (chat: Chat) => {
       return chat.name !== "private_chat" && isCreator(chat);
     },
-    [isCreator]
+    [isCreator],
   );
 
   return {

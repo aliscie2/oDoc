@@ -9,15 +9,22 @@ import {
   EventTimezone,
 } from "@/pages/calendar/utils/serializers";
 
+interface SaveError {
+  module: "docs" | "calendar" | "jobs";
+  error: string;
+}
+
 interface UseCalendarSaveReturn {
   isChanged: boolean;
   loading: boolean;
   save: () => Promise<void>;
   reset: () => Promise<void>;
+  lastError: SaveError | null;
 }
 
 export const useCalendarSave = (): UseCalendarSaveReturn => {
   const [loading, setLoading] = useState(false);
+  const [lastError, setLastError] = useState<SaveError | null>(null);
   const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
   // Using direct backendActor import
@@ -48,9 +55,12 @@ export const useCalendarSave = (): UseCalendarSaveReturn => {
       );
 
       if (res?.Err) {
-        enqueueSnackbar(res.Err, { variant: "error" });
-        throw new Error(res.Err);
+        const errorMsg = res.Err;
+        setLastError({ module: "calendar", error: errorMsg });
+        enqueueSnackbar(errorMsg, { variant: "error" });
+        throw new Error(errorMsg);
       } else {
+        setLastError(null);
         enqueueSnackbar("Calendar saved successfully!", { variant: "success" });
         dispatch({
           type: "SET_CALENDAR_CHANGED",
@@ -61,6 +71,7 @@ export const useCalendarSave = (): UseCalendarSaveReturn => {
       console.error({ saveCalendarError: error });
       const errorMessage =
         error instanceof Error ? error.message : "Failed to save calendar";
+      setLastError({ module: "calendar", error: errorMessage });
       enqueueSnackbar(errorMessage, { variant: "error" });
       throw error;
     } finally {
@@ -89,6 +100,7 @@ export const useCalendarSave = (): UseCalendarSaveReturn => {
         calendar: res,
       });
 
+      setLastError(null);
       enqueueSnackbar("Calendar changes reset successfully!", {
         variant: "info",
       });
@@ -104,5 +116,6 @@ export const useCalendarSave = (): UseCalendarSaveReturn => {
     loading,
     save,
     reset,
+    lastError,
   };
 };

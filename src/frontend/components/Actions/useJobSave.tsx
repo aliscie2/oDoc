@@ -4,15 +4,22 @@ import { useSnackbar } from "notistack";
 import { useCallback, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
+interface SaveError {
+  module: "docs" | "calendar" | "jobs";
+  error: string;
+}
+
 interface UseJobsSaveReturn {
   isChanged: boolean;
   loading: boolean;
   save: () => Promise<void>;
   reset: () => Promise<void>;
+  lastError: SaveError | null;
 }
 
 export const useJobsSave = (): UseJobsSaveReturn => {
   const [loading, setLoading] = useState(false);
+  const [lastError, setLastError] = useState<SaveError | null>(null);
   const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
   // Using direct backendActor import
@@ -38,20 +45,23 @@ export const useJobsSave = (): UseJobsSaveReturn => {
       const res = await backendActor.update_job(jobChanges, [credits]);
 
       if (res?.Err) {
-        enqueueSnackbar(res.Err, { variant: "error" });
-        throw new Error(res.Err);
+        const errorMsg = res.Err;
+        setLastError({ module: "jobs", error: errorMsg });
+        enqueueSnackbar(errorMsg, { variant: "error" });
+        throw new Error(errorMsg);
       }
 
+      setLastError(null);
       enqueueSnackbar("Job changes saved successfully!", {
         variant: "success",
       });
       dispatch({ type: "CLEAR_JOB_CHANGES" });
     } catch (error) {
       console.error({ saveJobsError: error });
-      enqueueSnackbar(
-        error instanceof Error ? error.message : "Failed to save job changes",
-        { variant: "error" },
-      );
+      const errorMsg =
+        error instanceof Error ? error.message : "Failed to save job changes";
+      setLastError({ module: "jobs", error: errorMsg });
+      enqueueSnackbar(errorMsg, { variant: "error" });
       throw error;
     } finally {
       setLoading(false);
@@ -79,6 +89,7 @@ export const useJobsSave = (): UseJobsSaveReturn => {
         matchingJobs: res.matching_jobs,
       });
 
+      setLastError(null);
       enqueueSnackbar("Job changes reset successfully!", { variant: "info" });
     } catch (error) {
       console.error({ resetJobsError: error });
@@ -92,5 +103,6 @@ export const useJobsSave = (): UseJobsSaveReturn => {
     loading,
     save,
     reset,
+    lastError,
   };
 };

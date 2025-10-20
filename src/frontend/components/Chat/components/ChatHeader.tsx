@@ -27,8 +27,8 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
     <AppBar
       position="static"
       elevation={0}
-      sx={{ 
-        bgcolor: "background.paper", 
+      sx={{
+        bgcolor: "background.paper",
         color: "text.primary",
         flexShrink: 0,
         zIndex: 1100,
@@ -36,29 +36,31 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
     >
       <Toolbar sx={{ minHeight: { xs: 56, sm: 64 } }}>
         {/* Left side - Avatar and Title */}
-        <Box sx={{ 
-          display: "flex", 
-          alignItems: "center", 
-          flex: 1,
-          minWidth: 0, // Allow text truncation
-        }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            flex: 1,
+            minWidth: 0, // Allow text truncation
+          }}
+        >
           {avatar && (
             <UserAvatarMenu
               dispalyName={false} // Don't show name in header to save space
               user_id={avatar.userId}
               user={avatar.user}
-              sx={{ 
-                width: { xs: 36, sm: 40 }, 
-                height: { xs: 36, sm: 40 }, 
+              sx={{
+                width: { xs: 36, sm: 40 },
+                height: { xs: 36, sm: 40 },
                 mr: { xs: 1, sm: 1.5 },
                 flexShrink: 0,
               }}
               hide={["Review"]}
             />
           )}
-          <Typography 
-            variant="h6" 
-            sx={{ 
+          <Typography
+            variant="h6"
+            sx={{
               fontWeight: 600,
               fontSize: { xs: "1.1rem", sm: "1.25rem" },
               overflow: "hidden",
@@ -71,16 +73,18 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
         </Box>
 
         {/* Right side - Actions and Settings */}
-        <Box sx={{ 
-          display: "flex", 
-          alignItems: "center", 
-          gap: { xs: 0.5, sm: 1 },
-          flexShrink: 0,
-        }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: { xs: 0.5, sm: 1 },
+            flexShrink: 0,
+          }}
+        >
           {actions}
           {showSettings && onSettingsClick && (
-            <IconButton 
-              color="inherit" 
+            <IconButton
+              color="inherit"
               onClick={onSettingsClick}
               size={window.innerWidth < 600 ? "small" : "medium"}
             >

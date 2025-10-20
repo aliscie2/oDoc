@@ -43,9 +43,7 @@ const ChatNotifications = () => {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMoreChats, setHasMoreChats] = useState(true);
 
-  const { chats } = useSelector(
-    (state: RootState) => state.chatsState,
-  );
+  const { chats } = useSelector((state: RootState) => state.chatsState);
   const openChatWindows = useSelector(
     (state: RootState) => (state.chatsState as any).openChatWindows || {},
   );
@@ -54,10 +52,10 @@ const ChatNotifications = () => {
   );
 
   // Use custom hooks
-  const { 
-    getOtherUser, 
-    handleOpenChat: openChat
-  } = useChatListOperations({ profile, onWarning: handleWarning });
+  const { getOtherUser, handleOpenChat: openChat } = useChatListOperations({
+    profile,
+    onWarning: handleWarning,
+  });
 
   const filteredChats = useMemo(() => {
     if (!currentWorkspace || currentWorkspace.name === "default") return chats;
@@ -73,14 +71,17 @@ const ChatNotifications = () => {
       0,
     );
   }, [filteredChats, profile?.id]);
-  const isChatsPage = useLocation().pathname==="/chats";
-  const handleClick = useCallback((event: React.MouseEvent<HTMLElement>) => {
-    if (isMobile) {
-      navigate("/chats");
-    } else {
-      setAnchorEl(event.currentTarget);
-    }
-  }, [isMobile, navigate]);
+  const isChatsPage = useLocation().pathname === "/chats";
+  const handleClick = useCallback(
+    (event: React.MouseEvent<HTMLElement>) => {
+      if (isMobile) {
+        navigate("/chats");
+      } else {
+        setAnchorEl(event.currentTarget);
+      }
+    },
+    [isMobile, navigate],
+  );
 
   const handleClose = useCallback(() => setAnchorEl(null), []);
 
@@ -91,16 +92,16 @@ const ChatNotifications = () => {
 
   const handleOpenChat = useCallback(
     (chat: Chat) => openChat(chat, handleClose),
-    [openChat, handleClose]
+    [openChat, handleClose],
   );
-
-
 
   const handleLoadMore = useCallback(async () => {
     if (!backendActor || isLoadingMore) return;
     setIsLoadingMore(true);
     try {
-      const chatsList = await backendActor.get_my_chats(BigInt(chats?.length || 0));
+      const chatsList = await backendActor.get_my_chats(
+        BigInt(chats?.length || 0),
+      );
 
       if (chatsList.length === 0) {
         setHasMoreChats(false);
@@ -108,7 +109,11 @@ const ChatNotifications = () => {
         dispatch({ type: "EXTEND_CHATS", chats: chatsList });
       }
     } catch (error) {
-      handleError(error, "load more chats", "Failed to load more chats. Please try again.");
+      handleError(
+        error,
+        "load more chats",
+        "Failed to load more chats. Please try again.",
+      );
     } finally {
       setIsLoadingMore(false);
     }
@@ -137,7 +142,7 @@ const ChatNotifications = () => {
         const validWorkspaces = validateWorkspaces(formData.workspace);
 
         const chatId = randomString();
-        
+
         // Create chat for backend (Chat type with Principal)
         const newChatForBackend = {
           id: chatId,
@@ -163,13 +168,19 @@ const ChatNotifications = () => {
           // Add the new chat to Redux and open it
           dispatch({ type: "SET_CHATS", chats: [newChatForBackend, ...chats] });
           handleOpenChat(newChatForBackend);
-          handleSuccess(`Group "${formData.name || "Untitled"}" created successfully!`);
+          handleSuccess(
+            `Group "${formData.name || "Untitled"}" created successfully!`,
+          );
         } else {
           const errorMessage = result.Err || "Failed to create chat";
           throw new Error(errorMessage);
         }
       } catch (error) {
-        handleError(error, "create group", "An unexpected error occurred while creating the group");
+        handleError(
+          error,
+          "create group",
+          "An unexpected error occurred while creating the group",
+        );
       }
       setCreateGroupOpen(false);
     },
@@ -201,35 +212,35 @@ const ChatNotifications = () => {
       </IconButton>
 
       <Menu
-  id="chat-menu"
-  anchorEl={anchorEl}
-  open={open}
-  onClose={handleClose}
-  slotProps={{
-    ...{
-      paper: {
-        sx: {
-          width: { xs: "95vw", sm: 420 },
-          maxWidth: { xs: "95vw", sm: 420 },
-          maxHeight: { xs: "70vh", sm: "80vh" },
-          mt: 1,
-          borderRadius: { xs: 1.5, sm: 1 },
-          boxShadow: { xs: "0 8px 32px rgba(0,0,0,0.12)", sm: 3 },
-          display: "flex",
-          flexDirection: "column",
-          overflow: "hidden",
-        },
-      },
-    },
-    backdrop: {
-      sx: {
-        backgroundColor: { xs: "rgba(0,0,0,0.3)", sm: "transparent" },
-      },
-    },
-  }}
-  transformOrigin={{ horizontal: "right", vertical: "top" }}
-  anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
->
+        id="chat-menu"
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        slotProps={{
+          ...{
+            paper: {
+              sx: {
+                width: { xs: "95vw", sm: 420 },
+                maxWidth: { xs: "95vw", sm: 420 },
+                maxHeight: { xs: "70vh", sm: "80vh" },
+                mt: 1,
+                borderRadius: { xs: 1.5, sm: 1 },
+                boxShadow: { xs: "0 8px 32px rgba(0,0,0,0.12)", sm: 3 },
+                display: "flex",
+                flexDirection: "column",
+                overflow: "hidden",
+              },
+            },
+          },
+          backdrop: {
+            sx: {
+              backgroundColor: { xs: "rgba(0,0,0,0.3)", sm: "transparent" },
+            },
+          },
+        }}
+        transformOrigin={{ horizontal: "right", vertical: "top" }}
+        anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+      >
         <Box
           sx={{
             p: 2,
@@ -274,13 +285,15 @@ const ChatNotifications = () => {
             >
               <AddIcon />
             </IconButton>
-            {!isChatsPage&&<IconButton
-              onClick={handleExpandClick}
-              size="small"
-              sx={{ display: { xs: "none", sm: "flex" } }}
-            >
-              <OpenInFullIcon />
-            </IconButton>}
+            {!isChatsPage && (
+              <IconButton
+                onClick={handleExpandClick}
+                size="small"
+                sx={{ display: { xs: "none", sm: "flex" } }}
+              >
+                <OpenInFullIcon />
+              </IconButton>
+            )}
             <IconButton
               onClick={handleClose}
               size="small"
@@ -373,13 +386,12 @@ const ChatNotifications = () => {
         currentWorkspace={currentWorkspace || undefined}
       />
 
-      {!isMobile && 
+      {!isMobile &&
         Object.keys(openChatWindows || {}).map((chatId, index) => {
           const chat = chats.find((c) => c.id === chatId);
           if (!chat) return null;
           return <ChatFloatingWindow key={chatId} chat={chat} index={index} />;
-        })
-      }
+        })}
     </ChatErrorBoundary>
   );
 };

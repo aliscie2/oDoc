@@ -82,5 +82,3 @@ export const convertToBlobLink = (photo?: Uint8Array): string | undefined => {
 export const principalToString = (principal: Principal | string): string => {
   return principal instanceof Principal ? principal.toString() : principal;
 };
-
-
