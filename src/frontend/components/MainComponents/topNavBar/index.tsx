@@ -32,6 +32,7 @@ import {
 } from "@mui/icons-material";
 import GradeIcon from "@mui/icons-material/Grade";
 import ReceiptIcon from "@mui/icons-material/Receipt";
+
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
 import MultiSaveButton from "@/components/Actions/MultiSave";
@@ -119,83 +120,6 @@ const useNavigationState = () => {
   };
 };
 
-// Custom hook for scroll behavior on mobile
-const useMobileScrollBehavior = (isMobile) => {
-  const [showMobileMenu, setShowMobileMenu] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
-
-  useEffect(() => {
-    if (!isMobile) return;
-
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      setShowMobileMenu(currentScrollY < lastScrollY || currentScrollY < 10);
-      setLastScrollY(currentScrollY);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [lastScrollY, isMobile]);
-
-  return showMobileMenu;
-};
-
-// Custom hook for desktop navbar visibility based on mouse position only
-// const useDesktopNavbarMouseVisibility = (isMobile) => {
-//   const [isVisible, setIsVisible] = useState(true);
-//   const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
-
-//   useEffect(() => {
-//     if (isMobile) return;
-
-//     const handleMouseMove = (e: MouseEvent) => {
-//       const shouldShow = e.clientY < 350; // Show when mouse is within 250px of top
-
-//       if (shouldShow) {
-//         // Clear any pending hide timeout
-//         if (timeoutRef.current) {
-//           clearTimeout(timeoutRef.current);
-//           timeoutRef.current = null;
-//         }
-//         // Show immediately
-//         setIsVisible(true);
-//       } else {
-//         // Only set timeout if not already set
-//         if (!timeoutRef.current) {
-//           // Delay hiding to avoid flickering
-//           timeoutRef.current = setTimeout(() => {
-//             setIsVisible(false);
-//             timeoutRef.current = null;
-//           }, 500);
-//         }
-//       }
-//     };
-
-//     // Throttle mouse move events to reduce re-renders
-//     let rafId: number | null = null;
-//     const throttledMouseMove = (e: MouseEvent) => {
-//       if (rafId) return;
-//       rafId = requestAnimationFrame(() => {
-//         handleMouseMove(e);
-//         rafId = null;
-//       });
-//     };
-
-//     window.addEventListener("mousemove", throttledMouseMove, { passive: true });
-
-//     return () => {
-//       window.removeEventListener("mousemove", throttledMouseMove);
-//       if (timeoutRef.current) {
-//         clearTimeout(timeoutRef.current);
-//       }
-//       if (rafId) {
-//         cancelAnimationFrame(rafId);
-//       }
-//     };
-//   }, [isMobile]);
-
-//   return isVisible;
-// };
 
 // Navigation item factory
 const createNavItem = (key, config, state, handlers) => {
@@ -217,12 +141,12 @@ const createNavItem = (key, config, state, handlers) => {
     },
     notifications: {
       label: "Notifications",
-      icon: <NotificationsButton isMobile={state.isMobile} />,
+      icon: <NotificationsButton />,
       component: true,
     },
     chat: {
       label: "Chat",
-      icon: <ChatsComponent isMobile={state.isMobile} />,
+      icon: <ChatsComponent />,
       component: true,
     },
     profile: {
@@ -260,7 +184,6 @@ export default function TopNavBar() {
   const navigate = useNavigate();
   const isRegistered = authStatus === "registered";
   const state = useNavigationState();
-  const showMobileMenu = useMobileScrollBehavior(state.isMobile);
   const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null);
 
   const { profile, profile_history, current_file } = useSelector(
@@ -482,9 +405,15 @@ export default function TopNavBar() {
         ));
     };
 
+  const location = useLocation();
+  
+  const includesAny = (str, arr) => arr.some(item => str.includes(item));
+  const hideToggleNav = includesAny(location.pathname, ["notification", "chat", "chsts"]);
+
+console.log("Render");
     return (
       <>
-        {state.isLoggedIn && showMobileMenu && (
+        {!hideToggleNav && state.isLoggedIn && (
           <IconButton
             sx={{
               position: "fixed",
@@ -670,10 +599,7 @@ export default function TopNavBar() {
       </Toolbar>
     );
   };
-
-  const location = useLocation();
-  const hideBottomNav = location.pathname.startsWith("/chat/");
-
+console.log("TopNavBar")
   return (
     <>
       <AppBar
@@ -688,7 +614,7 @@ export default function TopNavBar() {
         {state.isFetching && <LinearProgress />}
         <DesktopNav />
       </AppBar>
-      {!hideBottomNav && state.isMobile && <MobileNav />}
+      { state.isMobile && <MobileNav />}
     </>
   );
 }

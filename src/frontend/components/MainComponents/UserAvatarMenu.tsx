@@ -31,7 +31,7 @@ import MarkdownMessage from "@/chatBot/markDownMessageRdnder";
 
 interface UserAvatarMenuProps {
   user?: User;
-  sx?: unknown;
+  sx?: React.CSSProperties;
   hide?: string[];
   user_id?: string;
   onMessageClick?: (user: User) => void;
@@ -39,7 +39,9 @@ interface UserAvatarMenuProps {
   displayDescription?: boolean;
   displayId?: boolean;
   maxWords?: number;
+  forceDisplayName?: boolean;
 }
+
 const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
   user: initialUser,
   sx,
@@ -50,15 +52,20 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
   displayDescription = false,
   displayId = false,
   maxWords = 50,
+  forceDisplayName = false,
+  variant="body2"
 }) => {
+  console.log("UserAvatarMenu", { initialUser, user_id });
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
   const { chats } = useSelector((state: RootState) => state.chatsState);
-  const { profile, posts, friends, all_friends, currentWorkspace } =
-    useSelector((state: RootState) => state.filesState);
+  const { profile, posts, all_friends, currentWorkspace } = useSelector(
+    (state: RootState) => state.filesState,
+  );
 
   const [user, setUser] = useState<User | undefined>(initialUser);
+  console.log("UserAvatarMenu", { user });
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [rating, setRating] = useState<number>(0);
@@ -70,25 +77,34 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
   const [copyTooltip, setCopyTooltip] = useState("Click to copy User ID");
 
   useEffect(() => {
-    setUser(initialUser);
+    if (initialUser) {
+      setUser(initialUser);
+    }
   }, [initialUser]);
 
   useEffect(() => {
     (async () => {
-      if (user_id && !isCalled) {
+      if (user_id && profile?.id === user_id) {
+        setUser(profile);
+        return;
+      } else if (user_id && !isCalled) {
         setLoading(true);
         const foundUser = all_friends?.find((f) => f.id === user_id);
         if (foundUser) {
           setUser(foundUser);
         } else {
-          const response = await backendActor.get_user(user_id);
-          if ("Ok" in response) setUser(response.Ok);
+          try {
+            const response = await backendActor.get_user(user_id);
+            if ("Ok" in response) setUser(response.Ok);
+          } catch (error) {
+            console.error("Failed to fetch user:", error);
+          }
         }
         setLoading(false);
         setCalled(true);
       }
     })();
-  }, [isCalled, user_id, all_friends]);
+  }, [isCalled, user_id, all_friends, profile]);
 
   if (isLoading) return <CircularProgress />;
 
@@ -101,9 +117,21 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
   }
 
   const getUserPhoto = () => {
-    if (user.photo?.length > 0) return user.photo;
+    if (
+      user.photo &&
+      (typeof user.photo === "string" || user.photo.length > 0)
+    ) {
+      return user.photo;
+    }
     const userPost = posts.find((p) => p.creator.id === user.id);
-    return userPost?.creator.photo?.length > 0 ? userPost.creator.photo : null;
+    if (
+      userPost?.creator.photo &&
+      (typeof userPost.creator.photo === "string" ||
+        userPost.creator.photo.length > 0)
+    ) {
+      return userPost.creator.photo;
+    }
+    return null;
   };
 
   const truncateDescription = (text: string) => {
@@ -146,6 +174,11 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
       return;
     }
 
+    if (!profile) {
+      enqueueSnackbar("Profile not loaded", { variant: "error" });
+      return;
+    }
+
     try {
       const existingChat = chats.find(
         (chat) =>
@@ -162,13 +195,18 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
           name: "private_chat",
           messages: [],
           members: [
-            Principal.fromText(profile.id),
+            Principal.fromText(profile!.id),
             Principal.fromText(user.id),
           ],
-          admins: [Principal.fromText(profile.id), Principal.fromText(user.id)],
-          creator: Principal.fromText(profile.id),
+          admins: [
+            Principal.fromText(profile!.id),
+            Principal.fromText(user.id),
+          ],
+          creator: Principal.fromText(profile!.id),
           workspaces:
-            currentWorkspace?.name !== "default" ? [currentWorkspace.id] : [],
+            currentWorkspace?.name !== "default" && currentWorkspace?.id
+              ? [currentWorkspace.id]
+              : [],
         };
 
         dispatch({ type: "ADD_CHAT", chat: newChat });
@@ -176,7 +214,7 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
 
         const result = await backendActor.make_new_chat_room(newChat);
         if ("Ok" in result) {
-          const realChatId = result.Ok.id || tempChatId;
+          const realChatId = result.Ok || tempChatId;
           dispatch({
             type: "UPDATE_CHAT",
             chat: { ...newChat, id: realChatId },
@@ -249,11 +287,26 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
             {user.name?.charAt(0) || "A"}
           </Avatar>
         </IconButton>
-        {(dispalyName || displayDescription || displayId) && (
+        {(dispalyName ||
+          forceDisplayName ||
+          displayDescription ||
+          displayId) && (
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            {dispalyName && (
-              <Typography variant="h6" sx={{ fontWeight: 500 }}>
-                {user.name || "Anonymous"}
+            {(dispalyName || forceDisplayName) && (
+              <Typography 
+              
+              variant={variant}
+                sx={{ 
+                  fontWeight: 500,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}>
+                {forceDisplayName
+                  ? user.name || "Anonymous"
+                  : profile?.id === user.id
+                    ? "You"
+                    : user.name || "Anonymous"}
               </Typography>
             )}
             {displayId && (
@@ -277,11 +330,9 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
               <Box>
                 <Box
                   sx={{
-                    maxHeight: isExpanded ? 300 : "auto",
-                    overflowY: isExpanded ? "auto" : "visible",
-                    "&::-webkit-scrollbar": {
-                      width: "6px",
-                    },
+                    maxHeight: isExpanded ? 300 : 60,
+                    overflowY: isExpanded ? "auto" : "hidden",
+                    "&::-webkit-scrollbar": { width: "6px" },
                     "&::-webkit-scrollbar-thumb": {
                       backgroundColor: "rgba(0,0,0,.2)",
                       borderRadius: "3px",

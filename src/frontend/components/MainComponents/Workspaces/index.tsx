@@ -36,6 +36,7 @@ const useWorkspaceOperations = () => {
   const { workspaces, currentWorkspace, profile } = useSelector(
     (state: { filesState: FilesState }) => state.filesState,
   );
+  console.log({currentWorkspace})
 
   const selectWorkspace = useCallback(
     (workspace: Workspace) => {
@@ -180,6 +181,8 @@ const WorkspaceManager: React.FC = () => {
   const [showCreate, setShowCreate] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
 
+  const displayName = currentWorkspace?.name || "default";
+
   const handleClose = () => {
     setAnchorEl(null);
     setShowCreate(false);
@@ -219,7 +222,7 @@ const WorkspaceManager: React.FC = () => {
           "&:hover": { backgroundColor: theme.palette.action.hover },
         }}
       >
-        {currentWorkspace?.name}
+        {displayName}
       </Button>
 
       <Menu
@@ -273,7 +276,7 @@ const WorkspaceManager: React.FC = () => {
           ) : (
             <MenuItem
               key={ws.id}
-              selected={ws.id === currentWorkspace?.id}
+              selected={ws.id === (currentWorkspace?.id || "default")}
               onClick={() => {
                 selectWorkspace(ws);
                 handleClose();
@@ -349,4 +352,5 @@ const WorkspaceManager: React.FC = () => {
     </>
   );
 };
+
 export default WorkspaceManager;

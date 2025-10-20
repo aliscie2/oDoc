@@ -160,7 +160,7 @@ const NavBar = (props: any) => {
 
   useEffect(() => {
     let x = buildTree(files);
-    if (currentWorkspace.id != "default") {
+    if (currentWorkspace?.id != "default") {
       x = x.filter((f) => f.workspaces.includes(currentWorkspace.id));
     }
     setDefaultItems(x);
