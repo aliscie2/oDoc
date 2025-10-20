@@ -27,9 +27,11 @@ export interface InitialState {
     delete_contracts: string[];
     files_indexing: FileIndexing[];
   };
+  profile: User | null;
   profile_history: UserProfile | null;
   top_dialog: { open: boolean; content: any; title: string | null };
   workspaces: WorkSpace[];
+  currentWorkspace: WorkSpace | null;
   contracts: Record<string, StoredContract>;
   all_friends: User[];
   all_users: any[];
@@ -84,7 +86,7 @@ export type FilesActions =
   | { type: "SET_POSTS"; posts: any[] }
   | { type: "ADD_POST"; post: any }
   | { type: "ADD_POSTS"; post: any[] }
-  | { type: "UPDATE_POST"; id: string; post: any }
+  | { type: "UPDATE_POST"; id: string; post: unknown }
   | { type: "DELETE_POST"; id: string };
 
 export const initialState: InitialState = {
@@ -103,13 +105,14 @@ export const initialState: InitialState = {
     delete_contracts: [],
     files_indexing: [],
   },
+  profile: null,
   profile_history: null,
   top_dialog: { open: false, content: null, title: null },
   workspaces: [],
+  currentWorkspace: null,
   contracts: {},
   all_friends: [],
   all_users: [],
   anonymous: false,
-  currentWorkspace: { id: "default", name: "default" },
   posts: [],
 };

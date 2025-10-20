@@ -22,9 +22,8 @@ export function notificationReducer(
         ...state,
         notifications: is_in
           ? updatedNotifications
-          : [...state.notifications, action.new_notification],
+          : [action.new_notification, ...state.notifications],
       };
-
     case "UPDATE_NOT_LIST":
       return {
         ...state,

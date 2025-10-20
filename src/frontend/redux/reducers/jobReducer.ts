@@ -433,42 +433,12 @@ export function jobReducer(
 
       return {
         ...state,
-        isChanged: true,
         jobs: state.jobs.map((job) =>
           job.id === state.currentJobId
             ? { ...job, matches: finalMatches }
             : job,
         ),
-        jobChanges: state.jobChanges.some((j) => j.id === state.currentJobId)
-          ? state.jobChanges.map((change) =>
-              change.id === state.currentJobId
-                ? {
-                    ...change,
-                    matchChanges: {
-                      add: action.matches,
-                      updates: [],
-                      delete_matches: [],
-                      reset: [],
-                    },
-                  }
-                : change,
-            )
-          : [
-              ...state.jobChanges,
-              {
-                id: state.currentJobId!,
-                active: [],
-                updates: [],
-                category: [],
-                required_match_score: [],
-                matchChanges: {
-                  add: action.matches,
-                  updates: [],
-                  delete_matches: [],
-                  reset: [],
-                },
-              },
-            ],
+        // ❌ Remove jobChanges logic - no longer needed
       };
     }
 
@@ -546,7 +516,61 @@ export function jobReducer(
     case "ADD_JOB":
       return { ...state, jobs: [...state.jobs, action.job] };
 
-    case "DELETE_JOB":
+    case "DELETE_JOB": {
+      // If this is the last job, deactivate and clear it instead of deleting
+      if (state.jobs.length === 1 && state.jobs[0].id === action.id) {
+        const clearedJob = {
+          ...state.jobs[0],
+          active: false,
+          description: "",
+          proficiency_level: "",
+          education: [],
+          experience: [],
+          job_titles: [],
+          certifications: [],
+          skills: [],
+          links: [],
+          matches: [],
+          feedback: "",
+          emails: [],
+          contacts: [],
+          trust_score: "",
+          trust_note: "",
+        };
+
+        const jobUpdate: JobUpdate = {
+          id: action.id,
+          active: [false],
+          updates: [
+            { field: "description", values: [""] },
+            { field: "proficiency_level", values: [""] },
+            { field: "education", values: [] },
+            { field: "experience", values: [] },
+            { field: "job_titles", values: [] },
+            { field: "certifications", values: [] },
+            { field: "skills", values: [] },
+            { field: "links", values: [] },
+            { field: "feedback", values: [""] },
+            { field: "emails", values: [] },
+            { field: "contacts", values: [] },
+            { field: "trust_score", values: [""] },
+            { field: "trust_note", values: [""] },
+          ],
+          category: [],
+          required_match_score: [],
+          matches: [],
+        };
+
+        return {
+          ...state,
+          jobs: [clearedJob],
+          currentJobId: clearedJob.id,
+          jobChanges: [jobUpdate],
+          isChanged: true,
+        };
+      }
+
+      // Normal delete for multiple jobs
       const filteredJobs = state.jobs.filter((job) => job.id !== action.id);
       const isDeleted = state.currentJobId === action.id;
       const newCurrentId =
@@ -562,7 +586,7 @@ export function jobReducer(
         currentJobId: newCurrentId,
         jobChanges: state.jobChanges.filter((j) => j.id !== action.id),
       };
-
+    }
     case "UPDATE_REQUIRED_MATCH_SCORE":
       if (!isValidCurrentJob(state)) return state;
 

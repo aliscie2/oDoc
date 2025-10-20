@@ -288,7 +288,7 @@ const App: React.FC = () => {
 
   useAppInitialization();
   useSocket();
-
+console.log("App")
   switch (authStatus) {
     case "loading":
       return <RunawayJellyfish thinking={true} scale={2} />;
@@ -301,6 +301,7 @@ const App: React.FC = () => {
           </PageContainer>
         </div>
       );
+      
     case "authenticated":
       return <RegistrationForm />;
     default:

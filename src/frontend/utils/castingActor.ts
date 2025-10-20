@@ -81,6 +81,26 @@ export function createCastedActor(
         };
       }
 
+      if (prop === "get_posts") {
+        return async (start: bigint, limit: bigint) => {
+          const res = await target.get_posts(start, limit);
+          return res.map((post) => ({
+            ...post,
+            creator: {
+              ...post.creator,
+              photo: convertToBlobLink(post.creator.photo),
+            },
+          }));
+        };
+      }
+
+      if (prop === "get_my_chats") {
+        return async (start: bigint) => {
+          const res = await target.get_my_chats(start);
+          return res; // Return Chat objects directly, no conversion needed
+        };
+      }
+
       return target[prop as keyof ActorSubclass<_SERVICE>];
     },
   });

@@ -231,12 +231,10 @@ export function filesReducer(
         },
       };
     }
-
     case "SET_CONTRACT": {
       const { contract } = action;
       const id = contract.id;
 
-      // Only update state, don't add to changes (no backend save needed)
       return {
         ...state,
         contracts: {
@@ -245,7 +243,6 @@ export function filesReducer(
         },
       };
     }
-
     case "SET_PROMISE_STATUS": {
       const { contract_id, promise } = action;
 
@@ -1336,21 +1333,10 @@ export function filesReducer(
     }
     case "ADD_PROMISE": {
       const { contract_id, promise, insertIndex } = action;
-      console.log("ADD_PROMISE Debug:");
-      console.log("- Contract ID:", contract_id);
-      console.log("- Promise:", JSON.stringify(promise, null, 2));
-      console.log("- Insert Index:", insertIndex);
-      console.log("- Available Contracts:", Object.keys(state.contracts));
-      console.log("- Contract Exists:", !!state.contracts[contract_id]);
 
       let currentContract = state.contracts[contract_id];
 
-      // If contract doesn't exist, create a default one
       if (!currentContract) {
-        console.log(
-          "ADD_PROMISE: Creating default contract for ID:",
-          contract_id,
-        );
         currentContract = {
           id: contract_id,
           name: "Default Contract",
@@ -1359,10 +1345,9 @@ export function filesReducer(
           promises: [],
           promises_indexes: [],
           contracts: [],
-          date_created: Date.now() * 1000000, // Convert to nanoseconds
+          date_created: Date.now() * 1000000,
         };
 
-        // Add the new contract to state
         state = {
           ...state,
           contracts: {
@@ -1372,27 +1357,21 @@ export function filesReducer(
         };
       }
 
-      // Handle promises array
       const currentPromises = [...(currentContract.promises || [])];
-      if (insertIndex !== undefined && insertIndex < currentPromises.length) {
-        currentPromises.splice(insertIndex, 0, promise);
-      } else {
-        currentPromises.push(promise);
-      }
+      const actualIndex =
+        insertIndex !== undefined && insertIndex < currentPromises.length
+          ? insertIndex
+          : currentPromises.length;
 
-      // Handle promises_indexes array - this controls the display order
+      currentPromises.splice(actualIndex, 0, promise);
+
       const currentIndexes = [...(currentContract.promises_indexes || [])];
-      if (insertIndex !== undefined && insertIndex < currentIndexes.length) {
-        currentIndexes.splice(insertIndex, 0, [insertIndex, promise.id]);
-        // Re-index all subsequent items
-        for (let i = insertIndex + 1; i < currentIndexes.length; i++) {
-          currentIndexes[i] = [i, currentIndexes[i][1]];
-        }
-      } else {
-        currentIndexes.push([currentIndexes.length, promise.id]);
+      currentIndexes.splice(actualIndex, 0, [actualIndex, promise.id]);
+
+      for (let i = actualIndex + 1; i < currentIndexes.length; i++) {
+        currentIndexes[i] = [i, currentIndexes[i][1]];
       }
 
-      // Update the contract
       const updatedContracts = {
         ...state.contracts,
         [contract_id]: {
@@ -1402,7 +1381,6 @@ export function filesReducer(
         },
       };
 
-      // Handle changes array
       const contractsArray = Array.isArray(state.changes.contracts)
         ? state.changes.contracts
         : [];
@@ -1416,34 +1394,26 @@ export function filesReducer(
           index === existingContractIndex
             ? {
                 ...c,
-                promises: currentPromises,
-                promises_indexes: currentIndexes, // Update indexes in changes too
+                promises: [...(c.promises || []), promise],
+                promises_indexes: currentIndexes,
               }
             : c,
         );
       } else {
-        const newContractUpdate = {
-          id: contract_id,
-          permissions: [],
-          promises_indexes: currentIndexes, // Include indexes
-          name: [],
-          delete_tables: [],
-          tables: [],
-          delete_promises: [],
-          promises: currentPromises,
-        };
-        updatedChangesContracts = [...contractsArray, newContractUpdate];
+        updatedChangesContracts = [
+          ...contractsArray,
+          {
+            id: contract_id,
+            permissions: [],
+            promises_indexes: currentIndexes,
+            name: [],
+            delete_tables: [],
+            tables: [],
+            delete_promises: [],
+            promises: [promise],
+          },
+        ];
       }
-
-      console.log("ADD_PROMISE Final State:");
-      console.log(
-        "- Updated Contract:",
-        JSON.stringify(updatedContracts[contract_id], null, 2),
-      );
-      console.log(
-        "- Total Promises in Contract:",
-        updatedContracts[contract_id]?.promises?.length || 0,
-      );
 
       return {
         ...state,
@@ -1454,10 +1424,11 @@ export function filesReducer(
         },
       };
     }
+
     case "UPDATE_PROMISE": {
       const { contract_id, promise } = action;
 
-      // Update the contract's promises
+      // Update the contract's promises in state
       const updatedContracts = {
         ...state.contracts,
         [contract_id]: {
@@ -1477,32 +1448,37 @@ export function filesReducer(
       const existingContractIndex = contractsArray.findIndex(
         (c) => c.id === contract_id,
       );
+
       let updatedChangesContracts;
 
       if (existingContractIndex !== -1) {
-        // Contract update exists, update or add promise
+        // Contract update exists
         updatedChangesContracts = contractsArray.map((c, index) => {
           if (index === existingContractIndex) {
             const existingPromiseIndex = c.promises.findIndex(
               (p) => p.id === promise.id,
             );
+
             if (existingPromiseIndex !== -1) {
-              // Update existing promise
+              // ✅ FIX: Replace the existing promise, don't add duplicates
               return {
                 ...c,
-                promises: c.promises.map((p, pIndex) =>
-                  pIndex === existingPromiseIndex ? promise : p,
+                promises: c.promises.map((p) =>
+                  p.id === promise.id ? promise : p,
                 ),
               };
             } else {
-              // Add new promise
-              return { ...c, promises: [...c.promises, promise] };
+              // ✅ FIX: Only add if it doesn't exist
+              return {
+                ...c,
+                promises: [...c.promises, promise],
+              };
             }
           }
           return c;
         });
       } else {
-        // Contract update doesn't exist, create new one
+        // Create new contract update with ONLY this promise
         const newContractUpdate = {
           id: contract_id,
           permissions: [],
@@ -1511,7 +1487,7 @@ export function filesReducer(
           delete_tables: [],
           tables: [],
           delete_promises: [],
-          promises: [promise],
+          promises: [promise], // ✅ Only the changed promise
         };
         updatedChangesContracts = [...contractsArray, newContractUpdate];
       }
@@ -1525,7 +1501,6 @@ export function filesReducer(
         },
       };
     }
-
     case "DELETE_PROMISE": {
       const { contract_id, id } = action;
 
