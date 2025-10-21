@@ -1,8 +1,6 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { tomorrow } from "react-syntax-highlighter/dist/esm/styles/prism";
 import {
   Typography,
   Link,
@@ -170,31 +168,7 @@ const MarkdownRenderer = () => {
       </Box>
     ),
     code: ({ node, inline, className, children, ...props }) => {
-      const match = /language-(\w+)/.exec(className || "");
-      return !inline && match ? (
-        <Box sx={{ my: 2, overflow: "hidden", width: "100%" }}>
-          <Paper elevation={2} sx={{ overflow: "auto", borderRadius: 0 }}>
-            <SyntaxHighlighter
-              style={tomorrow}
-              language={match[1]}
-              PreTag="div"
-              customStyle={{
-                margin: 0,
-                fontSize: "0.75rem",
-                lineHeight: 1.4,
-                padding: "12px",
-                overflowX: "auto",
-                whiteSpace: "pre",
-              }}
-              wrapLines={false}
-              wrapLongLines={false}
-              {...props}
-            >
-              {String(children).replace(/\n$/, "")}
-            </SyntaxHighlighter>
-          </Paper>
-        </Box>
-      ) : (
+      return inline ? (
         <Typography
           component="code"
           sx={{
@@ -202,21 +176,30 @@ const MarkdownRenderer = () => {
               theme.palette.mode === "dark"
                 ? theme.palette.grey[800]
                 : theme.palette.grey[100],
-            color:
-              theme.palette.mode === "dark"
-                ? theme.palette.grey[100]
-                : theme.palette.grey[900],
             padding: "2px 4px",
-            borderRadius: 0,
+            borderRadius: 1,
             fontFamily: "monospace",
-            wordBreak: "break-all",
-            fontSize: "0.8rem",
-            overflowWrap: "anywhere",
+            fontSize: "0.85rem",
           }}
-          {...props}
         >
           {children}
         </Typography>
+      ) : (
+        <Box
+          component="pre"
+          sx={{
+            my: 2,
+            p: 2,
+            backgroundColor: theme.palette.grey[900],
+            color: theme.palette.grey[100],
+            borderRadius: 1,
+            overflow: "auto",
+            fontFamily: "monospace",
+            fontSize: "0.85rem",
+          }}
+        >
+          <code>{children}</code>
+        </Box>
       );
     },
     pre: ({ children }) => (
@@ -343,13 +326,13 @@ const MarkdownRenderer = () => {
           width: "100%",
           maxWidth: "900px",
           left: "50%",
-          top: isMobile ? 0 : 45,
+          top: isMobile ? 56 : 64, // Position below TopNavBar
           transition: "transform 0.3s ease-in-out",
           transform: showAppBar
             ? "translateX(-50%) translateY(0)"
             : "translateX(-50%) translateY(-100%)",
           borderRadius: 0,
-          zIndex: 1100,
+          zIndex: 1100, // Below TopNavBar (1200) but above content
         }}
       >
         <Tabs
@@ -372,7 +355,7 @@ const MarkdownRenderer = () => {
         </Tabs>
       </AppBar>
 
-      <Box sx={{ mt: 6 }}>
+      <Box sx={{ mt: { xs: 14, sm: 16 } }}>
         {sections.map((section, index) => (
           <TabPanel key={index} value={currentTab} index={index}>
             <Box

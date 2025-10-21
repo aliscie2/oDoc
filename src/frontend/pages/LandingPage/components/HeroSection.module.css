@@ -1,0 +1,231 @@
+.section {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--color-bg-primary);
+  padding: 2rem 0;
+}
+
+.grid {
+  display: grid;
+  gap: 2rem;
+  align-items: center;
+}
+
+.logoContainer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.logo {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-lg);
+  border: 2px solid var(--color-border-primary);
+}
+
+.logoText h2 {
+  font-size: 1.25rem;
+  color: var(--color-text-primary);
+}
+
+.logoText p {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.title {
+  font-size: 1.875rem;
+  color: var(--color-text-primary);
+  margin-bottom: 1rem;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 2rem;
+}
+
+.buttonGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.chatCard {
+  padding: 1rem;
+  background-color: var(--color-bg-primary);
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-lg);
+}
+
+.chatHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-border-primary);
+}
+
+.chatHeader span {
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+}
+
+.messages {
+  min-height: 200px;
+}
+
+.messageWrapper {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.messageWrapper.user {
+  justify-content: flex-end;
+}
+
+.messageWrapper.bot {
+  justify-content: flex-start;
+}
+
+.avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.avatar.bot {
+  background-color: var(--color-bg-tertiary);
+}
+
+.avatar.user {
+  background-color: var(--color-bg-secondary);
+}
+
+.message {
+  max-width: 85%;
+  border-radius: var(--radius-lg);
+  padding: 0.75rem;
+}
+
+.message.user {
+  background-color: var(--color-accent);
+  color: var(--color-text-inverse);
+}
+
+.message.bot {
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
+.message p {
+  font-size: 0.875rem;
+}
+
+.candidateCard {
+  padding: 0.5rem 0.75rem;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-md);
+  margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.candidateInfo {
+  min-width: 0;
+  flex: 1;
+}
+
+.candidateName {
+  font-size: 0.75rem;
+  color: var(--color-text-primary);
+  margin-bottom: 0.125rem;
+}
+
+.candidateRate {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .buttonGroup {
+    flex-direction: row;
+  }
+}
+
+@media (min-width: 768px) {
+  .section {
+    padding: 3rem 0;
+  }
+  
+  .logo {
+    width: 4rem;
+    height: 4rem;
+  }
+  
+  .logoContainer {
+    margin-bottom: 2rem;
+  }
+  
+  .logoText h2 {
+    font-size: 1.5rem;
+  }
+  
+  .title {
+    font-size: 2.25rem;
+  }
+  
+  .subtitle {
+    font-size: 1.125rem;
+  }
+  
+  .chatCard {
+    padding: 1.5rem;
+  }
+  
+  .messages {
+    min-height: 250px;
+  }
+  
+  .messageWrapper {
+    gap: 0.75rem;
+  }
+  
+  .candidateCard {
+    padding: 0.625rem 0.875rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 3rem;
+  }
+  
+  .logo {
+    width: 5rem;
+    height: 5rem;
+  }
+  
+  .title {
+    font-size: 3rem;
+  }
+  
+  .subtitle {
+    font-size: 1.25rem;
+  }
+}

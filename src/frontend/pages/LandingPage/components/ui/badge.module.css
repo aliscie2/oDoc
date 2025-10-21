@@ -1,0 +1,25 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-full);
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: background-color var(--transition-fast);
+}
+
+.default {
+  background-color: var(--color-accent);
+  color: var(--color-text-inverse);
+}
+
+.secondary {
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
+.outline {
+  border: 1px solid var(--color-border-secondary);
+  background-color: transparent;
+  color: var(--color-text-primary);
+}

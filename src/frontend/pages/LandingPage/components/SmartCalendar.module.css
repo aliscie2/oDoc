@@ -1,0 +1,158 @@
+.section {
+  padding: 2rem 0;
+  background-color: var(--color-bg-secondary);
+}
+
+.content {
+  max-width: 56rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-size: 1.875rem;
+  color: var(--color-text-primary);
+  margin-bottom: 1rem;
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.chatCard {
+  padding: 1.25rem;
+  background-color: var(--color-bg-primary);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-lg);
+}
+
+.iconContainer {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.iconCircle {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius-xl);
+  background-color: var(--color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-inverse);
+}
+
+.messages {
+  min-height: 200px;
+}
+
+.messageRow {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.messageRow.user {
+  justify-content: flex-end;
+}
+
+.messageRow.bot {
+  justify-content: flex-start;
+}
+
+.avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.avatar.bot {
+  background-color: var(--color-bg-tertiary);
+}
+
+.avatar.user {
+  background-color: var(--color-bg-secondary);
+}
+
+.message {
+  max-width: 85%;
+  border-radius: var(--radius-lg);
+  padding: 0.75rem;
+}
+
+.message.user {
+  background-color: var(--color-accent);
+  color: var(--color-text-inverse);
+}
+
+.message.bot {
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
+.message p {
+  font-size: 0.875rem;
+}
+
+.timeSlot {
+  padding: 0.75rem;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-md);
+  margin-bottom: 0.75rem;
+}
+
+.timeSlotContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.timeSlotDay {
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+}
+
+.timeSlotHours {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+@media (min-width: 768px) {
+  .section {
+    padding: 3rem 0;
+  }
+  
+  .title {
+    font-size: 2.25rem;
+  }
+  
+  .subtitle {
+    font-size: 1rem;
+  }
+  
+  .chatCard {
+    padding: 1.5rem;
+  }
+  
+  .iconCircle {
+    width: 3.25rem;
+    height: 3.25rem;
+  }
+  
+  .messages {
+    min-height: 250px;
+  }
+}
