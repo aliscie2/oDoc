@@ -1,17 +1,21 @@
 import { backendActor } from "@/utils/backendUtils";
 import { Check, Share } from "@mui/icons-material";
-import { Alert, IconButton, Snackbar, Tooltip } from "@mui/material";
+import { Alert, IconButton, Snackbar, Tooltip, useMediaQuery, useTheme } from "@mui/material";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 const ShareCalendarButton: React.FC = () => {
   const dispatch = useDispatch();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const { calendar, calendarChanged } = useSelector(
     (state: unknown) => state.calendarState,
   );
 
   const [copied, setCopied] = useState(false);
   const [showSnackbar, setShowSnackbar] = useState(false);
+  const [showDisabledMessage, setShowDisabledMessage] = useState(false);
+  const [tooltipOpen, setTooltipOpen] = useState(false);
   const [localCalendarId, setLocalCalendarId] = useState(calendar.id);
   const [isFetching, setIsFetching] = useState(false);
   const [disabled, setDisabled] = useState(
@@ -121,6 +125,12 @@ const ShareCalendarButton: React.FC = () => {
   const handleCopy = async () => {
     if (disabled) {
       console.log("[ShareButton] Copy blocked - button disabled");
+      if (isMobile) {
+        setShowDisabledMessage(true);
+      } else {
+        setTooltipOpen(true);
+        setTimeout(() => setTooltipOpen(false), 2000);
+      }
       return;
     }
 
@@ -130,7 +140,11 @@ const ShareCalendarButton: React.FC = () => {
       await navigator.clipboard.writeText(shareLink);
       setCopied(true);
       setShowSnackbar(true);
-      setTimeout(() => setCopied(false), 2000);
+      setTooltipOpen(true);
+      setTimeout(() => {
+        setCopied(false);
+        setTooltipOpen(false);
+      }, 2000);
       console.log("[ShareButton] Link copied successfully");
     } catch (error) {
       console.error(
@@ -145,27 +159,37 @@ const ShareCalendarButton: React.FC = () => {
       document.body.removeChild(textArea);
       setCopied(true);
       setShowSnackbar(true);
-      setTimeout(() => setCopied(false), 2000);
+      setTooltipOpen(true);
+      setTimeout(() => {
+        setCopied(false);
+        setTooltipOpen(false);
+      }, 2000);
       console.log("[ShareButton] Link copied via fallback");
     }
   };
 
   const tooltipTitle = disabled
-    ? "Please set your availability first before sharing your calendar"
+    ? "Set availabilities via the chat"
     : copied
       ? "Copied!"
       : "Copy calendar link";
 
   return (
     <>
-      <Tooltip title={tooltipTitle}>
+      <Tooltip 
+        title={tooltipTitle} 
+        disableTouchListener
+        open={tooltipOpen}
+        onOpen={() => setTooltipOpen(true)}
+        onClose={() => setTooltipOpen(false)}
+      >
         <span>
           <IconButton
             onClick={handleCopy}
-            disabled={disabled}
+            disabled={!isMobile && disabled}
             size={"small"}
             sx={{
-              color: copied ? "success.main" : "primary.main",
+              color: copied ? "success.main" : disabled && !isMobile ? "text.disabled" : "primary.main",
               transition: "all 0.2s",
               "&:hover": {
                 backgroundColor: "primary.light",
@@ -195,6 +219,22 @@ const ShareCalendarButton: React.FC = () => {
           sx={{ width: "100%" }}
         >
           Calendar link copied to clipboard!
+        </Alert>
+      </Snackbar>
+
+      <Snackbar
+        open={showDisabledMessage}
+        autoHideDuration={3000}
+        onClose={() => setShowDisabledMessage(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setShowDisabledMessage(false)}
+          severity="info"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          Set availabilities via the chat
         </Alert>
       </Snackbar>
     </>

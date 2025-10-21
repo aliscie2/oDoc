@@ -153,7 +153,7 @@ const CalendarView = () => {
   const defaultView = isMobile ? "day" : currentView;
 
   const components = {
-    ...(isMobile ? {} : { toolbar: Toolbar }),
+    toolbar: Toolbar,
     timeSlotWrapper: TimeSlotWrapper,
   };
 
@@ -175,11 +175,14 @@ const CalendarView = () => {
   return (
     <Box
       sx={{
-        height: "100vh",
+        minHeight: "calc(100vh - 64px)", // Account for top navbar
         backgroundColor: theme.palette.background.default,
         color: theme.palette.text.primary,
         display: "flex",
         flexDirection: "column",
+        "@media (max-width: 600px)": {
+          minHeight: "calc(100vh - 56px)", // Mobile bottom nav height
+        },
       }}
     >
       <Helmet>
@@ -238,10 +241,9 @@ const CalendarView = () => {
           selectable={true}
           popup={false}
           views={views as any}
-          defaultView={defaultView as any}
-          view={isMobile ? "day" : (currentView as any)}
+          defaultView={defaultView as unknown}
+          view={isMobile ? "day" : (currentView as unknown)}
           onView={isMobile ? () => {} : setCurrentView}
-          toolbar={!isMobile}
           step={30}
           timeslots={2}
           showMultiDayTimes

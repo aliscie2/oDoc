@@ -234,11 +234,14 @@ const ShareCalendarView = () => {
   return (
     <Box
       sx={{
-        height: "100vh",
+        minHeight: "calc(100vh - 64px)", // Account for top navbar
         backgroundColor: theme.palette.background.default,
         color: theme.palette.text.primary,
         display: "flex",
         flexDirection: "column",
+        "@media (max-width: 600px)": {
+          minHeight: "calc(100vh - 56px)", // Mobile bottom nav height
+        },
       }}
     >
       <Helmet>

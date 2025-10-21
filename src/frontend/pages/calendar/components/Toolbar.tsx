@@ -9,17 +9,14 @@ import {
   Typography,
   useMediaQuery,
   useTheme,
-  Menu,
-  MenuItem,
   Divider,
 } from "@mui/material";
 import { useSelector } from "react-redux";
-import { NavigateBefore, NavigateNext, MoreVert } from "@mui/icons-material";
+import { NavigateBefore, NavigateNext } from "@mui/icons-material";
 import GoogleAccountManager from "./GoogleAccountManager";
 import AvailabilityManager from "./AvailabilityManager";
 import TimezoneDisplay from "./TimezoneDisplay";
 import ShareCalendarButton from "./ShareCalendarButton";
-import UserAvatarMenu from "@/components/MainComponents/UserAvatarMenu";
 
 interface ToolbarProps {
   onNavigate: (action: string) => void;
@@ -64,10 +61,13 @@ const Toolbar: React.FC<ToolbarProps> = ({
     return (
       <Box
         sx={{
+          position: "sticky",
+          top: 0,
+          zIndex: 1100,
           borderBottom: 1,
           borderColor: "divider",
-          px: 2,
-          py: 1.5,
+          px: 1,
+          py: 0.75,
           backgroundColor: "background.paper",
           color: "text.primary",
         }}
@@ -76,102 +76,52 @@ const Toolbar: React.FC<ToolbarProps> = ({
           direction="row"
           alignItems="center"
           justifyContent="space-between"
-          spacing={1}
+          spacing={0.5}
         >
-          <Box
-            sx={{ width: 80, display: "flex", justifyContent: "flex-start" }}
-          >
-            <Stack direction="row" spacing={0.5}>
-              <IconButton onClick={handleMenuOpen} size="medium">
-                <MoreVert />
-              </IconButton>
-              {isOwnCalendar && calendar?.id && (
-                <ShareCalendarButton variant="button" />
-              )}
-            </Stack>
-          </Box>
-
           <Stack
             direction="row"
             alignItems="center"
-            spacing={1.5}
+            spacing={0.5}
             sx={{ flex: 1, justifyContent: "center" }}
           >
-            <IconButton onClick={() => onNavigate("PREV")} size="medium">
-              <NavigateBefore />
+            <IconButton onClick={() => onNavigate("PREV")} size="small">
+              <NavigateBefore fontSize="small" />
             </IconButton>
             <Typography
-              variant="subtitle1"
+              variant="body2"
               sx={{
-                minWidth: 140,
+                minWidth: 100,
                 textAlign: "center",
                 fontWeight: 600,
-                fontSize: "1rem",
+                fontSize: "0.813rem",
               }}
             >
               {label}
             </Typography>
-            <IconButton onClick={() => onNavigate("NEXT")} size="medium">
-              <NavigateNext />
+            <IconButton onClick={() => onNavigate("NEXT")} size="small">
+              <NavigateNext fontSize="small" />
             </IconButton>
           </Stack>
 
-          <Box sx={{ width: 80, display: "flex", justifyContent: "flex-end" }}>
+          <Stack direction="row" spacing={0.5} alignItems="center">
+            {isOwnCalendar && <ShareCalendarButton />}
             <Button
               onClick={() => onNavigate("TODAY")}
               variant="contained"
+              size="small"
               sx={{
-                minWidth: 70,
+                minWidth: 55,
                 textTransform: "none",
                 fontWeight: 600,
-                fontSize: "0.875rem",
+                fontSize: "0.75rem",
+                py: 0.5,
+                px: 1,
               }}
             >
               Today
             </Button>
-          </Box>
+          </Stack>
         </Stack>
-
-        <Menu
-          anchorEl={menuAnchor}
-          open={Boolean(menuAnchor)}
-          onClose={handleMenuClose}
-          slotProps={{
-            paper: { sx: { mt: 0.5, borderRadius: 1, minWidth: 200 } },
-          }}
-        >
-          {shouldShowOwnerAvatar && (
-            <>
-              <MenuItem sx={{ py: 1.5 }}>
-                <Stack direction="row" alignItems="center" spacing={1.5}>
-                  <UserAvatarMenu
-                    user_id={sharedCalendar.owner}
-                    sx={{ width: 32, height: 32 }}
-                  />
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ fontWeight: 500 }}
-                  >
-                    Viewing shared calendar
-                  </Typography>
-                </Stack>
-              </MenuItem>
-              <Divider />
-            </>
-          )}
-
-          <MenuItem onClick={handleMenuClose} sx={{ py: 1.5 }}>
-            <GoogleAccountManager
-              size="small"
-              isSharedCalendar={!isOwnCalendar}
-            />
-          </MenuItem>
-          <Divider />
-          <MenuItem onClick={handleMenuClose} sx={{ py: 1.5 }}>
-            <AvailabilityManager />
-          </MenuItem>
-        </Menu>
       </Box>
     );
   }
@@ -179,6 +129,9 @@ const Toolbar: React.FC<ToolbarProps> = ({
   return (
     <Box
       sx={{
+        position: "sticky",
+        top: 0,
+        zIndex: 1100,
         borderBottom: 1,
         borderColor: "divider",
         px: 3,
