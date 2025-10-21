@@ -1,16 +1,13 @@
-import { Route, Routes } from "react-router-dom";
-import React, { Suspense } from "react";
-import { CircularProgress, Box } from "@mui/material";
-import { useSelector } from "react-redux";
 import { useAuth } from "@/hooks/useAuth";
+import { Box, CircularProgress } from "@mui/material";
+import React, { Suspense } from "react";
+import { useSelector } from "react-redux";
+import { Route, Routes } from "react-router-dom";
 
-// Immediate imports for critical components
-import AboutUs from "./LandingPage/aboutUs";
-import ICPJobsLandingPage from "./LandingPage";
 import AffiliateRedirect from "./affiliateRedirect";
-// import CalendarView from "./calendar";
 import NotFound from "@/pages/notFound404";
 import { ChatMobilePage } from "./chatMobilePage";
+import LandingPage from "./LandingPage";
 
 // Lazy imports for heavy components
 const JobsPage = React.lazy(() => import("./jobs"));
@@ -66,8 +63,7 @@ const Pages = React.memo(() => {
     return (
       <Suspense fallback={<PageLoader />}>
         <Routes>
-          <Route path="/" element={<ICPJobsLandingPage />} />
-          <Route path="/about" element={<AboutUs />} />
+          <Route path="/" element={<LandingPage />} />
           <Route path="/white_paper" element={<SNSWhitepaper />} />
           <Route path="/share/*" element={<ShareFilePage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
@@ -85,7 +81,6 @@ const Pages = React.memo(() => {
     <Suspense fallback={<PageLoader />}>
       <Routes>
         <Route path="/" element={<JobsPage />} />
-        <Route path="/about" element={<AboutUs />} />
         <Route path="/wallet" element={<WalletPage wallet={wallet} />} />
         <Route
           path="/profile"
