@@ -16,7 +16,6 @@ import {
   styled,
 } from "@mui/material";
 import { CheckCircle, Warning } from "@mui/icons-material";
-import GetStartedButton from "./LandingPage/getStartedButton";
 
 // Custom styled components
 const GradientCard = styled(Card)(({ theme, variant }) => ({
@@ -155,7 +154,7 @@ const SubscriptionPlans = () => {
         "Introductory Guides",
       ],
       description: "Perfect for individuals starting their journey",
-      buttonText: <GetStartedButton />,
+      buttonText: "Get Started",
     },
     {
       name: "Premium",
@@ -262,7 +261,9 @@ const SubscriptionPlans = () => {
                   ))}
                 </List>
                 {plan.name === "Free" ? (
-                  plan.buttonText
+                  <Button fullWidth size="large" variant="contained" sx={{ mt: 2 }}>
+                    {plan.buttonText}
+                  </Button>
                 ) : (
                   <Tooltip
                     title={

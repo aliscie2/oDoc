@@ -1,5 +1,4 @@
 import { useAuth } from "@/hooks/useAuth";
-import { tutorials } from "@/pages/LandingPage/landingPageData";
 import { RootState } from "@/redux/reducers";
 import { useMemo } from "react";
 import { useSelector } from "react-redux";
@@ -101,7 +100,6 @@ const badgeDefinitions: Omit<BadgeType, "unlocked" | "progress">[] = [
     description: "Made your first connection",
     icon: "🤝",
     category: "social",
-    videoUrl: tutorials.find((t) => t.title === "Make friends")?.videoUrl,
     userType: "both",
   },
   {
@@ -110,7 +108,6 @@ const badgeDefinitions: Omit<BadgeType, "unlocked" | "progress">[] = [
     description: "Make your first payment transaction",
     icon: "💰",
     category: "trust",
-    videoUrl: tutorials.find((t) => t.title === "Make payments")?.videoUrl,
     userType: "both",
   },
   {
@@ -158,7 +155,6 @@ const badgeDefinitions: Omit<BadgeType, "unlocked" | "progress">[] = [
     description: "Learned what Odoc is all about",
     icon: "🚀",
     category: "milestone",
-    videoUrl: tutorials.find((t) => t.title === "What is odoc?")?.videoUrl,
     userType: "both",
   },
   {
@@ -167,8 +163,6 @@ const badgeDefinitions: Omit<BadgeType, "unlocked" | "progress">[] = [
     description: "Mastered the token trust system",
     icon: "🎯",
     category: "milestone",
-    videoUrl: tutorials.find((t) => t.title === "How trust and tokens work")
-      ?.videoUrl,
     userType: "both",
   },
 ];
