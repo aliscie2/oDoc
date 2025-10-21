@@ -443,6 +443,14 @@ export default function TopNavBar() {
             >
               {state.isLoggedIn && getMobileNavButtons()}
               {navItems.map((item) => renderNavItem(item, "mobile"))}
+              {!state.isLoggedIn && (
+                <BottomNavigationAction
+                  label={state.isDarkMode ? "Light" : "Dark"}
+                  icon={state.isDarkMode ? <LightModeIcon /> : <DarkModeIcon />}
+                  onClick={() => dispatch({ type: "TOGGLE_DARK" })}
+                  sx={{ minWidth: 0, flex: 1 }}
+                />
+              )}
               <MultiSaveButton />
             </BottomNavigation>
             <Menu
@@ -601,7 +609,7 @@ export default function TopNavBar() {
       </Toolbar>
     );
   };
-  
+
   return (
     <>
       <AppBar

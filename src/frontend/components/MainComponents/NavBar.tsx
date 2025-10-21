@@ -106,7 +106,6 @@ const NavBar = (props: any) => {
       onClick: () => dispatch({ type: "TOGGLE_DARK" }),
     },
     { label: "Social posts", to: "/posts", icon: <ForumIcon /> },
-    { label: "About Us", to: "/about", icon: <InfoIcon /> },
     {
       label: "Subscriptions",
       to: "/subscriptions",

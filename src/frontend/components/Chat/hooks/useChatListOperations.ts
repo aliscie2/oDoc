@@ -25,7 +25,7 @@ export const useChatListOperations = ({
     const ODOC_CEO_ID =
       "tgwpc-6xuon-k3a6y-ey7lt-xksjs-qx22h-ikhbt-4yp3a-6stco-rymbe-pqe";
 
-    const otherAdmin = chat?.admins?.map((a) => a.toString())[0];
+    const otherAdmin = chat?.admins?.find((a) => a.toString()!=profile?.id)?.toString();
 
     if (otherAdmin?.toString() === ODOC_CEO_ID) {
       return {

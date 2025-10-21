@@ -1,13 +1,16 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import { Button, LinearProgress } from "@mui/material";
+import { Button, LinearProgress, useTheme } from "@mui/material";
 import { RootState } from "@/redux/reducers";
 import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router";
 
 interface LoginButtonProps {
   isMobile?: boolean;
-  sx?: React.CSSProperties | any;
+  sx?: React.CSSProperties | Record<string, unknown>;
   userType?: string;
+  children?: React.ReactNode;
+  variant?: "contained" | "outlined" | "text";
 }
 
 const LoginButton: React.FC<LoginButtonProps> = ({
@@ -15,8 +18,11 @@ const LoginButton: React.FC<LoginButtonProps> = ({
   sx = {},
   children = null,
   userType = null,
+  variant = "contained",
 }) => {
   const { login } = useAuth();
+  const navigate = useNavigate();
+  const theme = useTheme();
   const { isFetching } = useSelector((state: RootState) => state.uiState);
 
   if (isFetching) {
@@ -33,9 +39,20 @@ const LoginButton: React.FC<LoginButtonProps> = ({
 
   return (
     <Button
-      variant="contained"
-      onClick={async (e) => {
-        userType && localStorage.setItem("UserType", userType);
+      variant={variant}
+      onClick={async () => {
+        if (userType) {
+          localStorage.setItem("UserType", userType);
+
+          // Navigate to specific pages for these userTypes and then login
+          if (
+            userType === "/" ||
+            userType === "calendar" ||
+            userType === "contracts"
+          ) {
+            navigate(`/${userType}`);
+          }
+        }
         await login();
       }}
       sx={{
@@ -48,11 +65,27 @@ const LoginButton: React.FC<LoginButtonProps> = ({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        boxShadow: "0 4px 12px rgba(102, 126, 234, 0.3)",
+        backgroundColor: variant === "contained" 
+          ? theme.palette.primary.main 
+          : "transparent",
+        color: variant === "contained" 
+          ? theme.palette.primary.contrastText 
+          : theme.palette.text.primary,
+        border: variant === "outlined" 
+          ? `2px solid ${theme.palette.primary.main}` 
+          : "none",
+        boxShadow: variant === "contained" 
+          ? `0 4px 12px ${theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.4)" : "rgba(0, 0, 0, 0.15)"}` 
+          : "none",
         "&:hover": {
-          background: "linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)",
-          boxShadow: "0 6px 16px rgba(102, 126, 234, 0.4)",
+          backgroundColor: variant === "contained" 
+            ? theme.palette.primary.dark 
+            : theme.palette.action.hover,
+          boxShadow: variant === "contained" 
+            ? `0 6px 16px ${theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.5)" : "rgba(0, 0, 0, 0.2)"}` 
+            : "none",
           transform: "translateY(-1px)",
+          borderColor: variant === "outlined" ? theme.palette.primary.dark : undefined,
         },
         transition: "all 0.2s ease-in-out",
         ...sx,

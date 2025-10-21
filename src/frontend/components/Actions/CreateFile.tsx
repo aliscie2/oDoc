@@ -83,48 +83,6 @@ const CreateFile: React.FC = () => {
       <Tooltip title={title} arrow>
         <Button
           onClick={handleCreateFile}
-          sx={{
-            minWidth: "120px",
-            maxWidth: "200px",
-            animation:
-              files.length === 0
-                ? "shake 0.82s cubic-bezier(.36,.07,.19,.97) both infinite"
-                : "none",
-            "@keyframes shake": {
-              "10%, 90%": {
-                transform: "translate3d(-1px, 0, 0)",
-              },
-              "20%, 80%": {
-                transform: "translate3d(2px, 0, 0)",
-              },
-              "30%, 50%, 70%": {
-                transform: "translate3d(-4px, 0, 0)",
-              },
-              "40%, 60%": {
-                transform: "translate3d(4px, 0, 0)",
-              },
-            },
-            ...(files.length === 0 && {
-              backgroundColor: "primary.main",
-              color: "white",
-              padding: "6px 12px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "8px",
-              fontSize: "0.8rem",
-              fontWeight: 500,
-              textTransform: "none",
-              borderRadius: "8px",
-              boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-              transition: "all 0.3s ease",
-              "&:hover": {
-                backgroundColor: "primary.dark",
-                boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
-                transform: "translateY(-1px)",
-              },
-            }),
-          }}
         >
           <AddBox
             sx={{
