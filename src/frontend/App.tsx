@@ -1,6 +1,7 @@
 import React, { Suspense, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Pages from "./pages";
+import "./pages/LandingPage/styles/globals.css";
 
 import { Principal } from "@dfinity/principal";
 import { Box, CircularProgress, styled } from "@mui/material";
@@ -46,9 +47,10 @@ const MainContent = styled(Box)(({ theme }) => ({
 // Create a styled component for the page content
 const PageContainer = styled(Box)(({ theme }) => ({
   flexGrow: 1,
-  paddingTop: theme.spacing(8), // Height of Index
+  paddingTop: "64px", // Height of TopNavBar (theme.spacing(8))
+  minHeight: "100vh",
   [theme.breakpoints.down("sm")]: {
-    paddingTop: 0, // No top padding on mobile since Index is at bottom
+    paddingTop: 0, // No top padding on mobile since TopNavBar is at bottom
     paddingBottom: theme.spacing(7), // Space for bottom mobile navigation
   },
 }));
@@ -288,7 +290,6 @@ const App: React.FC = () => {
 
   useAppInitialization();
   useSocket();
-console.log("App")
   switch (authStatus) {
     case "loading":
       return <RunawayJellyfish thinking={true} scale={2} />;
@@ -301,7 +302,7 @@ console.log("App")
           </PageContainer>
         </div>
       );
-      
+
     case "authenticated":
       return <RegistrationForm />;
     default:

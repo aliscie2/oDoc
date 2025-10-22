@@ -1,21 +1,25 @@
 import { Principal } from "@dfinity/principal";
+import { ActorSubclass } from "@dfinity/agent";
+import { _SERVICE as CkUSDC_SERVICE } from "$/declarations/ckusdc_ledger/ckusdc_ledger.did";
 
-const getckUsdcBalance = async (ckUSDCActor, userPrincipal) => {
+const getckUsdcBalance = async (ckUSDCActor: ActorSubclass<CkUSDC_SERVICE> | null, userPrincipal: string) => {
   try {
-    const balanceResult = await ckUSDCActor?.icrc1_balance_of({
+    // Check if actor is available
+    if (!ckUSDCActor) {
+      console.error("ckUSDCActor is not available");
+      return 0n;
+    }
+
+    const balanceResult = await ckUSDCActor.icrc1_balance_of({
       owner: Principal.fromText(userPrincipal),
       subaccount: [],
     });
-
-    // console.log("User token balance:", {
-    //   rawBalance: balanceResult.toString(),
-    //   balance: Number(balanceResult) / 1000000,
-    // });
+    console.log("Balance query successful:", {balanceResult, userPrincipal});
 
     return balanceResult;
   } catch (error) {
-    console.error("Error getting user balance:", error);
-    // throw error;
+    console.error("Error getting balance for principal:", userPrincipal, error);
+    return 0n;
   }
 };
 
