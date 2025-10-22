@@ -9,6 +9,7 @@ use ic_stable_structures::Storable;
 use serde::Serialize;
 use std::borrow::Cow;
 
+// TODO sender: string, receiver: string instead of full user
 #[derive(Eq, PartialOrd, PartialEq, Clone, Debug, CandidType, Serialize, Deserialize)]
 pub struct Friend {
     pub id: String,

@@ -1,7 +1,7 @@
 # oDoc
 
 <p align="center">
-  <img src="https://pbs.twimg.com/profile_images/1971105254990139392/RmKHtI0J_400x400.jpg" alt="oDoc Logo" width="200">
+  <img src="/logo.png" alt="oDoc Logo" width="200">
 </p>
 
 **Your AI Secretary - A complete freelance workflow platform combining AI automation with blockchain security**
