@@ -13,7 +13,6 @@ import { backendActor } from "@/utils/backendUtils";
 import { RegisterUser } from "$/declarations/backend/backend.did";
 import { useDispatch } from "react-redux";
 import compressImage from "@/DataProcessing/compressImage";
-import { convertToBlobLink } from "@/DataProcessing/imageToVec";
 
 const EditProfile = ({ setIsEditing, profile, onCancel = false }) => {
   const dispatch = useDispatch();
@@ -117,14 +116,9 @@ const EditProfile = ({ setIsEditing, profile, onCancel = false }) => {
       if (result.Ok) {
         enqueueSnackbar("Profile updated successfully", { variant: "success" });
 
+        // result.Ok.photo is already converted to blob URL by castingActor.ts
         const updatedProfile = {
           ...result.Ok,
-          photo:
-            result.Ok.photo?.length > 0
-              ? convertToBlobLink(result.Ok.photo)
-              : photo
-                ? photoPreview
-                : result.Ok.photo,
         };
 
         dispatch({ type: "UPDATE_PROFILE", profile: updatedProfile });
