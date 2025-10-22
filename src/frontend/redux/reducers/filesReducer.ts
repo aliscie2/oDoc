@@ -1,11 +1,11 @@
 import { FEFriend, StoredContract } from "$/declarations/backend/backend.did";
 import { deserializeContracts } from "../../DataProcessing/deserlize/deserializeContracts";
 import { initializeApp } from "../slices/appSlice";
-import { InitialState, initialState } from "../types/filesTypes";
+import { FilesActions, InitialState, initialState } from "../types/filesTypes";
 
 export function filesReducer(
   state: InitialState = initialState,
-  action: any, // Changed to any to handle both old actions and thunk actions
+  action: FilesActions, // Changed to any to handle both old actions and thunk actions
 ): InitialState {
   // Handle the new thunk fulfilled action
   if (action.type === initializeApp.fulfilled.type) {
@@ -1625,6 +1625,19 @@ export function filesReducer(
         },
       };
 
+    case "SET_INITED":
+      return {
+        ...state,
+        inited: action.inited,
+      };
+
+    case "REPLACE_FILES_AND_CONTENTS":
+      return {
+        ...state,
+        files: action.files,
+        files_content: action.files_content,
+      };
+
     case "UPDATE_FILE_WORKSPACES": {
       const { id, workspaces } = action.payload;
 
@@ -1720,7 +1733,7 @@ export function filesReducer(
           : state.all_friends,
       };
 
-    case "CONFIRM_FRIEND":
+    case "CONFIRM_FRIEND": {
       const sender = action.friend.sender;
       const receiver = action.friend.receiver;
       return {
@@ -1732,6 +1745,7 @@ export function filesReducer(
           return f;
         }),
       };
+    }
 
     // TODO profile reducer
     case "CURRENT_USER_HISTORY":
@@ -1740,7 +1754,7 @@ export function filesReducer(
         profile_history: action.profile_history,
       };
 
-    case "REMOVE_CONTRACT":
+    case "REMOVE_CONTRACT": {
       delete state.contracts[action.id];
       state.changes.delete_contracts.push(action.id);
 
@@ -1759,6 +1773,7 @@ export function filesReducer(
           contracts: filteredContracts,
         },
       };
+    }
 
     default:
       return state;

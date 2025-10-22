@@ -169,10 +169,10 @@ const badgeDefinitions: Omit<BadgeType, "unlocked" | "progress">[] = [
 
 const useProgress = (): ProgressData => {
   const { isLoggedIn } = useAuth();
-  const state = useSelector((state: RootState) => state);
+  // 🚀 PERFORMANCE FIX: Only select what we need, not entire state
+  const { profile, wallet, all_friends } = useSelector((state: RootState) => state.filesState);
 
   const data = useMemo(() => {
-    const { profile, wallet, all_friends } = state.filesState;
 
     // Calculate karma score (based on payments and disputes)
     const karmaScore = wallet?.actions_rate || 0;
@@ -364,7 +364,7 @@ const useProgress = (): ProgressData => {
       lockedBadges,
       recentAchievements,
     };
-  }, [state]);
+  }, [profile, wallet, all_friends]);
 
   return data;
 };

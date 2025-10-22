@@ -46,14 +46,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   const safeHistory = history || {};
 
   const {
-    id = "",
-    name = "Anonymous",
-    description = "",
-    email = "",
-    photo = new Uint8Array(),
-  } = safeProfile;
-
-  const {
     rates_by_actions = [],
     rates_by_others = [],
     actions_rate = 0,

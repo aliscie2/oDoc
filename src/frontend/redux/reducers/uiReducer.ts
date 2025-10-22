@@ -18,18 +18,16 @@ export function uiReducer(state = initialState, action: Action): State {
         ...state,
         isNavOpen: !state.isNavOpen,
       };
-    case "POST_VOTE":
-      return {
-        ...state,
-        post_vote: action.postVote,
-      };
-    case "TOGGLE_DARK":
-      localStorage.setItem("isDarkMode", !state.isDarkMode);
+
+    case "TOGGLE_DARK": {
+      const newDarkMode = !state.isDarkMode;
+      localStorage.setItem("isDarkMode", String(newDarkMode));
       document.querySelector("body")?.classList.toggle("dark");
       return {
         ...state,
-        isDarkMode: !state.isDarkMode,
+        isDarkMode: newDarkMode,
       };
+    }
     case "SEARCH":
       return {
         ...state,

@@ -9,6 +9,7 @@ import type { AuthStatus } from "../redux/types/uiTypes";
 import { Principal } from "@dfinity/principal";
 import { IdentityManager } from "../utils/identityManager";
 import { ActorFactory } from "../utils/actorFactory";
+import { _SERVICE, Result_17 } from "$/declarations/backend/backend.did";
 
 export const useAuth = () => {
   const dispatch = useDispatch();
@@ -51,10 +52,19 @@ export const useAuth = () => {
             idlFactory,
             actorType: "backend",
           },
-          (actor) => actor.get_user_profile(principal),
-        );
+          (actor: _SERVICE) => actor.get_user_profile(principal),
+        ) as Result_17;
 
         const hasProfile = profile && "Ok" in profile && profile.Ok?.id;
+        
+        // Dispatch profile history to Redux if available
+        if (hasProfile && profile.Ok) {
+          dispatch({
+            type: "CURRENT_USER_HISTORY",
+            profile_history: profile.Ok,
+          });
+        }
+        
         setAuthStatus(hasProfile ? "registered" : "authenticated");
         return true;
       } catch (error) {
