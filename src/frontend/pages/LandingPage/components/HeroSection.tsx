@@ -197,25 +197,6 @@ export function HeroSection() {
         <div className={styles.grid}>
           {/* Left Column */}
           <div>
-            {/* Logo */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
-              className={styles.logoContainer}
-            >
-              <div>
-                <ImageWithFallback
-                  src="/logo.png"
-                  alt="AI Secretary Logo"
-                  className={styles.logo}
-                />
-              </div>
-              <div className={styles.logoText}>
-                <h2>AI Secretary</h2>
-                <p>Personal Assistant</p>
-              </div>
-            </motion.div>
 
             <h1 className={styles.title}>Your AI Personal Secretary</h1>
             <p className={styles.subtitle}>
