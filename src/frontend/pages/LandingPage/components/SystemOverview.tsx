@@ -1,29 +1,57 @@
-import { motion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
-import LoginButton from '@/components/MainComponents/topNavBar/loginButton';
-import { ImageWithFallback } from './figma/ImageWithFallback';
-import styles from './SystemOverview.module.css';
+import { motion } from "framer-motion";
+import { ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
+import { useState } from "react";
+import LoginButton from "@/components/MainComponents/topNavBar/loginButton";
+import { ImageWithFallback } from "./figma/ImageWithFallback";
+import styles from "./SystemOverview.module.css";
 
 export function SystemOverview() {
+  const [expandedCards, setExpandedCards] = useState<Record<number, boolean>>({});
+
+  const toggleCard = (idx: number) => {
+    setExpandedCards(prev => ({ ...prev, [idx]: !prev[idx] }));
+  };
+
   const services = [
     {
-      icon: '/job.png',
-      title: 'AI Job Match',
-      description: 'AI-powered matching connects you with opportunities that perfectly align with your skills',
-      userType: '/'
+      icon: "/job.png",
+      title: "AI Job Match",
+      bullets: [
+        "Get matched in minutes, not weeks",
+        "AI-powered candidate screening",
+        "Focus on work, not searching"
+      ],
+      fullDescription:
+        "Stop wasting weeks screening candidates or searching job boards. Get matched with the right people or opportunities in minutes—so you can focus on what actually matters: getting work done.",
+      buttonText: "Find matches",
+      userType: "JOB",
     },
     {
-      icon: '/calendar.png',
-      title: 'Smart Calendar',
-      description: 'Smart scheduling system coordinates interviews and meetings at optimal times',
-      userType: 'calendar'
+      icon: "/calendar.png",
+      title: "Smart Calendar",
+      bullets: [
+        "End email ping-pong scheduling",
+        "Automated meeting coordination",
+        "Reclaim hours every week"
+      ],
+      fullDescription:
+        "End the back-and-forth scheduling nightmare. Reclaim hours of your week by automating meeting coordination—because your time is worth more than playing email ping-pong.",
+      buttonText: "Automate scheduling",
+      userType: "calendar",
     },
     {
-      icon: '/contract.png',
-      title: 'Crypto Agreements',
-      description: 'Secure platform handles projects, teams, tasks, payments, and contract management',
-      userType: 'contracts'
-    }
+      icon: "/contract.png",
+      title: "Crypto Agreements",
+      bullets: [
+        "Eliminate payment disputes",
+        "Automatic, trustless execution",
+        "Manage tasks & payments in one place"
+      ],
+      fullDescription:
+        "Eliminate payment disputes and latency. Save your time by managing your team tasks and payment in one single place. Smart contracts ensure you get paid on time, every time—no chasing invoices, no excuses, just automatic, trustless execution.",
+      buttonText: "Make an agreement",
+      userType: "contracts",
+    },
   ];
 
   return (
@@ -35,10 +63,13 @@ export function SystemOverview() {
           viewport={{ amount: 0.3, once: false }}
           transition={{ duration: 0.6 }}
         >
-          <h2 className={styles.title}>
-            We offer an A to Z system
-          </h2>
-          
+          <div className={styles.header}>
+            <h2 className={styles.title}>Why choose oDoc?</h2>
+            <p className={styles.subtitle}>
+              We offer an A to Z system that saves you time, money, and effort
+            </p>
+          </div>
+
           <div className={styles.servicesContainer}>
             {services.map((service, idx) => (
               <div key={idx} className={styles.serviceWrapper}>
@@ -50,19 +81,61 @@ export function SystemOverview() {
                   className={styles.serviceCard}
                 >
                   <div className={styles.icon}>
-                    <ImageWithFallback 
+                    <ImageWithFallback
                       src={service.icon}
                       alt={service.title}
-                      style={{ width: '48px', height: '48px', objectFit: 'contain' }}
+                      style={{
+                        width: "36px",
+                        height: "36px",
+                        objectFit: "contain",
+                      }}
                     />
                   </div>
                   <h3 className={styles.serviceTitle}>{service.title}</h3>
-                  <p className={styles.description}>{service.description}</p>
-                  <LoginButton variant="outlined" userType={service.userType} sx={{ width: '100%', minHeight: '40px' }}>
-                    Try it now
+                  
+                  <div className={styles.description}>
+                    <ul className={styles.bulletList}>
+                      {service.bullets.map((bullet, bulletIdx) => (
+                        <li key={bulletIdx}>{bullet}</li>
+                      ))}
+                    </ul>
+                    
+                    {expandedCards[idx] && (
+                      <motion.p
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className={styles.fullDescription}
+                      >
+                        {service.fullDescription}
+                      </motion.p>
+                    )}
+                    
+                    <button
+                      onClick={() => toggleCard(idx)}
+                      className={styles.readMoreBtn}
+                    >
+                      {expandedCards[idx] ? (
+                        <>
+                          Read less <ChevronUp size={14} />
+                        </>
+                      ) : (
+                        <>
+                          Read more <ChevronDown size={14} />
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  
+                  <LoginButton
+                    variant="outlined"
+                    userType={service.userType}
+                    sx={{ width: "100%", minHeight: "40px" }}
+                  >
+                    {service.buttonText}
                   </LoginButton>
                 </motion.div>
-                
+
                 {idx < services.length - 1 && (
                   <motion.div
                     initial={{ opacity: 0, scale: 0 }}

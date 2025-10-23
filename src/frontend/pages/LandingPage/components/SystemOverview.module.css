@@ -1,22 +1,33 @@
 .section {
-  padding: 2rem 0;
-  background-color: var(--color-bg-primary);
+  padding: 5rem 0;
+  background-color: var(--color-bg-secondary);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 4rem;
+  max-width: 48rem;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .title {
-  font-size: 1.875rem;
-  text-align: center;
-  color: var(--color-text-primary);
   margin-bottom: 1rem;
+  color: var(--color-text-primary);
+}
+
+.subtitle {
+  font-size: 1.25rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
 }
 
 .servicesContainer {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  gap: 2rem;
+  align-items: center;
   justify-content: center;
-  gap: 1.5rem;
-  margin-top: 3rem;
 }
 
 .serviceWrapper {
@@ -28,79 +39,115 @@
 }
 
 .serviceCard {
-  width: 100%;
   background-color: var(--color-bg-primary);
-  border-radius: var(--radius-xl);
-  padding: 1.5rem;
-  box-shadow: var(--shadow-lg);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem 1.25rem;
+  box-shadow: var(--shadow-md);
   border: 1px solid var(--color-border-primary);
   transition: all var(--transition-base);
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+  max-width: 22rem;
 }
 
 .serviceCard:hover {
-  border-color: var(--color-border-hover);
+  transform: translateY(-8px);
   box-shadow: var(--shadow-xl);
+  border-color: var(--color-border-hover);
 }
 
 .icon {
-  color: var(--color-text-primary);
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 1rem;
+  color: var(--color-text-primary);
+  flex-shrink: 0;
 }
 
 .serviceTitle {
-  font-size: 1.125rem;
-  color: var(--color-text-primary);
   margin-bottom: 0.75rem;
+  color: var(--color-text-primary);
+  font-size: 1.125rem;
 }
 
 .description {
-  font-size: 0.875rem;
   color: var(--color-text-secondary);
-  margin-bottom: 1.5rem;
+  line-height: 1.6;
+  margin-bottom: 1.25rem;
   flex: 1;
+  font-size: 0.875rem;
+  width: 100%;
+}
+
+.bulletList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.75rem 0;
+  text-align: left;
+}
+
+.bulletList li {
+  position: relative;
+  padding-left: 1.25rem;
+  margin-bottom: 0.4rem;
+  font-size: 0.875rem;
+}
+
+.bulletList li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: var(--color-primary);
+  font-weight: bold;
+}
+
+.fullDescription {
+  text-align: left;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border-primary);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.readMoreBtn {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0.5rem auto 0;
+  padding: 0.25rem 0.5rem;
+  transition: all var(--transition-base);
+}
+
+.readMoreBtn:hover {
+  opacity: 0.8;
+  transform: translateY(-1px);
 }
 
 .arrow {
   color: var(--color-text-tertiary);
+  flex-shrink: 0;
   transform: rotate(90deg);
-}
-
-@media (min-width: 768px) {
-  .section {
-    padding: 5rem 0;
-  }
-  
-  .title {
-    font-size: 2.25rem;
-  }
-  
-  .servicesContainer {
-    margin-top: 4rem;
-    gap: 2rem;
-  }
-  
-  .serviceWrapper {
-    gap: 2rem;
-  }
-  
-  .serviceCard {
-    padding: 2rem;
-  }
-  
-  .serviceTitle {
-    font-size: 1.25rem;
-  }
-  
-  .description {
-    font-size: 1rem;
-  }
 }
 
 @media (min-width: 1024px) {
   .servicesContainer {
     flex-direction: row;
+    gap: 0;
   }
   
   .serviceWrapper {
@@ -109,10 +156,11 @@
   }
   
   .serviceCard {
-    width: 20rem;
+    max-width: 18rem;
   }
   
   .arrow {
+    margin: 0 1.5rem;
     transform: rotate(0deg);
   }
 }

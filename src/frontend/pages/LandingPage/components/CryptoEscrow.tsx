@@ -2,16 +2,22 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from './ui/card';
 import { Badge } from './ui/badge';
-import { FileText, DollarSign, Calendar, User, FileCheck } from 'lucide-react';
+import { FileText, DollarSign, Calendar, User, FileCheck, Coins, Bitcoin } from 'lucide-react';
 import styles from './remaining-components.module.css';
 
 export function CryptoEscrow() {
   const [activeContract, setActiveContract] = useState(0);
 
+  const paymentMethods = [
+    { name: 'USD', icon: <DollarSign size={24} /> },
+    { name: 'USDC', icon: <Coins size={24} /> },
+    { name: 'Bitcoin', icon: <Bitcoin size={24} /> }
+  ];
+
   const contracts = [
     {
       amount: '500 USDC',
-      receiver: { name: 'John Smith', role: 'Senior ICP Developer', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d' },
+      receiver: { name: 'John Smith', role: 'Senior ICP Developer' },
       stakingDuration: '30 days',
       conditions: [
         'Complete smart contract audit',
@@ -21,7 +27,7 @@ export function CryptoEscrow() {
     },
     {
       amount: '1,200 USDC',
-      receiver: { name: 'Sarah Johnson', role: 'UI/UX Designer', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80' },
+      receiver: { name: 'Sarah Johnson', role: 'UI/UX Designer' },
       stakingDuration: '45 days',
       conditions: [
         'Deliver final design mockups',
@@ -53,9 +59,41 @@ export function CryptoEscrow() {
           >
             <div className={styles.cryptoHeader}>
               <h2 style={{ fontSize: '1.875rem', marginBottom: '0.75rem', color: 'var(--color-text-primary)' }}>Secure Escrow Agreements</h2>
-              <p style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)' }}>
+              <p style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)', marginBottom: '1.5rem' }}>
                 Transparent blockchain contracts with automated escrow
               </p>
+              
+              {/* Payment Options */}
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '2.5rem', marginBottom: '2rem' }}>
+                {paymentMethods.map((method, index) => (
+                  <motion.div
+                    key={method.name}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: false }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}
+                  >
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '3rem',
+                        height: '3rem',
+                        backgroundColor: 'var(--color-bg-secondary)',
+                        border: '1px solid var(--color-border-primary)',
+                        borderRadius: '50%',
+                        color: 'var(--color-text-primary)'
+                      }}
+                    >
+                      {method.icon}
+                    </motion.div>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>{method.name}</span>
+                  </motion.div>
+                ))}
+              </div>
             </div>
 
             <AnimatePresence mode="wait">
@@ -109,11 +147,9 @@ export function CryptoEscrow() {
                           <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>Receiver</span>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          <img 
-                            src={contract.receiver.avatar} 
-                            alt={contract.receiver.name}
-                            style={{ width: '2.5rem', height: '2.5rem', borderRadius: 'var(--radius-full)', objectFit: 'cover' }}
-                          />
+                          <div style={{ width: '2.5rem', height: '2.5rem', borderRadius: 'var(--radius-full)', backgroundColor: 'var(--color-bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <User size={16} />
+                          </div>
                           <div>
                             <p style={{ fontSize: '0.875rem', color: 'var(--color-text-primary)' }}>{contract.receiver.name}</p>
                             <p style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>{contract.receiver.role}</p>

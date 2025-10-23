@@ -1,15 +1,15 @@
-import { useSelector } from "react-redux";
 import { useEffect } from "react";
-import { HeroSection } from "./components/HeroSection";
-import { SystemOverview } from "./components/SystemOverview";
-import { JobMatchingFlow } from "./components/JobMatchingFlow";
-import { EmailNotifications } from "./components/EmailNotifications";
-import { SmartCalendar } from "./components/SmartCalendar";
-import { CryptoEscrow } from "./components/CryptoEscrow";
+import { useSelector } from "react-redux";
 import { AgreementProofs } from "./components/AgreementProofs";
-import { ProjectManagement } from "./components/ProjectManagement";
-import { SocialMedia } from "./components/SocialMedia";
+import { CryptoEscrow } from "./components/CryptoEscrow";
+import { EmailNotifications } from "./components/EmailNotifications";
 import { Footer } from "./components/Footer";
+import { HeroSection } from "./components/HeroSection";
+import { JobMatchingFlow } from "./components/JobMatchingFlow";
+import { ProjectManagement } from "./components/ProjectManagement";
+import { SmartCalendar } from "./components/SmartCalendar";
+import { SocialMedia } from "./components/SocialMedia";
+import { SystemOverview } from "./components/SystemOverview";
 import "./styles/globals.css";
 
 export default function App() {
