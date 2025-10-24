@@ -195,11 +195,16 @@ const NotificationCard = ({
         userId={payment.sender.toString()}
         message="New promise"
         onClick={() => {
-          const encoded = encodeContractUrl({
+          if (payment.contract_id==="none"){
+              navigate(`/wallet`);
+          } else {
+            const encoded = encodeContractUrl({
             id: payment.contract_id,
             owner: payment.sender.toString(),
           });
           navigate(`/contract?data=${encoded}`);
+          }
+          
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mt: 0.5 }}>

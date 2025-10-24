@@ -24,6 +24,12 @@
       "wasm": "https://github.com/dfinity/ic/releases/download/ledger-suite-icrc-2025-06-10/ic-icrc1-ledger.wasm.gz",
       "specified_id": "xevnm-gaaaa-aaaar-qafnq-cai"
     },
+    "ckusdt_ledger": {
+      "type": "custom",
+      "candid": "https://github.com/dfinity/ic/releases/download/ledger-suite-icrc-2025-06-10/ledger.did",
+      "wasm": "https://github.com/dfinity/ic/releases/download/ledger-suite-icrc-2025-06-10/ic-icrc1-ledger.wasm.gz",
+      "specified_id": "cngnf-vqaaa-aaaar-qag4q-cai"
+    },
     "backend": {
       "type": "rust",
       "package": "backend",

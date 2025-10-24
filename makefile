@@ -32,7 +32,16 @@ generate_candid_file:
 	bash scripts/did.sh
 	sh scripts/deploy_ic_siwe_provider.sh
 	sh scripts/deploy_ledger.sh
-	dfx generate
+	@echo "Generating declarations..."
+	dfx generate backend
+	dfx generate ckusdc_ledger || echo "Warning: ckusdc_ledger not deployed yet"
+	dfx generate ckusdt_ledger || echo "Warning: ckusdt_ledger not deployed yet"
+
+generate_ledger_declarations:
+	@echo "Generating ledger declarations (ledgers must be deployed first)..."
+	dfx generate ckusdc_ledger
+	dfx generate ckusdt_ledger
+	@echo "Ledger declarations generated successfully!"
 
 add_balance:
 	dfx wallet --network ic redeem-faucet-coupon 64FCF-75653-A9433
@@ -51,6 +60,28 @@ topup_cycles:
 	dfx wallet send lrcwp-yiaaa-aaaal-acwdq-cai 1000000000000 --network=ic
 	dfx canister status lrcwp-yiaaa-aaaal-acwdq-cai --network=ic
 
+topup_backend:
+	@echo "Converting ICP to cycles and topping up backend..."
+	dfx identity use default
+	@echo "Current ICP balance:"
+	dfx ledger balance --network=ic
+	@echo "Topping up wallet with 1 ICP..."
+	dfx ledger --network=ic top-up --amount=1.0 2nvlk-tyaaa-aaaal-ab5ya-cai
+	@echo "Sending 5T cycles to backend..."
+	dfx wallet send lrcwp-yiaaa-aaaal-acwdq-cai 5000000000000 --network=ic
+	@echo "Backend status:"
+	dfx canister status lrcwp-yiaaa-aaaal-acwdq-cai --network=ic
+
+deploy-ic:
+	@echo "Compressing frontend assets..."
+	@find build -type f \( -name "*.js" -o -name "*.css" -o -name "*.html" -o -name "*.svg" -o -name "*.json" \) -exec gzip -9fk {} \;
+	export DFX_WARNING=-mainnet_plaintext_identity && \
+	export DFX_ASSET_UPLOAD_TIMEOUT=600 && \
+	export DFX_ASSET_BATCH_SIZE=5 && \
+	dfx deploy backend --network ic && \
+	dfx deploy frontend --network ic || \
+	(echo "Retrying frontend deployment..." && sleep 10 && dfx deploy frontend --network ic)
+
 get_logs:
 	dfx canister logs backend  --network ic
 
@@ -62,8 +93,10 @@ deploy-all:
 
 	sh scripts/first_time_run.sh
 	bash scripts/did.sh backend
-	dfx generate backend
 	sh scripts/deploy_ledger.sh
+	dfx generate backend
+	dfx generate ckusdc_ledger
+	dfx generate ckusdt_ledger
 	sh scripts/set_env.sh
 	
 	gzip -fk target/wasm32-unknown-unknown/release/backend.wasm
@@ -121,9 +154,14 @@ test-e2e:
 	lsof -ti:5173 | xargs kill -9 || true
 
 
-dummy_deposit:
-	# replace lqv7v-5z3de-ldfue-z4rrf-u6opp-npwa5-e2us3-fkbx7-yjtwu-gh7x3-yae with the wanted user
+dummy_ckusdc_deposit:
+	# replace principal with the wanted user
 	dfx canister --identity minter call ckusdc_ledger icrc1_transfer '(record {to = record { owner = principal "rhlwg-3ybpc-uxtly-55zob-5cyjy-u5jmz-4zgjk-n7po6-hz5rl-4xeam-fae"; }; amount = 300_000_000; })'
+
+
+dummy_ckusdt_deposit:
+	# replace principal with the wanted user
+	dfx canister --identity minter call ckusdt_ledger icrc1_transfer '(record {to = record { owner = principal "rhlwg-3ybpc-uxtly-55zob-5cyjy-u5jmz-4zgjk-n7po6-hz5rl-4xeam-fae"; }; amount = 300_000_000; })'
 
 generate_icons:
 	npx pwa-asset-generator ./public/logo.jpg ./public/icons --background "#000000" --manifest ./public/manifest.json --index ./index.html

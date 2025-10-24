@@ -1,0 +1,27 @@
+[
+  {
+    match: "**/*",
+    security_policy: "standard",
+    cache: {
+      max_age: 31536000,
+    },
+    headers: {
+      "Content-Encoding": "gzip",
+    },
+    enable_aliasing: true,
+  },
+  {
+    match: "index.html",
+    cache: {
+      max_age: 0,
+    },
+  },
+  {
+    match: "icons/apple-splash-*.jpg",
+    ignore: true,
+  },
+  {
+    match: "icons/apple-splash-*.png",
+    ignore: true,
+  },
+]

@@ -613,7 +613,9 @@ service : () -> {
   delete_job : (text) -> (Result_3);
   delete_post : (text) -> (Result_3);
   delete_work_space : (WorkSpace) -> (Result_6);
+  deposit_ckusdc : () -> (Result_7);
   deposit_ckusdt : () -> (Result_7);
+  deposit_stablecoins : () -> (Result_7);
   drop_free_credits : () -> (Result_3);
   get_affiliate_data : (text) -> (Result_8);
   get_ai_credits : () -> (Result_9) query;
@@ -690,6 +692,7 @@ service : () -> {
   update_user_profile : (RegisterUser) -> (Result);
   vote_down : (text) -> (Result_13);
   vote_up : (text) -> (Result_13);
+  withdraw_ckusdc : (nat64, text) -> (Result_7);
   withdraw_ckusdt : (nat64, text) -> (Result_7);
   ws_close : (CanisterWsCloseArguments) -> (Result_3);
   ws_get_messages : (CanisterWsGetMessagesArguments) -> (Result_21) query;
