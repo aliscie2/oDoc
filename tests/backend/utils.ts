@@ -52,8 +52,11 @@ export async function deposit(user: Identity, amount: number) {
   if (!("Ok" in approveResult)) throw new Error("Approve failed");
 
   globalThis.testActor.setIdentity(user);
-  const depositResult = await globalThis.testActor.deposit_ckusdt();
+  const depositResult = await globalThis.testActor.deposit_ckusdc();
 
-  if (!("Ok" in depositResult)) throw new Error("Deposit failed");
+  if (!("Ok" in depositResult)) {
+    console.error("Deposit failed:", depositResult);
+    throw new Error(`Deposit failed: ${JSON.stringify(depositResult)}`);
+  }
   return depositResult;
 }

@@ -36,7 +36,9 @@ test("should withdraw successfully and update balance", async () => {
   expect("Ok" in initData).toBe(true);
   const initialBalance = initData.Ok.wallet.balance;
   expect(initialBalance).toBe(299);
-  const withdraw = await globalThis.testActor.withdraw_ckusdt(
+  
+  // Use withdraw_ckusdc to match the deposit token type
+  const withdraw = await globalThis.testActor.withdraw_ckusdc(
     BigInt(299),
     targetAddress,
   );
@@ -65,7 +67,7 @@ test("reentrancy protection test - should prevent concurrent withdrawals", async
 
   const withdrawalPromises = Array.from({ length: 50 }, (_, i) =>
     globalThis.testActor
-      .withdraw_ckusdt(BigInt(299), attackerAddres)
+      .withdraw_ckusdc(BigInt(299), attackerAddres)
       .then((result: Result_6) => {
         // console.log(`Withdrawal ${i}:`, result);
         return result;
