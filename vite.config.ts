@@ -5,6 +5,9 @@ import { VitePWA } from "vite-plugin-pwa";
 import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import react from "@vitejs/plugin-react";
+import { visualizer } from 'rollup-plugin-visualizer';
+
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -116,6 +119,13 @@ export default defineConfig({
     ),
   },
   plugins: [
+        visualizer({
+      open: true,
+      gzipSize: true,
+      brotliSize: true,
+      filename: 'bundle-analysis.html',
+    }),
+
     react(),
     EnvironmentPlugin("all", { prefix: "CANISTER_" }),
     EnvironmentPlugin("all", { prefix: "DFX_" }),

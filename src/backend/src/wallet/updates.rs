@@ -14,13 +14,21 @@ use icrc_ledger_types::icrc2::transfer_from::{TransferFromArgs, TransferFromErro
 // use std::time;
 use crate::ckusdc_index_types::*;
 
-async fn get_user_balance() -> Result<Nat, String> {
+// Token ledger canister IDs - centralized for easy management
+const CKUSDC_LEDGER: &str = "xevnm-gaaaa-aaaar-qafnq-cai";
+const CKUSDT_LEDGER: &str = "cngnf-vqaaa-aaaar-qag4q-cai";
+// Future tokens can be added here:
+// const ICP_LEDGER: &str = "ryjl3-tyaaa-aaaaa-aaaba-cai";
+// const CKBTC_LEDGER: &str = "mxzaz-hqaaa-aaaar-qaada-cai";
+
+/// Generic function to get user balance from any ICRC-1 ledger
+async fn get_user_balance_from_ledger(ledger_canister: &str) -> Result<Nat, String> {
     let args = Account {
         owner: caller(),
         subaccount: None,
     };
     let res = ic_cdk::call::<(Account,), (Nat,)>(
-        Principal::from_text("xevnm-gaaaa-aaaar-qafnq-cai").unwrap(),
+        Principal::from_text(ledger_canister).unwrap(),
         "icrc1_balance_of",
         (args,),
     )
@@ -34,9 +42,10 @@ async fn get_user_balance() -> Result<Nat, String> {
     }
 }
 
-async fn get_fee() -> Nat {
+/// Generic function to get fee from any ICRC-1 ledger
+async fn get_fee_from_ledger(ledger_canister: &str) -> Nat {
     let res = ic_cdk::call::<(), (Nat,)>(
-        Principal::from_text("xevnm-gaaaa-aaaar-qafnq-cai").unwrap(),
+        Principal::from_text(ledger_canister).unwrap(),
         "icrc1_fee",
         (),
     )
@@ -44,6 +53,8 @@ async fn get_fee() -> Nat {
     .map_err(|(_, message)| Error::IcCdkError { message });
     res.unwrap().0
 }
+
+// Legacy functions removed - use generic versions instead
 
 #[update]
 async fn check_external_transactions(max_results: Nat) -> Result<GetTransactions, Error> {
@@ -105,7 +116,13 @@ async fn check_external_transactions(max_results: Nat) -> Result<GetTransactions
     Ok(res)
 }
 
-async fn transfer_from(amount: Nat, from: Principal, to: Principal) -> Result<BlockIndex, Error> {
+/// Generic transfer_from function that works with any ICRC-2 ledger
+async fn transfer_from_ledger(
+    ledger_canister: &str,
+    amount: Nat,
+    from: Principal,
+    to: Principal,
+) -> Result<BlockIndex, Error> {
     let args = TransferFromArgs {
         spender_subaccount: None,
         from: Account {
@@ -122,7 +139,7 @@ async fn transfer_from(amount: Nat, from: Principal, to: Principal) -> Result<Bl
         created_at_time: None,
     };
     ic_cdk::call::<(TransferFromArgs,), (Result<BlockIndex, TransferFromError>,)>(
-        Principal::from_text("xevnm-gaaaa-aaaar-qafnq-cai").unwrap(),
+        Principal::from_text(ledger_canister).unwrap(),
         "icrc2_transfer_from",
         (args,),
     )
@@ -134,31 +151,43 @@ async fn transfer_from(amount: Nat, from: Principal, to: Principal) -> Result<Bl
     })
 }
 
-// #[update]
-// async fn get_local_balance() -> Result<Nat, String> {
-//     get_user_balance().await
-// }
+// Legacy function removed - use transfer_from_ledger instead
 
-#[update]
-async fn deposit_ckusdt() -> Result<Wallet, Error> {
+/// Generic deposit function that works with any ICRC-2 stablecoin ledger
+/// This function can be reused for ckUSDC, ckUSDT, and future stablecoins
+async fn deposit_from_ledger(
+    ledger_canister: &str,
+    min_deposit: u64,
+    token_name: &str,
+) -> Result<Wallet, Error> {
     let _guard = TransferGuard::new()?;
     let mut wallet = Wallet::get(caller());
-    let balance = get_user_balance().await.map_err(|e| Error::IcCdkError {
-        message: format!("{:?}", e),
-    })?;
+    
+    let balance = get_user_balance_from_ledger(ledger_canister)
+        .await
+        .map_err(|e| Error::IcCdkError {
+            message: format!("{:?}", e),
+        })?;
 
-    if balance <= 3000000_u64 {
+    if balance <= min_deposit {
         return Err(Error::IcCdkError {
-            message: "Minimum deposit should be 0.1 USD".to_string(),
+            message: format!("Minimum deposit should be more than {} {}", min_deposit as f64 / 1_000_000.0, token_name),
         });
     }
 
-    let fee = get_fee().await;
-    transfer_from(balance.clone() - fee.clone(), caller(), ic_cdk::id()).await?;
+    let fee = get_fee_from_ledger(ledger_canister).await;
+    transfer_from_ledger(
+        ledger_canister,
+        balance.clone() - fee.clone(),
+        caller(),
+        ic_cdk::id(),
+    )
+    .await?;
+    
     wallet
         .deposit(
             nat_to_u64((balance - fee) / Nat::from(1000000_u64)) as f64,
-            "ExternalWallet".to_string(),
+            format!("ExternalWallet-{}", token_name),
             ExchangeType::Deposit,
         )
         .map_err(|e| Error::IcCdkError {
@@ -168,29 +197,181 @@ async fn deposit_ckusdt() -> Result<Wallet, Error> {
     Ok(wallet)
 }
 
+/// Deposit ckUSDC
 #[update]
-async fn withdraw_ckusdt(amount: u64, address: String) -> Result<Wallet, Error> {
-    let _guard = TransferGuard::new()?;
-    let balance = get_user_balance().await.map_err(|e| Error::IcCdkError {
-        message: format!("{:?}", e),
-    })?;
+async fn deposit_ckusdc() -> Result<Wallet, Error> {
+    deposit_from_ledger(CKUSDC_LEDGER, 100_000, "ckUSDC").await
+}
 
+/// Deposit ckUSDT
+#[update]
+async fn deposit_ckusdt() -> Result<Wallet, Error> {
+    deposit_from_ledger(CKUSDT_LEDGER, 100_000, "ckUSDT").await
+}
+
+/// Auto-detect and deposit from both ckUSDC and ckUSDT if available
+/// This is the most user-friendly approach
+#[update]
+async fn deposit_stablecoins() -> Result<Wallet, Error> {
+    let _guard = TransferGuard::new()?;
     let mut wallet = Wallet::get(caller());
+    let mut total_deposited = 0f64;
+    let mut deposits = Vec::new();
+
+    // Try ckUSDC
+    match get_user_balance_from_ledger(CKUSDC_LEDGER).await {
+        Ok(balance) if balance > 100_000_u64 => {
+            let fee = get_fee_from_ledger(CKUSDC_LEDGER).await;
+            if let Ok(_) = transfer_from_ledger(
+                CKUSDC_LEDGER,
+                balance.clone() - fee.clone(),
+                caller(),
+                ic_cdk::id(),
+            )
+            .await
+            {
+                let amount = nat_to_u64((balance - fee) / Nat::from(1000000_u64)) as f64;
+                total_deposited += amount;
+                deposits.push(format!("{} ckUSDC", amount));
+            }
+        }
+        _ => {}
+    }
+
+    // Try ckUSDT
+    match get_user_balance_from_ledger(CKUSDT_LEDGER).await {
+        Ok(balance) if balance > 100_000_u64 => {
+            let fee = get_fee_from_ledger(CKUSDT_LEDGER).await;
+            if let Ok(_) = transfer_from_ledger(
+                CKUSDT_LEDGER,
+                balance.clone() - fee.clone(),
+                caller(),
+                ic_cdk::id(),
+            )
+            .await
+            {
+                let amount = nat_to_u64((balance - fee) / Nat::from(1000000_u64)) as f64;
+                total_deposited += amount;
+                deposits.push(format!("{} ckUSDT", amount));
+            }
+        }
+        _ => {}
+    }
+
+    if total_deposited == 0.0 {
+        return Err(Error::IcCdkError {
+            message: "No deposits found. Minimum 0.1 USD required for each token.".to_string(),
+        });
+    }
+
     wallet
-        .withdraw(amount as f64, address.clone(), ExchangeType::Withdraw)
+        .deposit(
+            total_deposited,
+            format!("ExternalWallet ({})", deposits.join(" + ")),
+            ExchangeType::Deposit,
+        )
         .map_err(|e| Error::IcCdkError {
-            message: format!("wallet error: {:?}", e),
+            message: format!("{:?}", e),
         })?;
 
-    if amount >= balance {
-        transfer_from(
-            Nat::from(amount * 1000000),
-            ic_cdk::id(),
-            Principal::from_text(address).unwrap(),
-        )
-        .await?;
-    }
     Ok(wallet)
+}
+
+/// Generic withdraw function for any ICRC-2 token
+async fn withdraw_from_ledger(
+    ledger_canister: &str,
+    amount: u64,
+    address: String,
+    token_name: &str,
+) -> Result<Wallet, Error> {
+    let _guard = TransferGuard::new()?;
+    
+    // Validate address format
+    let destination_principal = Principal::from_text(&address).map_err(|_| Error::IcCdkError {
+        message: format!("Invalid withdrawal address: '{}'. Please provide a valid principal address.", address),
+    })?;
+    
+    // Prevent withdrawing to yourself (user's own principal)
+    let user_principal = caller();
+    if destination_principal == user_principal {
+        return Err(Error::IcCdkError {
+            message: "Cannot withdraw to yourself. Please provide an external wallet address.".to_string(),
+        });
+    }
+    
+    // Get backend canister's token balance (liquidity)
+    let canister_balance = ic_cdk::call::<(Account,), (Nat,)>(
+        Principal::from_text(ledger_canister).unwrap(),
+        "icrc1_balance_of",
+        (Account {
+            owner: ic_cdk::id(),
+            subaccount: None,
+        },),
+    )
+    .await
+    .map_err(|(_, message)| Error::IcCdkError { message })?
+    .0;
+
+    // Check if backend canister has enough liquidity
+    let amount_with_decimals = Nat::from(amount * 1_000_000);
+    if canister_balance < amount_with_decimals {
+        return Err(Error::IcCdkError {
+            message: format!(
+                "Insufficient {} liquidity in backend canister. Available: {}, Requested: {}",
+                token_name,
+                nat_to_u64(canister_balance.clone()) / 1_000_000,
+                amount
+            ),
+        });
+    }
+
+    // Check if user has enough wallet balance BEFORE transferring
+    let wallet = Wallet::get(caller());
+    if wallet.balance < amount as f64 {
+        return Err(Error::IcCdkError {
+            message: format!(
+                "Insufficient wallet balance. Available: {}, Requested: {}",
+                wallet.balance,
+                amount
+            ),
+        });
+    }
+
+    // Transfer tokens from backend canister to user's address FIRST
+    // This ensures if transfer fails, wallet balance is not affected
+    transfer_from_ledger(
+        ledger_canister,
+        amount_with_decimals,
+        ic_cdk::id(),
+        destination_principal,
+    )
+    .await?;
+
+    // Only deduct from wallet balance AFTER successful transfer
+    let mut wallet = Wallet::get(caller());
+    wallet
+        .withdraw(
+            amount as f64,
+            format!("{}-{}", address.clone(), token_name),
+            ExchangeType::Withdraw,
+        )
+        .map_err(|e| Error::IcCdkError {
+            message: format!("Failed to update wallet after successful transfer: {:?}", e),
+        })?;
+
+    Ok(wallet)
+}
+
+/// Withdraw ckUSDC
+#[update]
+async fn withdraw_ckusdc(amount: u64, address: String) -> Result<Wallet, Error> {
+    withdraw_from_ledger(CKUSDC_LEDGER, amount, address, "ckUSDC").await
+}
+
+/// Withdraw ckUSDT
+#[update]
+async fn withdraw_ckusdt(amount: u64, address: String) -> Result<Wallet, Error> {
+    withdraw_from_ledger(CKUSDT_LEDGER, amount, address, "ckUSDT").await
 }
 
 #[update]

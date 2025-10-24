@@ -1,11 +1,13 @@
-import { backendActor } from "@/utils/backendUtils";
+import { backendActor, ckUSDCActor, ckUSDTActor } from "@/utils/backendUtils";
 import { Principal } from "@dfinity/principal";
+import { canisterId } from "$/declarations/backend";
 import {
   AccountBalanceWallet,
   ArrowDownward,
   ArrowUpward,
   Close,
   ContentCopy,
+  Refresh,
   Send,
 } from "@mui/icons-material";
 import {
@@ -31,6 +33,7 @@ import {
   TableHead,
   TableRow,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { useSnackbar } from "notistack";
@@ -39,6 +42,7 @@ import { useSelector } from "react-redux";
 import { depositWithOisy } from "./useOisy";
 import RunawayJellyfish from "@/components/creature/runAeayJellyFish";
 import { usdcConverter } from "@/utils/usdcLedger";
+import { useDepositProcessor } from "@/hooks/useDepositProcessor";
 
 // Enhanced Types
 interface TransactionType {
@@ -146,6 +150,7 @@ const useWalletTransactions = (
     type: string,
     amount: string,
     target: string,
+    tokenType?: "ckUSDC" | "ckUSDT",
   ): Promise<boolean> => {
     if (!amount || isNaN(Number(amount)) || parseFloat(amount) <= 0) {
       enqueueSnackbar("Please enter a valid amount", { variant: "error" });
@@ -163,7 +168,11 @@ const useWalletTransactions = (
           { LocalSend: null },
         );
       } else if (type === "withdraw") {
-        result = await backendActor.withdraw_ckusdt(Number(amount), target);
+        if (tokenType === "ckUSDT") {
+          result = await backendActor.withdraw_ckusdt(Number(amount), target);
+        } else {
+          result = await backendActor.withdraw_ckusdc(Number(amount), target);
+        }
       }
 
       if ("Ok" in result) {
@@ -175,7 +184,7 @@ const useWalletTransactions = (
         enqueueSnackbar(JSON.stringify(result.Err), { variant: "error" });
         return false;
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Transaction failed:", error);
       enqueueSnackbar(error.message || "Transaction failed", {
         variant: "error",
@@ -257,8 +266,20 @@ const getWalletStats = (wallet: Wallet): WalletStat[] => [
 ];
 
 // Components
-const WalletBalance: React.FC<{ wallet: Wallet }> = ({ wallet }) => {
+const WalletBalance: React.FC<{
+  wallet: Wallet;
+  onRefresh?: () => void;
+  isRefreshing?: boolean;
+}> = ({ wallet, onRefresh, isRefreshing = false }) => {
   const stats = getWalletStats(wallet);
+  const [showRefresh, setShowRefresh] = useState(true);
+
+  const handleRefresh = () => {
+    if (onRefresh) {
+      onRefresh();
+      setShowRefresh(false);
+    }
+  };
 
   return (
     <Card sx={{ mb: 4 }}>
@@ -267,6 +288,28 @@ const WalletBalance: React.FC<{ wallet: Wallet }> = ({ wallet }) => {
           <Box display="flex" alignItems="center" gap={1}>
             <AccountBalanceWallet />
             <Typography variant="h5">Your Wallet</Typography>
+            {showRefresh && (
+              <Tooltip title="Check for pending deposits">
+                <IconButton
+                  onClick={handleRefresh}
+                  disabled={isRefreshing}
+                  size="small"
+                  sx={{ ml: "auto" }}
+                >
+                  <Refresh
+                    sx={{
+                      animation: isRefreshing
+                        ? "spin 1s linear infinite"
+                        : "none",
+                      "@keyframes spin": {
+                        "0%": { transform: "rotate(0deg)" },
+                        "100%": { transform: "rotate(360deg)" },
+                      },
+                    }}
+                  />
+                </IconButton>
+              </Tooltip>
+            )}
           </Box>
           <Grid container spacing={3}>
             {stats.map((stat, index) => (
@@ -387,7 +430,9 @@ const DepositDialog: React.FC<{
   onClose: () => void;
   wallet: Wallet;
 }> = ({ open, onClose, wallet }) => {
-  const { profile } = useSelector((state: ReduxState) => state.filesState);
+  const { profile: userProfile } = useSelector(
+    (state: ReduxState) => state.filesState,
+  );
   const [depositMethod, setDepositMethod] = useState<DepositMethod>("address");
   const [oisyAmount, setOisyAmount] = useState<string>("");
   const [usdcAmount, setUsdcAmount] = useState<string>("");
@@ -405,7 +450,7 @@ const DepositDialog: React.FC<{
       return;
     }
 
-    if (!profile) {
+    if (!userProfile) {
       enqueueSnackbar("Profile not found", { variant: "error" });
       return;
     }
@@ -414,7 +459,7 @@ const DepositDialog: React.FC<{
     try {
       await depositWithOisy(
         parseFloat(oisyAmount),
-        Principal.fromText(profile.id),
+        Principal.fromText(userProfile.id),
       );
       enqueueSnackbar("Deposit initiated successfully", { variant: "success" });
       onClose();
@@ -436,7 +481,7 @@ const DepositDialog: React.FC<{
       return;
     }
 
-    if (!profile) {
+    if (!userProfile) {
       enqueueSnackbar("Profile not found", { variant: "error" });
       return;
     }
@@ -445,7 +490,7 @@ const DepositDialog: React.FC<{
     try {
       const result = await usdcConverter.convertUSDC(
         parseFloat(usdcAmount),
-        profile.id,
+        userProfile.id,
       );
 
       if (result.success) {
@@ -456,13 +501,15 @@ const DepositDialog: React.FC<{
         onClose();
         setUsdcAmount("");
       }
-    } catch (error: any) {
-      if (error.message.includes("No wallets detected")) {
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      if (errorMessage.includes("No wallets detected")) {
         enqueueSnackbar("Please install MetaMask or OKX Wallet", {
           variant: "error",
         });
       } else {
-        enqueueSnackbar(error.message || "USDC conversion failed", {
+        enqueueSnackbar(errorMessage || "USDC conversion failed", {
           variant: "error",
         });
       }
@@ -634,8 +681,12 @@ const WithdrawDialog: React.FC<{
   setAmount: (amount: string) => void;
   withdrawAddress: string;
   setWithdrawAddress: (address: string) => void;
+  tokenType: "ckUSDC" | "ckUSDT";
+  setTokenType: (type: "ckUSDC" | "ckUSDT") => void;
   onConfirm: () => void;
   isProcessing: boolean;
+  walletBalance: number;
+  userPrincipal: string;
 }> = ({
   open,
   onClose,
@@ -643,55 +694,193 @@ const WithdrawDialog: React.FC<{
   setAmount,
   withdrawAddress,
   setWithdrawAddress,
+  tokenType,
+  setTokenType,
   onConfirm,
   isProcessing,
-}) => (
-  <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-    <DialogTitle>
-      Withdraw Funds
-      <IconButton
-        onClick={onClose}
-        sx={{ position: "absolute", right: 8, top: 8 }}
-      >
-        <Close />
-      </IconButton>
-    </DialogTitle>
-    <DialogContent>
-      <Stack spacing={3} sx={{ mt: 2 }}>
-        <TextField
-          label="Amount"
-          type="number"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          fullWidth
-        />
-        <TextField
-          label="Withdrawal Address"
-          value={withdrawAddress}
-          onChange={(e) => setWithdrawAddress(e.target.value)}
-          fullWidth
-        />
-      </Stack>
-      <Typography color="error">
-        Gas fees of Ethereum is 1$, if you send 1$ only it will be lost and your
-        external wallet will get 0$
-      </Typography>
-    </DialogContent>
-    <DialogActions>
-      <Button onClick={onClose} disabled={isProcessing}>
-        Cancel
-      </Button>
-      <Button
-        onClick={onConfirm}
-        variant="contained"
-        disabled={isProcessing}
-        startIcon={isProcessing ? <CircularProgress size={20} /> : null}
-      >
-        {isProcessing ? "Processing..." : "Confirm Withdrawal"}
-      </Button>
-    </DialogActions>
-  </Dialog>
-);
+  walletBalance,
+  userPrincipal,
+}) => {
+  const [ckusdcLiquidity, setCkusdcLiquidity] = useState<number>(0);
+  const [ckusdtLiquidity, setCkusdtLiquidity] = useState<number>(0);
+  const [loadingLiquidity, setLoadingLiquidity] = useState<boolean>(false);
+
+  React.useEffect(() => {
+    if (open) {
+      loadLiquidity();
+    }
+  }, [open]);
+
+  const loadLiquidity = async () => {
+    setLoadingLiquidity(true);
+    try {
+      // Get backend canister's balance for both tokens (liquidity available for withdrawal)
+      const backendPrincipal = Principal.fromText(canisterId);
+
+      const [ckusdcBalance, ckusdtBalance] = await Promise.all([
+        ckUSDCActor.icrc1_balance_of({
+          owner: backendPrincipal,
+          subaccount: [],
+        }),
+        ckUSDTActor.icrc1_balance_of({
+          owner: backendPrincipal,
+          subaccount: [],
+        }),
+      ]);
+
+      setCkusdcLiquidity(Number(ckusdcBalance) / 1_000_000);
+      setCkusdtLiquidity(Number(ckusdtBalance) / 1_000_000);
+    } catch (error) {
+      console.error("Failed to load liquidity:", error);
+    } finally {
+      setLoadingLiquidity(false);
+    }
+  };
+
+  const selectedLiquidity =
+    tokenType === "ckUSDC" ? ckusdcLiquidity : ckusdtLiquidity;
+  const withdrawAmount = Number(amount);
+  const hasInsufficientLiquidity = withdrawAmount > selectedLiquidity;
+  const hasInsufficientWalletBalance = withdrawAmount > walletBalance;
+  const isSelfWithdrawal =
+    withdrawAddress.trim() !== "" && withdrawAddress === userPrincipal;
+  const cannotWithdraw =
+    hasInsufficientLiquidity ||
+    hasInsufficientWalletBalance ||
+    isSelfWithdrawal;
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle>
+        Withdraw Funds
+        <IconButton
+          onClick={onClose}
+          sx={{ position: "absolute", right: 8, top: 8 }}
+        >
+          <Close />
+        </IconButton>
+      </DialogTitle>
+      <DialogContent>
+        <Stack spacing={3} sx={{ mt: 2 }}>
+          <Box>
+            <Typography variant="subtitle2" gutterBottom>
+              Select Token
+            </Typography>
+            <Stack direction="row" spacing={2}>
+              <Button
+                variant={tokenType === "ckUSDC" ? "contained" : "outlined"}
+                onClick={() => setTokenType("ckUSDC")}
+                fullWidth
+              >
+                ckUSDC
+              </Button>
+              <Button
+                variant={tokenType === "ckUSDT" ? "contained" : "outlined"}
+                onClick={() => setTokenType("ckUSDT")}
+                fullWidth
+              >
+                ckUSDT
+              </Button>
+            </Stack>
+          </Box>
+
+          {loadingLiquidity ? (
+            <Box display="flex" alignItems="center" gap={1}>
+              <CircularProgress size={16} />
+              <Typography variant="body2" color="text.secondary">
+                Loading liquidity...
+              </Typography>
+            </Box>
+          ) : (
+            <Box>
+              <Typography variant="body2" color="text.secondary">
+                Your Wallet Balance: ${walletBalance.toFixed(2)}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Available {tokenType} Liquidity: ${selectedLiquidity.toFixed(2)}
+              </Typography>
+              {tokenType === "ckUSDC" && (
+                <Typography variant="caption" color="text.secondary">
+                  ckUSDT Liquidity: ${ckusdtLiquidity.toFixed(2)}
+                </Typography>
+              )}
+              {tokenType === "ckUSDT" && (
+                <Typography variant="caption" color="text.secondary">
+                  ckUSDC Liquidity: ${ckusdcLiquidity.toFixed(2)}
+                </Typography>
+              )}
+            </Box>
+          )}
+
+          <TextField
+            label="Amount"
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            fullWidth
+            error={hasInsufficientLiquidity && amount !== ""}
+            helperText={
+              hasInsufficientLiquidity && amount !== ""
+                ? `Insufficient ${tokenType} liquidity. Maximum: $${selectedLiquidity.toFixed(2)}`
+                : ""
+            }
+          />
+          <TextField
+            label="Withdrawal Address"
+            value={withdrawAddress}
+            onChange={(e) => setWithdrawAddress(e.target.value)}
+            fullWidth
+          />
+
+          {isSelfWithdrawal && (
+            <Typography color="error.main" variant="body2">
+              ❌ You cannot withdraw to yourself. Please provide an external
+              wallet address.
+            </Typography>
+          )}
+
+          {!isSelfWithdrawal &&
+            hasInsufficientWalletBalance &&
+            amount !== "" && (
+              <Typography color="error.main" variant="body2">
+                ❌ Insufficient wallet balance. You only have $
+                {walletBalance.toFixed(2)} available.
+              </Typography>
+            )}
+
+          {!isSelfWithdrawal &&
+            !hasInsufficientWalletBalance &&
+            hasInsufficientLiquidity &&
+            amount !== "" && (
+              <Typography color="warning.main" variant="body2">
+                ⚠️ Your withdrawal amount exceeds available {tokenType}{" "}
+                liquidity. Try withdrawing{" "}
+                {tokenType === "ckUSDC" ? "ckUSDT" : "ckUSDC"} instead.
+              </Typography>
+            )}
+
+          <Typography color="error" variant="body2">
+            Gas fees of Ethereum is 1$, if you send 1$ only it will be lost and
+            your external wallet will get 0$
+          </Typography>
+        </Stack>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} disabled={isProcessing}>
+          Cancel
+        </Button>
+        <Button
+          onClick={onConfirm}
+          variant="contained"
+          disabled={isProcessing || cannotWithdraw}
+          startIcon={isProcessing ? <CircularProgress size={20} /> : null}
+        >
+          {isProcessing ? "Processing..." : "Confirm Withdrawal"}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
 
 const PayDialog: React.FC<{
   open: boolean;
@@ -777,6 +966,7 @@ const WalletPage: React.FC<{ wallet?: Wallet }> = ({
   const [amount, setAmount] = useState<string>("");
   const [recipient, setRecipient] = useState<string>("");
   const [withdrawAddress, setWithdrawAddress] = useState<string>("");
+  const [tokenType, setTokenType] = useState<"ckUSDC" | "ckUSDT">("ckUSDC");
   const [openDialog, setOpenDialog] = useState<DialogType>("");
 
   // Using direct backendActor import
@@ -790,19 +980,25 @@ const WalletPage: React.FC<{ wallet?: Wallet }> = ({
     enqueueSnackbar,
   );
 
-  const handleClose = (): void => setOpenDialog("");
+  const { processDeposit, isProcessing: isDepositProcessing } =
+    useDepositProcessor(profile?.id);
+
+  const handleClose = (): void => {
+    setOpenDialog("");
+  };
 
   const resetForm = (): void => {
     setAmount("");
     setWithdrawAddress("");
     setRecipient("");
+    setTokenType("ckUSDC");
   };
 
   const handleTransaction = async (
     type: string,
     target: string,
   ): Promise<void> => {
-    const success = await executeTransaction(type, amount, target);
+    const success = await executeTransaction(type, amount, target, tokenType);
     if (success) {
       handleClose();
       resetForm();
@@ -829,7 +1025,11 @@ const WalletPage: React.FC<{ wallet?: Wallet }> = ({
 
   return (
     <Box sx={{ maxWidth: 1200, margin: "0 auto", p: 3 }}>
-      <WalletBalance wallet={wallet} />
+      <WalletBalance
+        wallet={wallet}
+        onRefresh={processDeposit}
+        isRefreshing={isDepositProcessing}
+      />
       <ActionButtons onAction={setOpenDialog} />
       <TransactionHistory
         wallet={wallet}
@@ -850,8 +1050,12 @@ const WalletPage: React.FC<{ wallet?: Wallet }> = ({
         setAmount={setAmount}
         withdrawAddress={withdrawAddress}
         setWithdrawAddress={setWithdrawAddress}
+        tokenType={tokenType}
+        setTokenType={setTokenType}
         onConfirm={() => handleTransaction("withdraw", withdrawAddress)}
         isProcessing={isProcessing}
+        walletBalance={wallet.balance}
+        userPrincipal={profile.id}
       />
 
       <PayDialog

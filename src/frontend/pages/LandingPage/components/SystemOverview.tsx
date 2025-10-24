@@ -23,7 +23,7 @@ export function SystemOverview() {
       ],
       fullDescription:
         "Stop wasting weeks screening candidates or searching job boards. Get matched with the right people or opportunities in minutes—so you can focus on what actually matters: getting work done.",
-      buttonText: "Find matches",
+      buttonText: "Find Matches Now",
       userType: "JOB",
     },
     {
@@ -36,7 +36,7 @@ export function SystemOverview() {
       ],
       fullDescription:
         "End the back-and-forth scheduling nightmare. Reclaim hours of your week by automating meeting coordination—because your time is worth more than playing email ping-pong.",
-      buttonText: "Automate scheduling",
+      buttonText: "Automate Scheduling Now",
       userType: "calendar",
     },
     {
@@ -49,7 +49,7 @@ export function SystemOverview() {
       ],
       fullDescription:
         "Eliminate payment disputes and latency. Save your time by managing your team tasks and payment in one single place. Smart contracts ensure you get paid on time, every time—no chasing invoices, no excuses, just automatic, trustless execution.",
-      buttonText: "Make an agreement",
+      buttonText: "Make An Agreement Now",
       userType: "contracts",
     },
   ];
