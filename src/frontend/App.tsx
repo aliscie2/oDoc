@@ -3,23 +3,19 @@ import { useDispatch, useSelector } from "react-redux";
 import Pages from "./pages";
 import "./pages/LandingPage/styles/globals.css";
 
-import { Principal } from "@dfinity/principal";
-import { Box, CircularProgress, styled } from "@mui/material";
-import { useSnackbar } from "notistack";
+import { Box, styled } from "@mui/material";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { canisterId } from "../declarations/backend";
 import NavBar from "./components/MainComponents/NavBar";
 import TopNavBar from "./components/MainComponents/topNavBar";
 import { useAuth } from "./hooks/useAuth";
 import { selectIsFetching, selectProfile } from "./redux/selectors";
 import { initializeApp } from "./redux/slices/appSlice";
+import { useRef } from "react";
 import {
   backendActor,
-  ckUSDCActor,
   initializeSmartActors,
 } from "./utils/backendUtils";
-import getckUsdcBalance from "./utils/getBalance";
 
 import RegistrationForm from "./components/MainComponents/RegistrationForm";
 import {
@@ -31,6 +27,7 @@ import RunawayJellyfish from "./components/creature/runAeayJellyFish";
 import GoogleCalendarOnboarding from "./components/userBadges/connectGoogleCalendar";
 import { RootState } from "./redux/reducers";
 import useSocket from "./websocket/use_socket";
+import { useDepositProcessor } from "./hooks/useDepositProcessor";
 
 const ChatContainer = React.lazy(() => import("./chatBot/ChatContainer"));
 const MainContent = styled(Box)(({ theme }) => ({
@@ -60,7 +57,6 @@ const useAppInitialization = () => {
   const { logout, checkAuthStatus, authStatus, cleanUp } = useAuth();
 
   const dispatch = useDispatch();
-  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 
   const isLoggedIn =
     authStatus === "authenticated" || authStatus === "registered";
@@ -76,6 +72,9 @@ const useAppInitialization = () => {
     depositProcessed: false,
     appInitDispatched: false,
   });
+
+  const { processDeposit } = useDepositProcessor(profile?.id);
+  const depositProcessedRef = useRef(false);
 
   // Authentication check on app start
   useEffect(() => {
@@ -127,7 +126,7 @@ const useAppInitialization = () => {
         }
 
         // Single dispatch for initialization - let the thunk handle success/fallback logic
-        dispatch(initializeApp(backendActor) as unknown);
+        dispatch(initializeApp(backendActor) as any);
 
         setInitState((prev) => ({
           ...prev,
@@ -141,7 +140,9 @@ const useAppInitialization = () => {
       }
     };
 
-    !isFetching && isLoggedIn && !inited && initializeAppData();
+    if (!isFetching && isLoggedIn && !inited) {
+      initializeAppData();
+    }
   }, [
     isLoggedIn,
     initState.initialDataFetched,
@@ -209,78 +210,25 @@ const useAppInitialization = () => {
       }
     };
 
-    inited && fetchUserData();
+    if (inited) {
+      fetchUserData();
+    }
   }, [inited, profile?.id, initState.userDataFetched, dispatch]);
 
-  // Token deposit
+  // Token deposit - auto-process on first load
   useEffect(() => {
-    const processDeposit = async () => {
-      if (!profile?.id || initState.depositProcessed) return;
+    const handleInitialDeposit = async () => {
+      if (!profile?.id || depositProcessedRef.current) return;
 
-      try {
-        if (!ckUSDCActor) return;
-
-        const userBalance = await getckUsdcBalance(ckUSDCActor, profile.id);
-        if (Number(userBalance) <= 0 || Number(userBalance) / 1_000_000 < 1) {
-          if (Number(userBalance) > 0) {
-            enqueueSnackbar("You need at least 1 CKUSDT to deposit", {
-              variant: "error",
-            });
-          }
-          setInitState((prev) => ({ ...prev, depositProcessed: true }));
-          return;
-        }
-
-        const notificationKey = enqueueSnackbar(
-          `Processing deposit of ${Number(userBalance) / 1_000_000} CKUSDT...`,
-          {
-            variant: "info",
-            persist: true,
-            action: () => <CircularProgress size={24} />,
-          },
-        );
-
-        await ckUSDCActor.icrc2_approve({
-          from_subaccount: [],
-          spender: { owner: Principal.fromText(canisterId), subaccount: [] },
-          amount: userBalance,
-          expected_allowance: [],
-          expires_at: [],
-          fee: [],
-          memo: [],
-          created_at_time: [],
-        });
-
-        const depositResult = await backendActor.deposit_ckusdt();
-        closeSnackbar(notificationKey);
-
-        if ("Ok" in depositResult) {
-          dispatch({ type: "SET_WALLET", wallet: depositResult.Ok });
-          enqueueSnackbar(
-            `Successfully deposited ${Number(userBalance) / 1_000_000} CKUSDT`,
-            { variant: "success" },
-          );
-        } else {
-          enqueueSnackbar(`Deposit failed: ${JSON.stringify(depositResult)}`, {
-            variant: "error",
-          });
-        }
-
-        setInitState((prev) => ({ ...prev, depositProcessed: true }));
-      } catch (error) {
-        enqueueSnackbar(`Deposit error: ${error}`, { variant: "error" });
-      }
+      await processDeposit();
+      depositProcessedRef.current = true;
+      setInitState((prev) => ({ ...prev, depositProcessed: true }));
     };
 
-    inited && processDeposit();
-  }, [
-    inited,
-    profile?.id,
-    initState.depositProcessed,
-    enqueueSnackbar,
-    closeSnackbar,
-    dispatch,
-  ]);
+    if (inited) {
+      handleInitialDeposit();
+    }
+  }, [inited, profile?.id, processDeposit]);
 
   return { isInitialized: Object.values(initState).every(Boolean) };
 };

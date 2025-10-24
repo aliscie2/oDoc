@@ -35,6 +35,16 @@ export class AIService {
       import.meta.env.VITE_GROQ_API_KEY,
       config.credits,
     );
+
+    // bad response example,
+    // DO NOT DEETE THIS LINES
+    // const aiResponse = {
+    //   Ok: {
+    //     remaining_credits: 0.8,
+    //     response:
+    //       '```json {   "type": "JOB",   "required_match_score": 0.6,   "feedback": "📝 Dummy data has been added to the talent profile.      * 📧 Email: dummy@example.com     * 💼 Job title: Software Developer     * 📚 Skills: Python, Java, JavaScript     * 📚 Education: Bachelor\'s degree in Computer Science     * 📈 Experience: 5 years of experience in software development     * 💸 Hourly rate: $50     * 🌍 Timezone: UTC-5, flexible with other timezones",   "updates": [     {       "field": "job_titles",       "values": ["Software Developer"]     },     {       "field": "skills",       "values": ["Python", "Java", "JavaScript"]     },     {       "field": "education",       "values": ["Bachelor\'s degree in Computer Science"]     },     {       "field": "experience",       "values": ["5 years of experience in software development"]     },     {       "field": "emails",       "values": ["dummy@example.com"]     },     {       "field": "description",       "values": ["Software Developer with 5 years of experience in software development. Proficient in Python, Java, and JavaScript."]     },     {       "field": "proficiency_level",       "values": ["Advanced"]     },     {       "field": "certifications",       "values": ["Certified Scrum Master"]     },     {       "field": "links",       "values": ["https://www.linkedin.com/in/dummy/"]     }   ],   "category": "Talent",   "profile_completion": 0.8 } ```',
+    //   },
+    // };
     console.log("AI Response:", { aiResponse });
 
     if (!aiResponse || "Err" in aiResponse) {

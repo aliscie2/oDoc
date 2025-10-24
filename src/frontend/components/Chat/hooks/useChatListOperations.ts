@@ -22,18 +22,7 @@ export const useChatListOperations = ({
   const getOtherUser = useCallback((chat: Chat) => {
     if (chat.name !== "private_chat") return null;
 
-    const ODOC_CEO_ID =
-      "tgwpc-6xuon-k3a6y-ey7lt-xksjs-qx22h-ikhbt-4yp3a-6stco-rymbe-pqe";
-
     const otherAdmin = chat?.admins?.find((a) => a.toString()!=profile?.id)?.toString();
-
-    if (otherAdmin?.toString() === ODOC_CEO_ID) {
-      return {
-        id: ODOC_CEO_ID,
-        name: "oDoc",
-        photo: "/logo.png",
-      };
-    }
 
     return otherAdmin;
   }, []);

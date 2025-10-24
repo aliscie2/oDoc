@@ -44,21 +44,15 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
             minWidth: 0, // Allow text truncation
           }}
         >
-          {avatar && (
+          {!showSettings&& avatar && (
             <UserAvatarMenu
-              dispalyName={false} // Don't show name in header to save space
+              variant="h4"
+              dispalyName
               user_id={avatar.userId}
               user={avatar.user}
-              sx={{
-                width: { xs: 36, sm: 40 },
-                height: { xs: 36, sm: 40 },
-                mr: { xs: 1, sm: 1.5 },
-                flexShrink: 0,
-              }}
-              hide={["Review"]}
             />
           )}
-          <Typography
+          {showSettings&&<Typography
             variant="h6"
             sx={{
               fontWeight: 600,
@@ -69,7 +63,7 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
             }}
           >
             {title}
-          </Typography>
+          </Typography>}
         </Box>
 
         {/* Right side - Actions and Settings */}

@@ -302,7 +302,7 @@ Provide a helpful and accurate answer based only on the documentation provided. 
     message: string,
     prompt: string,
     abortSignal?: AbortSignal,
-  ): Promise<any> {
+  ): Promise<unknown> {
     let systemPrompt = aiCase.systemPrompt;
     let actualPrompt = prompt;
 
@@ -338,6 +338,38 @@ Provide a helpful and accurate answer based only on the documentation provided. 
       aiCaseClass: aiCase?.class,
       fullAiResultJSON: JSON.stringify(aiResult, null, 2),
     });
+
+    // Fix for JOB case: if parsedData is an array (updates array), try to parse the full response
+    if (aiCase?.class === "JOB" && Array.isArray(aiResult?.parsedData)) {
+      console.log(
+        "⚠️ WARNING: parsedData is an array for JOB case, attempting to re-parse full response",
+      );
+
+      try {
+        // Try to parse the raw response again to get the full object
+        const fullParsed = JSON.parse(aiResult.response);
+        if (
+          fullParsed &&
+          typeof fullParsed === "object" &&
+          !Array.isArray(fullParsed)
+        ) {
+          console.log("✅ Successfully re-parsed full response:", fullParsed);
+          aiResult.parsedData = fullParsed;
+        }
+      } catch (error) {
+        console.error("❌ Failed to re-parse response:", error);
+        // If re-parsing fails, wrap the array in a proper structure
+        console.log("🔧 Wrapping updates array in proper structure");
+        aiResult.parsedData = {
+          type: "JOB",
+          updates: aiResult.parsedData,
+          feedback: "Profile updated successfully",
+          category: "Talent",
+          required_match_score: 0.6,
+          profile_completion: 0.8,
+        };
+      }
+    }
 
     if (aiResult?.parsedData && aiCase?.class === "CALENDAR") {
       return this.validateCalendarResponse(aiResult.parsedData);

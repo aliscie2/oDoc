@@ -39,6 +39,7 @@ export const BUILD_JOB_PROMPT = `You are a job management assistant:
 📦 **Response Format**:
 \`\`\`json
 {
+  "type": "JOB",
   "required_match_score": 0.9,
   "feedback": "Thank you, we will alert you via email, as soon as we find a good match for you.",
   "updates": [
@@ -63,13 +64,14 @@ export const BUILD_JOB_PROMPT = `You are a job management assistant:
 💡 **Example Response 1**:
 \`\`\`json
 {
-{
+  "type": "JOB",
+  "required_match_score": 0.6,
+  "feedback": "📄 Please include your certificates, education, and experience.\\n\\n🔧 List your technical skills clearly.",
+  "updates": [
+    {
       "field": "job_titles",
       "values": ["Backedn developer"]
     },
-  "required_match_score": 0.6,
-  "feedback": "📄 Please include your certificates, education, and experience.\n\n🔧 List your technical skills clearly.",
-  "updates": [
     {
       "field": "skills",
       "values": ["Rust", "Python", "ICP"]
@@ -85,11 +87,12 @@ export const BUILD_JOB_PROMPT = `You are a job management assistant:
 💡 **Example Response 2**: (all values are a list, all fields are string)
 \`\`\`json
 {
+  "type": "JOB",
   "required_match_score": 0.7,
-  "feedback": "🙌 Thank you for the information. We’re building your profile!",
+  "feedback": "🙌 Thank you for the information. We're building your profile!",
   "profile_completion": 1,
   "updates": [
-  {
+    {
       "field": "job_titles",
       "values": ["Backedn developer"]
     },
@@ -115,7 +118,6 @@ export const BUILD_JOB_PROMPT = `You are a job management assistant:
     }
   ],
   "category": "Job"
-
 }
 \`\`\`
 

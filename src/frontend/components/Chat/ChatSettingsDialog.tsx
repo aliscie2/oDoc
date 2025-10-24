@@ -14,14 +14,9 @@ import {
 } from "@mui/material";
 import { Principal } from "@dfinity/principal";
 import { useSelector } from "react-redux";
-import { Chat } from "$/declarations/backend/backend.did";
+import { Chat, User } from "$/declarations/backend/backend.did";
 import { RootState } from "@/redux/reducers";
 
-interface User {
-  id: string;
-  name: string;
-  photo?: Uint8Array;
-}
 
 interface Workspace {
   id: string;
@@ -43,7 +38,7 @@ export const ChatSettingsDialog = memo<ChatSettingsDialogProps>(
     const { profile, all_friends, workspaces } = useSelector(
       (state: RootState) => state.filesState,
     );
-    console.log({ chat, profile });
+
     const [formData, setFormData] = useState({
       name: chat.name,
       members: chat.members.map((m) => m.toString()),

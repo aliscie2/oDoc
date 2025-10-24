@@ -150,8 +150,8 @@ export const ChatFloatingWindow: React.FC<ChatFloatingWindowProps> = ({
           bgcolor: "background.paper",
           boxShadow: (theme) =>
             theme.palette.mode === "dark"
-              ? "8px 8px 16px rgba(0,0,0,0.5), -8px -8px 16px rgba(60,60,60,0.1)"
-              : "8px 8px 16px rgba(163,177,198,0.3), -8px -8px 16px rgba(255,255,255,0.8)",
+              ? "8px 8px 16px rgba(98, 105, 173, 0.29), -8px -8px 16px rgba(49, 54, 115, 0.34)"
+              : "8px 8px 16px rgba(128, 166, 223, 0.3), -8px -8px 16px rgba(74, 94, 141, 0.34)",
         }}
       >
         <Box
@@ -183,6 +183,7 @@ export const ChatFloatingWindow: React.FC<ChatFloatingWindowProps> = ({
         >
           {isPrivateChat ? (
             <UserAvatarMenu
+            variant="h5"
               dispalyName={true}
               user_id={chat.members
                 .find((m) => m.toString() !== profile?.id)
@@ -297,7 +298,6 @@ export const ChatFloatingWindow: React.FC<ChatFloatingWindowProps> = ({
         open={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
         chat={chat}
-        currentUserId={profile?.id || ""}
         allFriends={all_friends}
         workspaces={workspaces}
         onSave={handleSaveSettings}

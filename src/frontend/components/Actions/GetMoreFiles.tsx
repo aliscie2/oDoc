@@ -28,34 +28,36 @@ const GetMoreFiles: React.FC = () => {
   const { isNavOpen } = useSelector((state: RootState) => state.uiState);
   // Using direct backendActor import
   const dispatch = useDispatch();
-  const { lookingForFile, files, inited, currentWorkspace } = useSelector(
-    (state: any) => state.filesState,
+  const { lookingForFile, files, inited } = useSelector(
+    (state: RootState) => state.filesState,
   );
-
-  let workspaces = [];
-  if (currentWorkspace?.id) {
-    workspaces = [currentWorkspace.id];
-  }
   const [page, setPage] = useState(1);
   const [isMore, setNoMoreToload] = useState(true);
+  const [hasInitiallyFetched, setHasInitiallyFetched] = useState(false);
+  
   useEffect(() => {
     (async () => {
+      // 🚀 PERFORMANCE FIX: Only fetch once on mount, not on every nav toggle
       if (
         files.length === 0 &&
         inited &&
         page === 1 &&
+        !hasInitiallyFetched &&
         (isNavOpen || lookingForFile === true)
       ) {
         console.log("xxx");
         await hanldeFetching(dispatch, page);
         setPage(page + 1);
+        setHasInitiallyFetched(true);
       }
     })();
-  }, [files, inited, page, isNavOpen, lookingForFile]);
+  }, [files.length, inited, hasInitiallyFetched, isNavOpen, lookingForFile]);
 
   const handleCreateFile = async () => {
     const moreFiles = await hanldeFetching(dispatch, page);
-    !moreFiles && setNoMoreToload(false);
+    if (!moreFiles) {
+      setNoMoreToload(false);
+    }
     setPage(page + 1);
   };
 

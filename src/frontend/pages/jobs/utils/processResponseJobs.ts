@@ -34,6 +34,30 @@ export const textToJson = (response: string) => {
     }
   }
 
+  // CRITICAL FIX: If extractedData is an array but looks like it should be part of a larger object,
+  // try to find the full object in the response
+  if (Array.isArray(extractedData) && extractedData.length > 0) {
+    const firstItem = extractedData[0];
+    // Check if this looks like an "updates" array (has field and values properties)
+    if (firstItem && typeof firstItem === 'object' && 'field' in firstItem && 'values' in firstItem) {
+      console.log("⚠️ Detected updates array extracted instead of full object, re-parsing...");
+      
+      // Try to find and parse the full object containing this array
+      const fullObjectCandidates = jsonCandidates.filter(candidate => {
+        return candidate.includes('"updates"') || candidate.includes('"type"');
+      });
+      
+      for (const candidate of fullObjectCandidates) {
+        const parsed = parseWithFallbacks(candidate);
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && 'updates' in parsed) {
+          console.log("✅ Found full object with updates property");
+          extractedData = parsed;
+          break;
+        }
+      }
+    }
+  }
+
   return { displayResponse, extractedData };
 };
 
@@ -55,8 +79,18 @@ function extractJsonCandidates(text: string): string[] {
   balancedBraces.forEach((json) => candidates.add(json));
   balancedBrackets.forEach((json) => candidates.add(json));
 
-  // Sort by length (longer candidates first - more likely to be complete)
-  return Array.from(candidates).sort((a, b) => b.length - a.length);
+  // Sort by priority: objects first (likely to be complete responses), then by length
+  return Array.from(candidates).sort((a, b) => {
+    const aIsObject = a.trim().startsWith('{');
+    const bIsObject = b.trim().startsWith('{');
+    
+    // Prioritize objects over arrays
+    if (aIsObject && !bIsObject) return -1;
+    if (!aIsObject && bIsObject) return 1;
+    
+    // If both are same type, sort by length (longer first)
+    return b.length - a.length;
+  });
 }
 
 // Extract balanced JSON structures

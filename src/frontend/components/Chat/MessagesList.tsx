@@ -3,7 +3,6 @@ import {
   CircularProgress,
   Paper,
   Typography,
-  useTheme,
 } from "@mui/material";
 import React, { memo } from "react";
 import formatTimestamp from "../../utils/time";
@@ -35,8 +34,6 @@ export const MessagesList = memo<MessagesListProps>(
     hasMoreMessages,
     isPrivateChat,
   }) => {
-    const theme = useTheme();
-
     const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
       onScroll(e.currentTarget);
     };
@@ -47,7 +44,7 @@ export const MessagesList = memo<MessagesListProps>(
       <Box
         ref={messagesContainerRef}
         onScroll={handleScroll}
-        sx={{
+        sx={(theme) => ({
           flex: 1,
           overflow: "auto",
           overflowX: "hidden",
@@ -64,10 +61,10 @@ export const MessagesList = memo<MessagesListProps>(
             background: "transparent",
           },
           "&::-webkit-scrollbar-thumb": {
-            background: "rgba(0,0,0,0.2)",
+            background: theme.palette.action.disabled,
             borderRadius: "3px",
           },
-        }}
+        })}
       >
         {isLoadingMore && (
           <Box sx={{ display: "flex", justifyContent: "center", p: 2 }}>
@@ -117,21 +114,16 @@ export const MessagesList = memo<MessagesListProps>(
                     mt: showSenderInfo ? 0.5 : 0,
                     bgcolor: isOwn
                       ? theme.palette.primary.main
-                      : theme.palette.mode === "dark"
-                        ? "#27272a"
-                        : "#f4f4f5",
-                    color: isOwn ? "#ffffff" : theme.palette.text.primary,
+                      : theme.palette.background.paper,
+                    color: isOwn
+                      ? theme.palette.primary.contrastText
+                      : theme.palette.text.primary,
                     borderRadius: isOwn
                       ? "16px 16px 4px 16px"
                       : "16px 16px 16px 4px",
                     wordBreak: "break-word",
-                    border:
-                      theme.palette.mode === "dark" && !isOwn
-                        ? "1px solid rgba(255, 255, 255, 0.1)"
-                        : "none",
-                    boxShadow: isOwn
-                      ? `0 2px 8px ${theme.palette.mode === "dark" ? "rgba(59, 130, 246, 0.3)" : "rgba(37, 99, 235, 0.2)"}`
-                      : "none",
+                    border: !isOwn ? `1px solid ${theme.palette.divider}` : "none",
+                    boxShadow: isOwn ? 1 : "none",
                   })}
                 >
                   {showSenderInfo && (
@@ -139,8 +131,7 @@ export const MessagesList = memo<MessagesListProps>(
                       variant="caption"
                       sx={{
                         fontWeight: 600,
-                        color:
-                          theme.palette.mode === "dark" ? "#a1a1aa" : "#71717a",
+                        color: "text.secondary",
                         mb: 0.5,
                         display: "block",
                       }}
@@ -157,7 +148,9 @@ export const MessagesList = memo<MessagesListProps>(
                   <Typography
                     variant="caption"
                     sx={{
-                      color: "rgba(255, 255, 255, 0.7)",
+                      color: isOwn
+                        ? "primary.contrastText"
+                        : "text.secondary",
                       opacity: 0.7,
                       fontSize: "0.7rem",
                       display: "block",

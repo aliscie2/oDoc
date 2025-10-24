@@ -15,6 +15,7 @@ import {
   MenuItem,
   TextField,
   Typography,
+  TypographyVariant,
   Rating as UiRating,
 } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -40,6 +41,7 @@ interface UserAvatarMenuProps {
   displayId?: boolean;
   maxWords?: number;
   forceDisplayName?: boolean;
+  variant?: TypographyVariant;
 }
 
 const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({

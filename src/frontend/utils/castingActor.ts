@@ -29,7 +29,6 @@ export function createCastedActor(
             return {
               Ok: {
                 Profile: profile,
-                ProfileHistory: profile,
                 Friends: friends,
                 Wallet: res.Ok.wallet || null,
                 Contracts: res.Ok.contracts || {},
