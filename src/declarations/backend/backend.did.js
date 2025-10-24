@@ -728,7 +728,9 @@ export const idlFactory = ({ IDL }) => {
     'delete_job' : IDL.Func([IDL.Text], [Result_3], []),
     'delete_post' : IDL.Func([IDL.Text], [Result_3], []),
     'delete_work_space' : IDL.Func([WorkSpace], [Result_6], []),
+    'deposit_ckusdc' : IDL.Func([], [Result_7], []),
     'deposit_ckusdt' : IDL.Func([], [Result_7], []),
+    'deposit_stablecoins' : IDL.Func([], [Result_7], []),
     'drop_free_credits' : IDL.Func([], [Result_3], []),
     'get_affiliate_data' : IDL.Func([IDL.Text], [Result_8], []),
     'get_ai_credits' : IDL.Func([], [Result_9], ['query']),
@@ -870,6 +872,7 @@ export const idlFactory = ({ IDL }) => {
     'update_user_profile' : IDL.Func([RegisterUser], [Result], []),
     'vote_down' : IDL.Func([IDL.Text], [Result_13], []),
     'vote_up' : IDL.Func([IDL.Text], [Result_13], []),
+    'withdraw_ckusdc' : IDL.Func([IDL.Nat64, IDL.Text], [Result_7], []),
     'withdraw_ckusdt' : IDL.Func([IDL.Nat64, IDL.Text], [Result_7], []),
     'ws_close' : IDL.Func([CanisterWsCloseArguments], [Result_3], []),
     'ws_get_messages' : IDL.Func(
