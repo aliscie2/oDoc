@@ -236,13 +236,14 @@ export const useContractsNotifications = (): ContractsNotificationsState => {
     };
 
     loadMissingContracts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     notifications,
     contracts,
     backendActor,
     dispatch,
     profile,
-    loadedContracts,
+    // Removed loadedContracts to prevent infinite loop
   ]);
 
   // Calculate total unseen count

@@ -333,6 +333,17 @@ export function createTheme(isDarkMode: boolean) {
           root: {
             borderRadius: "0.375rem",
             fontWeight: 500,
+            backgroundColor: mode === "light" ? "#f5f5f5" : "#262626",
+            color: mode === "light" ? "#171717" : "#fafafa",
+            "& .MuiChip-icon": {
+              color: mode === "light" ? "#525252" : "#d4d4d4",
+            },
+            "& .MuiChip-deleteIcon": {
+              color: mode === "light" ? "#737373" : "#a3a3a3",
+              "&:hover": {
+                color: mode === "light" ? "#525252" : "#d4d4d4",
+              },
+            },
           },
           filled: {
             backgroundColor: mode === "light" ? "#f5f5f5" : "#262626",
@@ -340,6 +351,7 @@ export function createTheme(isDarkMode: boolean) {
           },
           outlined: {
             borderColor: mode === "light" ? "#e5e5e5" : "#404040",
+            backgroundColor: "transparent",
             color: mode === "light" ? "#171717" : "#fafafa",
           },
         },
@@ -477,7 +489,7 @@ export function createTheme(isDarkMode: boolean) {
       MuiDivider: {
         styleOverrides: {
           root: {
-            borderColor: mode === "light" ? "#e5e5e5" : "#404040",
+            borderColor: mode === "light" ? "#9f9f9fc6" : "#fcfcfc86",
           },
         },
       },

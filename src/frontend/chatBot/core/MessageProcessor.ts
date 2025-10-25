@@ -1152,53 +1152,51 @@ Provide a helpful and accurate answer based only on the documentation provided. 
   /**
    * Resolves promise participants (sender/receiver) from names to Principals
    */
+  
   private resolvePromiseParticipants(action: any): void {
-    // Handle sender
-    if (typeof action.promise.sender === "string") {
-      if (action.promise.sender === this.config.profile?.name) {
-        action.promise.sender = Principal.fromText(this.config.profile.id);
-      } else {
-        const senderFriend = this.findFriendByName(action.promise.sender);
-        if (senderFriend) {
-          const friendUser = this.getFriendUser(senderFriend);
-          if (friendUser?.id) {
-            action.promise.sender = Principal.fromText(friendUser.id);
-          }
-        } else {
-          action.promise.sender = Principal.fromText(this.config.profile.id);
+  // Handle sender
+  if (typeof action.promise.sender === "string") {
+    if (action.promise.sender === this.config.profile?.name) {
+      action.promise.sender = Principal.fromText(this.config.profile.id);
+    } else {
+      const senderFriend = this.findFriendByName(action.promise.sender);
+      if (senderFriend) {
+        const friendUser = this.getFriendUser(senderFriend);
+        if (friendUser?.id) {
+          action.promise.sender = Principal.fromText(friendUser.id);
         }
+      } else {
+        action.promise.sender = Principal.fromText(this.config.profile.id);
       }
     }
+  }
 
-    // Handle receiver
-    if (
-      action.promise.receiver &&
-      typeof action.promise.receiver === "string"
-    ) {
-      const friend = this.findFriendByName(action.promise.receiver);
-      if (friend) {
-        action.promise.receiver = Principal.fromText(friend.id);
+  // ✅ ADD THIS: Ensure receiver exists (required by backend)
+  if (!action.promise.receiver) {
+    console.warn("⚠️ Missing receiver, using default principal");
+    action.promise.receiver = Principal.fromText("2vxsx-fae"); // Default receiver
+  }
+
+  // Handle receiver
+  if (typeof action.promise.receiver === "string") {
+    const friend = this.findFriendByName(action.promise.receiver);
+    if (friend) {
+      action.promise.receiver = Principal.fromText(friend.id);
+    } else {
+      if (action.promise.receiver === this.config.profile?.name) {
+        action.promise.receiver = Principal.fromText(this.config.profile.id);
       } else {
-        // If receiver name matches current user, use current user's ID
-        if (action.promise.receiver === this.config.profile?.name) {
-          action.promise.receiver = Principal.fromText(this.config.profile.id);
-        } else {
-          try {
-            action.promise.receiver = Principal.fromText(
-              action.promise.receiver,
-            );
-          } catch (error) {
-            console.error(
-              `Invalid principal format: ${action.promise.receiver}, falling back to default principal`,
-              error,
-            );
-            // Fallback to default principal if receiver is invalid
-            action.promise.receiver = Principal.fromText("2vxsx-fae");
-          }
+        try {
+          action.promise.receiver = Principal.fromText(action.promise.receiver);
+        } catch (error) {
+          console.error(`Invalid principal format: ${action.promise.receiver}, falling back to default principal`, error);
+          action.promise.receiver = Principal.fromText("2vxsx-fae");
         }
       }
     }
   }
+}
+
 
   /**
    * Finds friend by name in the friends list

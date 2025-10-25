@@ -18,16 +18,18 @@ import Friends from "./friends";
 import { useSelector } from "react-redux";
 
 import UserAvatarMenu from "../../components/MainComponents/UserAvatarMenu";
-import UserLevelBadge from "../../components/MainComponents/topNavBar/UserLevelBadge";
+import ActivityLevelIcon from "../../components/MainComponents/topNavBar/ActivityLevelIcon";
 
 import { formatRelativeTime } from "../../utils/time";
 import EditProfile from "./editeProfile";
 import CopyButton from "../../components/MuiComponents/copyButton";
 import EmailComposer from "./sendEmail";
+import { User, UserProfile } from "$/declarations/backend/backend.did";
+
 interface ProfilePageProps {
-  profile: any;
-  history: any;
-  friends: any;
+  profile: User;
+  history: UserProfile;
+  friends: User[];
   friendButton: any;
 }
 
@@ -78,7 +80,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
     },
     data: actionRatingsData,
     background: { fill: isDarkMode ? "#1e1e1e" : "#fefefe" },
-    theme: (isDarkMode ? "ag-dark" : "ag-default") as any,
+    theme: (isDarkMode ? "ag-dark" : "ag-default") as unknown,
     series: [
       {
         type: "line",
@@ -166,22 +168,19 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
     <Container key={JSON.stringify(profile)} maxWidth="lg" sx={{ py: 4 }}>
       {currentUser?.id == founderOfOdoc && <EmailComposer />}
 
-      {/* User Header - Mobile Friendly */}
-
+      {/* User Header */}
       <Card
         sx={{
           mb: 4,
-          background: isDarkMode
-            ? "linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%)"
-            : "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
+          background: isDarkMode ? "#1e1e1e" : "#ffffff",
           boxShadow: isDarkMode
-            ? "0 8px 32px rgba(0, 0, 0, 0.3)"
-            : "0 8px 32px rgba(0, 0, 0, 0.08)",
-          borderRadius: 2,
+            ? "0 2px 8px rgba(0, 0, 0, 0.3)"
+            : "0 2px 8px rgba(0, 0, 0, 0.08)",
+          borderRadius: 1,
         }}
       >
-        <CardContent sx={{ p: { xs: 3, sm: 4, md: 5 } }}>
-          <Stack spacing={4}>
+        <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
+          <Stack spacing={3}>
             {/* Avatar & Basic Info Section */}
             <Box
               sx={{
@@ -249,13 +248,14 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
 
       {/* Stats Overview */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        {/* User Level Badge */}
+        {/* Activity Level */}
         <Grid item xs={12} sm={6} md={3}>
           <Card
             sx={{
               height: "100%",
-              borderLeft: 4,
+              borderLeft: 3,
               borderColor: "primary.main",
+              borderRadius: 1,
             }}
           >
             <CardContent sx={{ textAlign: "center", py: 3 }}>
@@ -267,13 +267,24 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                   textTransform: "uppercase",
                   fontSize: "0.75rem",
                   fontWeight: 600,
+                  letterSpacing: 0.5,
                 }}
               >
-                🏆 User Level
+                Activity Level
               </Typography>
-              <Box sx={{ display: "flex", justifyContent: "center" }}>
-                <UserLevelBadge actions_rate={actions_rate} size={100} />
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  minHeight: 80,
+                }}
+              >
+                <ActivityLevelIcon level={actions_rate} size={64} />
               </Box>
+              <Typography variant="h6" sx={{ mt: 1, fontWeight: 600 }}>
+                {actions_rate.toFixed(1)} / 5.0
+              </Typography>
             </CardContent>
           </Card>
         </Grid>
@@ -283,26 +294,22 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
             title: "Trust Score",
             value: actions_rate,
             rating: true,
-            icon: "🛡️",
             color: "success",
           },
           {
             title: "User Rating",
             value: users_rate,
             rating: true,
-            icon: "⭐",
             color: "warning",
           },
           {
             title: "Total Spent",
-            value: `$${Number(totalSpent || 0)}`,
-            icon: "💸",
+            value: `${Number(totalSpent || 0)}`,
             color: "error",
           },
           {
             title: "Total Received",
-            value: `$${totalReceived?.toFixed(2) || 0}`,
-            icon: "💰",
+            value: `${totalReceived?.toFixed(2) || 0}`,
             color: "primary",
           },
         ].map((stat, index) => (
@@ -310,8 +317,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
             <Card
               sx={{
                 height: "100%",
-                borderLeft: 4,
+                borderLeft: 3,
                 borderColor: `${stat.color}.main`,
+                borderRadius: 1,
               }}
             >
               <CardContent sx={{ textAlign: "center", py: 3 }}>
@@ -323,9 +331,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                     textTransform: "uppercase",
                     fontSize: "0.75rem",
                     fontWeight: 600,
+                    letterSpacing: 0.5,
                   }}
                 >
-                  {stat.icon} {stat.title}
+                  {stat.title}
                 </Typography>
                 {stat.rating ? (
                   <Rating
@@ -337,9 +346,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                   />
                 ) : (
                   <Typography
-                    variant="h3"
+                    variant="h4"
                     color={`${stat.color}.main`}
-                    sx={{ fontWeight: 700, mb: 1 }}
+                    sx={{ fontWeight: 600, mb: 1 }}
                   >
                     {stat.value}
                   </Typography>
@@ -354,32 +363,14 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
       <Card
         sx={{
           mb: 4,
-          background: isDarkMode
-            ? "#242424"
-            : "linear-gradient(135deg, #F0F4F8 0%, #E8EDF2 100%)",
+          background: isDarkMode ? "#1e1e1e" : "#ffffff",
           boxShadow: isDarkMode
-            ? "12px 12px 24px rgba(0,0,0,0.5), -12px -12px 24px rgba(60,60,60,0.1)"
-            : "12px 12px 24px rgba(163,177,198,0.35), -12px -12px 24px rgba(255,255,255,0.9), inset 2px 2px 4px rgba(255,255,255,0.1)",
-          borderRadius: 3,
-          position: "relative",
-          overflow: "hidden",
-          "&::before": {
-            content: '""',
-            position: "absolute",
-            top: -100,
-            right: -100,
-            width: 300,
-            height: 300,
-            background: isDarkMode
-              ? "radial-gradient(circle, rgba(58,141,255,0.08) 0%, transparent 70%)"
-              : "radial-gradient(circle, rgba(255,255,255,0.6) 0%, transparent 70%)",
-            pointerEvents: "none",
-          },
+            ? "0 2px 8px rgba(0,0,0,0.3)"
+            : "0 2px 8px rgba(0,0,0,0.08)",
+          borderRadius: 1,
         }}
       >
-        <CardContent
-          sx={{ p: { xs: 3, sm: 4, md: 5 }, position: "relative", zIndex: 1 }}
-        >
+        <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
           <Box sx={{ height: { xs: 300, sm: 400 } }}>
             {actionRatingsData.length > 0 ? (
               <AgCharts options={chartOptions} />
@@ -401,9 +392,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
 
       {/* Friends Section */}
       {friends.length > 0 && (
-        <Card>
+        <Card sx={{ borderRadius: 1 }}>
           <CardContent>
-            <Typography variant="h6" gutterBottom>
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
               Friends
             </Typography>
             <Friends
@@ -421,9 +412,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
       )}
 
       {/* Recent Ratings */}
-      <Card sx={{ mt: 4 }}>
+      <Card sx={{ mt: 4, borderRadius: 1 }}>
         <CardContent>
-          <Typography variant="h6" gutterBottom>
+          <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
             Recent Ratings
           </Typography>
           {safeRatesByOthers.length > 0 ? (
@@ -473,4 +464,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
     </Container>
   );
 };
+
 export default ProfilePage;
+

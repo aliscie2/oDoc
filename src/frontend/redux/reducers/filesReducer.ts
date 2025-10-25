@@ -40,6 +40,8 @@ export function filesReducer(
       inited: true,
       profile_history: action.payload.ProfileHistory || state.profile_history,
       workspaces: action.payload.workspaces || state.workspaces,
+      files: action.payload.files || [],
+      files_content: action.payload.files_content || {},
     };
   }
 
@@ -232,6 +234,12 @@ export function filesReducer(
       };
     }
     case "SET_CONTRACT": {
+      // SET_CONTRACT is used when fetching contracts from backend
+      // It ONLY updates state.contracts, NOT state.changes.contracts
+      // This is intentional because:
+      // 1. When receiver actions (confirmed_c_payment, object_on_cancel, etc.) call backend,
+      //    the backend already persists the changes, so no need to add to changes
+      // 2. When loading contracts from backend, they are already saved
       const { contract } = action;
       const id = contract.id;
 
@@ -687,7 +695,7 @@ export function filesReducer(
       } else {
         const newContractUpdate = {
           permissions: [],
-          promises_indexes: currentContract.promises_indexes || [],
+          promises_indexes: [],
           id: contract_id,
           name: [],
           delete_tables: [],
@@ -846,7 +854,7 @@ export function filesReducer(
       } else {
         const newContractUpdate = {
           permissions: [],
-          promises_indexes: currentContract.promises_indexes || [],
+          promises_indexes: [],
           id: contract_id,
           name: [],
           delete_tables: [],
@@ -1365,19 +1373,11 @@ export function filesReducer(
 
       currentPromises.splice(actualIndex, 0, promise);
 
-      const currentIndexes = [...(currentContract.promises_indexes || [])];
-      currentIndexes.splice(actualIndex, 0, [actualIndex, promise.id]);
-
-      for (let i = actualIndex + 1; i < currentIndexes.length; i++) {
-        currentIndexes[i] = [i, currentIndexes[i][1]];
-      }
-
       const updatedContracts = {
         ...state.contracts,
         [contract_id]: {
           ...currentContract,
           promises: currentPromises,
-          promises_indexes: currentIndexes,
         },
       };
 
@@ -1395,7 +1395,6 @@ export function filesReducer(
             ? {
                 ...c,
                 promises: [...(c.promises || []), promise],
-                promises_indexes: currentIndexes,
               }
             : c,
         );
@@ -1405,7 +1404,7 @@ export function filesReducer(
           {
             id: contract_id,
             permissions: [],
-            promises_indexes: currentIndexes,
+            promises_indexes: [],
             name: [],
             delete_tables: [],
             tables: [],
@@ -1426,6 +1425,12 @@ export function filesReducer(
     }
 
     case "UPDATE_PROMISE": {
+      // UPDATE_PROMISE is used for SENDER actions (editing draft promises)
+      // It updates BOTH state.contracts AND state.changes.contracts
+      // This is correct because sender edits need to be batched and sent to backend via multi_updates
+      // 
+      // IMPORTANT: Receiver actions (confirmed_c_payment, object_on_cancel, etc.) should NOT use this
+      // They call backend directly and use SET_CONTRACT to refetch, which doesn't update changes
       const { contract_id, promise } = action;
 
       // Update the contract's promises in state
@@ -1511,16 +1516,12 @@ export function filesReducer(
         (c) => c.id === contract_id,
       );
       const promiseInChanges =
-        currentChanges?.promises.some((p) => p.id === id) ||
-        currentChanges?.promises_indexes.some((idx) => idx[1] === id);
+        currentChanges?.promises.some((p) => p.id === id);
 
       const updatedChanges = currentChanges
         ? {
             ...currentChanges,
             promises: currentChanges.promises.filter((p) => p.id !== id),
-            promises_indexes: currentChanges.promises_indexes.filter(
-              (idx) => idx[1] !== id,
-            ),
             delete_promises: promiseInChanges
               ? currentChanges.delete_promises
               : [...currentChanges.delete_promises, id],
@@ -1543,10 +1544,6 @@ export function filesReducer(
           [contract_id]: {
             ...existingContract,
             promises: existingContract.promises.filter((p) => p.id !== id),
-            promises_indexes:
-              existingContract.promises_indexes?.filter(
-                (idx) => idx[1] !== id,
-              ) || [],
           },
         },
         changes: {
@@ -1755,8 +1752,8 @@ export function filesReducer(
       };
 
     case "REMOVE_CONTRACT": {
-      delete state.contracts[action.id];
-      state.changes.delete_contracts.push(action.id);
+      // Create a new contracts object without the deleted contract
+      const { [action.id]: removed, ...remainingContracts } = state.contracts;
 
       // Ensure changes.contracts is an array and remove the contract
       const contractsArray = Array.isArray(state.changes.contracts)
@@ -1768,9 +1765,11 @@ export function filesReducer(
 
       return {
         ...state,
+        contracts: remainingContracts,
         changes: {
           ...state.changes,
           contracts: filteredContracts,
+          delete_contracts: [...state.changes.delete_contracts, action.id],
         },
       };
     }

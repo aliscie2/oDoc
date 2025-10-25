@@ -3,19 +3,27 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 // Consolidated initialization thunk
 export const initializeApp = createAsyncThunk(
   "app/initialize",
-  async (backendActor: any = null, { rejectWithValue, getState }) => {
+  async (
+    {
+      backendActor,
+      force = false,
+    }: { backendActor: unknown; force?: boolean },
+    { rejectWithValue, getState },
+  ) => {
     try {
-      // Check if already initialized to prevent re-runs
+      // Check if already initialized to prevent re-runs (unless force is true)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const state = getState() as any;
-      if (state.filesState?.inited) {
+      if (!force && state.filesState?.inited) {
         // Return a signal that initialization is already complete
         return { alreadyInitialized: true };
       }
 
-      const initialRes = await backendActor.get_initial_data();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const initialRes = await (backendActor as any).get_initial_data();
 
       if ("Ok" in initialRes) {
-        return initialRes.Ok;
+        return { ...initialRes.Ok, files: [], files_content: {} };
       }
     } catch (error) {
       return rejectWithValue(error);

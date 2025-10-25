@@ -68,12 +68,11 @@ const PersonalSummary: React.FC<PersonalSummaryProps> = ({
       sx={{
         mb: 2,
         p: 1.5,
-        background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
-        backdropFilter: "blur(10px)",
-        WebkitBackdropFilter: "blur(10px)",
+        bgcolor: "primary.main",
         borderRadius: 2,
-        border: "1px solid rgba(255, 255, 255, 0.2)",
-        color: theme.palette.primary.contrastText,
+        border: 1,
+        borderColor: "primary.light",
+        color: "primary.contrastText",
       }}
     >
       <Typography
@@ -89,14 +88,7 @@ const PersonalSummary: React.FC<PersonalSummaryProps> = ({
             icon={<HandshakeIcon sx={{ fontSize: 14 }} />}
             label={`${promisesForYou.length} promises • $${promisesAmount}`}
             size="small"
-            sx={{
-              background: "rgba(255, 255, 255, 0.1)",
-              backdropFilter: "blur(10px)",
-              WebkitBackdropFilter: "blur(10px)",
-              border: "1px solid rgba(255, 255, 255, 0.2)",
-              color: "white",
-              "& .MuiChip-icon": { color: "white" },
-            }}
+            variant="outlined"
           />
         )}
         {paymentsForYou.length > 0 && (
@@ -104,14 +96,7 @@ const PersonalSummary: React.FC<PersonalSummaryProps> = ({
             icon={<CheckCircleIcon sx={{ fontSize: 14 }} />}
             label={`${paymentsForYou.length} received • $${paymentsAmount}`}
             size="small"
-            sx={{
-              background: "rgba(255, 255, 255, 0.1)",
-              backdropFilter: "blur(10px)",
-              WebkitBackdropFilter: "blur(10px)",
-              border: "1px solid rgba(255, 255, 255, 0.2)",
-              color: "white",
-              "& .MuiChip-icon": { color: "white" },
-            }}
+            variant="outlined"
           />
         )}
       </Stack>
@@ -123,7 +108,7 @@ const PersonalSummary: React.FC<PersonalSummaryProps> = ({
 interface ContractCardProps {
   contract: ContractWithNotifications;
   profile: User;
-  allFriends: any[];
+  allFriends: unknown[];
 }
 
 // ContractCard Component - Simplified and Fixed
@@ -234,11 +219,9 @@ const ContractCard: React.FC<ContractCardProps> = ({
                     mb: 2,
                     p: 1.5,
                     borderRadius: 1.5,
-                    bgcolor:
-                      theme.palette.mode === "dark"
-                        ? "rgba(58, 141, 255, 0.15)"
-                        : "rgba(58, 141, 255, 0.08)",
-                    border: `1px solid ${theme.palette.primary.main}40`,
+                    bgcolor: "action.selected",
+                    border: 1,
+                    borderColor: "primary.main",
                   }}
                 >
                   <Typography
@@ -259,11 +242,8 @@ const ContractCard: React.FC<ContractCardProps> = ({
                         label={`${promisesForYou.length} • $${promisesForYou.reduce((s, p) => s + p.amount, 0)}`}
                         size="small"
                         sx={{
-                          bgcolor: theme.palette.primary.main,
-                          color: "white",
                           fontSize: "0.7rem",
                           height: 24,
-                          "& .MuiChip-icon": { color: "white" },
                         }}
                       />
                     )}
@@ -273,11 +253,8 @@ const ContractCard: React.FC<ContractCardProps> = ({
                         label={`${paymentsForYou.length} • $${paymentsForYou.reduce((s, p) => s + p.amount, 0)}`}
                         size="small"
                         sx={{
-                          bgcolor: theme.palette.success.main,
-                          color: "white",
                           fontSize: "0.7rem",
                           height: 24,
-                          "& .MuiChip-icon": { color: "white" },
                         }}
                       />
                     )}
@@ -305,10 +282,6 @@ const ContractCard: React.FC<ContractCardProps> = ({
                 }
                 size="small"
                 sx={{
-                  bgcolor: isShared
-                    ? theme.palette.info.main
-                    : theme.palette.primary.main,
-                  color: "white",
                   fontWeight: 500,
                   fontSize: "0.7rem",
                   height: 22,
@@ -328,7 +301,7 @@ const ContractCard: React.FC<ContractCardProps> = ({
                 }}
               >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <HandshakeIcon sx={{ color: "white", fontSize: 18 }} />
+                  <HandshakeIcon sx={{ fontSize: 18 }} />
                   <Typography variant="body2" fontWeight={500}>
                     Promises
                   </Typography>
@@ -471,7 +444,7 @@ const ContractsHistory: React.FC = () => {
           <Button
             onClick={handleCreateContract}
             variant="contained"
-            startIcon={<AddIcon sx={{ color: "white" }} />}
+            startIcon={<AddIcon />}
             sx={{ fontWeight: 600, whiteSpace: "nowrap", minWidth: "auto" }}
           >
             New Contract
@@ -499,7 +472,7 @@ const ContractsHistory: React.FC = () => {
           <Button
             onClick={handleCreateContract}
             variant="outlined"
-            startIcon={<AddIcon sx={{ color: "white" }} />}
+            startIcon={<AddIcon />}
           >
             Create Contract
           </Button>

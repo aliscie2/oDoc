@@ -128,11 +128,12 @@ const UserAvatarMenuComponent: React.FC<UserAvatarMenuProps> = ({
       // Only fetch from backend if not found locally
       setLoading(true);
       try {
-        const response = await backendActor.get_user(user_id);
-        // console.log({response, user_id})
+        const response = await backendActor.get_user(user_id);        
         if ("Ok" in response) {
           setUser(response.Ok);
           fetchedUserIdRef.current = user_id;
+        } else {
+            console.error({response, user_id})
         }
       } catch (error) {
         console.error("Failed to fetch user:", error);

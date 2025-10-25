@@ -154,7 +154,6 @@ const SubscriptionPlans = () => {
         "Introductory Guides",
       ],
       description: "Perfect for individuals starting their journey",
-      buttonText: "Get Started",
     },
     {
       name: "Premium",
@@ -260,12 +259,7 @@ const SubscriptionPlans = () => {
                     </ListItem>
                   ))}
                 </List>
-                {plan.name === "Free" ? (
-                  <Button fullWidth size="large" variant="contained" sx={{ mt: 2 }}>
-                    {plan.buttonText}
-                  </Button>
-                ) : (
-                  <Tooltip
+                {plan.name !== "Free"&&<Tooltip
                     title={
                       <Typography color="error">
                         This option is not available now. We will upgrade our
@@ -285,8 +279,7 @@ const SubscriptionPlans = () => {
                         {plan.buttonText}
                       </GradientButton>
                     </Box>
-                  </Tooltip>
-                )}
+                  </Tooltip>}
               </CardContent>
             </GradientCard>
           </Grid>

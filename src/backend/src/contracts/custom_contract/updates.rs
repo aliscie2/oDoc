@@ -2,6 +2,7 @@ use ic_cdk::caller;
 use ic_cdk_macros::update;
 
 use crate::contracts::custom_contract::utils::notify_about_promise;
+use crate::contracts::custom_contract::validation_promise_rules::validate_payment;
 use crate::user_history::UserHistory;
 use crate::websocket::PaymentAction;
 use crate::CustomContract;
@@ -229,11 +230,15 @@ fn object_on_cancel(c_payment: CPayment, reason: String) -> Result<(), String> {
     Ok(())
 }
 
+
 #[update]
 fn delete_custom_contract(id: String) -> Result<(), String> {
-    let contract = CustomContract::get(&id, &caller().to_string());
-    if let Some(contract) = contract {
-        return contract.delete();
-    }
-    Err("Not found".to_string())
+    let contract = CustomContract::get(&id, &caller().to_string())
+        .ok_or("Not found")?;
+    
+    contract.promises.iter()
+        .try_for_each(|p| validate_payment(p, None, "delete")
+            .map_err(|e| format!("Cannot delete: {}", e)))?;
+    
+    contract.delete()
 }

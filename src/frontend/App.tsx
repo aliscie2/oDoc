@@ -12,10 +12,7 @@ import { useAuth } from "./hooks/useAuth";
 import { selectIsFetching, selectProfile } from "./redux/selectors";
 import { initializeApp } from "./redux/slices/appSlice";
 import { useRef } from "react";
-import {
-  backendActor,
-  initializeSmartActors,
-} from "./utils/backendUtils";
+import { backendActor, initializeSmartActors } from "./utils/backendUtils";
 
 import RegistrationForm from "./components/MainComponents/RegistrationForm";
 import {
@@ -126,7 +123,7 @@ const useAppInitialization = () => {
         }
 
         // Single dispatch for initialization - let the thunk handle success/fallback logic
-        dispatch(initializeApp(backendActor) as any);
+        dispatch(initializeApp({ backendActor }) as unknown);
 
         setInitState((prev) => ({
           ...prev,

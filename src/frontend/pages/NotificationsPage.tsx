@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { AppBar, Box, List, Toolbar, Typography, Button } from "@mui/material";
+import { AppBar, Box, Divider, List, Toolbar, Typography, Button } from "@mui/material";
 import { RootState } from "@/redux/reducers";
 import { backendActor } from "@/utils/backendUtils";
 import { Notification as NotificationType } from "$/declarations/backend/backend.did";
@@ -120,13 +120,19 @@ const NotificationsPage: React.FC = () => {
           </Box>
         ) : (
           <List sx={{ p: 0 }}>
-            {notifications.map((notification: NotificationType) => (
-              <NotificationCard
-                key={notification.id}
-                notification={notification}
-                onMarkRead={handleMarkRead}
-                profileId={profile?.id || ""}
-              />
+            {notifications.map((notification: NotificationType, index: number) => (
+              <>
+                <NotificationCard
+                  key={notification.id}
+                  notification={notification}
+                  onMarkRead={handleMarkRead}
+                  profileId={profile?.id || ""}
+                  compact={false}
+                />
+                {index < notifications.length - 1 && (
+                  <Divider sx={{ borderWidth: 0.1, opacity: 0.5 }} />
+                )}
+              </>
             ))}
           </List>
         )}

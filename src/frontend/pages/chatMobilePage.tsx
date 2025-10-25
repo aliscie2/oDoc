@@ -1,32 +1,49 @@
-// ChatMobilePage.tsx - NEW FILE
-import React, { useRef, useEffect, useCallback } from "react";
-import { useParams } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { Box, Typography } from "@mui/material";
-import { MessagesList } from "@/components/Chat/MessagesList";
+// ChatMobilePage.tsx - Responsive Chat Page (Mobile & Desktop)
+import { User } from "$/declarations/backend/backend.did";
 import { ChatSettingsDialog } from "@/components/Chat/ChatSettingsDialog";
 import { ChatHeader } from "@/components/Chat/components/ChatHeader";
+import { useChatListOperations } from "@/components/Chat/hooks/useChatListOperations";
 import { useChatOperations } from "@/components/Chat/hooks/useChatOperations";
-import { useInfiniteScroll } from "@/components/Chat/hooks/useInfiniteScroll";
 import { useChatSettings } from "@/components/Chat/hooks/useChatSettings";
+import { useInfiniteScroll } from "@/components/Chat/hooks/useInfiniteScroll";
 import { MessageInput } from "@/components/Chat/MessageInput";
+import { MessagesList } from "@/components/Chat/MessagesList";
 import { RootState } from "@/redux/reducers";
 import { backendActor } from "@/utils/backendUtils";
-import { User } from "$/declarations/backend/backend.did";
+import { Box, Typography, useMediaQuery, useTheme } from "@mui/material";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useParams } from "react-router-dom";
 
 export const ChatMobilePage: React.FC = () => {
   const { chatId } = useParams<{ chatId: string }>();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
-  const { profile, all_friends, workspaces } = useSelector(
+  const { profile, all_friends, workspaces, currentWorkspace } = useSelector(
     (state: RootState) => state.filesState,
   );
   const { chats } = useSelector((state: RootState) => state.chatsState);
 
   const chat = chats.find((c) => c.id === chatId);
 
+  // Use chat list operations hook
+  const { getOtherUser, handleOpenChat, shouldShowSettings } =
+    useChatListOperations({ profile });
+
+  // Filter chats by workspace
+  const filteredChats = useMemo(() => {
+    if (!currentWorkspace || currentWorkspace.name === "default") return chats;
+    return chats.filter((chat) =>
+      chat.workspaces.includes(currentWorkspace.id),
+    );
+  }, [chats, currentWorkspace]);
+
   const {
     isSettingsOpen,
+    selectedChat,
     openSettings,
     closeSettings,
     handleSaveSettings,
@@ -36,7 +53,7 @@ export const ChatMobilePage: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
-  const { sendMessage, updateChat, deleteChat, isSending } = useChatOperations({
+  const { sendMessage, isSending } = useChatOperations({
     backendActor,
     onSuccess: () => {
       setTimeout(
@@ -82,7 +99,7 @@ export const ChatMobilePage: React.FC = () => {
       const success = await sendMessage(chat?.id, messageText, profile.id);
       if (success) {
         const newMessage = {
-          id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          id: `msg_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
           date: BigInt(Date.now()) * BigInt(1e6),
           sender: profile.id,
           seen_by: [profile.id],
