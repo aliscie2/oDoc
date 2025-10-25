@@ -1,6 +1,6 @@
-import { Github, Twitter, Youtube } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import styles from './remaining-components.module.css';
+import LoginButton from '@/components/MainComponents/topNavBar/loginButton';
 
 export function Footer() {
   return (
@@ -34,20 +34,28 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Right - Community */}
+          {/* Affiliate Program */}
           <div>
-            <h3 style={{ fontSize: '0.875rem', marginBottom: '0.75rem' }}>Follow Us</h3>
-            <div className={styles.footerSocial}>
-              <a href="https://github.com/aliscie2/oDoc" target="_blank" rel="noopener noreferrer" className={styles.footerSocialIcon}>
-                <Github size={18} />
-              </a>
-              <a href="https://x.com/odoc_ic" target="_blank" rel="noopener noreferrer" className={styles.footerSocialIcon}>
-                <Twitter size={18} />
-              </a>
-              <a href="https://www.youtube.com/@odoc_ic" target="_blank" rel="noopener noreferrer" className={styles.footerSocialIcon}>
-                <Youtube size={18} />
-              </a>
-            </div>
+            <h3 style={{ fontSize: '0.875rem', marginBottom: '0.75rem' }}>Affiliate Program</h3>
+            <p style={{ fontSize: '0.875rem', color: '#a3a3a3', marginBottom: '0.75rem' }}>
+              Early partners earn 50% commission on all referrals
+            </p>
+            <LoginButton
+              variant="outlined"
+              userType={"AFFILIATE"}
+              sx={{ 
+                width: "100%", 
+                minHeight: "40px",
+                color: "#ffffff",
+                borderColor: "#ffffff",
+                "&:hover": {
+                  borderColor: "#e5e5e5",
+                  backgroundColor: "rgba(255, 255, 255, 0.1)"
+                }
+              }}
+            >
+              Try it now
+            </LoginButton>
           </div>
         </div>
 

@@ -1,22 +1,22 @@
 import { motion } from 'framer-motion';
-import { Mail, Circle } from 'lucide-react';
+import { Mail, Bell } from 'lucide-react';
 import { Card } from './ui/card';
 import { Badge } from './ui/badge';
 import styles from './EmailNotifications.module.css';
 
 export function EmailNotifications() {
-  const emails = [
+  const notifications = [
     {
       subject: 'AI Developer Position Match',
-      preview: 'A new position matching your skills has been posted. Senior AI Developer needed for...',
+      preview: 'Senior AI Developer needed for blockchain startup',
       time: '2m ago',
-      unread: true
+      type: 'job'
     },
     {
       subject: 'Co-founder Opportunity',
-      preview: 'Exciting startup opportunity in the Web3 space. Looking for technical co-founder...',
+      preview: 'Technical co-founder for Web3 platform',
       time: '1h ago',
-      unread: true
+      type: 'opportunity'
     }
   ];
 
@@ -31,46 +31,43 @@ export function EmailNotifications() {
             transition={{ duration: 0.6 }}
           >
             <div className={styles.header}>
-              <h2 className={styles.title}>Email Alerts</h2>
+              <h2 className={styles.title}>Instant Alerts</h2>
               <p className={styles.subtitle}>
-                Get notified when new opportunities match your profile. Never miss the perfect job or talent again.
+                Get notified when opportunities match your profile
               </p>
             </div>
 
             <Card className={styles.mainCard}>
-              {/* Email Icon */}
-              <div className={styles.iconContainer}>
-                <div className={styles.iconWrapper}>
-                  <div className={styles.iconCircle}>
-                    <Mail size={24} />
+              <div className={styles.cardHeader}>
+                <div className={styles.headerRow}>
+                  <div className={styles.iconBadge}>
+                    <Bell size={16} />
+                    <span>Notifications</span>
                   </div>
-                  <Badge className={styles.notificationBadge}>
-                    2
+                  <Badge variant="destructive" className={styles.countBadge}>
+                    {notifications.length}
                   </Badge>
                 </div>
               </div>
 
-              {/* Email List */}
-              <div className={styles.emailList}>
-                {emails.map((email, idx) => (
+              <div className={styles.notificationsList}>
+                {notifications.map((notification, idx) => (
                   <motion.div
                     key={idx}
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ amount: 0.3, once: false }}
-                    transition={{ duration: 0.4, delay: idx * 0.2 }}
+                    transition={{ duration: 0.4, delay: idx * 0.1 }}
                   >
-                    <Card className={`${styles.emailCard} ${email.unread ? styles.unread : styles.read}`}>
-                      <div className={styles.emailContent}>
-                        {email.unread && (
-                          <Circle size={10} className={styles.unreadDot} fill="currentColor" />
-                        )}
-                        <div className={styles.emailBody}>
-                          <div className={styles.emailHeader}>
-                            <p className={styles.emailSubject}>{email.subject}</p>
-                            <span className={styles.emailTime}>{email.time}</span>
+                    <Card className={styles.notificationCard}>
+                      <div className={styles.notificationContent}>
+                        <Mail size={16} className={styles.notificationIcon} />
+                        <div className={styles.notificationBody}>
+                          <div className={styles.notificationHeader}>
+                            <p className={styles.notificationSubject}>{notification.subject}</p>
+                            <span className={styles.notificationTime}>{notification.time}</span>
                           </div>
-                          <p className={styles.emailPreview}>{email.preview}</p>
+                          <p className={styles.notificationPreview}>{notification.preview}</p>
                         </div>
                       </div>
                     </Card>

@@ -1,51 +1,26 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Card } from './ui/card';
 import { Badge } from './ui/badge';
 import { FileText, DollarSign, Calendar, User, FileCheck, Coins, Bitcoin } from 'lucide-react';
 import styles from './remaining-components.module.css';
 
 export function CryptoEscrow() {
-  const [activeContract, setActiveContract] = useState(0);
-
   const paymentMethods = [
     { name: 'USD', icon: <DollarSign size={24} /> },
     { name: 'USDC', icon: <Coins size={24} /> },
     { name: 'Bitcoin', icon: <Bitcoin size={24} /> }
   ];
 
-  const contracts = [
-    {
-      amount: '500 USDC',
-      receiver: { name: 'John Smith', role: 'Senior ICP Developer' },
-      stakingDuration: '30 days',
-      conditions: [
-        'Complete smart contract audit',
-        'Deploy to mainnet',
-        'Pass security review'
-      ]
-    },
-    {
-      amount: '1,200 USDC',
-      receiver: { name: 'Sarah Johnson', role: 'UI/UX Designer' },
-      stakingDuration: '45 days',
-      conditions: [
-        'Deliver final design mockups',
-        'Complete user testing',
-        'Handoff to development'
-      ]
-    }
-  ];
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveContract(prev => (prev + 1) % contracts.length);
-    }, 6000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const contract = contracts[activeContract];
+  const contract = {
+    amount: '500 USDC',
+    receiver: { name: 'John Smith', role: 'Senior ICP Developer' },
+    stakingDuration: '30 days',
+    conditions: [
+      'Complete smart contract audit',
+      'Deploy to mainnet',
+      'Pass security review'
+    ]
+  };
 
   return (
     <section className={styles.cryptoSection}>
@@ -58,7 +33,7 @@ export function CryptoEscrow() {
             transition={{ duration: 0.6 }}
           >
             <div className={styles.cryptoHeader}>
-              <h2 style={{ fontSize: '1.875rem', marginBottom: '0.75rem', color: 'var(--color-text-primary)' }}>Secure Escrow Agreements</h2>
+              <h2 style={{ fontSize: '1.875rem', marginBottom: '0.75rem', color: 'var(--color-text-primary)' }}>Crypto Agreements</h2>
               <p style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)', marginBottom: '1.5rem' }}>
                 Transparent blockchain contracts with automated escrow
               </p>
@@ -96,15 +71,7 @@ export function CryptoEscrow() {
               </div>
             </div>
 
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeContract}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.5 }}
-              >
-                <Card className={styles.cryptoCard}>
+            <Card className={styles.cryptoCard}>
                   {/* Contract Header */}
                   <div className={styles.contractHeader}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -193,19 +160,7 @@ export function CryptoEscrow() {
                     </div>
                   </div>
 
-                  {/* Progress Indicator */}
-                  <div className={styles.progressDots}>
-                    {contracts.map((_, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setActiveContract(idx)}
-                        className={`${styles.progressDot} ${idx === activeContract ? styles.active : styles.inactive}`}
-                      />
-                    ))}
-                  </div>
                 </Card>
-              </motion.div>
-            </AnimatePresence>
           </motion.div>
         </div>
       </div>
