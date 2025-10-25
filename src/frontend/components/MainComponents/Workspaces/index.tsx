@@ -36,6 +36,7 @@ const useWorkspaceOperations = () => {
   const { workspaces, currentWorkspace, profile } = useSelector(
     (state: { filesState: FilesState }) => state.filesState,
   );
+  const backendActorRef = backendActor;
 
   const selectWorkspace = useCallback(
     (workspace: Workspace) => {
@@ -106,6 +107,7 @@ const useWorkspaceOperations = () => {
     createWorkspace,
     deleteWorkspace,
     selectWorkspace,
+    backendActorRef,
   };
 };
 
@@ -165,12 +167,14 @@ const WorkspaceInput: React.FC<{
 
 const WorkspaceManager: React.FC = () => {
   const theme = useTheme();
+  const dispatch = useDispatch();
   const {
     workspaces,
     currentWorkspace,
     createWorkspace,
     deleteWorkspace,
     selectWorkspace,
+    backendActorRef,
   } = useWorkspaceOperations();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -191,8 +195,22 @@ const WorkspaceManager: React.FC = () => {
   const handleSaveRename = async (name: string) => {
     if (!editingId || !name.trim()) return;
     const ws = workspaces.find((w) => w.id === editingId);
-    if (!ws) return;
+    if (!ws || !backendActorRef) return;
     setIsSaving(true);
+    try {
+      const updatedWorkspace = { ...ws, name };
+      if ("Ok" in (await backendActorRef.save_work_space(updatedWorkspace))) {
+        dispatch({ type: "UPDATE_WORKSPACE", workspace: updatedWorkspace });
+        if (currentWorkspace?.id === ws.id) {
+          dispatch({
+            type: "CHANGE_CURRENT_WORKSPACE",
+            currentWorkspace: updatedWorkspace,
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Failed to rename workspace:", error);
+    }
     setEditingId(null);
     setEditedName("");
     setIsSaving(false);
@@ -332,7 +350,7 @@ const WorkspaceManager: React.FC = () => {
         <DialogTitle>Delete Workspace</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Delete "{deleteTarget?.name}"? This cannot be undone.
+            Delete "{deleteTarget?.name}&quot;? This cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>

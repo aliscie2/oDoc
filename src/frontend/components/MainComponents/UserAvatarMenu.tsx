@@ -20,7 +20,7 @@ import {
 } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
 import { useSnackbar } from "notistack";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { randomString } from "@/DataProcessing/dataSamples";
@@ -42,9 +42,12 @@ interface UserAvatarMenuProps {
   maxWords?: number;
   forceDisplayName?: boolean;
   variant?: TypographyVariant;
+  disableMenu?: boolean;
+  size?: number;
+  subtitle?: string | null;
 }
 
-const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
+const UserAvatarMenuComponent: React.FC<UserAvatarMenuProps> = ({
   user: initialUser,
   sx,
   hide = [],
@@ -56,13 +59,27 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
   maxWords = 50,
   forceDisplayName = false,
   variant = "body2",
+  disableMenu = false,
+  size,
+  subtitle = null,
 }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { enqueueSnackbar } = useSnackbar();
-  const { chats } = useSelector((state: RootState) => state.chatsState);
-  const { profile, posts, all_friends, currentWorkspace } = useSelector(
-    (state: RootState) => state.filesState,
+  
+  // OPTIMIZATION: Split Redux selectors to reduce unnecessary re-renders
+  // Each useSelector creates a separate subscription, so only select what's needed
+  const chats = useSelector((state: RootState) => state.chatsState.chats);
+  const profile = useSelector((state: RootState) => state.filesState.profile);
+  const currentWorkspace = useSelector((state: RootState) => state.filesState.currentWorkspace);
+  
+  // OPTIMIZATION: Conditionally select posts/friends only when needed
+  // This prevents re-renders when these arrays change but aren't being used
+  const posts = useSelector((state: RootState) => 
+    user_id ? state.filesState.posts : []
+  );
+  const all_friends = useSelector((state: RootState) => 
+    user_id ? state.filesState.all_friends : null
   );
 
   const [user, setUser] = useState<User | undefined>(initialUser);
@@ -72,46 +89,64 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
   const [rating, setRating] = useState<number>(0);
   const [comment, setComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isCalled, setCalled] = useState(false);
   const [isLoading, setLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [copyTooltip, setCopyTooltip] = useState("Click to copy User ID");
+  
+  // Track which user_id we've already fetched to prevent duplicate fetches
+  const fetchedUserIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (initialUser) {
       setUser(initialUser);
+      if (initialUser.id) {
+        fetchedUserIdRef.current = initialUser.id;
+      }
     }
   }, [initialUser]);
 
   useEffect(() => {
+    // Skip if no user_id or already fetched this user_id
+    if (!user_id || fetchedUserIdRef.current === user_id) return;
+    
     (async () => {
-      if (user_id && profile?.id === user_id) {
+      // If user_id matches profile, use profile directly
+      if (profile?.id === user_id) {
         setUser(profile);
+        fetchedUserIdRef.current = user_id;
         return;
-      } else if (user_id && !isCalled) {
-        setLoading(true);
-        const foundUser = all_friends?.find((f) => f.id === user_id);
-        if (foundUser) {
-          setUser(foundUser);
-        } else {
-          try {
-            const response = await backendActor.get_user(user_id);
-            if ("Ok" in response) setUser(response.Ok);
-          } catch (error) {
-            console.error("Failed to fetch user:", error);
-          }
+      }
+      
+      // Try to find in friends list first
+      const foundUser = all_friends?.find((f) => f.id === user_id);
+      if (foundUser) {
+        setUser(foundUser);
+        fetchedUserIdRef.current = user_id;
+        return;
+      }
+      
+      // Only fetch from backend if not found locally
+      setLoading(true);
+      try {
+        const response = await backendActor.get_user(user_id);
+        // console.log({response, user_id})
+        if ("Ok" in response) {
+          setUser(response.Ok);
+          fetchedUserIdRef.current = user_id;
         }
+      } catch (error) {
+        console.error("Failed to fetch user:", error);
+      } finally {
         setLoading(false);
-        setCalled(true);
       }
     })();
-  }, [isCalled, user_id, all_friends, profile]);
+  }, [user_id, all_friends, profile]);
 
   if (isLoading) return <CircularProgress />;
 
   if (!user) {
     return (
-      <Avatar sx={{ width: 28, height: 28, bgcolor: "success.main" }}>
+      <Avatar sx={{ width: 28, height: 28, bgcolor: "success.main", ...sx }}>
         <PersonIcon fontSize="small" />
       </Avatar>
     );
@@ -143,6 +178,40 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
 
   const shouldShowReadMore = (text: string) => {
     return text.length > maxWords * 10;
+  };
+
+  const getAvatarColor = (name: string) => {
+    const colors = [
+      "#FF6B6B",
+      "#4ECDC4",
+      "#45B7D1",
+      "#FFA07A",
+      "#98D8C8",
+      "#F7DC6F",
+      "#BB8FCE",
+      "#85C1E2",
+      "#F8B739",
+      "#52B788",
+      "#E76F51",
+      "#2A9D8F",
+      "#E9C46A",
+      "#F4A261",
+      "#264653",
+    ];
+    const charCode =
+      name.charCodeAt(0) + (name.charCodeAt(name.length - 1) || 0);
+    return colors[charCode % colors.length];
+  };
+
+  const getInitials = (name: string) => {
+    if (!name) return "A";
+    const words = name.trim().split(/\s+/);
+    if (words.length === 1) {
+      return words[0].charAt(0).toUpperCase();
+    }
+    return (
+      words[0].charAt(0) + words[words.length - 1].charAt(0)
+    ).toUpperCase();
   };
 
   const handleCopyId = async () => {
@@ -275,25 +344,49 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
   const isProfilePage = currentPath === "/profile" && user.id === profile?.id;
   const isUserPageSameUser = currentPath === "/user" && pageUserId === user.id;
 
+  const avatarSize = size || (sx?.width as number) || 40;
+  const fontSize = avatarSize * 0.4;
+
   return (
     <>
-      <Box sx={{ display: "flex", gap: 2, alignItems: "flex-start" }}>
+      <Box
+        sx={{
+          display: "flex",
+          gap: dispalyName && !displayDescription && !displayId ? 1 : 2,
+          alignItems: "center",
+          position: "relative",
+        }}
+      >
         <IconButton
-          disabled={user.id === profile?.id || isProfilePage}
-          onMouseEnter={isProfilePage ? undefined : handleOpen}
-          onClick={isProfilePage ? undefined : handleOpen}
+          disabled={user.id === profile?.id || isProfilePage || disableMenu}
+          onMouseEnter={isProfilePage || disableMenu ? undefined : handleOpen}
+          onClick={isProfilePage || disableMenu ? undefined : handleOpen}
           sx={{ p: 0 }}
         >
-          <Avatar src={getUserPhoto() || undefined} alt={user.name} sx={sx}>
-            {user.name?.charAt(0) || "A"}
+          <Avatar
+            src={getUserPhoto() || undefined}
+            alt={user.name}
+            sx={{
+              width: avatarSize,
+              height: avatarSize,
+              ...sx,
+              bgcolor: getUserPhoto()
+                ? undefined
+                : getAvatarColor(user.name || "Anonymous"),
+              fontWeight: 600,
+              fontSize: `${fontSize}px`,
+            }}
+          >
+            {getInitials(user.name || "Anonymous")}
           </Avatar>
         </IconButton>
         {(dispalyName ||
           forceDisplayName ||
           displayDescription ||
-          displayId) && (
+          displayId ||
+          subtitle) && (
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            {(dispalyName || forceDisplayName) && (
+            {(dispalyName || forceDisplayName || subtitle) && (
               <Typography
                 variant={variant}
                 sx={{
@@ -301,6 +394,8 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
+                  lineHeight: 1.2,
+                  fontSize: size ? `${size * 0.3}px` : undefined,
                 }}
               >
                 {forceDisplayName
@@ -308,6 +403,24 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
                   : profile?.id === user.id
                     ? "You"
                     : user.name || "Anonymous"}
+              </Typography>
+            )}
+            {subtitle && (
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
+                  fontSize: size ? `${size * 0.25}px` : "0.875rem",
+                  mt: 0.25,
+                  lineHeight: 1.4,
+                }}
+              >
+                {subtitle}
               </Typography>
             )}
             {displayId && (
@@ -416,9 +529,14 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
                   height: 56,
                   border: "3px solid",
                   borderColor: "divider",
+                  bgcolor: getUserPhoto()
+                    ? undefined
+                    : getAvatarColor(user.name || "Anonymous"),
+                  fontWeight: 600,
+                  fontSize: "1.5rem",
                 }}
               >
-                {user.name?.charAt(0) || "A"}
+                {getInitials(user.name || "Anonymous")}
               </Avatar>
               <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Typography
@@ -547,5 +665,27 @@ const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({
     </>
   );
 };
+
+// Memoize component to prevent unnecessary re-renders when props haven't changed
+const UserAvatarMenu = React.memo(UserAvatarMenuComponent, (prevProps, nextProps) => {
+  // Custom comparison function - return true if props are equal (skip re-render)
+  return (
+    prevProps.user?.id === nextProps.user?.id &&
+    prevProps.user_id === nextProps.user_id &&
+    prevProps.dispalyName === nextProps.dispalyName &&
+    prevProps.displayDescription === nextProps.displayDescription &&
+    prevProps.displayId === nextProps.displayId &&
+    prevProps.maxWords === nextProps.maxWords &&
+    prevProps.forceDisplayName === nextProps.forceDisplayName &&
+    prevProps.variant === nextProps.variant &&
+    prevProps.disableMenu === nextProps.disableMenu &&
+    prevProps.size === nextProps.size &&
+    prevProps.subtitle === nextProps.subtitle &&
+    (prevProps.hide?.length || 0) === (nextProps.hide?.length || 0) &&
+    prevProps.onMessageClick === nextProps.onMessageClick
+  );
+});
+
+UserAvatarMenu.displayName = 'UserAvatarMenu';
 
 export default UserAvatarMenu;

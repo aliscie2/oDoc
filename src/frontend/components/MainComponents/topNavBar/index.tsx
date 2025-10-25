@@ -44,7 +44,7 @@ import NotificationsButton from "@/components/NotifcationList";
 import WorkspaceManager from "../Workspaces";
 import EnhancedUserAvatar from "./EnhancedUserAvatar";
 import LoginButton from "./loginButton";
-import UserLevelBadge from "./UserLevelBadge";
+import ActivityLevelIcon from "./ActivityLevelIcon";
 
 import { useAuth } from "@/hooks/useAuth";
 import { logout } from "@/utils/backendUtils";
@@ -235,10 +235,9 @@ export default function TopNavBar() {
       icon:
         option.content === "Achievements" ? (
           <Box sx={{ mr: 1, display: "flex", alignItems: "center" }}>
-            <UserLevelBadge
-              actions_rate={profile_history?.actions_rate ?? 0}
+            <ActivityLevelIcon
+              level={profile_history?.actions_rate ?? 0}
               size={24}
-              showLabel={false}
             />
           </Box>
         ) : (

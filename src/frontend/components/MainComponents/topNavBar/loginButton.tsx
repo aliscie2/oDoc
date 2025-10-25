@@ -48,7 +48,8 @@ const LoginButton: React.FC<LoginButtonProps> = ({
           if (
             userType === "/" ||
             userType === "calendar" ||
-            userType === "contracts"
+            userType === "contracts" ||
+            userType === "AFFILIATE"
           ) {
             navigate(`/${userType}`);
           }
@@ -65,27 +66,32 @@ const LoginButton: React.FC<LoginButtonProps> = ({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: variant === "contained" 
-          ? theme.palette.primary.main 
-          : "transparent",
-        color: variant === "contained" 
-          ? theme.palette.primary.contrastText 
-          : theme.palette.text.primary,
-        border: variant === "outlined" 
-          ? `2px solid ${theme.palette.primary.main}` 
-          : "none",
-        boxShadow: variant === "contained" 
-          ? `0 4px 12px ${theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.4)" : "rgba(0, 0, 0, 0.15)"}` 
-          : "none",
-        "&:hover": {
-          backgroundColor: variant === "contained" 
-            ? theme.palette.primary.dark 
-            : theme.palette.action.hover,
-          boxShadow: variant === "contained" 
-            ? `0 6px 16px ${theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.5)" : "rgba(0, 0, 0, 0.2)"}` 
+        backgroundColor:
+          variant === "contained" ? theme.palette.primary.main : "transparent",
+        color:
+          variant === "contained"
+            ? theme.palette.primary.contrastText
+            : theme.palette.text.primary,
+        border:
+          variant === "outlined"
+            ? `2px solid ${theme.palette.primary.main}`
             : "none",
+        boxShadow:
+          variant === "contained"
+            ? `0 4px 12px ${theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.4)" : "rgba(0, 0, 0, 0.15)"}`
+            : "none",
+        "&:hover": {
+          backgroundColor:
+            variant === "contained"
+              ? theme.palette.primary.dark
+              : theme.palette.action.hover,
+          boxShadow:
+            variant === "contained"
+              ? `0 6px 16px ${theme.palette.mode === "dark" ? "rgba(0, 0, 0, 0.5)" : "rgba(0, 0, 0, 0.2)"}`
+              : "none",
           transform: "translateY(-1px)",
-          borderColor: variant === "outlined" ? theme.palette.primary.dark : undefined,
+          borderColor:
+            variant === "outlined" ? theme.palette.primary.dark : undefined,
         },
         transition: "all 0.2s ease-in-out",
         ...sx,
