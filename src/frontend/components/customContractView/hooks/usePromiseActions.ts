@@ -1,209 +1,121 @@
-import { useCallback, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useSnackbar } from "notistack";
-import { Principal } from "@dfinity/principal";
+import { useCallback } from "react";
+import { useDispatch } from "react-redux";
 import { CPayment } from "$/declarations/backend/backend.did";
-import { backendActor } from "../../../utils/backendUtils";
+import { backendActor } from "@/utils/backendUtils";
+import { PromiseStatus } from "../types/contract";
 
-interface AppState {
-  filesState: {
-    all_friends: any[]; // Array of User objects extracted from Friends
-    wallet: { balance: number };
-    profile: { id: string; name: string };
-  };
+interface UsePromiseActionsProps {
+  promise: CPayment;
+  currentUserId: string;
+  contractId: string;
+  onSuccess?: () => void;
+  onError?: (error: string) => void;
 }
 
-export const usePromiseActions = (
-  promise: CPayment,
-  isEditable: boolean,
-  canEditStatus?: boolean,
-) => {
-  const [isUpdating, setIsUpdating] = useState(false);
-
+/**
+ * Hook for handling promise status changes with backend calls
+ * Receiver actions (confirm, object, approve, cancel) call backend directly
+ * Sender actions update through Redux (handled by multi_updates)
+ */
+export const usePromiseActions = ({
+  promise,
+  currentUserId,
+  contractId,
+  onSuccess,
+  onError,
+}: UsePromiseActionsProps) => {
   const dispatch = useDispatch();
-  const { enqueueSnackbar } = useSnackbar();
-  // Using direct backendActor import
-  const { all_friends, wallet, profile } = useSelector(
-    (state: AppState) => state.filesState,
-  );
 
-  // Use canEditStatus if provided, otherwise fall back to isEditable
-  const statusEditable =
-    canEditStatus !== undefined ? canEditStatus : isEditable;
+  const isReceiver = promise.receiver.toString() === currentUserId;
+  const isSender = promise.sender.toString() === currentUserId;
 
-  const updatePromise = useCallback(
-    (updates: Partial<CPayment>) => {
-      if (!isEditable) return;
-      dispatch({
-        type: "UPDATE_PROMISE",
-        contract_id: promise.contract_id,
-        promise: { ...promise, ...updates },
-      });
-    },
-    [dispatch, promise, isEditable],
-  );
-
+  /**
+   * Handle status change with appropriate backend call
+   * Receiver actions call backend directly and refetch contract
+   * Sender actions update through Redux
+   */
   const handleStatusChange = useCallback(
-    async (newStatus: string) => {
-      if (!statusEditable || !backendActor) return;
-
-      const statusMap: Record<string, any> = {
-        None: { None: null },
-        Released: { Released: null },
-        Confirmed: { Confirmed: null },
-        HighPromise: { HighPromise: null },
-        RequestCancellation: { RequestCancellation: null },
-        ConfirmedCancellation: { ConfirmedCancellation: null },
-        ApproveHighPromise: { ApproveHighPromise: null },
-      };
-
-      let reason = "";
-      if (newStatus === "Objected") {
-        const inputReason = prompt("Enter objection reason:");
-        if (inputReason === null) return;
-        reason = inputReason || "";
-        statusMap.Objected = { Objected: reason };
+    async (newStatus: PromiseStatus, objectionText?: string) => {
+      if (!backendActor) {
+        onError?.("Backend actor not available");
+        return;
       }
-      setIsUpdating(true);
+
       try {
-        const isReceiver = profile?.id === promise.receiver.toString();
-        const isSender = profile?.id === promise.sender.toString();
+        // Receiver actions - call backend directly
+        if (isReceiver) {
+          switch (newStatus) {
+            case "confirmed":
+              await backendActor.confirmed_c_payment(promise);
+              break;
 
-        // Optimistically update local state first
-        dispatch({
-          type: "SET_PROMISE_STATUS",
-          contract_id: promise.contract_id,
-          promise: { ...promise, status: statusMap[newStatus] },
-        });
+            case "cancelled":
+              await backendActor.confirmed_cancellation(promise);
+              break;
 
-        // Call backend and refetch contract
-        if (newStatus === "Confirmed" && isReceiver) {
-          await backendActor.confirmed_c_payment(promise);
-        } else if (newStatus === "ConfirmedCancellation" && isReceiver) {
-          await backendActor.confirmed_cancellation(promise);
-        } else if (newStatus === "ApproveHighPromise" && isReceiver) {
-          await backendActor.approve_high_promise(promise);
-        } else if (newStatus === "Objected" && isReceiver) {
-          await backendActor.object_on_cancel(promise, reason);
-        } else if (isSender) {
-          // Sender updates go through multi_updates
-          dispatch({
-            type: "UPDATE_PROMISE",
-            contract_id: promise.contract_id,
-            promise: { ...promise, status: statusMap[newStatus] },
-          });
-          return; // No need to refetch for local updates
+            case "escrow_approved":
+              await backendActor.approve_high_promise(promise);
+              break;
+
+            case "objected":
+              if (!objectionText) {
+                onError?.("Objection reason is required");
+                return;
+              }
+              await backendActor.object_on_cancel(promise, objectionText);
+              break;
+
+            default:
+              onError?.(`Invalid receiver action: ${newStatus}`);
+              return;
+          }
+
+          // Refetch contract after backend call
+          const result = await backendActor.get_contract(
+            promise.sender.toString(),
+            promise.contract_id,
+          );
+
+          if ("Ok" in result && "CustomContract" in result.Ok) {
+            // Update Redux with fresh contract data
+            dispatch({
+              type: "SET_CONTRACT",
+              contract: result.Ok.CustomContract,
+            });
+
+            onSuccess?.();
+          } else {
+            onError?.("Failed to fetch updated contract");
+          }
         }
-
-        // Refetch contract after backend call
-        const result = await backendActor.get_contract(
-          promise.sender.toString(),
-          promise.contract_id,
-        );
-
-        if ("Ok" in result && "CustomContract" in result.Ok) {
-          // ✅ Use SET_CONTRACT instead of dispatching the whole contract
-          dispatch({
-            type: "SET_CONTRACT",
-            contract: result.Ok.CustomContract,
-          });
-
-          // ✅ IMPORTANT: Remove this promise from changes since backend handled it
-          dispatch({
-            type: "REMOVE_PROMISE_FROM_CHANGES",
-            contract_id: promise.contract_id,
-            promise_id: promise.id,
-          });
-
-          enqueueSnackbar("Status updated successfully", {
-            variant: "success",
-          });
+        // Sender actions - handled through Redux UPDATE_PROMISE
+        // The multi_updates endpoint will handle these
+        else if (isSender) {
+          // Sender updates are handled by the parent component through onUpdate
+          // which dispatches UPDATE_PROMISE action
+          onSuccess?.();
+        } else {
+          onError?.("You are not authorized to update this promise");
         }
       } catch (error: any) {
-        console.error("Error updating status:", error);
-        // Revert optimistic update on error
-        dispatch({
-          type: "SET_PROMISE_STATUS",
-          contract_id: promise.contract_id,
-          promise: promise,
-        });
-        enqueueSnackbar(error?.toString() || "Failed to update status", {
-          variant: "error",
-        });
-      } finally {
-        setIsUpdating(false);
+        console.error("Error updating promise status:", error);
+        onError?.(error?.toString() || "Failed to update status");
       }
     },
     [
-      dispatch,
       promise,
-      statusEditable,
-      backendActor,
-      profile?.id,
-      enqueueSnackbar,
+      isReceiver,
+      isSender,
+      contractId,
+      dispatch,
+      onSuccess,
+      onError,
     ],
   );
-  const handleAmountChange = useCallback(
-    (newAmount: string) => {
-      if (!isEditable) return;
-
-      const amount = parseFloat(newAmount) || 0;
-      if (amount > wallet.balance) {
-        enqueueSnackbar("Error: Not enough balance", { variant: "error" });
-        return;
-      }
-      updatePromise({ amount });
-    },
-    [updatePromise, wallet.balance, enqueueSnackbar, isEditable],
-  );
-
-  const handleReceiverChange = useCallback(
-    (newReceiver: string) => {
-      if (!isEditable || !all_friends || !Array.isArray(all_friends)) return;
-
-      // Find user by name (all_friends contains User objects)
-      const user = all_friends.find((u) => u?.name === newReceiver);
-
-      if (!user || !user.id) {
-        enqueueSnackbar("Error: Friend not found", { variant: "error" });
-        return;
-      }
-
-      if (promise?.sender?.toString() === user.id) {
-        enqueueSnackbar("Error: You can't send to yourself", {
-          variant: "error",
-        });
-        return;
-      }
-
-      updatePromise({ receiver: Principal.fromText(user.id) });
-    },
-    [
-      updatePromise,
-      all_friends,
-      promise.sender,
-      enqueueSnackbar,
-      isEditable,
-      profile?.id,
-    ],
-  );
-
-  const handleDeletePromise = useCallback(() => {
-    if (window.confirm("Delete this agreement?")) {
-      dispatch({
-        type: "DELETE_PROMISE",
-        contract_id: promise.contract_id,
-        id: promise.id,
-      });
-    }
-  }, [dispatch, promise.contract_id, promise.id]);
 
   return {
-    updatePromise,
     handleStatusChange,
-    handleAmountChange,
-    handleReceiverChange,
-    handleDeletePromise,
-    isUpdating, // Return loading state
+    isReceiver,
+    isSender,
   };
 };
