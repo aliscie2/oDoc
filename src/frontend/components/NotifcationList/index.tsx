@@ -12,6 +12,7 @@ import {
   Card,
   CardContent,
   Chip,
+  Divider,
   IconButton,
   List,
   Menu,
@@ -32,10 +33,12 @@ const NotificationCard = ({
   notification,
   onMarkRead,
   profileId,
+  compact = false,
 }: {
   notification: NotificationType;
   onMarkRead: (id: string) => void;
   profileId: string;
+  compact?: boolean;
 }) => {
   const navigate = useNavigate();
   const contentType = Object.keys(
@@ -43,13 +46,13 @@ const NotificationCard = ({
   )[0] as keyof typeof notification.content;
 
   const cardStyles = {
-    mb: 1,
-    mx: { xs: 0.5, sm: 1 },
-    outline: notification.is_seen ? "" : "2px solid lightblue",
-    opacity: notification.is_seen ? 0.6 : 1,
     transition: "all 0.3s ease",
-    "&:hover": { transform: "translateY(-1px)", opacity: 1 },
-    borderRadius: { xs: 1, sm: 1 },
+    "&:hover": { transform: "translateY(-1px)" },
+    borderRadius: 0,
+    position: "relative" as const,
+    boxShadow: "none",
+    border: "none",
+    outline: "none",
   };
 
   const BaseCard = ({
@@ -71,24 +74,42 @@ const NotificationCard = ({
       sx={{ ...cardStyles, cursor: onClick ? "pointer" : "default" }}
       onClick={onClick}
     >
+      {!notification.is_seen && (
+        <Box
+          sx={{
+            position: "absolute",
+            right: 8,
+            top: "50%",
+            transform: "translateY(-50%)",
+            width: 8,
+            height: 8,
+            borderRadius: "50%",
+            backgroundColor: "red",
+            opacity: 0.6,
+            zIndex: 1,
+          }}
+        />
+      )}
       <CardContent
         sx={{
-          p: { xs: 1, sm: 1.5 },
-          "&:last-child": { pb: { xs: 1, sm: 1.5 } },
+          p: compact ? { xs: 1, sm: 1.5 } : 2,
+          "&:last-child": { pb: compact ? { xs: 1, sm: 1.5 } : 2 },
         }}
       >
         <Box
           sx={{
             display: "flex",
             alignItems: "center",
-            gap: { xs: 1, sm: 1.5 },
+            gap: compact ? { xs: 1.5, sm: 2 } : 2,
           }}
         >
-          {icon || <UserAvatarMenu user_id={userId!} size={36} />}
+          {icon || (
+            <UserAvatarMenu user_id={userId!} size={compact ? 48 : 56} />
+          )}
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography
-              variant="body2"
-              sx={{ fontWeight: 600, mb: 0.25, fontSize: "0.95rem" }}
+              variant="body1"
+              sx={{ fontWeight: 600, mb: 0.25, fontSize: "1rem" }}
             >
               {message}
             </Typography>
@@ -98,7 +119,7 @@ const NotificationCard = ({
             variant="caption"
             color="text.secondary"
             sx={{
-              fontSize: "0.7rem",
+              fontSize: "0.75rem",
               whiteSpace: "nowrap",
               alignSelf: "flex-start",
             }}
@@ -128,36 +149,54 @@ const NotificationCard = ({
     FriendRequest: {
       userId: notification.sender?.toString(),
       message: "Friend request",
+      onClick: () => {
+        onMarkRead(notification.id);
+        navigate(`/user?id=${notification.sender.toString()}`);
+      },
     },
     AcceptFriendRequest: {
       userId: getOtherUserId(),
       message: "Accepted friend request",
-      onClick: () => onMarkRead(notification.id),
+      onClick: () => {
+        onMarkRead(notification.id);
+        navigate(`/user?id=${getOtherUserId()}`);
+      },
     },
     RejectFriendRequest: {
       userId: notification.sender.toString(),
       message: "Declined friend request",
-      onClick: () => onMarkRead(notification.id),
+      onClick: () => {
+        onMarkRead(notification.id);
+        navigate(`/user?id=${notification.sender.toString()}`);
+      },
     },
     CancelFriendRequest: {
       userId: notification.sender.toString(),
       message: "Cancelled friend request",
-      onClick: () => onMarkRead(notification.id),
+      onClick: () => {
+        onMarkRead(notification.id);
+        navigate(`/user?id=${notification.sender.toString()}`);
+      },
     },
     Unfriend: {
       userId: notification.sender.toString(),
       message: "Unfriended you",
-      onClick: () => onMarkRead(notification.id),
+      onClick: () => {
+        onMarkRead(notification.id);
+        navigate(`/user?id=${notification.sender.toString()}`);
+      },
     },
   };
 
   if (
     contentType === "NewMessage" &&
-    (notification.content as any).NewMessage
+    (notification.content as unknown).NewMessage
   ) {
-    const msg = (notification.content as any).NewMessage;
+    const msg = (notification.content as unknown).NewMessage;
     notificationConfig.NewMessage = {
-      icon: <MessageIcon color="primary" sx={{ fontSize: 36 }} />,
+      icon: (
+        <MessageIcon color="primary" sx={{ fontSize: compact ? 48 : 56 }} />
+      ),
       onClick: () => onMarkRead(notification.id),
       message: "New message",
       children: (
@@ -175,8 +214,11 @@ const NotificationCard = ({
             sx={{
               overflow: "hidden",
               textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
               mt: 0.25,
+              lineHeight: 1.4,
             }}
           >
             {msg.message}
@@ -187,24 +229,29 @@ const NotificationCard = ({
   }
 
   if (contentType === "CPaymentContract") {
-    const [payment] = (notification.content as any).CPaymentContract;
+    const [payment] = (notification.content as unknown).CPaymentContract;
     const status = Object.keys(payment.status)[0];
+
+    // Show receiver if current user is sender, otherwise show sender
+    const displayUserId =
+      profileId === payment.sender.toString()
+        ? payment.receiver.toString()
+        : payment.sender.toString();
 
     return (
       <BaseCard
-        userId={payment.sender.toString()}
+        userId={displayUserId}
         message="New promise"
         onClick={() => {
-          if (payment.contract_id==="none"){
-              navigate(`/wallet`);
+          if (payment.contract_id === "none") {
+            navigate(`/wallet`);
           } else {
             const encoded = encodeContractUrl({
-            id: payment.contract_id,
-            owner: payment.sender.toString(),
-          });
-          navigate(`/contract?data=${encoded}`);
+              id: payment.contract_id,
+              owner: payment.sender.toString(),
+            });
+            navigate(`/contract?data=${encoded}`);
           }
-          
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mt: 0.5 }}>
@@ -230,7 +277,7 @@ const NotificationCard = ({
 
   if (contentType === "FriendRequest") {
     if (
-      (notification.content as any).FriendRequest?.sender?.toString() ===
+      (notification.content as unknown).FriendRequest?.sender?.toString() ===
       profileId
     )
       return null;
@@ -239,7 +286,7 @@ const NotificationCard = ({
       <BaseCard
         {...config}
         extraContent={
-          <Box sx={{ ml: 5 }}>
+          <Box sx={{ ml: 5 }} onClick={(e) => e.stopPropagation()}>
             <FriendshipButton
               user={
                 (notification.content as unknown).FriendRequest.friend.sender
@@ -436,14 +483,22 @@ const NotificationsButton = () => {
             }}
           >
             <List sx={{ p: 0, pb: 1 }}>
-              {notifications.map((notification: NotificationType) => (
-                <NotificationCard
-                  key={notification.id}
-                  notification={notification}
-                  onMarkRead={handleMarkRead}
-                  profileId={profile?.id || ""}
-                />
-              ))}
+              {notifications.map(
+                (notification: NotificationType, index: number) => (
+                  <>
+                    <NotificationCard
+                      key={notification.id}
+                      notification={notification}
+                      onMarkRead={handleMarkRead}
+                      profileId={profile?.id || ""}
+                      compact={true}
+                    />
+                    {index < notifications.length - 1 && (
+                      <Divider sx={{ borderWidth: 1, opacity: 0.5 }} />
+                    )}
+                  </>
+                ),
+              )}
             </List>
           </Box>
         )}

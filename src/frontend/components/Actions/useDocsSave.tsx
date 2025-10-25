@@ -10,6 +10,7 @@ import {
   FileNode,
 } from "$/declarations/backend/backend.did";
 import { InitialState } from "@/redux/types/filesTypes";
+import { initializeApp } from "@/redux/slices/appSlice";
 
 interface SaveError {
   module: "docs" | "calendar" | "jobs";
@@ -88,9 +89,8 @@ export const useDocsSave = (): UseDocsSaveReturn => {
     );
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const serializedContent = serializeFileContents(
-        changes.contents as unknown as any[],
+        changes.contents as unknown as Record<string, unknown>[],
       );
 
       // Ensure changes.contracts is an array before processing
@@ -108,7 +108,7 @@ export const useDocsSave = (): UseDocsSaveReturn => {
       const validFileIndexing = (changes.files_indexing || []).filter(
         (indexing: FileIndexing) => fileIds.has(indexing.id),
       );
-
+      console.log({ processedContracts });
       const res = await backendActor.multi_updates(
         changes.files,
         serializedContent,
@@ -164,28 +164,11 @@ export const useDocsSave = (): UseDocsSaveReturn => {
       // Clear local changes first
       dispatch({ type: "RESOLVE_CHANGES" });
 
-      // Fetch fresh data from backend
-      const filesRes = await backendActor.get_all_files();
-
-      // Fetch file contents
+      // Use initializeApp to fetch complete fresh data from backend
+      // This properly resets all state including contracts, friends, profile, etc.
+      // Force re-initialization even if already initialized
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const contentsMap: Record<string, any> = {};
-
-      for (const file of filesRes) {
-        try {
-          const content = await backendActor.get_file_content(file.id);
-          contentsMap[file.id] = content;
-        } catch (error) {
-          console.warn(`Failed to fetch content for file ${file.id}:`, error);
-        }
-      }
-
-      // Replace files and contents in Redux (not append)
-      dispatch({
-        type: "REPLACE_FILES_AND_CONTENTS",
-        files: filesRes,
-        files_content: contentsMap,
-      });
+      await (dispatch as any)(initializeApp({ backendActor, force: true }));
 
       setLastError(null);
       enqueueSnackbar("Documents reset successfully!", {

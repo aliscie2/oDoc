@@ -29,11 +29,12 @@ export const ChatFloatingWindow: React.FC<ChatFloatingWindowProps> = ({
   // const [isMinimized, setIsMinimized] = React.useState(false);
 
   const dispatch = useDispatch();
-  const { handleError } = useChatErrorHandler();
+  const { handleError: _handleError } = useChatErrorHandler();
   const { openChatWindows } = useSelector(
     (state: RootState) => state.chatsState,
   );
   const isMinimized = openChatWindows[chat.id]?.isMinimized || false;
+  
   const toggleMinimize = () => {
     dispatch({
       type: "TOGGLE_CHAT_MINIMIZE",
@@ -41,9 +42,10 @@ export const ChatFloatingWindow: React.FC<ChatFloatingWindowProps> = ({
     });
   };
 
-  const { profile, all_friends, workspaces } = useSelector(
-    (state: RootState) => state.filesState,
-  );
+  // OPTIMIZATION: Split Redux selectors to reduce unnecessary re-renders
+  const profile = useSelector((state: RootState) => state.filesState.profile);
+  const all_friends = useSelector((state: RootState) => state.filesState.all_friends);
+  const workspaces = useSelector((state: RootState) => state.filesState.workspaces);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -183,7 +185,7 @@ export const ChatFloatingWindow: React.FC<ChatFloatingWindowProps> = ({
         >
           {isPrivateChat ? (
             <UserAvatarMenu
-            variant="h5"
+              variant="h5"
               dispalyName={true}
               user_id={chat.members
                 .find((m) => m.toString() !== profile?.id)

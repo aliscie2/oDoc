@@ -1,5 +1,6 @@
 import { createPluginFactory } from "@udecode/plate-common";
-import SlateCustomContract from "../customContractView/SlateCustomContract";
+import SlateCustomContract from "./SlateCustomContract";
+// import SlateCustomContract from "../customContractView/SlateCustomContract";
 const CONTRACT_KEY = "custom_contract";
 
 interface Props {
@@ -26,7 +27,7 @@ const createContractPlugin = createPluginFactory({
   //         const [parentNode, parentPath] = editor.parent(selection.anchor.path);
   //
   //         // Check if we're in a contract element
-  //         if ((parentNode as TElement).type === CONTRACT_KEY) {
+  //         if ((parentNode as TElement).type === CONTRACT_KEY) {,
   //           // Prevent default backspace behavior
   //           event.preventDefault();
   //

@@ -45,7 +45,7 @@ const ChatNotifications = () => {
 
   const { chats } = useSelector((state: RootState) => state.chatsState);
   const openChatWindows = useSelector(
-    (state: RootState) => (state.chatsState as any).openChatWindows || {},
+    (state: RootState) => (state.chatsState as unknown).openChatWindows || {},
   );
   const { profile, all_friends, currentWorkspace, workspaces } = useSelector(
     (state: RootState) => state.filesState,
@@ -247,8 +247,6 @@ const ChatNotifications = () => {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            borderBottom: 1,
-            borderColor: "divider",
           }}
         >
           <Typography variant="h6" sx={{ fontWeight: 600 }}>
@@ -349,6 +347,7 @@ const ChatNotifications = () => {
                     otherUser={otherUser}
                     onClick={() => handleOpenChat(chat)}
                     compact={true}
+                    displayName=""
                   />
                 );
               })}
@@ -357,7 +356,7 @@ const ChatNotifications = () => {
         )}
 
         {filteredChats.length > 0 && hasMoreChats && (
-          <Box sx={{ p: 1, borderTop: 1, borderColor: "divider" }}>
+          <Box sx={{ p: 1 }}>
             <Button
               fullWidth
               onClick={handleLoadMore}

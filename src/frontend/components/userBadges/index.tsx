@@ -27,7 +27,7 @@ import {
   ExpandLess as ExpandLessIcon,
 } from "@mui/icons-material";
 import useProgress, { type BadgeType } from "./useProgress";
-import UserLevelBadge from "../MainComponents/topNavBar/UserLevelBadge";
+import ActivityLevelIcon from "../MainComponents/topNavBar/ActivityLevelIcon";
 
 import { useGoogleCalendar } from "@/pages/calendar/googleAccounts/useGoogleCalendar";
 import { Link } from "react-router-dom";
@@ -372,8 +372,14 @@ const AchievementPage: React.FC = () => {
   const [selectedBadge, setSelectedBadge] = useState<BadgeType | null>(null);
   const [videoOpen, setVideoOpen] = useState(false);
 
-  const { karmaScore, badges, recentAchievements } = useProgress();
+  const { karmaScore, badges } = useProgress();
   const { emailCompleted, availabilityCompleted } = useGoogleCalendar();
+
+  console.log("📊 Achievement Page Debug:", {
+    karmaScore,
+    badgesCount: badges.length,
+    unlockedCount: badges.filter((b) => b.unlocked).length,
+  });
 
   const createSetupBadges = (): BadgeType[] => [
     {
@@ -431,24 +437,14 @@ const AchievementPage: React.FC = () => {
         <Box
           sx={{
             display: "flex",
-            flexDirection: { xs: "column", sm: "row" },
             alignItems: "center",
-            gap: 3,
+            justifyContent: "space-between",
             mb: 3,
           }}
         >
-          <Box sx={{ display: "flex", justifyContent: "center" }}>
-            <UserLevelBadge actions_rate={karmaScore} size={120} />
-          </Box>
-          <Box sx={{ flex: 1, textAlign: { xs: "center", sm: "left" } }}>
+          <Box sx={{ display: "flex", alignItems: "baseline", gap: 2 }}>
             <Typography variant="h5" fontWeight="bold">
               Your Achievements
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              {currentLevel.label} Level
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Keep earning karma to unlock higher tiers and better rewards!
             </Typography>
           </Box>
         </Box>
@@ -456,16 +452,19 @@ const AchievementPage: React.FC = () => {
         <Grid container spacing={2}>
           <Grid item xs={6} sm={3}>
             <Box sx={{ textAlign: "center" }}>
+              <Box sx={{ display: "flex", justifyContent: "center", mb: 1 }}>
+                <ActivityLevelIcon level={karmaScore} size={48} />
+              </Box>
               <Typography
-                variant="h3"
+                variant="h4"
                 fontWeight="bold"
                 color={currentLevel.color}
-                sx={{ fontSize: { xs: "1.5rem", sm: "3rem" } }}
+                sx={{ fontSize: { xs: "1.25rem", sm: "2rem" } }}
               >
                 {karmaScore.toFixed(1)}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Karma Score
+                Activity Score
               </Typography>
             </Box>
           </Grid>
@@ -480,35 +479,6 @@ const AchievementPage: React.FC = () => {
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Badges Earned
-              </Typography>
-            </Box>
-          </Grid>
-          <Grid item xs={6} sm={3}>
-            <Box sx={{ textAlign: "center" }}>
-              <Typography
-                variant="h3"
-                fontWeight="bold"
-                color="success.main"
-                sx={{ fontSize: { xs: "1.5rem", sm: "3rem" } }}
-              >
-                +{(rewardTier.percentage * 100).toFixed(0)}%
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                ODOC Rewards
-              </Typography>
-            </Box>
-          </Grid>
-          <Grid item xs={6} sm={3}>
-            <Box sx={{ textAlign: "center" }}>
-              <Typography
-                variant="h3"
-                fontWeight="bold"
-                sx={{ fontSize: { xs: "1.2rem", sm: "2rem" } }}
-              >
-                {rewardTier.icon}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {rewardTier.level} Tier
               </Typography>
             </Box>
           </Grid>
