@@ -35,7 +35,7 @@ const LoginButton: React.FC<LoginButtonProps> = ({
       />
     );
   }
-  const defualtText = isMobile ? "Get started" : "Get Started";
+  const defualtText = "Sign Up"
 
   return (
     <Button

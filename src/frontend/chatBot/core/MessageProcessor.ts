@@ -1132,22 +1132,89 @@ Provide a helpful and accurate answer based only on the documentation provided. 
   /**
    * Processes individual contract action
    */
-  private processContractAction(action: any): void {
-    // Ensure contract_id is set for ADD_PROMISE actions
-    if (action.type === "ADD_PROMISE" && !action.contract_id) {
-      const contractData = this.getContractData();
-      action.contract_id = contractData.contractId;
-    }
-
-    // Process contract actions with friend name resolution
-    if (
-      action.type === "ADD_PROMISE" &&
-      action.promise &&
-      this.config.profile?.id
-    ) {
-      this.resolvePromiseParticipants(action);
-    }
+  private async processContractActions(result: any): Promise<void> {
+  if (result && result.actions && Array.isArray(result.actions)) {
+    result.actions.forEach((action: any) => {
+      this.processContractAction(action); // Normalizes the action
+      this.dispatcher.dispatch(action); // Dispatches the normalized action
+    });
   }
+}
+
+private processContractAction(action: any): void {
+  if (action.type === "ADD_PROMISE" && !action.contract_id) {
+    const contractData = this.getContractData();
+    action.contract_id = contractData.contractId;
+  }
+
+  if (
+    (action.type === "ADD_PROMISE" || action.type === "UPDATE_PROMISE") &&
+    action.promise
+  ) {
+    this.normalizePromiseData(action);
+    this.resolvePromiseParticipants(action);
+  }
+}
+
+private normalizePromiseData(action: any): void {
+  const promise = action.promise;
+  
+  // Convert __principal__ wrapper to actual Principal BEFORE other processing
+  if (promise.sender?.__principal__) {
+    promise.sender = Principal.fromText(promise.sender.__principal__);
+  }
+  if (promise.receiver?.__principal__) {
+    promise.receiver = Principal.fromText(promise.receiver.__principal__);
+  }
+  
+  // Ensure dates are proper numbers
+  if (promise.date_created) {
+    promise.date_created = Number(promise.date_created);
+  }
+  if (promise.date_released) {
+    promise.date_released = Number(promise.date_released);
+  }
+  
+  // Ensure amount is a number
+  if (promise.amount) {
+    promise.amount = Number(promise.amount);
+  }
+}
+
+private resolvePromiseParticipants(action: any): void {
+  const promise = action.promise;
+  
+  // Handle sender (now it's already a Principal or string, not __principal__ wrapper)
+  if (typeof promise.sender === "string") {
+    promise.sender = promise.sender === this.config.profile?.name
+      ? Principal.fromText(this.config.profile.id)
+      : (this.findFriendByName(promise.sender) ? 
+          Principal.fromText(this.getFriendUser(this.findFriendByName(promise.sender))?.id || this.config.profile.id) :
+          Principal.fromText(this.config.profile.id));
+  }
+
+  // Handle receiver (now it's already a Principal or string, not __principal__ wrapper)
+  if (!promise.receiver) {
+    promise.receiver = Principal.fromText("2vxsx-fae");
+  } else if (typeof promise.receiver === "string") {
+    const friend = this.findFriendByName(promise.receiver);
+    promise.receiver = friend ? Principal.fromText(friend.id) :
+      (promise.receiver === this.config.profile?.name ? 
+        Principal.fromText(this.config.profile.id) :
+        (this.isPrincipalString(promise.receiver) ? 
+          Principal.fromText(promise.receiver) :
+          Principal.fromText("2vxsx-fae")));
+  }
+}
+
+private isPrincipalString(str: string): boolean {
+  try {
+    Principal.fromText(str);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
   /**
    * Resolves promise participants (sender/receiver) from names to Principals

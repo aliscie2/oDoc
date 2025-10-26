@@ -1,6 +1,6 @@
 // ChatFloatingWindow.tsx
 import { Close, Remove, Settings } from "@mui/icons-material";
-import { Box, IconButton, Paper, Typography } from "@mui/material";
+import { Box, IconButton, Paper, Tooltip, Typography } from "@mui/material";
 import React, { useCallback, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../redux/reducers";
@@ -134,6 +134,12 @@ export const ChatFloatingWindow: React.FC<ChatFloatingWindowProps> = ({
   const showSettings = !isPrivateChat && (isCreator || isAdmin);
   const rightOffset = index * 340 + 20;
 
+
+  const displayName = chat.name.split(/\s+/).length > 3 
+  ? chat.name.split(/\s+/).slice(0, 3).join(' ') + '...' 
+  : chat.name;
+
+
   return (
     <ChatErrorBoundary>
       <Paper
@@ -156,118 +162,109 @@ export const ChatFloatingWindow: React.FC<ChatFloatingWindowProps> = ({
               : "8px 8px 16px rgba(128, 166, 223, 0.3), -8px -8px 16px rgba(74, 94, 141, 0.34)",
         }}
       >
-        <Box
+       <Box
+  sx={{
+    display: "flex",
+    alignItems: "center",
+    p: { xs: 2, sm: 1.5 },
+    borderBottom: isMinimized ? 0 : 1,
+    borderColor: "divider",
+    bgcolor: "background.paper",
+    color: "text.primary",
+    cursor: { xs: "default", sm: "pointer" },
+    minHeight: { xs: 56, sm: 48 },
+    borderRadius: {
+      xs: 0,
+      sm: isMinimized ? "16px 16px 0 0" : "16px 16px 0 0",
+    },
+    boxShadow: (theme) =>
+      theme.palette.mode === "dark"
+        ? "inset 2px 2px 4px rgba(0,0,0,0.3)"
+        : "inset 2px 2px 4px rgba(58,141,255,0.2)",
+    gap: 1,
+  }}
+  onClick={() => {
+    if (window.innerWidth >= 600) {
+      toggleMinimize();
+    }
+  }}
+>
+  {isPrivateChat ? (
+    <UserAvatarMenu
+      variant="h5"
+      dispalyName={true}
+      user_id={chat.members
+        .find((m) => m.toString() !== profile?.id)
+        ?.toString()}
+      sx={{ width: 40, height: 40 }}
+      hide={["Review"]}
+    />
+  ) : (
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0, flex: 1 }}>
+      <UserAvatarMenu
+        variant="h5"
+        dispalyName={false}
+        group={chat.members.map(m=>m.toString())}
+        sx={{ width: 40, height: 40 }}
+        hide={["Review"]}
+      />
+      <Tooltip title={chat.name.split(/\s+/).length > 3 ? chat.name : ""} arrow>
+        <Typography
+          variant="subtitle2"
           sx={{
-            display: "flex",
-            alignItems: "center",
-            p: { xs: 2, sm: 1.5 },
-            borderBottom: isMinimized ? 0 : 1,
-            borderColor: "divider",
-            bgcolor: "background.paper",
+            fontWeight: 600,
             color: "text.primary",
-            cursor: { xs: "default", sm: "pointer" },
-            minHeight: { xs: 56, sm: 48 },
-            borderRadius: {
-              xs: 0,
-              sm: isMinimized ? "16px 16px 0 0" : "16px 16px 0 0",
-            },
-            boxShadow: (theme) =>
-              theme.palette.mode === "dark"
-                ? "inset 2px 2px 4px rgba(0,0,0,0.3)"
-                : "inset 2px 2px 4px rgba(58,141,255,0.2)",
-          }}
-          onClick={() => {
-            // Only toggle on desktop
-            if (window.innerWidth >= 600) {
-              toggleMinimize();
-            }
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
           }}
         >
-          {isPrivateChat ? (
-            <UserAvatarMenu
-              variant="h5"
-              dispalyName={true}
-              user_id={chat.members
-                .find((m) => m.toString() !== profile?.id)
-                ?.toString()}
-              sx={{ width: 40, height: 40 }}
-              hide={["Review"]}
-            />
-          ) : (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-              <Box
-                sx={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: "50%",
-                  bgcolor: "primary.main",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "white",
-                  fontWeight: 600,
-                  fontSize: "1.1rem",
-                }}
-              >
-                {chat.name.charAt(0).toUpperCase()}
-              </Box>
-              <Typography
-                variant="subtitle2"
-                sx={{
-                  fontWeight: 600,
-                  color: "text.primary",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                  maxWidth: "150px",
-                }}
-              >
-                {chat.name}
-              </Typography>
-            </Box>
-          )}
-          <Box sx={{ flex: 1 }} />
+          {displayName}
+        </Typography>
+      </Tooltip>
+    </Box>
+  )}
 
-          {/* Hide minimize button on mobile */}
-          <IconButton
-            size="small"
-            sx={{
-              color: "inherit",
-              display: { xs: "none", sm: "inline-flex" },
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleMinimize();
-            }}
-          >
-            <Remove />
-          </IconButton>
+  <Box sx={{ display: "flex", gap: 0.5, flexShrink: 0 }}>
+    <IconButton
+      size="small"
+      sx={{
+        color: "inherit",
+        display: { xs: "none", sm: "inline-flex" },
+      }}
+      onClick={(e) => {
+        e.stopPropagation();
+        toggleMinimize();
+      }}
+    >
+      <Remove />
+    </IconButton>
 
-          {showSettings && (
-            <IconButton
-              size="small"
-              sx={{ color: "inherit" }}
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsSettingsOpen(true);
-              }}
-            >
-              <Settings />
-            </IconButton>
-          )}
+    {showSettings && (
+      <IconButton
+        size="small"
+        sx={{ color: "inherit" }}
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsSettingsOpen(true);
+        }}
+      >
+        <Settings />
+      </IconButton>
+    )}
 
-          <IconButton
-            size="small"
-            sx={{ color: "inherit" }}
-            onClick={(e) => {
-              e.stopPropagation();
-              dispatch({ type: "CLOSE_CHAT_WINDOW", chatId: chat.id });
-            }}
-          >
-            <Close />
-          </IconButton>
-        </Box>
-
+    <IconButton
+      size="small"
+      sx={{ color: "inherit" }}
+      onClick={(e) => {
+        e.stopPropagation();
+        dispatch({ type: "CLOSE_CHAT_WINDOW", chatId: chat.id });
+      }}
+    >
+      <Close />
+    </IconButton>
+  </Box>
+</Box>
         {!isMinimized && (
           <Box
             sx={{

@@ -64,9 +64,9 @@ export function SystemOverview() {
           transition={{ duration: 0.6 }}
         >
           <div className={styles.header}>
-            <h2 className={styles.title}>Why choose oDoc?</h2>
+            <h2 className={styles.title}>Why choose {window.location.hostname.split('.')[0]}?</h2>
             <p className={styles.subtitle}>
-              We offer an A to Z system that saves you time, money, and effort
+              Streamline your hiring process and reduce costs with our comprehensive solution.
             </p>
           </div>
 

@@ -20,7 +20,6 @@ const OfferPage = React.lazy(() => import("./OfferPage"));
 const SubscriptionPlans = React.lazy(() => import("./subscrptions"));
 const SNSWhitepaper = React.lazy(() => import("./white_paper/markDownReader"));
 const SNSVoting = React.lazy(() => import("./white_paper"));
-const DummyShares = React.lazy(() => import("./sharesContract"));
 const AffiliateDashboard = React.lazy(() => import("./affiliate"));
 const ContractPage = React.lazy(() => import("./contracts/ContractPage"));
 const CalendarView = React.lazy(() => import("./calendar"));
@@ -103,7 +102,6 @@ const Pages = React.memo(() => {
         <Route path="/subscriptions" element={<SubscriptionPlans />} />
         <Route path="/white_paper" element={<SNSWhitepaper />} />
         <Route path="/vote" element={<SNSVoting />} />
-        <Route path="/shares_contract" element={<DummyShares />} />
         <Route path="/affiliate" element={<AffiliateDashboard />} />
         <Route path="/*" element={<FileContentPage />} />
 

@@ -1428,7 +1428,7 @@ export function filesReducer(
       // UPDATE_PROMISE is used for SENDER actions (editing draft promises)
       // It updates BOTH state.contracts AND state.changes.contracts
       // This is correct because sender edits need to be batched and sent to backend via multi_updates
-      // 
+      //
       // IMPORTANT: Receiver actions (confirmed_c_payment, object_on_cancel, etc.) should NOT use this
       // They call backend directly and use SET_CONTRACT to refetch, which doesn't update changes
       const { contract_id, promise } = action;
@@ -1515,8 +1515,9 @@ export function filesReducer(
       const currentChanges = state.changes.contracts.find(
         (c) => c.id === contract_id,
       );
-      const promiseInChanges =
-        currentChanges?.promises.some((p) => p.id === id);
+      const promiseInChanges = currentChanges?.promises.some(
+        (p) => p.id === id,
+      );
 
       const updatedChanges = currentChanges
         ? {

@@ -225,7 +225,7 @@ const AffiliateDashboard = () => {
 
     try {
       await navigator.clipboard.writeText(
-        `${window.location.host}/f?id=${affiliateData.id}`,
+        `${window.location.origin}/f?id=${affiliateData.id}`,
       );
       setCopySuccess(true);
     } catch (err) {
@@ -289,7 +289,7 @@ const AffiliateDashboard = () => {
                 fontFamily: "monospace",
               }}
             >
-              {window.location.host}/f?id={affiliateData?.id ?? ""}
+              {window.location.origin}/f?id={affiliateData?.id ?? ""}
             </Typography>
             <Tooltip title="Copy to clipboard">
               <IconButton onClick={handleCopyLink} color="primary">

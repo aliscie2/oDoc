@@ -23,6 +23,23 @@ The Custom Contract View is a React-based UI for managing promises/payments betw
 - Optimized Redux state management
 - Loading indicators for async operations
 - Comprehensive validation with helpful error messages
+- Separate views for active promises and completed payments
+
+### Promise vs Payment Views
+
+The UI provides two distinct views accessible via header buttons:
+
+- **Promises View**: Shows all unreleased promises (status ≠ "Released")
+- **Payments View**: Shows only released/completed promises (status = "Released")
+
+**Backend Storage:**
+- Backend stores unreleased promises in `contract.promises[]`
+- Backend stores released promises in `contract.payments[]`
+
+**Frontend Display:**
+- `ContractPage.tsx` merges both arrays into `contract.promises[]` for unified display
+- `AgreementView.tsx` filters by status to show correct view
+- Deduplication ensures no promise appears twice
 
 ---
 
@@ -309,11 +326,68 @@ src/frontend/components/customContractView/
 
 ### Key Components
 
+#### ContractPage (Parent Component)
+**Location:** `src/frontend/pages/contracts/ContractPage.tsx`
+
+Handles data preparation before passing to CustomContractViewer:
+
+```typescript
+const filteredContract = useMemo(() => {
+  // Merge backend arrays: promises[] + payments[]
+  const allPromises = [
+    ...(currentContract.promises || []),
+    ...(currentContract.payments || []),
+  ];
+  
+  // Deduplicate by ID
+  const seenIds = new Set<string>();
+  const mergedPromises = allPromises.filter((p) => {
+    if (seenIds.has(p.id)) return false;
+    seenIds.add(p.id);
+    return true;
+  });
+
+  return {
+    ...currentContract,
+    promises: mergedPromises,  // All promises (released + unreleased)
+    payments: [],              // Cleared to avoid confusion
+  };
+}, [currentContract, profile]);
+```
+
+**Why This Matters:**
+- Backend stores released promises in separate `payments[]` array
+- UI needs all promises in one array to filter by status
+- Deduplication prevents showing same promise twice
+
 #### AgreementView
+**Location:** `src/frontend/components/customContractView/components/AgreementView.tsx`
+
+Main container that filters promises based on view mode:
+
+```typescript
+// Filter by status for current view
+const filteredPromises =
+  viewMode === "payments"
+    ? contract.promises.filter((p) => Object.keys(p.status)[0] === "Released")
+    : contract.promises.filter((p) => Object.keys(p.status)[0] !== "Released");
+
+// Calculate counts for header buttons
+const paymentsCount = contract.promises.filter(
+  (p) => Object.keys(p.status)[0] === "Released",
+).length;
+
+const promisesCount = contract.promises.filter(
+  (p) => Object.keys(p.status)[0] !== "Released",
+).length;
+```
+
+**Responsibilities:**
 - Container for all promise cards
 - Handles filtering (promises vs payments)
 - Maps backend CPayment to frontend Promise
 - Manages expanded card state
+- Passes correct counts to ContractHeader
 
 #### PromiseCard
 - Displays individual promise
@@ -371,6 +445,17 @@ src/frontend/components/customContractView/
 - [ ] Status dropdown shows only allowed transitions
 - [ ] Loading indicators appear during backend calls
 - [ ] Confirmation dialogs appear for actions
+
+### Promise/Payment Views
+
+- [ ] "Promises" button shows only unreleased promises
+- [ ] "Payments" button shows only released promises
+- [ ] Promise count is accurate (excludes released)
+- [ ] Payment count is accurate (only released)
+- [ ] No duplicates appear in either view
+- [ ] After releasing promise, it moves to Payments view
+- [ ] After page reload, released promises still in Payments view
+- [ ] Non-creator users see filtered promises/payments correctly
 
 ### Performance
 

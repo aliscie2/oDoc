@@ -2,82 +2,75 @@
 
 React-based UI for managing promises/payments between users with complex status workflows, role-based permissions, and real-time backend synchronization.
 
-## Quick Start
+## 📖 Documentation
 
-Read **[GUIDE.md](./GUIDE.md)** for complete implementation details, troubleshooting, and best practices.
+**Read [GUIDE.md](./GUIDE.md)** for complete details including:
+- Status system and transitions
+- Validation rules and permissions
+- Backend integration patterns
+- Performance optimizations
+- Troubleshooting guide
+- Testing checklist
 
-## Status Flow
+## Quick Overview
 
+### Two Views
+- **Promises**: Active/unreleased promises
+- **Payments**: Completed/released payments
+
+### Two Update Patterns
+- **Sender Actions**: Edit via Redux → batch save
+- **Receiver Actions**: Direct backend calls → immediate persistence
+
+### Status Flow
 ```
-Draft → Confirm → Confirmed → Release → Released ✓
-  ↓       ↓          ↓
-  └─→ Release Escrow → Approve → Escrow Approved → Release → Released ✓
-                         ↓           ↓
-                      Object    Request Cancel → Confirm → Cancelled ✓
-```
-
-## Key Concepts
-
-### Two Types of Updates
-
-**Sender Actions** (Edit via Redux)
-- Edit amount, receiver, conditions
-- Updates `filesState.changes`
-- Saved via `multi_updates` when user clicks Save
-
-**Receiver Actions** (Direct Backend Calls)
-- Confirm, approve, object, cancel
-- Calls backend directly → refetch → `SET_CONTRACT`
-- Does NOT update `filesState.changes` (backend already has it)
-
-### Status Reference
-
-| Backend | Frontend | Who Can Act |
-|---------|----------|-------------|
-| None | Draft | Sender: edit/release, Receiver: confirm/object |
-| HighPromise | Escrow Released | Receiver: approve/object |
-| ApproveHighPromise | Escrow Approved | Sender: release/cancel, Receiver: object |
-| Confirmed | Confirmed | Sender: release/cancel, Receiver: object |
-| Objected(text) | Objected | Sender: release, Receiver: edit objection |
-| Released | Released | Final - no actions |
-| RequestCancellation | Request Cancel | Sender: release, Receiver: confirm/object |
-| ConfirmedCancellation | Cancelled | Final - no actions |
-
-## Component Structure
-
-```
-components/
-├── AgreementView.tsx       # Main container
-├── PromiseCard.tsx         # Individual promise card
-├── ContractHeader.tsx      # Header with filters
-├── ConditionCell.tsx       # Editable condition
-└── UserSelect.tsx          # User selector
-
-lib/
-├── validation.ts           # Validation logic & status mapping
-├── notifications.ts        # Notification utilities
-└── theme-colors.ts         # Theme colors
+Draft → Confirmed → Released ✓
+  ↓         ↓
+Escrow → Approved → Released ✓
+  ↓         ↓
+Object  Cancel → Cancelled ✓
 ```
 
-## Common Issues
+## Key Files
 
-**"Invalid status for new payment creation"**
-- Receiver actions were adding to `filesState.changes`
-- Solution: Use `SET_CONTRACT` (not `UPDATE_PROMISE`) after backend calls
+| File | Purpose |
+|------|---------|
+| `ContractPage.tsx` | Merges `promises[]` + `payments[]` arrays |
+| `AgreementView.tsx` | Filters by status for view mode |
+| `PromiseCard.tsx` | Individual promise display & actions |
+| `validation.ts` | Status mapping & permission logic |
 
-**Infinite re-renders**
-- useEffect dependency includes state it updates
-- Solution: Remove circular dependencies
+## Common Patterns
 
-**Status selector empty**
-- Current status not in allowed transitions
-- Solution: Always include current status in selector options
+**Merging Backend Arrays:**
+```typescript
+// ContractPage.tsx
+const mergedPromises = [
+  ...contract.promises,  // Unreleased
+  ...contract.payments,  // Released
+].filter(deduplicate);
+```
+
+**Filtering by View:**
+```typescript
+// AgreementView.tsx
+const filtered = viewMode === "payments"
+  ? promises.filter(p => status === "Released")
+  : promises.filter(p => status !== "Released");
+```
+
+**Receiver Actions:**
+```typescript
+// Call backend directly, then refetch
+await backendActor.confirmed_c_payment(promise);
+dispatch({ type: "SET_CONTRACT", contract });
+```
 
 ## Related Files
 
-- Backend: `src/backend/src/contracts/custom_contract/updates.rs`
+- Backend: `src/backend/src/contracts/custom_contract/`
 - Redux: `src/frontend/redux/reducers/filesReducer.ts`
-- Save logic: `src/frontend/components/Actions/useDocsSave.tsx`
+- Save: `src/frontend/components/Actions/useDocsSave.tsx`
 
 ---
 

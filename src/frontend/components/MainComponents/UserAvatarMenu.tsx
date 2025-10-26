@@ -4,6 +4,7 @@ import { Message as MessageIcon, Person, Star } from "@mui/icons-material";
 import PersonIcon from "@mui/icons-material/Person";
 import {
   Avatar,
+  AvatarGroup,
   Box,
   Button,
   Dialog,
@@ -46,94 +47,46 @@ interface UserAvatarMenuProps {
   size?: number;
   subtitle?: string | null;
 }
-
-const UserAvatarMenuComponent: React.FC<UserAvatarMenuProps> = ({
-  user: initialUser,
-  sx,
-  hide = [],
-  user_id,
-  onMessageClick,
-  dispalyName = false,
-  displayDescription = false,
-  displayId = false,
-  maxWords = 50,
-  forceDisplayName = false,
-  variant = "body2",
-  disableMenu = false,
-  size,
-  subtitle = null,
-}) => {
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const { enqueueSnackbar } = useSnackbar();
-  
-  // OPTIMIZATION: Split Redux selectors to reduce unnecessary re-renders
-  // Each useSelector creates a separate subscription, so only select what's needed
-  const chats = useSelector((state: RootState) => state.chatsState.chats);
+// Hooks
+const useUserData = (initialUser?: User, user_id?: string) => {
   const profile = useSelector((state: RootState) => state.filesState.profile);
-  const currentWorkspace = useSelector((state: RootState) => state.filesState.currentWorkspace);
+  const all_friends = useSelector((state: RootState) => user_id ? state.filesState.all_friends : null);
+  const posts = useSelector((state: RootState) => user_id ? state.filesState.posts : []);
   
-  // OPTIMIZATION: Conditionally select posts/friends only when needed
-  // This prevents re-renders when these arrays change but aren't being used
-  const posts = useSelector((state: RootState) => 
-    user_id ? state.filesState.posts : []
-  );
-  const all_friends = useSelector((state: RootState) => 
-    user_id ? state.filesState.all_friends : null
-  );
-
   const [user, setUser] = useState<User | undefined>(initialUser);
-
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [reviewOpen, setReviewOpen] = useState(false);
-  const [rating, setRating] = useState<number>(0);
-  const [comment, setComment] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setLoading] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [copyTooltip, setCopyTooltip] = useState("Click to copy User ID");
-  
-  // Track which user_id we've already fetched to prevent duplicate fetches
   const fetchedUserIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (initialUser) {
       setUser(initialUser);
-      if (initialUser.id) {
-        fetchedUserIdRef.current = initialUser.id;
-      }
+      if (initialUser.id) fetchedUserIdRef.current = initialUser.id;
     }
   }, [initialUser]);
 
   useEffect(() => {
-    // Skip if no user_id or already fetched this user_id
     if (!user_id || fetchedUserIdRef.current === user_id) return;
     
     (async () => {
-      // If user_id matches profile, use profile directly
       if (profile?.id === user_id) {
         setUser(profile);
         fetchedUserIdRef.current = user_id;
         return;
       }
       
-      // Try to find in friends list first
-      const foundUser = all_friends?.find((f) => f.id === user_id);
+      const foundUser = all_friends?.find(f => f.id === user_id);
       if (foundUser) {
         setUser(foundUser);
         fetchedUserIdRef.current = user_id;
         return;
       }
       
-      // Only fetch from backend if not found locally
       setLoading(true);
       try {
-        const response = await backendActor.get_user(user_id);        
+        const response = await backendActor.get_user(user_id);
         if ("Ok" in response) {
           setUser(response.Ok);
           fetchedUserIdRef.current = user_id;
-        } else {
-            console.error({response, user_id})
         }
       } catch (error) {
         console.error("Failed to fetch user:", error);
@@ -143,77 +96,178 @@ const UserAvatarMenuComponent: React.FC<UserAvatarMenuProps> = ({
     })();
   }, [user_id, all_friends, profile]);
 
-  if (isLoading) return <CircularProgress />;
-
-  if (!user) {
-    return (
-      <Avatar sx={{ width: 28, height: 28, bgcolor: "success.main", ...sx }}>
-        <PersonIcon fontSize="small" />
-      </Avatar>
-    );
-  }
-
   const getUserPhoto = () => {
-    if (
-      user.photo &&
-      (typeof user.photo === "string" || user.photo.length > 0)
-    ) {
-      return user.photo;
-    }
-    const userPost = posts.find((p) => p.creator.id === user.id);
-    if (
-      userPost?.creator.photo &&
-      (typeof userPost.creator.photo === "string" ||
-        userPost.creator.photo.length > 0)
-    ) {
+    if (user?.photo && (typeof user.photo === "string" || user.photo.length > 0)) return user.photo;
+    const userPost = posts.find(p => p.creator.id === user?.id);
+    if (userPost?.creator.photo && (typeof userPost.creator.photo === "string" || userPost.creator.photo.length > 0)) {
       return userPost.creator.photo;
     }
     return null;
   };
 
-  const truncateDescription = (text: string) => {
-    const maxChars = maxWords * 10;
-    if (text.length <= maxChars) return text;
-    return text.slice(0, maxChars);
-  };
+  return { user, isLoading, getUserPhoto };
+};
 
-  const shouldShowReadMore = (text: string) => {
-    return text.length > maxWords * 10;
-  };
+const useGroupUsers = (group?: string[]) => {
+  const all_friends = useSelector((state: RootState) => group ? state.filesState.all_friends : null);
+  const profile = useSelector((state: RootState) => state.filesState.profile);
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setLoading] = useState(false);
 
-  const getAvatarColor = (name: string) => {
-    const colors = [
-      "#FF6B6B",
-      "#4ECDC4",
-      "#45B7D1",
-      "#FFA07A",
-      "#98D8C8",
-      "#F7DC6F",
-      "#BB8FCE",
-      "#85C1E2",
-      "#F8B739",
-      "#52B788",
-      "#E76F51",
-      "#2A9D8F",
-      "#E9C46A",
-      "#F4A261",
-      "#264653",
-    ];
-    const charCode =
-      name.charCodeAt(0) + (name.charCodeAt(name.length - 1) || 0);
-    return colors[charCode % colors.length];
-  };
+  useEffect(() => {
+    if (!group?.length) return;
+    
+    (async () => {
+      setLoading(true);
+      const foundUsers: User[] = [];
+      const toFetch: string[] = [];
 
-  const getInitials = (name: string) => {
-    if (!name) return "A";
-    const words = name.trim().split(/\s+/);
-    if (words.length === 1) {
-      return words[0].charAt(0).toUpperCase();
-    }
-    return (
-      words[0].charAt(0) + words[words.length - 1].charAt(0)
-    ).toUpperCase();
-  };
+      for (const id of group) {
+        if (profile?.id === id) {
+          foundUsers.push(profile);
+        } else {
+          const friend = all_friends?.find(f => f.id === id);
+          if (friend) foundUsers.push(friend);
+          else toFetch.push(id);
+        }
+      }
+
+      if (toFetch.length) {
+        try {
+          const responses = await Promise.all(toFetch.map(id => backendActor.get_user(id)));
+          responses.forEach(res => { if ("Ok" in res) foundUsers.push(res.Ok); });
+        } catch (error) {
+          console.error("Failed to fetch group users:", error);
+        }
+      }
+
+      setUsers(foundUsers);
+      setLoading(false);
+    })();
+  }, [group, all_friends, profile]);
+
+  return { users, isLoading };
+};
+
+// Utility functions
+const getAvatarColor = (name: string) => {
+  const colors = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#FFA07A", "#98D8C8", "#F7DC6F", "#BB8FCE", "#85C1E2", "#F8B739", "#52B788", "#E76F51", "#2A9D8F", "#E9C46A", "#F4A261", "#264653"];
+  const charCode = name.charCodeAt(0) + (name.charCodeAt(name.length - 1) || 0);
+  return colors[charCode % colors.length];
+};
+
+const getInitials = (name: string) => {
+  if (!name) return "A";
+  const words = name.trim().split(/\s+/);
+  return words.length === 1 ? words[0].charAt(0).toUpperCase() : (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
+};
+
+// Sub-components
+const UserAvatar: React.FC<{ user: User; size: number; sx?: React.CSSProperties; photo: string | null }> = ({ user, size, sx, photo }) => (
+  <Avatar
+    src={photo || undefined}
+    alt={user.name}
+    sx={{
+      width: size,
+      height: size,
+      ...sx,
+      bgcolor: photo ? undefined : getAvatarColor(user.name || "Anonymous"),
+      fontWeight: 600,
+      fontSize: `${size * 0.4}px`,
+    }}
+  >
+    {getInitials(user.name || "Anonymous")}
+  </Avatar>
+);
+
+
+const UserInfo: React.FC<{ user: User; profile?: User; variant: TypographyVariant; size?: number; subtitle?: string | null; displayId: boolean; forceDisplayName: boolean; copyTooltip: string; onCopyId: () => void }> = ({ user, profile, variant, size, subtitle, displayId, forceDisplayName, copyTooltip, onCopyId }) => {
+  const displayName = forceDisplayName ? user.name || "Anonymous" : profile?.id === user.id ? "You" : user.name || "Anonymous";
+  const truncatedName = displayName.split(/\s+/).length > 3 ? displayName.split(/\s+/).slice(0, 3).join(' ') + '...' : displayName;
+  
+  return (
+    <Box sx={{ flex: 1, minWidth: 0 }}>
+      <Tooltip title={displayName.split(/\s+/).length > 3 ? displayName : ""} arrow>
+        <Typography variant={variant} sx={{ fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1.2, fontSize: size ? `${size * 0.3}px` : undefined }}>
+          {truncatedName}
+        </Typography>
+      </Tooltip>
+      {subtitle && <Typography variant="body2" color="text.secondary" sx={{ overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", fontSize: size ? `${size * 0.25}px` : "0.875rem", mt: 0.25, lineHeight: 1.4 }}>{subtitle}</Typography>}
+      {displayId && <Tooltip title={copyTooltip} arrow><Typography variant="caption" color="text.secondary" sx={{ cursor: "pointer", fontFamily: "monospace", display: "inline-block", "&:hover": { textDecoration: "underline" } }} onClick={onCopyId}>{user.id}</Typography></Tooltip>}
+    </Box>
+  );
+};
+
+
+const UserDescription: React.FC<{ description: string; maxWords: number }> = ({ description, maxWords }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const maxChars = maxWords * 10;
+  const shouldShowMore = description.length > maxChars;
+
+  return (
+    <Box>
+      <Box sx={{ maxHeight: isExpanded ? 300 : 60, overflowY: isExpanded ? "auto" : "hidden", "&::-webkit-scrollbar": { width: "6px" }, "&::-webkit-scrollbar-thumb": { backgroundColor: "rgba(0,0,0,.2)", borderRadius: "3px" } }}>
+        <MarkdownMessage message={isExpanded ? description : description.slice(0, maxChars)} />
+      </Box>
+      {shouldShowMore && <Typography variant="caption" color="primary" sx={{ cursor: "pointer", fontWeight: 500, display: "block", mt: 0.5 }} onClick={() => setIsExpanded(!isExpanded)}>{isExpanded ? "show less" : "read more..."}</Typography>}
+    </Box>
+  );
+};
+
+// Main Component
+interface UserAvatarMenuProps {
+  user?: User;
+  sx?: React.CSSProperties;
+  hide?: string[];
+  user_id?: string;
+  group?: string[];
+  onMessageClick?: (user: User) => void;
+  dispalyName?: boolean;
+  displayDescription?: boolean;
+  displayId?: boolean;
+  maxWords?: number;
+  forceDisplayName?: boolean;
+  variant?: TypographyVariant;
+  disableMenu?: boolean;
+  size?: number;
+  subtitle?: string | null;
+}
+
+const UserAvatarMenuComponent: React.FC<UserAvatarMenuProps> = ({ user: initialUser, sx, hide = [], user_id, group, onMessageClick, dispalyName = false, displayDescription = false, displayId = false, maxWords = 50, forceDisplayName = false, variant = "body2", disableMenu = false, size, subtitle = null }) => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { enqueueSnackbar } = useSnackbar();
+  
+  const chats = useSelector((state: RootState) => state.chatsState.chats);
+  const profile = useSelector((state: RootState) => state.filesState.profile);
+  const currentWorkspace = useSelector((state: RootState) => state.filesState.currentWorkspace);
+  
+  const { user, isLoading, getUserPhoto } = useUserData(initialUser, user_id);
+  const { users: groupUsers, isLoading: groupLoading } = useGroupUsers(group);
+
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [rating, setRating] = useState<number>(0);
+  const [comment, setComment] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [copyTooltip, setCopyTooltip] = useState("Click to copy User ID");
+
+  if (isLoading || groupLoading) return <CircularProgress />;
+
+  // Group Avatar rendering
+  // Group Avatar rendering
+if (group?.length) {
+  const groupSize = size || 32;
+  return (
+    <AvatarGroup 
+      max={4} 
+    >
+      {groupUsers.map((u, idx) => <UserAvatar key={u.id || idx} user={u} size={groupSize} photo={u.photo as string} sx={{}} />)}
+    </AvatarGroup>
+  );
+}
+
+  if (!user) return <Avatar sx={{ width: 28, height: 28, bgcolor: "success.main", ...sx }}><PersonIcon fontSize="small" /></Avatar>;
 
   const handleCopyId = async () => {
     try {
@@ -225,71 +279,27 @@ const UserAvatarMenuComponent: React.FC<UserAvatarMenuProps> = ({
     }
   };
 
-  const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
-    event.stopPropagation();
-    setAnchorEl(event.currentTarget);
-  };
-
+  const handleOpen = (e: React.MouseEvent<HTMLElement>) => { e.stopPropagation(); setAnchorEl(e.currentTarget); };
   const handleClose = () => setAnchorEl(null);
-
-  const handleProfile = () => {
-    navigate(`/user?id=${user.id}`);
-    handleClose();
-  };
+  const handleProfile = () => { navigate(`/user?id=${user.id}`); handleClose(); };
 
   const handleMessage = async () => {
     handleClose();
-
-    if (onMessageClick && user) {
-      onMessageClick(user);
-      return;
-    }
-
-    if (!profile) {
-      enqueueSnackbar("Profile not loaded", { variant: "error" });
-      return;
-    }
+    if (onMessageClick && user) { onMessageClick(user); return; }
+    if (!profile) { enqueueSnackbar("Profile not loaded", { variant: "error" }); return; }
 
     try {
-      const existingChat = chats.find(
-        (chat) =>
-          chat.name === "private_chat" &&
-          chat.members.some((member) => member.toString() === user.id),
-      );
-
+      const existingChat = chats.find(chat => chat.name === "private_chat" && chat.members.some(m => m.toString() === user.id));
       if (existingChat) {
         dispatch({ type: "OPEN_CHAT", chatId: existingChat.id });
       } else {
         const tempChatId = `temp_${randomString()}`;
-        const newChat = {
-          id: tempChatId,
-          name: "private_chat",
-          messages: [],
-          members: [
-            Principal.fromText(profile!.id),
-            Principal.fromText(user.id),
-          ],
-          admins: [
-            Principal.fromText(profile!.id),
-            Principal.fromText(user.id),
-          ],
-          creator: Principal.fromText(profile!.id),
-          workspaces:
-            currentWorkspace?.name !== "default" && currentWorkspace?.id
-              ? [currentWorkspace.id]
-              : [],
-        };
-
+        const newChat = { id: tempChatId, name: "private_chat", messages: [], members: [Principal.fromText(profile.id), Principal.fromText(user.id)], admins: [Principal.fromText(profile.id), Principal.fromText(user.id)], creator: Principal.fromText(profile.id), workspaces: currentWorkspace?.name !== "default" && currentWorkspace?.id ? [currentWorkspace.id] : [] };
         dispatch({ type: "ADD_CHAT", chat: newChat });
         dispatch({ type: "OPEN_CHAT", chatId: tempChatId });
-
         const result = await backendActor.make_new_chat_room(newChat);
         if ("Ok" in result) {
-          const realChatId = result.Ok || tempChatId;
-          dispatch({
-            type: "UPDATE_CHAT",
-            chat: { ...newChat, id: realChatId },
-          });
+          dispatch({ type: "UPDATE_CHAT", chat: { ...newChat, id: result.Ok || tempChatId } });
           enqueueSnackbar("Chat created successfully", { variant: "success" });
         } else {
           dispatch({ type: "DELETE_CHAT", chat_id: tempChatId });
@@ -301,36 +311,17 @@ const UserAvatarMenuComponent: React.FC<UserAvatarMenuProps> = ({
     }
   };
 
-  const handleReviewClick = () => {
-    setReviewOpen(true);
-    handleClose();
-  };
+  const handleReviewClick = () => { setReviewOpen(true); handleClose(); };
 
   const handleReviewSubmit = async () => {
     setIsSubmitting(true);
     try {
-      const userPrincipal = Principal.fromText(user.id);
-      const ratingData: Rating = {
-        id: randomString(),
-        rating,
-        comment,
-        date: Date.now() * 1e6,
-        user_id: Principal.fromText(user.id),
-      };
-
-      const result = await backendActor?.rate_user(userPrincipal, ratingData);
-
-      if (result && "Ok" in result) {
-        enqueueSnackbar("Review submitted successfully", {
-          variant: "success",
-        });
-      } else if (result && "Err" in result) {
-        enqueueSnackbar(result.Err, { variant: "error" });
-      }
+      const ratingData: Rating = { id: randomString(), rating, comment, date: Date.now() * 1e6, user_id: Principal.fromText(user.id) };
+      const result = await backendActor?.rate_user(Principal.fromText(user.id), ratingData);
+      if (result && "Ok" in result) enqueueSnackbar("Review submitted successfully", { variant: "success" });
+      else if (result && "Err" in result) enqueueSnackbar(result.Err, { variant: "error" });
     } catch (error) {
-      enqueueSnackbar("Failed to submit review " + (error as Error).message, {
-        variant: "error",
-      });
+      enqueueSnackbar("Failed to submit review " + (error as Error).message, { variant: "error" });
     } finally {
       setIsSubmitting(false);
       setReviewOpen(false);
@@ -341,351 +332,62 @@ const UserAvatarMenuComponent: React.FC<UserAvatarMenuProps> = ({
 
   const currentPath = window.location.pathname;
   const urlParams = new URLSearchParams(window.location.search);
-  const pageUserId = urlParams.get("id");
   const isProfilePage = currentPath === "/profile" && user.id === profile?.id;
-  const isUserPageSameUser = currentPath === "/user" && pageUserId === user.id;
-
+  const isUserPageSameUser = currentPath === "/user" && urlParams.get("id") === user.id;
   const avatarSize = size || (sx?.width as number) || 40;
-  const fontSize = avatarSize * 0.4;
+  const photo = getUserPhoto();
 
   return (
     <>
-      <Box
-        sx={{
-          display: "flex",
-          gap: dispalyName && !displayDescription && !displayId ? 1 : 2,
-          alignItems: "center",
-          position: "relative",
-        }}
-      >
-        <IconButton
-          disabled={user.id === profile?.id || isProfilePage || disableMenu}
-          onMouseEnter={isProfilePage || disableMenu ? undefined : handleOpen}
-          onClick={isProfilePage || disableMenu ? undefined : handleOpen}
-          sx={{ p: 0 }}
-        >
-          <Avatar
-            src={getUserPhoto() || undefined}
-            alt={user.name}
-            sx={{
-              width: avatarSize,
-              height: avatarSize,
-              ...sx,
-              bgcolor: getUserPhoto()
-                ? undefined
-                : getAvatarColor(user.name || "Anonymous"),
-              fontWeight: 600,
-              fontSize: `${fontSize}px`,
-            }}
-          >
-            {getInitials(user.name || "Anonymous")}
-          </Avatar>
+      <Box sx={{ display: "flex", gap: dispalyName && !displayDescription && !displayId ? 1 : 2, alignItems: "center", position: "relative" }}>
+        <IconButton disabled={user.id === profile?.id || isProfilePage || disableMenu} onMouseEnter={isProfilePage || disableMenu ? undefined : handleOpen} onClick={isProfilePage || disableMenu ? undefined : handleOpen} sx={{ p: 0 }}>
+          <UserAvatar user={user} size={avatarSize} sx={sx} photo={photo} />
         </IconButton>
-        {(dispalyName ||
-          forceDisplayName ||
-          displayDescription ||
-          displayId ||
-          subtitle) && (
+        {(dispalyName || forceDisplayName || displayDescription || displayId || subtitle) && (
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            {(dispalyName || forceDisplayName || subtitle) && (
-              <Typography
-                variant={variant}
-                sx={{
-                  fontWeight: 500,
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                  lineHeight: 1.2,
-                  fontSize: size ? `${size * 0.3}px` : undefined,
-                }}
-              >
-                {forceDisplayName
-                  ? user.name || "Anonymous"
-                  : profile?.id === user.id
-                    ? "You"
-                    : user.name || "Anonymous"}
-              </Typography>
-            )}
-            {subtitle && (
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  display: "-webkit-box",
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: "vertical",
-                  fontSize: size ? `${size * 0.25}px` : "0.875rem",
-                  mt: 0.25,
-                  lineHeight: 1.4,
-                }}
-              >
-                {subtitle}
-              </Typography>
-            )}
-            {displayId && (
-              <Tooltip title={copyTooltip} arrow>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{
-                    cursor: "pointer",
-                    fontFamily: "monospace",
-                    display: "inline-block",
-                    "&:hover": { textDecoration: "underline" },
-                  }}
-                  onClick={handleCopyId}
-                >
-                  {user.id}
-                </Typography>
-              </Tooltip>
-            )}
-            {displayDescription && user.description && (
-              <Box>
-                <Box
-                  sx={{
-                    maxHeight: isExpanded ? 300 : 60,
-                    overflowY: isExpanded ? "auto" : "hidden",
-                    "&::-webkit-scrollbar": { width: "6px" },
-                    "&::-webkit-scrollbar-thumb": {
-                      backgroundColor: "rgba(0,0,0,.2)",
-                      borderRadius: "3px",
-                    },
-                  }}
-                >
-                  <MarkdownMessage
-                    message={
-                      isExpanded
-                        ? user.description
-                        : truncateDescription(user.description)
-                    }
-                  />
-                </Box>
-                {shouldShowReadMore(user.description) && (
-                  <Typography
-                    variant="caption"
-                    color="primary"
-                    sx={{
-                      cursor: "pointer",
-                      fontWeight: 500,
-                      display: "block",
-                      mt: 0.5,
-                    }}
-                    onClick={() => setIsExpanded(!isExpanded)}
-                  >
-                    {isExpanded ? "show less" : "read more..."}
-                  </Typography>
-                )}
-              </Box>
-            )}
+            {(dispalyName || forceDisplayName || subtitle) && <UserInfo user={user} profile={profile} variant={variant} size={size} subtitle={subtitle} displayId={displayId} forceDisplayName={forceDisplayName} copyTooltip={copyTooltip} onCopyId={handleCopyId} />}
+            {displayDescription && user.description && <UserDescription description={user.description} maxWords={maxWords} />}
           </Box>
         )}
       </Box>
 
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-        PaperProps={{
-          elevation: 3,
-          sx: {
-            minWidth: 280,
-            maxWidth: 320,
-            mt: 1,
-            borderRadius: 2,
-            overflow: "visible",
-            "&:before": {
-              content: '""',
-              display: "block",
-              position: "absolute",
-              top: 0,
-              right: 14,
-              width: 10,
-              height: 10,
-              bgcolor: "background.paper",
-              transform: "translateY(-50%) rotate(45deg)",
-              zIndex: 0,
-            },
-          },
-        }}
-        transformOrigin={{ horizontal: "right", vertical: "top" }}
-        anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-      >
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose} PaperProps={{ elevation: 3, sx: { minWidth: 280, maxWidth: 320, mt: 1, borderRadius: 2, overflow: "visible", "&:before": { content: '""', display: "block", position: "absolute", top: 0, right: 14, width: 10, height: 10, bgcolor: "background.paper", transform: "translateY(-50%) rotate(45deg)", zIndex: 0 } } }} transformOrigin={{ horizontal: "right", vertical: "top" }} anchorOrigin={{ horizontal: "right", vertical: "bottom" }}>
         {!isUserPageSameUser && (
           <Box sx={{ p: 2.5 }}>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "flex-start",
-                gap: 2,
-                mb: 1.5,
-              }}
-            >
-              <Avatar
-                src={getUserPhoto() || undefined}
-                alt={user.name}
-                sx={{
-                  width: 56,
-                  height: 56,
-                  border: "3px solid",
-                  borderColor: "divider",
-                  bgcolor: getUserPhoto()
-                    ? undefined
-                    : getAvatarColor(user.name || "Anonymous"),
-                  fontWeight: 600,
-                  fontSize: "1.5rem",
-                }}
-              >
-                {getInitials(user.name || "Anonymous")}
-              </Avatar>
+            <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2, mb: 1.5 }}>
+              <UserAvatar user={user} size={56} photo={photo} sx={{ border: "3px solid", borderColor: "divider" }} />
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Typography
-                  variant="h6"
-                  sx={{ fontWeight: 600, mb: 0.5, fontSize: "1.1rem" }}
-                >
-                  {user.name || "Anonymous"}
-                </Typography>
-                {user.description && (
-                  <Box
-                    sx={{
-                      maxHeight: 60,
-                      overflowY: "auto",
-                      fontSize: "0.875rem",
-                      lineHeight: 1.5,
-                      "&::-webkit-scrollbar": {
-                        width: "4px",
-                      },
-                      "&::-webkit-scrollbar-thumb": {
-                        backgroundColor: "rgba(0,0,0,.2)",
-                        borderRadius: "2px",
-                      },
-                    }}
-                  >
-                    <MarkdownMessage message={user.description} />
-                  </Box>
-                )}
+                <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5, fontSize: "1.1rem" }}>{user.name || "Anonymous"}</Typography>
+                {user.description && <Box sx={{ maxHeight: 60, overflowY: "auto", fontSize: "0.875rem", lineHeight: 1.5, "&::-webkit-scrollbar": { width: "4px" }, "&::-webkit-scrollbar-thumb": { backgroundColor: "rgba(0,0,0,.2)", borderRadius: "2px" } }}><MarkdownMessage message={user.description} /></Box>}
               </Box>
             </Box>
-
-            {user && profile && user.id !== profile.id && (
-              <Box sx={{ mt: 2 }}>
-                <FriendshipButton user={user} />
-              </Box>
-            )}
+            {user && profile && user.id !== profile.id && <Box sx={{ mt: 2 }}><FriendshipButton user={user} /></Box>}
           </Box>
         )}
-
-        <Box
-          sx={{
-            borderTop: isUserPageSameUser ? 0 : 1,
-            borderColor: "divider",
-            py: 1,
-          }}
-        >
-          {!hide.includes("Profile") && (
-            <MenuItem
-              onClick={handleProfile}
-              sx={{ px: 2.5, py: 1.25, "&:hover": { bgcolor: "action.hover" } }}
-            >
-              <Person sx={{ mr: 2, fontSize: 22, color: "text.secondary" }} />
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                View Profile
-              </Typography>
-            </MenuItem>
-          )}
-          {!hide.includes("Message") && (
-            <MenuItem
-              onClick={handleMessage}
-              sx={{ px: 2.5, py: 1.25, "&:hover": { bgcolor: "action.hover" } }}
-            >
-              <MessageIcon
-                sx={{ mr: 2, fontSize: 22, color: "text.secondary" }}
-              />
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                Send Message
-              </Typography>
-            </MenuItem>
-          )}
-          {!hide.includes("Review") && (
-            <MenuItem
-              onClick={handleReviewClick}
-              sx={{ px: 2.5, py: 1.25, "&:hover": { bgcolor: "action.hover" } }}
-            >
-              <Star sx={{ mr: 2, fontSize: 22, color: "text.secondary" }} />
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                Write Review
-              </Typography>
-            </MenuItem>
-          )}
+        <Box sx={{ borderTop: isUserPageSameUser ? 0 : 1, borderColor: "divider", py: 1 }}>
+          {!hide.includes("Profile") && <MenuItem onClick={handleProfile} sx={{ px: 2.5, py: 1.25 }}><Person sx={{ mr: 2, fontSize: 22, color: "text.secondary" }} /><Typography variant="body2" sx={{ fontWeight: 500 }}>View Profile</Typography></MenuItem>}
+          {!hide.includes("Message") && <MenuItem onClick={handleMessage} sx={{ px: 2.5, py: 1.25 }}><MessageIcon sx={{ mr: 2, fontSize: 22, color: "text.secondary" }} /><Typography variant="body2" sx={{ fontWeight: 500 }}>Send Message</Typography></MenuItem>}
+          {!hide.includes("Review") && <MenuItem onClick={handleReviewClick} sx={{ px: 2.5, py: 1.25 }}><Star sx={{ mr: 2, fontSize: 22, color: "text.secondary" }} /><Typography variant="body2" sx={{ fontWeight: 500 }}>Write Review</Typography></MenuItem>}
         </Box>
       </Menu>
 
-      <Dialog
-        open={reviewOpen}
-        onClose={() => setReviewOpen(false)}
-        PaperProps={{ sx: { borderRadius: 2, minWidth: 400 } }}
-      >
+      <Dialog open={reviewOpen} onClose={() => setReviewOpen(false)} PaperProps={{ sx: { borderRadius: 2, minWidth: 400 } }}>
         <DialogTitle sx={{ pb: 1 }}>Review {user.name}</DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
-          <Typography component="legend" sx={{ mb: 1, fontWeight: 500 }}>
-            Rating
-          </Typography>
-          <UiRating
-            value={rating}
-            onChange={(_, newValue) => setRating(newValue || 0)}
-            size="large"
-            sx={{ mb: 2 }}
-          />
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Comment"
-            fullWidth
-            multiline
-            rows={4}
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            sx={{ mt: 1 }}
-          />
+          <Typography component="legend" sx={{ mb: 1, fontWeight: 500 }}>Rating</Typography>
+          <UiRating value={rating} onChange={(_, newValue) => setRating(newValue || 0)} size="large" sx={{ mb: 2 }} />
+          <TextField autoFocus margin="dense" label="Comment" fullWidth multiline rows={4} value={comment} onChange={(e) => setComment(e.target.value)} sx={{ mt: 1 }} />
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2.5 }}>
-          <Button onClick={() => setReviewOpen(false)} disabled={isSubmitting}>
-            Cancel
-          </Button>
-          <Button
-            onClick={handleReviewSubmit}
-            disabled={isSubmitting}
-            variant="contained"
-            startIcon={isSubmitting ? <CircularProgress size={20} /> : null}
-          >
-            {isSubmitting ? "Submitting..." : "Submit Review"}
-          </Button>
+          <Button onClick={() => setReviewOpen(false)} disabled={isSubmitting}>Cancel</Button>
+          <Button onClick={handleReviewSubmit} disabled={isSubmitting} variant="contained" startIcon={isSubmitting ? <CircularProgress size={20} /> : null}>{isSubmitting ? "Submitting..." : "Submit Review"}</Button>
         </DialogActions>
       </Dialog>
     </>
   );
 };
 
-// Memoize component to prevent unnecessary re-renders when props haven't changed
-const UserAvatarMenu = React.memo(UserAvatarMenuComponent, (prevProps, nextProps) => {
-  // Custom comparison function - return true if props are equal (skip re-render)
-  return (
-    prevProps.user?.id === nextProps.user?.id &&
-    prevProps.user_id === nextProps.user_id &&
-    prevProps.dispalyName === nextProps.dispalyName &&
-    prevProps.displayDescription === nextProps.displayDescription &&
-    prevProps.displayId === nextProps.displayId &&
-    prevProps.maxWords === nextProps.maxWords &&
-    prevProps.forceDisplayName === nextProps.forceDisplayName &&
-    prevProps.variant === nextProps.variant &&
-    prevProps.disableMenu === nextProps.disableMenu &&
-    prevProps.size === nextProps.size &&
-    prevProps.subtitle === nextProps.subtitle &&
-    (prevProps.hide?.length || 0) === (nextProps.hide?.length || 0) &&
-    prevProps.onMessageClick === nextProps.onMessageClick
-  );
-});
+const UserAvatarMenu = React.memo(UserAvatarMenuComponent, (prev, next) => prev.user?.id === next.user?.id && prev.user_id === next.user_id && prev.dispalyName === next.dispalyName && prev.displayDescription === next.displayDescription && prev.displayId === next.displayId && prev.maxWords === next.maxWords && prev.forceDisplayName === next.forceDisplayName && prev.variant === next.variant && prev.disableMenu === next.disableMenu && prev.size === next.size && prev.subtitle === next.subtitle && (prev.hide?.length || 0) === (next.hide?.length || 0) && prev.onMessageClick === next.onMessageClick && JSON.stringify(prev.group) === JSON.stringify(next.group));
 
 UserAvatarMenu.displayName = 'UserAvatarMenu';
 

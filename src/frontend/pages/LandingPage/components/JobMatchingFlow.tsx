@@ -78,18 +78,27 @@ export function JobMatchingFlow() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { backendActor, getCkUSDCActor } = await import(
+        const { backendActor, getCkUSDCActor, getCkUSDTActor } = await import(
           "@/utils/backendUtils"
         );
         const getckUsdcBalance = (await import("@/utils/getBalance")).default;
+        const getckUsdtBalance = (await import("@/utils/getckUsdtBalance"))
+          .default;
         const { canisterId } = await import("$/declarations/backend");
 
-        const actor = await getCkUSDCActor();
+        const [ckUSDCActor, ckUSDTActor] = await Promise.all([
+          getCkUSDCActor(),
+          getCkUSDTActor(),
+        ]);
         const response = await backendActor.get_sns_status();
 
         if ("Ok" in response) {
           const data = response.Ok;
-          const balance = await getckUsdcBalance(actor, canisterId);
+          const [ckusdcBalance, ckusdtBalance] = await Promise.all([
+            getckUsdcBalance(ckUSDCActor, canisterId),
+            getckUsdtBalance(ckUSDTActor, canisterId),
+          ]);
+          const totalBalance = ckusdcBalance + ckusdtBalance;
 
           setStats([
             {
@@ -105,7 +114,7 @@ export function JobMatchingFlow() {
             {
               icon: <DollarSign size={14} />,
               label: "Value",
-              value: `${Math.floor(Number(balance) / 1000000).toLocaleString()}`,
+              value: `${Math.floor(Number(totalBalance) / 1000000).toLocaleString()}`,
             },
             {
               icon: <Briefcase size={14} />,

@@ -29,7 +29,7 @@ export function AgreementView({
   currentUserName,
   currentBalance,
   notifications,
-  isContractPage = true,
+  isContractPage: _isContractPage = true,
   onAddPromise = () => {},
   onDeletePromise = () => {},
   onUpdatePromise = () => {},
@@ -45,10 +45,14 @@ export function AgreementView({
   const filteredPromises =
     viewMode === "payments"
       ? contract.promises.filter((p) => Object.keys(p.status)[0] === "Released")
-      : contract.promises;
+      : contract.promises.filter((p) => Object.keys(p.status)[0] !== "Released");
 
   const paymentsCount = contract.promises.filter(
     (p) => Object.keys(p.status)[0] === "Released",
+  ).length;
+  
+  const promisesCount = contract.promises.filter(
+    (p) => Object.keys(p.status)[0] !== "Released",
   ).length;
 
   const handleToggleCard = (id: string) => {
@@ -148,7 +152,7 @@ export function AgreementView({
         onViewModeChange={setViewMode}
         onNewPromise={onAddPromise}
         onDeleteContract={onDeleteContract}
-        promisesCount={contract.promises.length}
+        promisesCount={promisesCount}
         paymentsCount={paymentsCount}
         currentBalance={currentBalance}
       />
@@ -254,10 +258,13 @@ const getStyles = (
     padding: "20px",
   },
   cardList: {
-    display: "flex",
-    flexDirection: "column" as const,
-    gap: "16px",
-  },
+  display: "flex",
+  flexDirection: "column" as const,
+  gap: "16px",
+  maxHeight: "calc(100vh - 250px)", // Adjust based on your header height
+  overflowY: "auto" as const,
+  paddingRight: "4px", // Prevent content jump when scrollbar appears
+},
   emptyState: {
     display: "flex",
     flexDirection: "column" as const,

@@ -85,7 +85,7 @@ const PrivacyPage = () => {
   return (
     <>
       <Helmet>
-        <title>Privacy Policy - {window.location.hostname}</title>
+        <title>Privacy Policy - {window.location.origin}</title>
         <meta
           name="description"
           content="Privacy policy for oDoc.app - Learn how we handle your Google Calendar data and protect your privacy."

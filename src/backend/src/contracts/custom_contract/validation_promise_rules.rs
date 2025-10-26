@@ -3,6 +3,7 @@ use crate::{
     Wallet,
 };
 use ic_cdk::caller;
+use candid::Principal;
 
 pub struct ValidationRule {
     pub name: &'static str,
@@ -25,6 +26,17 @@ impl ValidationRule {
 }
 
 pub const VALIDATION_RULES: &[ValidationRule] = &[
+    ValidationRule {
+    name: "no_anonymous_receiver_for_payment",
+    validator: |payment, _| {
+        if payment.amount > 0.0 && payment.receiver ==  Principal::anonymous() {
+            Err("Anonymous users cannot receive payments with amount > 0".to_string())
+        } else {
+            Ok(())
+        }
+    },
+    actions: &["create", "update"],
+},
     ValidationRule {
         name: "sender_receiver_not_same",
         validator: |payment, _| {

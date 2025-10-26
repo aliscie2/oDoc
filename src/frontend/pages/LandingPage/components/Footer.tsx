@@ -12,10 +12,10 @@ export function Footer() {
             <div className={styles.footerBrand}>
               <ImageWithFallback 
                 src="/logo.png"
-                alt="oDoc Logo"
+                alt={window.location.hostname.split('.')[0]}
                 className={styles.footerLogo}
               />
-              <span style={{ fontSize: '1.125rem' }}>oDoc</span>
+              <span style={{ fontSize: '1.125rem' }}>{window.location.hostname.split('.')[0]}</span>
             </div>
             <p style={{ fontSize: '0.875rem', color: '#a3a3a3' }}>
               AI-powered job matching • Smart contracts • Team management
@@ -54,7 +54,7 @@ export function Footer() {
                 }
               }}
             >
-              Try it now
+              Become A Partner Now
             </LoginButton>
           </div>
         </div>
@@ -62,7 +62,7 @@ export function Footer() {
         {/* Bottom */}
         <div className={styles.footerBottom}>
           <p className={styles.footerCopyright}>
-            © {new Date().getFullYear()} oDoc.app. All rights reserved.
+            © {new Date().getFullYear()} {window.location.hostname.split('.')[0]}. All rights reserved.
           </p>
           <a href="/privacy" className={styles.footerLink}>
             Privacy Policy

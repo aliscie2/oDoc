@@ -87,6 +87,7 @@ export function ContractComponent({
   contractId,
   owner,
 }: ContractComponentProps) {
+  
   const location = useLocation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -131,20 +132,38 @@ export function ContractComponent({
   }, [fetchedContract, contractId]);
 
   const filteredContract = useMemo(() => {
-    if (
-      !profile ||
-      !currentContract.creator ||
-      profile.id === currentContract.creator
-    )
-      return currentContract;
+    // Merge payments into promises for UI display
+    // Backend stores released promises in contract.payments
+    // UI expects all promises (including released) in contract.promises
+    const allPromises = [
+      ...(currentContract.promises || []),
+      ...(currentContract.payments || []),
+    ];
+    
+    // Deduplicate by ID - keep first occurrence
+    const seenIds = new Set<string>();
+    const mergedPromises = allPromises.filter((p) => {
+      if (seenIds.has(p.id)) return false;
+      seenIds.add(p.id);
+      return true;
+    });
+
+    // For contract creator - show all
+    if (!profile || !currentContract.creator || profile.id === currentContract.creator) {
+      return {
+        ...currentContract,
+        promises: mergedPromises,
+        payments: [], // Clear to avoid confusion
+      };
+    }
+
+    // For non-creator - filter by receiver
     return {
       ...currentContract,
-      promises: currentContract.promises.filter(
+      promises: mergedPromises.filter(
         (p: CPayment) => p.receiver.toString() === profile.id,
       ),
-      payments: currentContract.payments.filter(
-        (p: CPayment) => p.receiver.toString() === profile.id,
-      ),
+      payments: [], // Clear to avoid confusion
     };
   }, [currentContract, profile]);
 
@@ -225,8 +244,7 @@ export function ContractComponent({
 
       if ("Ok" in response) {
         // Dispatch Redux action to remove contract from store
-      } else if (response?.Err.includes("Not found")) {
-      } else {
+      } else if (response?.Err.includes("Not found")) { /* empty */ } else {
         // snack bar
         alert(response.Err);
         return;

@@ -4,5 +4,11 @@
   },
   "backend": {
     "ic": "lrcwp-yiaaa-aaaal-acwdq-cai"
+  },
+  "ckusdc_ledger": {
+    "ic": "xevnm-gaaaa-aaaar-qafnq-cai"
+  },
+  "ckusdt_ledger": {
+    "ic": "cngnf-vqaaa-aaaar-qag4q-cai"
   }
 }
