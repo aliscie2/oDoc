@@ -94,7 +94,8 @@ impl Friend {
         });
     }
 
-    pub fn get_list(user: Principal) -> Vec<Friend> {
+    /// Get friends with pagination to avoid instruction limit
+    pub fn get_list_paginated(user: Principal, skip: usize, limit: usize) -> Vec<Friend> {
         FRIENDS_STORE.with(|friends_store| {
             let store = friends_store.borrow();
             store
@@ -110,7 +111,20 @@ impl Friend {
                         None
                     }
                 })
+                .skip(skip)
+                .take(limit)
                 .collect()
+        })
+    }
+
+    /// Get total count of friends for pagination
+    pub fn get_count(user: Principal) -> usize {
+        FRIENDS_STORE.with(|friends_store| {
+            let store = friends_store.borrow();
+            store
+                .iter()
+                .filter(|(key, _)| key.contains(&user.to_text()))
+                .count()
         })
     }
 

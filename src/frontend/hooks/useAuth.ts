@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   login as loginUtil,
@@ -139,7 +139,8 @@ export const useAuth = () => {
     }
   }, [logout]);
 
-  return {
+  // Memoize the return object to prevent unnecessary re-renders
+  return useMemo(() => ({
     isLoggedIn: authStatus === "registered",
     authStatus,
     login,
@@ -148,5 +149,5 @@ export const useAuth = () => {
     checkAuthStatus,
     setAuthStatus,
     cleanUp,
-  };
+  }), [authStatus, login, logout, register, checkAuthStatus, setAuthStatus, cleanUp]);
 };

@@ -68,6 +68,39 @@ impl Contract {
         Some(contract_map)
     }
 
+    /// Get contracts with pagination to avoid instruction limit
+    /// Also limits data within each contract (promises, payments, tables)
+    pub fn get_contracts_paginated(skip: usize, limit: usize) -> HashMap<ContractId, StoredContract> {
+        let mut contract_map = HashMap::new();
+
+        CONTRACTS_STORE.with(|contracts_store| {
+            let caller_contracts = contracts_store.borrow();
+            if let Some(contracts) = caller_contracts.get(&caller().to_string()) {
+                for contract in contracts.stored_contracts.iter().skip(skip).take(limit) {
+                    let StoredContract::CustomContract(custom_contract) = contract.clone();
+                    
+                    contract_map.insert(
+                        custom_contract.id.clone(),
+                        StoredContract::CustomContract(custom_contract.check_view_permission()),
+                    );
+                }
+            }
+        });
+        contract_map
+    }
+
+    /// Get total count of contracts for pagination
+    pub fn get_contracts_count() -> usize {
+        CONTRACTS_STORE.with(|contracts_store| {
+            let caller_contracts = contracts_store.borrow();
+            if let Some(contracts) = caller_contracts.get(&caller().to_string()) {
+                contracts.stored_contracts.len()
+            } else {
+                0
+            }
+        })
+    }
+
     pub fn get_contract(author: String, contract_id: String) -> Option<StoredContract> {
         CONTRACTS_STORE.with(|contracts_store| {
             let caller_contracts = contracts_store.borrow();

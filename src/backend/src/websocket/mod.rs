@@ -75,19 +75,36 @@ fn get_user_notifications(notifications_length: usize) -> Vec<Notification> {
         return vec![];
     }
 
-    let notifications: Vec<Notification> = Notification::get_list(&caller());
+    // Use paginated method to avoid loading all notifications
+    let total_count = Notification::get_count(&caller());
 
     // If client already has all available notifications, return empty
-    if notifications_length >= notifications.len() {
+    if notifications_length >= total_count {
         return Vec::new();
     }
 
-    // Calculate how many notifications to return
-    let start_index = notifications_length;
-    let end_index = std::cmp::min(start_index + PAGE_SIZE, notifications.len());
+    // Get only the next page of notifications
+    Notification::get_list_paginated(&caller(), notifications_length, PAGE_SIZE)
+}
 
-    // Get the slice starting from current length
-    notifications[start_index..end_index].to_vec()
+#[query]
+fn get_notifications_count() -> usize {
+    // If user is anonymous return 0
+    if caller() == Principal::anonymous() {
+        return 0;
+    }
+
+    Notification::get_count(&caller())
+}
+
+#[query]
+fn get_unread_notifications_count() -> usize {
+    // If user is anonymous return 0
+    if caller() == Principal::anonymous() {
+        return 0;
+    }
+
+    Notification::get_unread_count(&caller())
 }
 
 #[update]

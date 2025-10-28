@@ -1,6 +1,7 @@
 // types.ts
 import {
   ContractUpdates,
+  CustomContract,
   FileIndexing,
   FileNode,
   Friend,
@@ -32,7 +33,7 @@ export interface InitialState {
   top_dialog: { open: boolean; content: any; title: string | null };
   workspaces: WorkSpace[];
   currentWorkspace: WorkSpace | null;
-  contracts: Record<string, StoredContract>;
+  contracts: Record<string, CustomContract>;
   all_friends: User[];
   all_users: any[];
 
@@ -53,9 +54,9 @@ export type FilesActions =
   | { type: "ADD_CONTENT"; id: string; content: any }
   | { type: "UPDATE_FILE_TITLE"; id: string; title: string }
   | { type: "UPDATE_FILE_WORKSPACES"; id: string; workspaces: string[] }
-  | { type: "ADD_CONTRACT"; contract: StoredContract }
-  | { type: "SET_CONTRACT"; contract: StoredContract }
-  | { type: "UPDATE_CONTRACT"; contract: StoredContract }
+  | { type: "ADD_CONTRACT"; contract: CustomContract }
+  | { type: "SET_CONTRACT"; contract: CustomContract | StoredContract }
+  | { type: "UPDATE_CONTRACT"; contract: CustomContract }
   | { type: "CONTENT_CHANGES"; id: string; changes: any }
   | { type: "CONTRACT_CHANGES"; changes: StoredContract }
   | { type: "RESOLVE_CHANGES" }

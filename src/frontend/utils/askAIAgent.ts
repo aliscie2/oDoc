@@ -65,6 +65,10 @@ async function ask_ai(
           body: JSON.stringify(requestBody),
         },
       );
+      console.log("askAiAgent.ts - Request successful", {
+        status: response.status,
+        ok: response.ok
+      });
 
       break;
     } catch (error) {
@@ -83,6 +87,14 @@ async function ask_ai(
   const responseJson = await response.json();
   const responseText =
     responseJson?.choices?.[0]?.message?.content || "No response from AI";
+
+  // Log response size for debugging
+  console.log(`AI response length: ${responseText.length} characters`);
+  
+  // Warn if response is very large
+  if (responseText.length > 10000) {
+    console.warn(`Large AI response detected: ${responseText.length} characters`);
+  }
 
   // After long model responds, add both messages to history
   if (!quick && pendingUserMessage) {

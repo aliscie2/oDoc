@@ -748,6 +748,12 @@ export const idlFactory = ({ IDL }) => {
       ),
     'get_calendar_public_urls' : IDL.Func([IDL.Text], [Result_10], ['query']),
     'get_contract' : IDL.Func([IDL.Text, IDL.Text], [Result_11], ['query']),
+    'get_contracts_count' : IDL.Func([], [IDL.Nat64], ['query']),
+    'get_contracts_paginated' : IDL.Func(
+        [IDL.Nat64, IDL.Nat64],
+        [IDL.Vec(IDL.Tuple(IDL.Text, StoredContract))],
+        ['query'],
+      ),
     'get_emails' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
     'get_file' : IDL.Func([IDL.Text], [IDL.Opt(FileNode)], ['query']),
     'get_file_content' : IDL.Func(
@@ -758,6 +764,12 @@ export const idlFactory = ({ IDL }) => {
     'get_filtered_posts' : IDL.Func(
         [IDL.Opt(IDL.Vec(IDL.Text)), IDL.Opt(IDL.Text)],
         [IDL.Vec(PostUser)],
+        ['query'],
+      ),
+    'get_friends_count' : IDL.Func([], [IDL.Nat64], ['query']),
+    'get_friends_paginated' : IDL.Func(
+        [IDL.Nat64, IDL.Nat64],
+        [IDL.Vec(FEFriend)],
         ['query'],
       ),
     'get_initial_data' : IDL.Func([], [Result_12], ['query']),
@@ -776,6 +788,7 @@ export const idlFactory = ({ IDL }) => {
     'get_my_calendar' : IDL.Func([], [Calendar], ['query']),
     'get_my_chats' : IDL.Func([IDL.Nat64], [IDL.Vec(Chat)], ['query']),
     'get_my_jobs' : IDL.Func([], [GetJobs], ['query']),
+    'get_notifications_count' : IDL.Func([], [IDL.Nat64], ['query']),
     'get_owners' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
     'get_post' : IDL.Func([IDL.Text], [Result_13], ['query']),
     'get_posts' : IDL.Func(
@@ -791,6 +804,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Principal))],
         ['query'],
       ),
+    'get_unread_notifications_count' : IDL.Func([], [IDL.Nat64], ['query']),
     'get_user' : IDL.Func([IDL.Text], [Result], ['query']),
     'get_user_notifications' : IDL.Func(
         [IDL.Nat64],
@@ -799,6 +813,18 @@ export const idlFactory = ({ IDL }) => {
       ),
     'get_user_profile' : IDL.Func([IDL.Principal], [Result_17], ['query']),
     'get_users' : IDL.Func([], [IDL.Float64], ['query']),
+    'get_wallet_debts' : IDL.Func(
+        [IDL.Nat64, IDL.Nat64],
+        [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Float64))],
+        ['query'],
+      ),
+    'get_wallet_debts_count' : IDL.Func([], [IDL.Nat64], ['query']),
+    'get_wallet_exchanges' : IDL.Func(
+        [IDL.Nat64, IDL.Nat64],
+        [IDL.Vec(Exchange)],
+        ['query'],
+      ),
+    'get_wallet_exchanges_count' : IDL.Func([], [IDL.Nat64], ['query']),
     'get_work_spaces' : IDL.Func([], [IDL.Vec(WorkSpace)], ['query']),
     'internal_transaction' : IDL.Func(
         [IDL.Float64, IDL.Text, ExchangeType],

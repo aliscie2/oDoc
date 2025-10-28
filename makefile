@@ -105,6 +105,26 @@ deploy-all:
 
 	yarn start
 
+redpley:
+	dfx killall 2>/dev/null || true
+	dfx stop 2>/dev/null || true
+	rm -rf .dfx/state 2>/dev/null || true
+	dfx start  --background  --host 127.0.0.1:4943 
+	sleep 3
+	dfx deploy internet_identity
+
+	sh scripts/first_time_run.sh
+	bash scripts/did.sh backend
+	dfx generate backend
+	dfx generate ckusdc_ledger
+	dfx generate ckusdt_ledger
+	sh scripts/set_env.sh
+	
+	gzip -fk target/wasm32-unknown-unknown/release/backend.wasm
+	mv target/wasm32-unknown-unknown/release/backend.wasm.gz ./tests/backend/
+	wget -nc -P ./tests/backend/ https://github.com/dfinity/ic/releases/download/ledger-suite-icrc-2025-06-10/ic-icrc1-ledger.wasm.gz
+
+	yarn start
 	
 	
 upgrade-backend:

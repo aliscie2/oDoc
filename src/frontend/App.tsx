@@ -72,6 +72,8 @@ const useAppInitialization = () => {
 
   const { processDeposit } = useDepositProcessor(profile?.id);
   const depositProcessedRef = useRef(false);
+  const userDataFetchedRef = useRef(false);
+  const lastProfileIdRef = useRef<string | undefined>(undefined);
 
   // Authentication check on app start
   useEffect(() => {
@@ -79,8 +81,10 @@ const useAppInitialization = () => {
   }, [checkAuthStatus]);
 
   // Reset initialization when user logs in to trigger data refetch
+  const initedRef = useRef(false);
   useEffect(() => {
-    if (inited) {
+    if (inited && !initedRef.current) {
+      initedRef.current = true;
       setInitState((prev) => ({
         ...prev,
         initialDataFetched: false,
@@ -154,25 +158,60 @@ const useAppInitialization = () => {
     const fetchUserData = async () => {
       if (!profile?.id || initState.userDataFetched) return;
 
+      // Reset ref if profile changed (e.g., different user logged in)
+      if (lastProfileIdRef.current !== profile.id) {
+        userDataFetchedRef.current = false;
+        lastProfileIdRef.current = profile.id;
+      }
+
+      if (userDataFetchedRef.current) return;
+      userDataFetchedRef.current = true;
+
       // Check if we're on a shared calendar page - don't fetch user's calendar if so
       const isSharedCalendarPage =
         window.location.pathname === "/calendar" &&
         window.location.search.includes("id=");
 
       try {
-        const [notifications, chats, calendar, credits] =
-          await Promise.allSettled([
-            backendActor.get_user_notifications(BigInt(0)),
-            backendActor.get_my_chats(BigInt(0)),
-            // Only fetch user's calendar if NOT on shared calendar page
-            isSharedCalendarPage
-              ? Promise.reject("Skipping on shared calendar page")
-              : backendActor.get_my_calendar(),
-            backendActor.get_ai_credits(),
-          ]);
+        const [
+          notifications,
+          notificationsCount,
+          unreadCount,
+          chats,
+          calendar,
+          credits,
+        ] = await Promise.allSettled([
+          backendActor.get_user_notifications(BigInt(0)),
+          backendActor.get_notifications_count(),
+          backendActor.get_unread_notifications_count(),
+          backendActor.get_my_chats(BigInt(0)),
+          // Only fetch user's calendar if NOT on shared calendar page
+          isSharedCalendarPage
+            ? Promise.reject("Skipping on shared calendar page")
+            : backendActor.get_my_calendar(),
+          backendActor.get_ai_credits(),
+        ]);
 
         if (notifications.status === "fulfilled") {
           dispatch({ type: "UPDATE_NOT_LIST", new_list: notifications.value });
+        }
+        if (notificationsCount.status === "fulfilled") {
+          dispatch({
+            type: "SET_TOTAL_COUNT",
+            count: Number(notificationsCount.value),
+          });
+          dispatch({
+            type: "SET_HAS_MORE",
+            hasMore:
+              notifications.status === "fulfilled" &&
+              notifications.value.length < Number(notificationsCount.value),
+          });
+        }
+        if (unreadCount.status === "fulfilled") {
+          dispatch({
+            type: "SET_UNREAD_COUNT",
+            count: Number(unreadCount.value),
+          });
         }
         if (chats.status === "fulfilled") {
           dispatch({ type: "SET_CHATS", chats: chats.value });

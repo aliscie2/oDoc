@@ -133,6 +133,79 @@ impl Wallet {
         })
     }
 
+    /// Get wallet summary with minimal data to avoid instruction limit
+    /// Returns wallet with balance info but empty exchanges and debts
+    /// Returns None if wallet doesn't exist (doesn't create wallet in query)
+    pub fn get_summary(principal: Principal) -> Option<Wallet> {
+        WALLETS_STORE.with(|store| {
+            let store = store.borrow();
+            store.get(&principal.to_string()).map(|wallet| {
+                // Return wallet with core data only, no exchanges or debts
+                Wallet {
+                    owner: wallet.owner.clone(),
+                    balance: wallet.balance,
+                    debts: HashMap::new(), // Empty - load separately
+                    total_debt: wallet.total_debt,
+                    exchanges: Vec::new(), // Empty - load separately
+                    received: wallet.received,
+                    spent: wallet.spent,
+                }
+            })
+        })
+    }
+
+    /// Get paginated exchanges (most recent first)
+    pub fn get_exchanges_paginated(principal: Principal, skip: usize, limit: usize) -> Vec<Exchange> {
+        WALLETS_STORE.with(|store| {
+            store.borrow()
+                .get(&principal.to_string())
+                .map_or(Vec::new(), |wallet| {
+                    wallet.exchanges
+                        .iter()
+                        .rev() // Most recent first
+                        .skip(skip)
+                        .take(limit)
+                        .cloned()
+                        .collect()
+                })
+        })
+    }
+
+    /// Get total count of exchanges
+    pub fn get_exchanges_count(principal: Principal) -> usize {
+        WALLETS_STORE.with(|store| {
+            store.borrow()
+                .get(&principal.to_string())
+                .map_or(0, |wallet| wallet.exchanges.len())
+        })
+    }
+
+    /// Get paginated debts
+    /// Note: Debts are already sorted, no need to sort on every call
+    pub fn get_debts_paginated(principal: Principal, skip: usize, limit: usize) -> HashMap<String, f64> {
+        WALLETS_STORE.with(|store| {
+            store.borrow()
+                .get(&principal.to_string())
+                .map_or(HashMap::new(), |wallet| {
+                    wallet.debts
+                        .iter()
+                        .skip(skip)
+                        .take(limit)
+                        .map(|(k, v)| (k.clone(), *v))
+                        .collect()
+                })
+        })
+    }
+
+    /// Get total count of debts
+    pub fn get_debts_count(principal: Principal) -> usize {
+        WALLETS_STORE.with(|store| {
+            store.borrow()
+                .get(&principal.to_string())
+                .map_or(0, |wallet| wallet.debts.len())
+        })
+    }
+
     pub fn deposit(
         &mut self,
         amount: f64,

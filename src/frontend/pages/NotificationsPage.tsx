@@ -1,64 +1,70 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { AppBar, Box, Divider, List, Toolbar, Typography, Button } from "@mui/material";
+import { AppBar, Box, Toolbar, Typography, Button } from "@mui/material";
 import { RootState } from "@/redux/reducers";
 import { backendActor } from "@/utils/backendUtils";
-import { Notification as NotificationType } from "$/declarations/backend/backend.did";
 import NotificationsIcon from "@mui/icons-material/Notifications";
-
-// Import the NotificationCard component from the existing file
-import { NotificationCard } from "@/components/NotifcationList";
+import NotificationsList from "@/components/NotificationsList";
+import { useNotificationActions } from "@/hooks/useNotificationActions";
 
 const NotificationsPage: React.FC = () => {
-  const navigate = useNavigate();
   const dispatch = useDispatch();
   const { profile } = useSelector((state: RootState) => state.filesState);
-  const { notifications } = useSelector(
+  const { notifications, hasMore, unreadCount } = useSelector(
     (state: RootState) => state.notificationState,
   );
+  console.log({
+    x: notifications.length,
+    y: notifications.filter((n) => !n.is_seen).length,
+  });
 
-  const unreadCount = notifications.filter(
-    (n: NotificationType) => !n.is_seen,
-  ).length;
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const handleMarkRead = async (notificationId: string) => {
-    const notification = notifications.find(
-      (n: NotificationType) => n.id === notificationId,
-    );
-    if (!notification || notification.is_seen) return;
+  const { markAsRead, markAllAsRead } = useNotificationActions();
 
+  const handleLoadMore = async () => {
+    if (isLoadingMore || !hasMore) return;
+
+    setIsLoadingMore(true);
     try {
-      await backendActor?.see_notifications([notificationId]);
-      dispatch({
-        type: "UPDATE_NOT_LIST",
-        new_list: notifications.map((n: NotificationType) =>
-          n.id === notificationId ? { ...n, is_seen: true } : n,
-        ),
-      });
+      const moreNotifications = await backendActor?.get_user_notifications(
+        BigInt(notifications.length),
+      );
+
+      if (moreNotifications && moreNotifications.length > 0) {
+        dispatch({
+          type: "APPEND_NOTIFICATIONS",
+          notifications: moreNotifications,
+        });
+      } else {
+        dispatch({ type: "SET_HAS_MORE", hasMore: false });
+      }
     } catch (error) {
-      console.error("Error marking notification as read:", error);
+      console.error("Error loading more notifications:", error);
+    } finally {
+      setIsLoadingMore(false);
     }
   };
 
-  const handleMarkAllRead = async () => {
-    const unreadIds = notifications
-      .filter((n: NotificationType) => !n.is_seen)
-      .map((n: NotificationType) => n.id);
-    if (unreadIds.length === 0) return;
+  // Infinite scroll handler
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer || isLoadingMore || !hasMore) return;
 
-    try {
-      await backendActor?.see_notifications(unreadIds);
-      dispatch({
-        type: "UPDATE_NOT_LIST",
-        new_list: notifications.map((n: NotificationType) =>
-          unreadIds.includes(n.id) ? { ...n, is_seen: true } : n,
-        ),
-      });
-    } catch (error) {
-      console.error("Error marking all as read:", error);
-    }
-  };
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
+      const scrollPercentage = (scrollTop + clientHeight) / scrollHeight;
+
+      // Load more when user scrolls to 80% of the content
+      if (scrollPercentage > 0.8 && !isLoadingMore && hasMore) {
+        handleLoadMore();
+      }
+    };
+
+    scrollContainer.addEventListener("scroll", handleScroll);
+    return () => scrollContainer.removeEventListener("scroll", handleScroll);
+  }, [isLoadingMore, hasMore, notifications.length]);
 
   return (
     <Box
@@ -83,7 +89,7 @@ const NotificationsPage: React.FC = () => {
           {unreadCount > 0 && (
             <Button
               size="small"
-              onClick={handleMarkAllRead}
+              onClick={() => markAllAsRead()}
               startIcon={<NotificationsIcon />}
             >
               Mark all read
@@ -92,8 +98,24 @@ const NotificationsPage: React.FC = () => {
         </Toolbar>
       </AppBar>
 
-      <Box sx={{ flex: 1, overflow: "auto" }}>
-        {notifications.length === 0 ? (
+      <Box
+        ref={scrollContainerRef}
+        sx={{
+          flex: 1,
+          overflow: "auto",
+          "&::-webkit-scrollbar": {
+            width: "8px",
+          },
+          "&::-webkit-scrollbar-track": {
+            background: "transparent",
+          },
+          "&::-webkit-scrollbar-thumb": {
+            background: "rgba(0,0,0,0.2)",
+            borderRadius: "4px",
+          },
+        }}
+      >
+        {notifications.length === 0 && !isLoadingMore ? (
           <Box
             sx={{
               display: "flex",
@@ -119,22 +141,15 @@ const NotificationsPage: React.FC = () => {
             </Typography>
           </Box>
         ) : (
-          <List sx={{ p: 0 }}>
-            {notifications.map((notification: NotificationType, index: number) => (
-              <>
-                <NotificationCard
-                  key={notification.id}
-                  notification={notification}
-                  onMarkRead={handleMarkRead}
-                  profileId={profile?.id || ""}
-                  compact={false}
-                />
-                {index < notifications.length - 1 && (
-                  <Divider sx={{ borderWidth: 0.1, opacity: 0.5 }} />
-                )}
-              </>
-            ))}
-          </List>
+          <NotificationsList
+            notifications={notifications}
+            profileId={profile?.id || ""}
+            onMarkRead={markAsRead}
+            compact={false}
+            isLoadingMore={isLoadingMore}
+            hasMore={hasMore}
+            onLoadMore={handleLoadMore}
+          />
         )}
       </Box>
     </Box>

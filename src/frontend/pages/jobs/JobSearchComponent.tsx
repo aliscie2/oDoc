@@ -42,12 +42,6 @@ const JobSearchComponent: React.FC = React.memo(() => {
   const { loading, error, findMatches } = useJobMatching(currentJob);
 
   const sortedMatches: ProcessedMatch[] = useMemo(() => {
-    console.log("🔄 useMemo running with:", {
-      matchesCount: currentJob?.matches?.length,
-      requiredMatchScore,
-      matchingJobsCount: matchingJobs?.length,
-    });
-
     if (!currentJob?.matches || !matchingJobs) return [];
 
     const filteredMatches = currentJob.matches.filter((match): match is Match =>
@@ -57,15 +51,6 @@ const JobSearchComponent: React.FC = React.memo(() => {
           match.job_id !== currentJobId,
       ),
     );
-
-    console.log("✅ Filtered matches:", {
-      count: filteredMatches.length,
-      requiredMatchScore,
-      matches: filteredMatches.map((m) => ({
-        jobId: m.job_id,
-        score: m.score,
-      })),
-    });
 
     const processedMatches = filteredMatches
       .map((match) => {

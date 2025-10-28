@@ -4,10 +4,11 @@ import { lightTheme, darkTheme } from '../lib/theme-colors';
 import { ChevronDown } from './Icons';
 import { Popover, PopoverTrigger, PopoverContent } from './ui/popover';
 import UserAvatarMenu from '@/components/MainComponents/UserAvatarMenu';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/redux/reducers';
 import { Tooltip } from '@mui/material';
 import { Principal } from '@dfinity/principal';
+import type { FEFriend, User } from '$/declarations/backend/backend.did';
 
 interface UserSelectProps {
   value: string;
@@ -19,9 +20,13 @@ interface UserSelectProps {
 export function UserSelect({ value, onChange, disabled, showTooltip = true }: UserSelectProps) {
   const { theme } = useTheme();
   const colors = theme === 'light' ? lightTheme : darkTheme;
+  const dispatch = useDispatch();
   const [isOpen, setIsOpen] = useState(false);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [totalCount, setTotalCount] = useState<number>(0);
   const optionsListRef = useRef<HTMLDivElement>(null);
   
   const { all_friends, profile } = useSelector((state: RootState) => state.filesState);
@@ -57,6 +62,69 @@ export function UserSelect({ value, onChange, disabled, showTooltip = true }: Us
   
   const hasFriends = availableFriends.length > 0;
   const isDisabled = disabled || !hasFriends;
+
+  // Fetch total count on mount
+  useEffect(() => {
+    const fetchTotalCount = async () => {
+      try {
+        const { backendActor } = await import('@/utils/backendUtils');
+        if (!backendActor) return;
+        
+        const count = await backendActor.get_friends_count();
+        const countNum = Number(count);
+        setTotalCount(countNum);
+        setHasMore(availableFriends.length < countNum);
+      } catch (error) {
+        console.error('Error fetching friends count:', error);
+      }
+    };
+
+    fetchTotalCount();
+  }, [availableFriends.length]);
+
+  // Load more friends function
+  const loadMoreFriends = async () => {
+    if (!hasMore || loadingMore) return;
+    
+    setLoadingMore(true);
+    try {
+      const { backendActor } = await import('@/utils/backendUtils');
+      if (!backendActor) return;
+
+      const moreFriends = await backendActor.get_friends_paginated(
+        BigInt(availableFriends.length),
+        BigInt(20),
+      );
+
+      if (moreFriends && moreFriends.length > 0) {
+        // Dispatch each friend to Redux
+        moreFriends.forEach((feFriend: FEFriend) => {
+          const user: User = {
+            id: feFriend.id,
+            name: feFriend.name,
+            description: feFriend.description,
+            email: feFriend.email,
+            photo: feFriend.photo,
+          };
+          
+          dispatch({ 
+            type: 'ADD_FRIEND', 
+            friend: feFriend,
+            user
+          });
+        });
+      }
+
+      // Check if we've loaded all friends
+      if (moreFriends.length < 20 || availableFriends.length + moreFriends.length >= totalCount) {
+        setHasMore(false);
+      }
+    } catch (error) {
+      console.error('Error loading more friends:', error);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   // Add custom scrollbar styles when component mounts
   useEffect(() => {
@@ -189,37 +257,91 @@ export function UserSelect({ value, onChange, disabled, showTooltip = true }: Us
         {/* Options List */}
         <div ref={optionsListRef} className="user-select-options" style={styles.optionsList}>
           {filteredFriends.length > 0 ? (
-            filteredFriends.map((friend) => (
-              <button
-                key={friend.id}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleSelect(friend.id);
-                }}
-                onMouseEnter={() => setHoveredId(friend.id)}
-                onMouseLeave={() => setHoveredId(null)}
-                style={{
-                  ...styles.option,
-                  ...(friend.id === normalizedValue ? styles.optionActive : {}),
-                  ...(hoveredId === friend.id ? styles.optionHover : {}),
-                }}
-              >
-                <UserAvatarMenu
-                  variant="caption"
-                  dispalyName={true}
-                  user_id={friend.id}
-                  disableMenu={true}
-                  sx={{ 
-                    width: 26, 
-                    height: 26,
-                    fontSize: '0.75rem'
+            <>
+              {filteredFriends.map((friend) => (
+                <button
+                  key={friend.id}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSelect(friend.id);
                   }}
-                />
-              </button>
-            ))
+                  onMouseEnter={() => setHoveredId(friend.id)}
+                  onMouseLeave={() => setHoveredId(null)}
+                  style={{
+                    ...styles.option,
+                    ...(friend.id === normalizedValue ? styles.optionActive : {}),
+                    ...(hoveredId === friend.id ? styles.optionHover : {}),
+                  }}
+                >
+                  <UserAvatarMenu
+                    variant="caption"
+                    dispalyName={true}
+                    user_id={friend.id}
+                    disableMenu={true}
+                    sx={{ 
+                      width: 26, 
+                      height: 26,
+                      fontSize: '0.75rem'
+                    }}
+                  />
+                </button>
+              ))}
+              
+              {/* Load More Button */}
+              {!searchQuery && hasMore && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    loadMoreFriends();
+                  }}
+                  disabled={loadingMore}
+                  style={{
+                    ...styles.loadMoreButton,
+                    ...(loadingMore ? { opacity: 0.6, cursor: 'not-allowed' } : {}),
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!loadingMore) {
+                      e.currentTarget.style.backgroundColor = colors.accentHover;
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = colors.cardBg;
+                  }}
+                >
+                  {loadingMore ? 'Loading...' : `Load More (${availableFriends.length}/${totalCount})`}
+                </button>
+              )}
+            </>
           ) : searchQuery ? (
             <div style={styles.emptyState}>
               No friends found matching &quot;{searchQuery}&quot;
+              {hasMore && (
+                <>
+                  <br />
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      loadMoreFriends();
+                    }}
+                    disabled={loadingMore}
+                    style={{
+                      ...styles.loadMoreButton,
+                      marginTop: '8px',
+                      ...(loadingMore ? { opacity: 0.6, cursor: 'not-allowed' } : {}),
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!loadingMore) {
+                        e.currentTarget.style.backgroundColor = colors.accentHover;
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = colors.cardBg;
+                    }}
+                  >
+                    {loadingMore ? 'Loading...' : 'Load More Friends'}
+                  </button>
+                </>
+              )}
             </div>
           ) : (
             <div style={styles.emptyState}>
@@ -350,5 +472,17 @@ const getStyles = (colors: typeof lightTheme): Record<string, React.CSSPropertie
     textAlign: 'center' as const,
     color: colors.textMuted,
     fontSize: '13px',
+  },
+  loadMoreButton: {
+    width: '100%',
+    padding: '10px',
+    border: 'none',
+    borderTop: `1px solid ${colors.border}`,
+    backgroundColor: colors.cardBg,
+    color: colors.primary,
+    fontSize: '12px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    transition: 'background-color 0.15s',
   },
 });

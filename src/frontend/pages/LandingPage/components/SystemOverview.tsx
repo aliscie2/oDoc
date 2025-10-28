@@ -6,10 +6,12 @@ import { ImageWithFallback } from "./figma/ImageWithFallback";
 import styles from "./SystemOverview.module.css";
 
 export function SystemOverview() {
-  const [expandedCards, setExpandedCards] = useState<Record<number, boolean>>({});
+  const [expandedCards, setExpandedCards] = useState<Record<number, boolean>>(
+    {},
+  );
 
   const toggleCard = (idx: number) => {
-    setExpandedCards(prev => ({ ...prev, [idx]: !prev[idx] }));
+    setExpandedCards((prev) => ({ ...prev, [idx]: !prev[idx] }));
   };
 
   const services = [
@@ -19,7 +21,7 @@ export function SystemOverview() {
       bullets: [
         "Get matched in minutes, not weeks",
         "AI-powered candidate screening",
-        "Focus on work, not searching"
+        "Focus on work, not searching",
       ],
       fullDescription:
         "Stop wasting weeks screening candidates or searching job boards. Get matched with the right people or opportunities in minutes—so you can focus on what actually matters: getting work done.",
@@ -32,10 +34,10 @@ export function SystemOverview() {
       bullets: [
         "End email ping-pong scheduling",
         "Automated meeting coordination",
-        "Reclaim hours every week"
+        "Reclaim hours every week",
       ],
       fullDescription:
-        "End the back-and-forth scheduling nightmare. Reclaim hours of your week by automating meeting coordination—because your time is worth more than playing email ping-pong.",
+        "Stop the back-and-forth scheduling nightmare. Coordinate meetings automatically and save valuable time—because your calendar should work for you, not against you.",
       buttonText: "Automate Scheduling Now",
       userType: "calendar",
     },
@@ -43,12 +45,12 @@ export function SystemOverview() {
       icon: "/contract.png",
       title: "Crypto Agreements",
       bullets: [
-        "Eliminate payment disputes",
+        "Docs, tasks, payments & contracts in single page",
+        "Only 3% transaction fees—no hidden costs",
         "Automatic, trustless execution",
-        "Manage tasks & payments in one place"
       ],
       fullDescription:
-        "Eliminate payment disputes and latency. Save your time by managing your team tasks and payment in one single place. Smart contracts ensure you get paid on time, every time—no chasing invoices, no excuses, just automatic, trustless execution.",
+        "Manage everything in one single file: A-to-Z documents, team tasks, payments, and contracts. Smart contracts ensure you get paid on time, every time—no chasing invoices, no disputes, no excuses.",
       buttonText: "Make An Agreement Now",
       userType: "contracts",
     },
@@ -64,9 +66,12 @@ export function SystemOverview() {
           transition={{ duration: 0.6 }}
         >
           <div className={styles.header}>
-            <h2 className={styles.title}>Why choose {window.location.hostname.split('.')[0]}?</h2>
+            <h2 className={styles.title}>
+              Why choose {window.location.hostname.split(".")[0]}?
+            </h2>
             <p className={styles.subtitle}>
-              Streamline your hiring process and reduce costs with our comprehensive solution.
+              Streamline your hiring process and reduce costs with our
+              comprehensive solution.
             </p>
           </div>
 
@@ -92,14 +97,14 @@ export function SystemOverview() {
                     />
                   </div>
                   <h3 className={styles.serviceTitle}>{service.title}</h3>
-                  
+
                   <div className={styles.description}>
                     <ul className={styles.bulletList}>
                       {service.bullets.map((bullet, bulletIdx) => (
                         <li key={bulletIdx}>{bullet}</li>
                       ))}
                     </ul>
-                    
+
                     {expandedCards[idx] && (
                       <motion.p
                         initial={{ opacity: 0, height: 0 }}
@@ -110,7 +115,7 @@ export function SystemOverview() {
                         {service.fullDescription}
                       </motion.p>
                     )}
-                    
+
                     <button
                       onClick={() => toggleCard(idx)}
                       className={styles.readMoreBtn}
@@ -121,12 +126,12 @@ export function SystemOverview() {
                         </>
                       ) : (
                         <>
-                          Read more <ChevronDown size={14} />
+                          Learn more <ChevronDown size={14} />
                         </>
                       )}
                     </button>
                   </div>
-                  
+
                   <LoginButton
                     variant="outlined"
                     userType={service.userType}

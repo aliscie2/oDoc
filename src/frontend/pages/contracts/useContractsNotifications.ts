@@ -38,24 +38,18 @@ export const useContractsNotifications = (): ContractsNotificationsState => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [loadedContracts, setLoadedContracts] = useState<
-    Map<string, CustomContract>
-  >(new Map());
+  const [loadedContractIds, setLoadedContractIds] = useState<Set<string>>(
+    new Set(),
+  );
 
   // Process contracts from notifications and merge with owned contracts
   const processedContracts = useMemo(() => {
-    console.log("🔄 Processing contracts with notifications...");
-
     const contractsMap = new Map<string, ContractWithNotifications>();
 
     // Filter contract notifications
     const contractNotifications = notifications.filter(
       (notification: Notification) =>
         "CPaymentContract" in notification.content,
-    );
-
-    console.log(
-      `📋 Found ${contractNotifications.length} contract notifications`,
     );
 
     // Group notifications by contract ID
@@ -85,8 +79,9 @@ export const useContractsNotifications = (): ContractsNotificationsState => {
     });
 
     // Add owned contracts first
-    Object.values(contracts).forEach((contract: CustomContract) => {
-      if (contract) {
+    // Redux now always stores unwrapped CustomContract
+    Object.values(contracts).forEach((contract) => {
+      if (contract && contract.id) {
         const contractNotifications =
           notificationsByContract.get(contract.id) || [];
         const unseenCount = contractNotifications.filter(
@@ -98,46 +93,25 @@ export const useContractsNotifications = (): ContractsNotificationsState => {
           _unseenCount: unseenCount,
           _source: "owned",
         });
-
-        console.log(
-          `👤 Added owned contract: ${contract.id} (unseen: ${unseenCount})`,
-        );
       }
     });
 
     // Add contracts from notifications that aren't owned
     notificationsByContract.forEach((notifications, contractId) => {
       if (!contractsMap.has(contractId)) {
-        // Check if we have a loaded contract for this ID
-        const loadedContract = loadedContracts.get(contractId);
-
-        if (loadedContract) {
+        // Create minimal contract from notification
+        // The full contract will be loaded by the useEffect
+        const minimalContract = createMinimalContractFromNotifications(
+          contractId,
+          notifications,
+        );
+        if (minimalContract) {
           const unseenCount = notifications.filter((n) => !n.is_seen).length;
           contractsMap.set(contractId, {
-            ...loadedContract,
+            ...minimalContract,
             _unseenCount: unseenCount,
             _source: "notification",
           });
-          console.log(
-            `📥 Added loaded contract: ${contractId} (unseen: ${unseenCount})`,
-          );
-        } else {
-          // Create minimal contract from notification
-          const minimalContract = createMinimalContractFromNotifications(
-            contractId,
-            notifications,
-          );
-          if (minimalContract) {
-            const unseenCount = notifications.filter((n) => !n.is_seen).length;
-            contractsMap.set(contractId, {
-              ...minimalContract,
-              _unseenCount: unseenCount,
-              _source: "notification",
-            });
-            console.log(
-              `🆕 Added minimal contract: ${contractId} (unseen: ${unseenCount})`,
-            );
-          }
         }
       }
     });
@@ -147,10 +121,8 @@ export const useContractsNotifications = (): ContractsNotificationsState => {
       (a, b) => b.date_created - a.date_created,
     );
 
-    console.log(`📊 Final contracts: ${contractsList.length} total`);
-
     return contractsList;
-  }, [contracts, notifications, loadedContracts]);
+  }, [contracts, notifications]);
 
   // Load contract details for contracts from notifications
   useEffect(() => {
@@ -181,7 +153,7 @@ export const useContractsNotifications = (): ContractsNotificationsState => {
             if (
               contractId &&
               !contracts[contractId] &&
-              !loadedContracts.has(contractId) &&
+              !loadedContractIds.has(contractId) &&
               payment.sender.toString() !== profile.id
             ) {
               contractIds.add(contractId);
@@ -196,9 +168,13 @@ export const useContractsNotifications = (): ContractsNotificationsState => {
 
       if (contractsToLoad.length === 0) return;
 
-      console.log(
-        `🔄 Loading ${contractsToLoad.length} contracts from backend...`,
-      );
+      // Mark contracts as loaded to prevent duplicate requests
+      setLoadedContractIds((prev) => {
+        const newSet = new Set(prev);
+        contractsToLoad.forEach(({ id }) => newSet.add(id));
+        return newSet;
+      });
+      
       setLoading(true);
       setError(null);
 
@@ -208,25 +184,21 @@ export const useContractsNotifications = (): ContractsNotificationsState => {
             const result = await backendActor.get_contract(creator, id);
             if ("Ok" in result && "CustomContract" in result.Ok) {
               const loadedContract = result.Ok.CustomContract;
-              setLoadedContracts((prev) =>
-                new Map(prev).set(id, loadedContract),
-              );
+              // Dispatch to Redux - this will trigger a re-render with the full contract
               dispatch({ type: "SET_CONTRACT", contract: loadedContract });
-              console.log(`✅ Loaded contract: ${id}`);
-              return loadedContract;
+              return { id, success: true };
             } else {
-              console.warn(`⚠️ Failed to load contract ${id}:`, result);
-              return null;
+              return { id, success: false };
             }
           } catch (error) {
-            console.error(`❌ Error loading contract ${id}:`, error);
-            return null;
+            console.error(`Error loading contract ${id}:`, error);
+            return { id, success: false };
           }
         });
 
         await Promise.all(loadPromises);
       } catch (error) {
-        console.error("❌ Error loading contracts:", error);
+        console.error("Error loading contracts:", error);
         setError(
           error instanceof Error ? error.message : "Failed to load contracts",
         );
@@ -236,15 +208,7 @@ export const useContractsNotifications = (): ContractsNotificationsState => {
     };
 
     loadMissingContracts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    notifications,
-    contracts,
-    backendActor,
-    dispatch,
-    profile,
-    // Removed loadedContracts to prevent infinite loop
-  ]);
+  }, [notifications, contracts, backendActor, dispatch, profile, loadedContractIds]);
 
   // Calculate total unseen count
   const totalUnseenCount = useMemo(() => {
@@ -274,20 +238,11 @@ function createMinimalContractFromNotifications(
   const firstNotification = notifications[0];
   if (!("CPaymentContract" in firstNotification.content)) return null;
 
-  const payments = firstNotification.content.CPaymentContract;
-  if (!payments || payments.length === 0) return null;
+  const paymentTuple = firstNotification.content.CPaymentContract;
+  if (!paymentTuple || paymentTuple.length < 1) return null;
 
-  const firstPaymentOrAction = payments[0];
-  let firstPayment: CPayment;
-  if (
-    typeof firstPaymentOrAction === "object" &&
-    firstPaymentOrAction !== null &&
-    "RequestCancellation" in firstPaymentOrAction
-  ) {
-    firstPayment = (firstPaymentOrAction as any).RequestCancellation;
-  } else {
-    firstPayment = firstPaymentOrAction as CPayment;
-  }
+  // CPaymentContract is a tuple [CPayment, PaymentAction]
+  const firstPayment = paymentTuple[0] as CPayment;
 
   const contractName = `Contract ${contractId.slice(0, 8)}...`;
 

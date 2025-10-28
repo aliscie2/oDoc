@@ -80,7 +80,8 @@ fn send_message(user: Option<Principal>, mut message: Message) -> Result<String,
                 new_notification.send();
             }
 
-            chat.messages.push(message.clone());
+            // Insert at beginning so newest messages are first
+            chat.messages.insert(0, message.clone());
             chat.save();
             Ok(message.chat_id)
         }

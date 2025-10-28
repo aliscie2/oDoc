@@ -464,7 +464,7 @@ const DepositDialog: React.FC<{
       enqueueSnackbar("Deposit initiated successfully", { variant: "success" });
       onClose();
       setOisyAmount("");
-    } catch (error: any) {
+    } catch (error: unknown) {
       enqueueSnackbar(error.message || "Deposit failed", { variant: "error" });
     } finally {
       setIsProcessing(false);
@@ -969,6 +969,11 @@ const WalletPage: React.FC<{ wallet?: Wallet }> = ({
   const [tokenType, setTokenType] = useState<"ckUSDC" | "ckUSDT">("ckUSDC");
   const [openDialog, setOpenDialog] = useState<DialogType>("");
 
+  // Pagination state for exchanges
+  const [exchanges, setExchanges] = useState<Exchange[]>([]);
+  const [isLoadingExchanges, setIsLoadingExchanges] = useState(false);
+  const [hasMoreExchanges, setHasMoreExchanges] = useState(true);
+
   // Using direct backendActor import
   const { all_friends, profile } = useSelector(
     (state: ReduxState) => state.filesState,
@@ -982,6 +987,43 @@ const WalletPage: React.FC<{ wallet?: Wallet }> = ({
 
   const { processDeposit, isProcessing: isDepositProcessing } =
     useDepositProcessor(profile?.id);
+
+  // Load initial exchanges on mount
+  React.useEffect(() => {
+    if (profile?.id) {
+      loadExchanges(true);
+    }
+  }, [profile?.id]);
+
+  const loadExchanges = async (reset: boolean = false) => {
+    if (isLoadingExchanges) return;
+
+    setIsLoadingExchanges(true);
+    try {
+      const skip = reset ? 0 : exchanges.length;
+      const limit = 20;
+
+      const newExchanges = await backendActor.get_wallet_exchanges(
+        BigInt(skip),
+        BigInt(limit),
+      );
+
+      if (reset) {
+        setExchanges(newExchanges);
+      } else {
+        setExchanges([...exchanges, ...newExchanges]);
+      }
+
+      setHasMoreExchanges(newExchanges.length === limit);
+    } catch (error) {
+      console.error("Failed to load exchanges:", error);
+      enqueueSnackbar("Failed to load transaction history", {
+        variant: "error",
+      });
+    } finally {
+      setIsLoadingExchanges(false);
+    }
+  };
 
   const handleClose = (): void => {
     setOpenDialog("");
@@ -1032,10 +1074,25 @@ const WalletPage: React.FC<{ wallet?: Wallet }> = ({
       />
       <ActionButtons onAction={setOpenDialog} />
       <TransactionHistory
-        wallet={wallet}
+        wallet={{ ...wallet, exchanges }}
         friends={all_friends}
         profileId={profile.id}
       />
+
+      {hasMoreExchanges && (
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+          <Button
+            variant="outlined"
+            onClick={() => loadExchanges(false)}
+            disabled={isLoadingExchanges}
+            startIcon={
+              isLoadingExchanges ? <CircularProgress size={20} /> : null
+            }
+          >
+            {isLoadingExchanges ? "Loading..." : "Load More Transactions"}
+          </Button>
+        </Box>
+      )}
 
       <DepositDialog
         open={openDialog === "deposit"}

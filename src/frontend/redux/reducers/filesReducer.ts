@@ -2,6 +2,7 @@ import { FEFriend, StoredContract } from "$/declarations/backend/backend.did";
 import { deserializeContracts } from "../../DataProcessing/deserlize/deserializeContracts";
 import { initializeApp } from "../slices/appSlice";
 import { FilesActions, InitialState, initialState } from "../types/filesTypes";
+import { unwrapContract } from "../../utils/contractUtils";
 
 export function filesReducer(
   state: InitialState = initialState,
@@ -194,9 +195,15 @@ export function filesReducer(
       };
 
     case "ADD_CONTRACT": {
-      const { contract } = action;
-      const id = contract.id;
-      const stored_custom: StoredContract = { CustomContract: action.contract };
+      // Unwrap contract if needed
+      const unwrappedContract = unwrapContract(action.contract);
+      
+      if (!unwrappedContract) {
+        console.error("Failed to unwrap contract:", action.contract);
+        return state;
+      }
+      
+      const id = unwrappedContract.id;
 
       // Ensure changes.contracts is an array
       const contractsArray = Array.isArray(state.changes.contracts)
@@ -229,7 +236,7 @@ export function filesReducer(
         },
         contracts: {
           ...state.contracts,
-          [id]: contract,
+          [id]: unwrappedContract,
         },
       };
     }
@@ -240,14 +247,23 @@ export function filesReducer(
       // 1. When receiver actions (confirmed_c_payment, object_on_cancel, etc.) call backend,
       //    the backend already persists the changes, so no need to add to changes
       // 2. When loading contracts from backend, they are already saved
-      const { contract } = action;
-      const id = contract.id;
+      
+      // CRITICAL: Unwrap StoredContract to CustomContract here
+      // This ensures Redux always stores unwrapped contracts
+      const unwrappedContract = unwrapContract(action.contract);
+      
+      if (!unwrappedContract) {
+        console.error("Failed to unwrap contract:", action.contract);
+        return state;
+      }
+      
+      const id = unwrappedContract.id;
 
       return {
         ...state,
         contracts: {
           ...state.contracts,
-          [id]: contract,
+          [id]: unwrappedContract,
         },
       };
     }

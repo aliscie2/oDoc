@@ -1,10 +1,6 @@
-import { RootState } from "@/redux/reducers";
-import { backendActor } from "@/utils/backendUtils";
-import { formatRelativeTime } from "@/utils/time";
-import MessageIcon from "@mui/icons-material/Message";
-import NotificationsIcon from "@mui/icons-material/Notifications";
-import CloseIcon from "@mui/icons-material/Close";
-import OpenInFullIcon from "@mui/icons-material/OpenInFull";
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Badge,
   Box,
@@ -12,22 +8,25 @@ import {
   Card,
   CardContent,
   Chip,
-  Divider,
   IconButton,
-  List,
   Menu,
   Typography,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-// import { useSnackbar } from "notistack";
-import { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useLocation, useNavigate } from "react-router-dom";
+import MessageIcon from "@mui/icons-material/Message";
+import NotificationsIcon from "@mui/icons-material/Notifications";
+import CloseIcon from "@mui/icons-material/Close";
+import OpenInFullIcon from "@mui/icons-material/OpenInFull";
+import { RootState } from "@/redux/reducers";
+import { backendActor } from "@/utils/backendUtils";
+import { formatRelativeTime } from "@/utils/time";
 import FriendshipButton from "../FriendshipButton";
 import UserAvatarMenu from "../MainComponents/UserAvatarMenu";
 import { encodeContractUrl } from "@/utils/urlEncoder";
 import { Notification as NotificationType } from "$/declarations/backend/backend.did";
+import NotificationsList from "../NotificationsList";
+import { useNotificationActions } from "@/hooks/useNotificationActions";
 
 const NotificationCard = ({
   notification,
@@ -243,6 +242,7 @@ const NotificationCard = ({
         userId={displayUserId}
         message="New promise"
         onClick={() => {
+          onMarkRead(notification.id);
           if (payment.contract_id === "none") {
             navigate(`/wallet`);
           } else {
@@ -302,57 +302,41 @@ const NotificationCard = ({
 };
 const NotificationsButton = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  // const { enqueueSnackbar } = useSnackbar();
   const { profile } = useSelector((state: RootState) => state.filesState);
-  const { notifications } = useSelector(
+  const { notifications, unreadCount, hasMore } = useSelector(
     (state: RootState) => state.notificationState,
   );
 
-  const unreadCount = notifications.filter(
-    (n: NotificationType) => !n.is_seen,
-  ).length;
+  const { markAsRead, markAllAsRead } = useNotificationActions();
 
-  const handleMarkRead = async (notificationId: string) => {
-    const notification = notifications.find(
-      (n: NotificationType) => n.id === notificationId,
-    );
-    if (!notification || notification.is_seen) return;
+  const handleLoadMore = React.useCallback(async () => {
+    if (isLoadingMore || !hasMore) return;
 
+    setIsLoadingMore(true);
     try {
-      await backendActor?.see_notifications([notificationId]);
-      dispatch({
-        type: "UPDATE_NOT_LIST",
-        new_list: notifications.map((n: NotificationType) =>
-          n.id === notificationId ? { ...n, is_seen: true } : n,
-        ),
-      });
+      const moreNotifications = await backendActor?.get_user_notifications(
+        BigInt(notifications.length)
+      );
+      
+      if (moreNotifications && moreNotifications.length > 0) {
+        dispatch({
+          type: "APPEND_NOTIFICATIONS",
+          notifications: moreNotifications,
+        });
+      } else {
+        dispatch({ type: "SET_HAS_MORE", hasMore: false });
+      }
     } catch (error) {
-      console.error("Error marking notification as read:", error);
+      console.error("Error loading more notifications:", error);
+    } finally {
+      setIsLoadingMore(false);
     }
-  };
-
-  const handleMarkAllRead = async () => {
-    const unreadIds = notifications
-      .filter((n: NotificationType) => !n.is_seen)
-      .map((n: NotificationType) => n.id);
-    if (unreadIds.length === 0) return;
-
-    try {
-      await backendActor?.see_notifications(unreadIds);
-      dispatch({
-        type: "UPDATE_NOT_LIST",
-        new_list: notifications.map((n: NotificationType) =>
-          unreadIds.includes(n.id) ? { ...n, is_seen: true } : n,
-        ),
-      });
-    } catch (error) {
-      console.error("Error marking all as read:", error);
-    }
-  };
+  }, [isLoadingMore, hasMore, notifications.length, dispatch]);
   const isNotificationsPage = useLocation().pathname === "/notifications";
 
   const handleNotificationClick = (e: React.MouseEvent<HTMLElement>) => {
@@ -367,6 +351,9 @@ const NotificationsButton = () => {
     setAnchorEl(null);
     navigate("/notifications");
   };
+
+
+
   // if (isNotificationsPage){
   //   return null
   // }
@@ -385,9 +372,9 @@ const NotificationsButton = () => {
         slotProps={{
           paper: {
             sx: {
-              width: { xs: "95vw", sm: 420 },
-              maxWidth: { xs: "95vw", sm: 420 },
-              maxHeight: { xs: "70vh", sm: "80vh" },
+              width: { xs: "95vw", sm: 380 },
+              maxWidth: { xs: "95vw", sm: 380 },
+              maxHeight: { xs: "70vh", sm: "65vh" },
               mt: 1,
               borderRadius: { xs: 1.5, sm: 1 },
               boxShadow: { xs: "0 8px 32px rgba(0,0,0,0.12)", sm: 3 },
@@ -404,7 +391,7 @@ const NotificationsButton = () => {
       >
         <Box
           sx={{
-            p: 2,
+            p: 1.5,
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
@@ -412,14 +399,14 @@ const NotificationsButton = () => {
             borderColor: "divider",
           }}
         >
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 600, fontSize: "1rem" }}>
             Notifications
           </Typography>
           <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
             {unreadCount > 0 && (
               <Button
                 size="small"
-                onClick={handleMarkAllRead}
+                onClick={() => markAllAsRead()}
                 sx={{ display: { xs: "none", sm: "flex" } }}
               >
                 Mark all read
@@ -427,7 +414,7 @@ const NotificationsButton = () => {
             )}
             {unreadCount > 0 && (
               <IconButton
-                onClick={handleMarkAllRead}
+                onClick={() => markAllAsRead()}
                 size="small"
                 sx={{
                   display: { xs: "flex", sm: "none" },
@@ -459,49 +446,33 @@ const NotificationsButton = () => {
           </Box>
         </Box>
 
-        {notifications.length === 0 ? (
-          <Box sx={{ p: 4, textAlign: "center" }}>
-            <Typography variant="body2" color="text.secondary">
-              No notifications
-            </Typography>
-          </Box>
-        ) : (
-          <Box
-            sx={{
-              maxHeight: { xs: "50vh", sm: "60vh" },
-              overflowY: "auto",
-              "&::-webkit-scrollbar": {
-                width: "6px",
-              },
-              "&::-webkit-scrollbar-track": {
-                background: "transparent",
-              },
-              "&::-webkit-scrollbar-thumb": {
-                background: "rgba(0,0,0,0.2)",
-                borderRadius: "3px",
-              },
-            }}
-          >
-            <List sx={{ p: 0, pb: 1 }}>
-              {notifications.map(
-                (notification: NotificationType, index: number) => (
-                  <>
-                    <NotificationCard
-                      key={notification.id}
-                      notification={notification}
-                      onMarkRead={handleMarkRead}
-                      profileId={profile?.id || ""}
-                      compact={true}
-                    />
-                    {index < notifications.length - 1 && (
-                      <Divider sx={{ borderWidth: 1, opacity: 0.5 }} />
-                    )}
-                  </>
-                ),
-              )}
-            </List>
-          </Box>
-        )}
+        <Box
+          sx={{
+            maxHeight: { xs: "50vh", sm: "55vh" },
+            overflowY: "auto",
+            "&::-webkit-scrollbar": {
+              width: "6px",
+            },
+            "&::-webkit-scrollbar-track": {
+              background: "transparent",
+            },
+            "&::-webkit-scrollbar-thumb": {
+              background: "rgba(0,0,0,0.2)",
+              borderRadius: "3px",
+            },
+          }}
+        >
+          <NotificationsList
+            notifications={notifications}
+            profileId={profile?.id || ""}
+            onMarkRead={markAsRead}
+            compact={true}
+            isLoadingMore={isLoadingMore}
+            hasMore={hasMore}
+            onLoadMore={handleLoadMore}
+            emptyMessage="No notifications"
+          />
+        </Box>
       </Menu>
     </>
   );

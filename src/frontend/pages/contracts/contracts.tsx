@@ -21,7 +21,11 @@ import { Helmet } from "react-helmet-async";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
-import { CPayment, User } from "$/declarations/backend/backend.did";
+import {
+  CPayment,
+  CustomContract,
+  User,
+} from "$/declarations/backend/backend.did";
 import { custom_contract, randomString } from "@/DataProcessing/dataSamples";
 import {
   ContractWithNotifications,
@@ -35,74 +39,6 @@ interface PersonalSummaryProps {
   contract: ContractWithNotifications;
   profile: User;
 }
-
-const PersonalSummary: React.FC<PersonalSummaryProps> = ({
-  contract,
-  profile,
-}) => {
-  const theme = useTheme();
-
-  const promisesForYou =
-    contract.promises?.filter(
-      (promise: CPayment) => promise.receiver.toString() === profile.id,
-    ) || [];
-
-  const paymentsForYou =
-    contract.payments?.filter(
-      (payment: CPayment) => payment.receiver.toString() === profile.id,
-    ) || [];
-
-  const promisesAmount = promisesForYou.reduce(
-    (sum, promise) => sum + promise.amount,
-    0,
-  );
-  const paymentsAmount = paymentsForYou.reduce(
-    (sum, payment) => sum + payment.amount,
-    0,
-  );
-
-  if (promisesForYou.length === 0 && paymentsForYou.length === 0) return null;
-
-  return (
-    <Box
-      sx={{
-        mb: 2,
-        p: 1.5,
-        bgcolor: "primary.main",
-        borderRadius: 2,
-        border: 1,
-        borderColor: "primary.light",
-        color: "primary.contrastText",
-      }}
-    >
-      <Typography
-        variant="caption"
-        sx={{ fontWeight: 600, mb: 1, display: "block", opacity: 0.9 }}
-      >
-        Personal Summary
-      </Typography>
-
-      <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-        {promisesForYou.length > 0 && (
-          <Chip
-            icon={<HandshakeIcon sx={{ fontSize: 14 }} />}
-            label={`${promisesForYou.length} promises • $${promisesAmount}`}
-            size="small"
-            variant="outlined"
-          />
-        )}
-        {paymentsForYou.length > 0 && (
-          <Chip
-            icon={<CheckCircleIcon sx={{ fontSize: 14 }} />}
-            label={`${paymentsForYou.length} received • $${paymentsAmount}`}
-            size="small"
-            variant="outlined"
-          />
-        )}
-      </Stack>
-    </Box>
-  );
-};
 
 // Contract Card Component
 interface ContractCardProps {
@@ -121,7 +57,9 @@ const ContractCard: React.FC<ContractCardProps> = ({
   const navigate = useNavigate();
   const theme = useTheme();
 
-  if (!contract) return null;
+  if (!contract) {
+    return null;
+  }
 
   const promisesCount = contract.promises?.length || 0;
   const promisesAmount =
@@ -276,8 +214,12 @@ const ContractCard: React.FC<ContractCardProps> = ({
               <Chip
                 label={
                   isShared
-                    ? allFriends.find((f) => f.id === contract.creator)?.name ||
-                      "Shared"
+                    ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      (
+                        allFriends.find(
+                          (f: unknown) => f.id === contract.creator,
+                        ) as unknown
+                      )?.name || "Shared"
                     : "Your Contract"
                 }
                 size="small"
@@ -361,8 +303,11 @@ const ContractsHistory: React.FC = () => {
     contracts: contractsList,
     loading,
     error,
-    totalUnseenCount,
   } = useContractsNotifications();
+
+  const [loadingMore, setLoadingMore] = React.useState(false);
+  const [hasMore, setHasMore] = React.useState(true);
+  const [totalCount, setTotalCount] = React.useState(0);
 
   const handleCreateContract = () => {
     if (!profile) return;
@@ -376,6 +321,67 @@ const ContractsHistory: React.FC = () => {
       },
     });
   };
+
+  const handleLoadMore = async () => {
+    if (loadingMore || !hasMore) return;
+
+    setLoadingMore(true);
+    try {
+      const { backendActor } = await import("@/utils/backendUtils");
+      if (!backendActor) return;
+
+      const currentCount = contractsList.length;
+      const moreContracts = await backendActor.get_contracts_paginated(
+        BigInt(currentCount),
+        BigInt(5),
+      );
+
+      if (
+        moreContracts &&
+        Array.isArray(moreContracts) &&
+        moreContracts.length > 0
+      ) {
+        moreContracts.forEach(
+          (contractEntry: [string, { CustomContract?: CustomContract }]) => {
+            const [_id, contractWrapper] = contractEntry;
+            if (contractWrapper.CustomContract) {
+              dispatch({
+                type: "SET_CONTRACT",
+                contract: contractWrapper.CustomContract,
+              });
+            }
+          },
+        );
+      }
+
+      if (!moreContracts || moreContracts.length < 5) {
+        setHasMore(false);
+      }
+    } catch (error) {
+      console.error("Error loading more contracts:", error);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  React.useEffect(() => {
+    const fetchTotalCount = async () => {
+      try {
+        const { backendActor } = await import("@/utils/backendUtils");
+        if (!backendActor) return;
+
+        const count = await backendActor.get_contracts_count();
+        setTotalCount(Number(count));
+        setHasMore(contractsList.length < Number(count));
+      } catch (error) {
+        console.error("Error fetching contracts count:", error);
+      }
+    };
+
+    if (profile) {
+      fetchTotalCount();
+    }
+  }, [profile, contractsList.length]);
 
   if (!profile) {
     return (
@@ -396,7 +402,9 @@ const ContractsHistory: React.FC = () => {
   }
 
   return (
-    <Box sx={{ maxWidth: 1200, mx: "auto", px: { xs: 2, sm: 3 }, pb: 4 }}>
+    <Box
+      sx={{ maxWidth: 1200, mx: "auto", px: { xs: 2, sm: 3 }, pb: 4, mb: 24 }}
+    >
       <Helmet>
         <title>Agreements</title>
         <link rel="icon" type="image/png" href="/agreement.png" />
@@ -453,42 +461,77 @@ const ContractsHistory: React.FC = () => {
       </Box>
 
       {contractsList.length === 0 ? (
-        <Box
-          sx={{
-            textAlign: "center",
-            py: 8,
-            border: "2px dashed",
-            borderColor: "divider",
-            borderRadius: 2,
-          }}
-        >
-          <HandshakeIcon sx={{ fontSize: 48, color: "text.disabled", mb: 2 }} />
-          <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
-            No contracts yet
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Create your first contract to get started
-          </Typography>
-          <Button
-            onClick={handleCreateContract}
-            variant="outlined"
-            startIcon={<AddIcon />}
+        <>
+          <Box
+            sx={{
+              textAlign: "center",
+              py: 8,
+              border: "2px dashed",
+              borderColor: "divider",
+              borderRadius: 2,
+            }}
           >
-            Create Contract
-          </Button>
-        </Box>
+            <HandshakeIcon
+              sx={{ fontSize: 48, color: "text.disabled", mb: 2 }}
+            />
+            <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
+              No contracts yet
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              Create your first contract to get started
+            </Typography>
+            <Button
+              onClick={handleCreateContract}
+              variant="outlined"
+              startIcon={<AddIcon />}
+            >
+              Create Contract
+            </Button>
+          </Box>
+        </>
       ) : (
-        <Grid container spacing={{ xs: 2, sm: 3 }}>
-          {contractsList.map((contract) => (
-            <Grid key={contract.id} size={{ xs: 12, sm: 6, lg: 4 }}>
-              <ContractCard
-                contract={contract}
-                profile={profile}
-                allFriends={all_friends}
-              />
-            </Grid>
-          ))}
-        </Grid>
+        <>
+          <Grid container spacing={{ xs: 2, sm: 3 }}>
+            {contractsList.map((contract) => (
+              <Grid key={contract.id} size={{ xs: 12, sm: 6, lg: 4 }}>
+                <ContractCard
+                  contract={contract}
+                  profile={profile}
+                  allFriends={all_friends}
+                />
+              </Grid>
+            ))}
+          </Grid>
+
+          {hasMore && (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                mt: 4,
+              }}
+            >
+              <Button
+                onClick={handleLoadMore}
+                variant="outlined"
+                disabled={loadingMore}
+                sx={{
+                  minWidth: 200,
+                  fontWeight: 600,
+                }}
+              >
+                {loadingMore ? (
+                  <>
+                    <CircularProgress size={20} sx={{ mr: 1 }} />
+                    Loading...
+                  </>
+                ) : (
+                  `Load More (${contractsList.length}/${totalCount})`
+                )}
+              </Button>
+            </Box>
+          )}
+        </>
       )}
     </Box>
   );

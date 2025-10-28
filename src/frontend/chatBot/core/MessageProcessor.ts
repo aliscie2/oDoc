@@ -307,7 +307,9 @@ Provide a helpful and accurate answer based only on the documentation provided. 
     let actualPrompt = prompt;
 
     if (aiCase.id === "contract") {
+      
       const contractData = this.getContractData();
+      console.log({contractData})
       systemPrompt = buildContractPrompt(
         contractData.contract,
         contractData.friendsList,
@@ -317,27 +319,27 @@ Provide a helpful and accurate answer based only on the documentation provided. 
       actualPrompt = message;
     }
 
-    console.log("🔍 DEBUG processProductionMode:", {
-      aiCaseId: aiCase.id,
-      aiCaseClass: aiCase.class,
-      promptLength: actualPrompt.length,
-      systemPromptLength: systemPrompt.length,
-    });
+    // console.log("🔍 DEBUG processProductionMode:", {
+    //   aiCaseId: aiCase.id,
+    //   aiCaseClass: aiCase.class,
+    //   promptLength: actualPrompt.length,
+    //   systemPromptLength: systemPrompt.length,
+    // });
 
     const config = this.aiService.createAIConfig(actualPrompt, systemPrompt);
     const aiResult = await this.aiService.sendAIMessage(config, abortSignal);
 
-    console.log("🔍 DEBUG AI result received:", {
-      hasAiResult: !!aiResult,
-      hasParsedData: !!aiResult?.parsedData,
-      parsedDataType: typeof aiResult?.parsedData,
-      parsedDataKeys: aiResult?.parsedData
-        ? Object.keys(aiResult.parsedData)
-        : [],
-      parsedData: aiResult?.parsedData,
-      aiCaseClass: aiCase?.class,
-      fullAiResultJSON: JSON.stringify(aiResult, null, 2),
-    });
+    // console.log("🔍 DEBUG AI result received:", {
+    //   hasAiResult: !!aiResult,
+    //   hasParsedData: !!aiResult?.parsedData,
+    //   parsedDataType: typeof aiResult?.parsedData,
+    //   parsedDataKeys: aiResult?.parsedData
+    //     ? Object.keys(aiResult.parsedData)
+    //     : [],
+    //   parsedData: aiResult?.parsedData,
+    //   aiCaseClass: aiCase?.class,
+    //   fullAiResultJSON: JSON.stringify(aiResult, null, 2),
+    // });
 
     // Fix for JOB case: if parsedData is an array (updates array), try to parse the full response
     if (aiCase?.class === "JOB" && Array.isArray(aiResult?.parsedData)) {
@@ -353,7 +355,7 @@ Provide a helpful and accurate answer based only on the documentation provided. 
           typeof fullParsed === "object" &&
           !Array.isArray(fullParsed)
         ) {
-          console.log("✅ Successfully re-parsed full response:", fullParsed);
+          // console.log("✅ Successfully re-parsed full response:", fullParsed);
           aiResult.parsedData = fullParsed;
         }
       } catch (error) {
@@ -483,15 +485,15 @@ Provide a helpful and accurate answer based only on the documentation provided. 
       this.config.is_google_connected &&
       this.config.calendar?.google_ids?.length > 0;
 
-    console.log("🗑️ Batch delete routing decision:", {
-      deleteActionsCount: deleteActions.length,
-      hasGoogleCalendar: !!this.googleCalendar,
-      googleCalendarIsConnected: this.googleCalendar?.isConnected,
-      configCalendarGoogleIds: this.config.calendar?.google_ids,
-      configCalendarGoogleIdsLength: this.config.calendar?.google_ids?.length,
-      finalIsGoogleConnected: isGoogleConnected,
-      willUseGoogleCalendar: isGoogleConnected && !!this.googleCalendar,
-    });
+    // console.log("🗑️ Batch delete routing decision:", {
+    //   deleteActionsCount: deleteActions.length,
+    //   hasGoogleCalendar: !!this.googleCalendar,
+    //   googleCalendarIsConnected: this.googleCalendar?.isConnected,
+    //   configCalendarGoogleIds: this.config.calendar?.google_ids,
+    //   configCalendarGoogleIdsLength: this.config.calendar?.google_ids?.length,
+    //   finalIsGoogleConnected: isGoogleConnected,
+    //   willUseGoogleCalendar: isGoogleConnected && !!this.googleCalendar,
+    // });
 
     // Separate Google events from backend events
     const googleEvents = deleteActions.filter((action) =>
@@ -501,21 +503,21 @@ Provide a helpful and accurate answer based only on the documentation provided. 
       this.isBackendEventId(action.id),
     );
 
-    console.log("🗑️ Batch delete event separation:", {
-      totalEvents: deleteActions.length,
-      googleEvents: googleEvents.length,
-      backendEvents: backendEvents.length,
-      googleEventIds: googleEvents.map((e) => e.id),
-      backendEventIds: backendEvents.map((e) => e.id),
-      allEventIds: deleteActions.map((e) => e.id),
-      eventDetectionResults: deleteActions.map((action) => ({
-        id: action.id,
-        isGoogle: this.isGoogleEventId(action.id),
-        isBackend: this.isBackendEventId(action.id),
-        containsAt: action.id.includes("@"),
-        containsUnderscore: action.id.includes("_"),
-      })),
-    });
+    // console.log("🗑️ Batch delete event separation:", {
+    //   totalEvents: deleteActions.length,
+    //   googleEvents: googleEvents.length,
+    //   backendEvents: backendEvents.length,
+    //   googleEventIds: googleEvents.map((e) => e.id),
+    //   backendEventIds: backendEvents.map((e) => e.id),
+    //   allEventIds: deleteActions.map((e) => e.id),
+    //   eventDetectionResults: deleteActions.map((action) => ({
+    //     id: action.id,
+    //     isGoogle: this.isGoogleEventId(action.id),
+    //     isBackend: this.isBackendEventId(action.id),
+    //     containsAt: action.id.includes("@"),
+    //     containsUnderscore: action.id.includes("_"),
+    //   })),
+    // });
 
     // Process backend events
     if (backendEvents.length > 0) {

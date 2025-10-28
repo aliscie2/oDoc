@@ -14,7 +14,6 @@ const getckUsdcBalance = async (ckUSDCActor: ActorSubclass<CkUSDC_SERVICE> | nul
       owner: Principal.fromText(userPrincipal),
       subaccount: [],
     });
-    console.log("Balance query successful:", {balanceResult, userPrincipal});
 
     return balanceResult;
   } catch (error) {

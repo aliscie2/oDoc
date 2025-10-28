@@ -625,10 +625,16 @@ service : () -> {
   get_calendar_by_author : (text) -> (opt Calendar) query;
   get_calendar_public_urls : (text) -> (Result_10) query;
   get_contract : (text, text) -> (Result_11) query;
+  get_contracts_count : () -> (nat64) query;
+  get_contracts_paginated : (nat64, nat64) -> (
+      vec record { text; StoredContract },
+    ) query;
   get_emails : () -> (vec text) query;
   get_file : (text) -> (opt FileNode) query;
   get_file_content : (text) -> (opt vec ContentNode) query;
   get_filtered_posts : (opt vec text, opt text) -> (vec PostUser) query;
+  get_friends_count : () -> (nat64) query;
+  get_friends_paginated : (nat64, nat64) -> (vec FEFriend) query;
   get_initial_data : () -> (Result_12) query;
   get_job : (text) -> (opt Job) query;
   get_logs : (GetErrorLogsArgs) -> (vec Log) query;
@@ -640,6 +646,7 @@ service : () -> {
   get_my_calendar : () -> (Calendar) query;
   get_my_chats : (nat64) -> (vec Chat) query;
   get_my_jobs : () -> (GetJobs) query;
+  get_notifications_count : () -> (nat64) query;
   get_owners : () -> (vec principal) query;
   get_post : (text) -> (Result_13) query;
   get_posts : (nat64, nat64) -> (vec PostUser) query;
@@ -647,10 +654,15 @@ service : () -> {
   get_shared_file : (text) -> (Result_15);
   get_sns_status : () -> (Result_16) query;
   get_swaps : () -> (vec record { principal; principal }) query;
+  get_unread_notifications_count : () -> (nat64) query;
   get_user : (text) -> (Result) query;
   get_user_notifications : (nat64) -> (vec Notification) query;
   get_user_profile : (principal) -> (Result_17) query;
   get_users : () -> (float64) query;
+  get_wallet_debts : (nat64, nat64) -> (vec record { text; float64 }) query;
+  get_wallet_debts_count : () -> (nat64) query;
+  get_wallet_exchanges : (nat64, nat64) -> (vec Exchange) query;
+  get_wallet_exchanges_count : () -> (nat64) query;
   get_work_spaces : () -> (vec WorkSpace) query;
   internal_transaction : (float64, text, ExchangeType) -> (Result_3);
   is_ai_free_tier : () -> (Result_18) query;

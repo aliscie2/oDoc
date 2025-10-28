@@ -116,13 +116,48 @@ impl Notification {
             time: ic_cdk::api::time() as f64,
         }
     }
-    pub fn get_list(user: &Principal) -> Vec<Self> {
+
+    /// Get notifications with pagination to avoid instruction limit
+    pub fn get_list_paginated(user: &Principal, skip: usize, limit: usize) -> Vec<Self> {
         NOTIFICATIONS.with(|notifications| {
             let user_notifications = notifications.borrow();
             user_notifications
                 .get(&user.to_string())
                 .map_or_else(Vec::new, |notifications_for_user| {
-                    notifications_for_user.notifications.clone()
+                    notifications_for_user.notifications
+                        .iter()
+                        .skip(skip)
+                        .take(limit)
+                        .cloned()
+                        .collect()
+                })
+        })
+    }
+
+    /// Get total count of notifications
+    pub fn get_count(user: &Principal) -> usize {
+        NOTIFICATIONS.with(|notifications| {
+            let user_notifications = notifications.borrow();
+            user_notifications
+                .get(&user.to_string())
+                .map_or(0, |notifications_for_user| {
+                    notifications_for_user.notifications.len()
+                })
+        })
+    }
+
+    /// Get count of unread notifications
+    pub fn get_unread_count(user: &Principal) -> usize {
+        NOTIFICATIONS.with(|notifications| {
+            let user_notifications = notifications.borrow();
+            user_notifications
+                .get(&user.to_string())
+                .map_or(0, |notifications_for_user| {
+                    notifications_for_user
+                        .notifications
+                        .iter()
+                        .filter(|n| !n.is_seen)
+                        .count()
                 })
         })
     }

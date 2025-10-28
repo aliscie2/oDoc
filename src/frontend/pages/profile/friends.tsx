@@ -1,8 +1,8 @@
-import React from "react";
-import { List, ListItem, Box, useMediaQuery, useTheme } from "@mui/material";
+import React, { useState, useEffect } from "react";
+import { List, ListItem, Box, useMediaQuery, useTheme, Button, CircularProgress } from "@mui/material";
 import UserAvatarMenu from "../../components/MainComponents/UserAvatarMenu";
 import FriendshipButton from "../../components/FriendshipButton";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 
 interface FEFriend {
   id: string;
@@ -36,6 +36,11 @@ const FriendsList: React.FC<FriendsListProps> = ({ friends, currentUser }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.down("md"));
   const { profile } = useSelector((state: any) => state.filesState);
+  const dispatch = useDispatch();
+  
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [totalCount, setTotalCount] = useState<number | null>(null);
 
   const truncateText = (text: string, maxLength: number) => {
     if (!text) return "";
@@ -44,62 +49,134 @@ const FriendsList: React.FC<FriendsListProps> = ({ friends, currentUser }) => {
       : text;
   };
 
+  useEffect(() => {
+    const fetchTotalCount = async () => {
+      try {
+        const { backendActor } = await import("@/utils/backendUtils");
+        if (!backendActor) return;
+        
+        const count = await backendActor.get_friends_count();
+        setTotalCount(count);
+        setHasMore(friends.length < count);
+      } catch (error) {
+        console.error("Error fetching friends count:", error);
+      }
+    };
+
+    fetchTotalCount();
+  }, [friends.length]);
+
+  const handleLoadMore = async () => {
+    if (loadingMore || !hasMore) return;
+
+    setLoadingMore(true);
+    try {
+      const { backendActor } = await import("@/utils/backendUtils");
+      if (!backendActor) return;
+
+      const currentCount = friends.length;
+      const moreFriends = await backendActor.get_friends_paginated(
+        currentCount,
+        20,
+      );
+
+      if (moreFriends && moreFriends.length > 0) {
+        moreFriends.forEach((friend: FEFriend) => {
+          dispatch({ 
+            type: "ADD_FRIEND", 
+            friend,
+            user: {
+              id: friend.id,
+              name: friend.name,
+              description: friend.description,
+              email: friend.email,
+              photo: friend.photo,
+            }
+          });
+        });
+      }
+
+      if (moreFriends.length < 20 || (totalCount && friends.length + moreFriends.length >= totalCount)) {
+        setHasMore(false);
+      }
+    } catch (error) {
+      console.error("Error loading more friends:", error);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
   return (
-    <List sx={{ p: 0 }}>
-      {friends.map((friend) => {
-        const friendUser = {
-          id: friend.id,
-          name: friend.name,
-          description: friend.description,
-          email: friend.email,
-          photo: friend.photo,
-        };
+    <>
+      <List sx={{ p: 0 }}>
+        {friends.map((friend) => {
+          const friendUser = {
+            id: friend.id,
+            name: friend.name,
+            description: friend.description,
+            email: friend.email,
+            photo: friend.photo,
+          };
 
-        return (
-          <ListItem
-            key={friend.id}
-            sx={{
-              flexDirection: { xs: "column", sm: "row" },
-              alignItems: { xs: "stretch", sm: "flex-start" },
-              gap: 2,
-              py: 2,
-              px: { xs: 1, sm: 2 },
-              borderBottom: 1,
-              borderColor: "divider",
-              "&:hover": {
-                bgcolor: "action.hover",
-              },
-            }}
-          >
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <UserAvatarMenu
-                maxWords={10}
-                displayDescription
-                dispalyName
-                user={friendUser}
-                sx={{
-                  width: { xs: 40, sm: 48 },
-                  height: { xs: 40, sm: 48 },
-                }}
-              />
-            </Box>
-
-            {currentUser && currentUser.id === profile.id && (
-              <Box
-                sx={{
-                  flexShrink: 0,
-                  alignSelf: { xs: "stretch", sm: "flex-start" },
-                  mt: { xs: 0, sm: 0.5 },
-                  width: { xs: "100%", sm: "auto" },
-                }}
-              >
-                <FriendshipButton user={friendUser} />
+          return (
+            <ListItem
+              key={friend.id}
+              sx={{
+                flexDirection: { xs: "column", sm: "row" },
+                alignItems: { xs: "stretch", sm: "flex-start" },
+                gap: 2,
+                py: 2,
+                px: { xs: 1, sm: 2 },
+                borderBottom: 1,
+                borderColor: "divider",
+                "&:hover": {
+                  bgcolor: "action.hover",
+                },
+              }}
+            >
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <UserAvatarMenu
+                  maxWords={10}
+                  displayDescription
+                  dispalyName
+                  user={friendUser}
+                  sx={{
+                    width: { xs: 40, sm: 48 },
+                    height: { xs: 40, sm: 48 },
+                  }}
+                />
               </Box>
-            )}
-          </ListItem>
-        );
-      })}
-    </List>
+
+              {currentUser && currentUser.id === profile.id && (
+                <Box
+                  sx={{
+                    flexShrink: 0,
+                    alignSelf: { xs: "stretch", sm: "flex-start" },
+                    mt: { xs: 0, sm: 0.5 },
+                    width: { xs: "100%", sm: "auto" },
+                  }}
+                >
+                  <FriendshipButton user={friendUser} />
+                </Box>
+              )}
+            </ListItem>
+          );
+        })}
+      </List>
+      
+      {hasMore && (
+        <Box sx={{ display: "flex", justifyContent: "center", py: 3 }}>
+          <Button
+            variant="outlined"
+            onClick={handleLoadMore}
+            disabled={loadingMore}
+            startIcon={loadingMore ? <CircularProgress size={20} /> : null}
+          >
+            {loadingMore ? "Loading..." : "Load More Friends"}
+          </Button>
+        </Box>
+      )}
+    </>
   );
 };
 

@@ -81,13 +81,13 @@ export const useJobsSave = (): UseJobsSaveReturn => {
       dispatch({ type: "RESET_AI_CREDITS", credits });
       dispatch({ type: "CLEAR_JOB_CHANGES" });
 
-      const res: { jobs: Job[]; matching_jobs: Job[] } =
-        await backendActor.get_my_jobs();
-      dispatch({
-        type: "INIT_JOBS",
-        jobs: res.jobs,
-        matchingJobs: res.matching_jobs,
-      });
+      // const res: { jobs: Job[]; matching_jobs: Job[] } =
+      //   await backendActor.get_my_jobs();
+      // dispatch({
+      //   type: "INIT_JOBS",
+      //   jobs: res.jobs,
+      //   matchingJobs: res.matching_jobs,
+      // });
 
       setLastError(null);
       enqueueSnackbar("Job changes reset successfully!", { variant: "info" });

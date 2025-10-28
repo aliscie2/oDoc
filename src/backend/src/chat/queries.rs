@@ -5,20 +5,16 @@ use ic_cdk_macros::query;
 fn get_my_chats(chats_length: usize) -> Vec<Chat> {
     const PAGE_SIZE: usize = 15;
 
-    let chats: Vec<Chat> = Chat::get_my_chats();
+    // Use paginated method to avoid loading all chats
+    let total_count = Chat::get_my_chats_count();
 
     // If client already has all available chats, return empty
-    if chats_length >= chats.len() {
+    if chats_length >= total_count {
         return Vec::new();
     }
 
-    // Calculate how many chats to return
-    let start_index = chats_length;
-    let end_index = std::cmp::min(start_index + PAGE_SIZE, chats.len());
-
-    // Get the slice starting from current length
-    let page_chats = &chats[start_index..end_index];
-    page_chats.to_vec()
+    // Get only the next page of chats
+    Chat::get_my_chats_paginated(chats_length, PAGE_SIZE)
 }
 
 #[query]

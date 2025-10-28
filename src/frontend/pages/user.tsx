@@ -9,14 +9,26 @@ import FriendshipButton from "../components/FriendshipButton";
 import { backendActor } from "../utils/backendUtils";
 
 function UserProfile() {
+  
+
+  
   const [searchParams] = useSearchParams();
-  // Using direct backendActor import
+
+
+  
   const [user, setUser] = useState(null);
+
+
+  
   const [profileHistory, setProfileHistory] = useState(null);
+
+  
   const [isLoading, setIsLoading] = useState(true);
 
-  const { profile, friends } = useSelector((state: any) => state.filesState);
+  
+  const { profile, friends } = useSelector((state: unknown) => state.filesState);
 
+  
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -39,13 +51,21 @@ function UserProfile() {
 
     fetchUserData();
   }, [searchParams, backendActor]);
+  
 
+  
   if (isLoading) {
+    
     return <div>Loading...</div>;
   }
+
+
   if (!user) {
+    
     return <Typography variant="h4">User not found...</Typography>;
   }
+
+  
   // if (!profile) {
   //   return <Typography variant="h4">You need to login...</Typography>;
   // }

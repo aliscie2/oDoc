@@ -11,28 +11,7 @@ import { useLocation } from "react-router-dom";
 import { RootState } from "@/redux/reducers";
 
 const ChatContainer = () => {
-  // Define paths where chat should NOT be shown
-  const location = useLocation();
-
-  // Paths where chat should be visible
-  const chatEnabledPaths = [
-    "/",
-    "/contract",
-    "/contracts",
-    "/calendar",
-    "/share_calendar",
-  ];
-
-  // Check if current path matches any enabled path
-  const isChatEnabled = chatEnabledPaths.some((path) =>
-    path === "/"
-      ? location.pathname === "/"
-      : location.pathname.startsWith(path),
-  );
-
-  if (!isChatEnabled) {
-    return null;
-  }
+  // ✅ ALL HOOKS MUST BE CALLED FIRST - BEFORE ANY RETURNS
   const {
     assistantName,
     chatHistory,
@@ -48,27 +27,29 @@ const ChatContainer = () => {
     handleTypingComplete,
   } = useChatState();
 
+  const location = useLocation();
+
   const handleMinimize = useCallback(() => {
     sessionStorage.setItem("chatMinimized", "true");
     setIsMinimized(true);
   }, [setIsMinimized]);
-  const handleMaximize = useCallback(() => {
-    sessionStorage.removeItem("chatMinimized");
-    setIsMinimized(false);
-  }, [setIsMinimized]);
 
   const prevProfileCompletionRef = useRef<number | null>(null);
+  
   const { calendar, is_google_connected } = useSelector(
     (state: any) => state.calendarState,
   );
-  const { currentJobId, jobs } = useSelector((state: any) => state.jobState);
-  const currentJob = jobs?.find((job: any) => job.id === currentJobId);
+  
+  const { currentJobId: selectedJobId, jobs } = useSelector((state: any) => state.jobState);
+  
+  const currentJob = jobs?.find((job: unknown) => job.id === selectedJobId);
 
   const isHomePage = ["", "/"].includes(window.location.pathname);
   const shouldCenterChat =
-    isHomePage && (!currentJob | !jobs || jobs.length === 0);
+    isHomePage && (!currentJob || !jobs || jobs.length === 0);
 
   const messageProcessor = useMessageProcessor();
+  
   const { executeGoogleAction } = useGoogleCalendar();
 
   const isGoogleConnected =
@@ -112,11 +93,14 @@ const ChatContainer = () => {
   });
 
   const { profile } = useSelector((state: RootState) => state.filesState);
-
+  // Extract stable values to prevent infinite loops
+  const currentJobId = currentJob?.id;
+  const currentJobCompletion = currentJob?.profile_completion;
+  
   useEffect(() => {
-    if (!currentJob) return;
+    if (!currentJob || !currentJobId) return;
 
-    const currCompletion = currentJob.profile_completion || 0;
+    const currCompletion = currentJobCompletion || 0;
     const prevCompletion = prevProfileCompletionRef.current;
 
     if (
@@ -124,10 +108,10 @@ const ChatContainer = () => {
       prevCompletion < 0.8 &&
       currCompletion >= 0.8
     ) {
-      const messageId = `profile-share-${currentJob.id}`;
+      const messageId = `profile-share-${currentJobId}`;
 
       if (!shownMessageIds.has(messageId)) {
-        const shareLink = `${window.location.origin}/jobs?id=${currentJob.id}`;
+        const shareLink = `${window.location.origin}/jobs?id=${currentJobId}`;
 
         (async () => {
           let thumbnailUrl = "";
@@ -161,7 +145,7 @@ const ChatContainer = () => {
               message: `🎉 Great progress! Your profile is now ${Math.round(currCompletion * 100)}% complete.\n\n**Make sure to share your profile** to get more visibility!`,
               id: messageId,
               shareLink,
-              jobId: currentJob.id,
+              jobId: currentJobId,
               thumbnailUrl: thumbnailUrl || undefined,
               canUndo: false,
               canRedo: false,
@@ -176,13 +160,34 @@ const ChatContainer = () => {
 
     prevProfileCompletionRef.current = currCompletion;
   }, [
-    currentJob?.profile_completion,
-    currentJob?.id,
+    currentJobCompletion,
+    currentJobId,
     shownMessageIds,
     setChatHistory,
     setShownMessageIds,
     setIsMinimized,
+    currentJob,
+    profile?.photo,
   ]);
+
+  // ✅ NOW check if chat should be shown - AFTER all hooks
+  const chatEnabledPaths = [
+    "/",
+    "/contract",
+    "/contracts",
+    "/calendar",
+    "/share_calendar",
+  ];
+
+  const isChatEnabled = chatEnabledPaths.some((path) =>
+    path === "/"
+      ? location.pathname === "/"
+      : location.pathname.startsWith(path),
+  );
+  
+  if (!isChatEnabled) {
+    return null;
+  }
 
   const chatProps = {
     assistantName,

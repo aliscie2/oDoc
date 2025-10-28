@@ -150,7 +150,8 @@ impl Chat {
     //     })
     // }
 
-    pub fn get_my_chats() -> Vec<Chat> {
+    /// Get chats with pagination to avoid instruction limit
+    pub fn get_my_chats_paginated(skip: usize, limit: usize) -> Vec<Chat> {
         CHATS.with(|store| {
             let my_chats_ids = MY_CHATS.with(|my_chats_store| {
                 my_chats_store
@@ -184,7 +185,18 @@ impl Chat {
                 b_last_date.cmp(&a_last_date)
             });
 
-            my_chats
+            // Apply pagination
+            my_chats.into_iter().skip(skip).take(limit).collect()
+        })
+    }
+
+    /// Get total count of chats
+    pub fn get_my_chats_count() -> usize {
+        MY_CHATS.with(|my_chats_store| {
+            my_chats_store
+                .borrow()
+                .get(&caller().to_string())
+                .map_or(0, |chats_vec| chats_vec.chats.len())
         })
     }
 

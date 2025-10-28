@@ -8,6 +8,7 @@ import AffiliateRedirect from "./affiliateRedirect";
 import NotFound from "@/pages/notFound404";
 import { ChatMobilePage } from "./chatMobilePage";
 import LandingPage from "./LandingPage";
+import { CryptoEscrow } from "./LandingPage/components/CryptoEscrow";
 
 // Lazy imports for heavy components
 const JobsPage = React.lazy(() => import("./jobs"));
@@ -45,9 +46,11 @@ const PageLoader = () => (
 );
 
 const Pages = React.memo(() => {
-  const { profile, profile_history, wallet, friends } = useSelector(
-    (state: unknown) => state.filesState,
-  );
+  // Use individual selectors with shallow equality to prevent unnecessary re-renders
+  const profile = useSelector((state: any) => state.filesState.profile);
+  const profile_history = useSelector((state: any) => state.filesState.profile_history);
+  const wallet = useSelector((state: unknown) => state.filesState.wallet);
+  const friends = useSelector((state: unknown) => state.filesState.friends);
 
   const { isLoggedIn } = useAuth();
 
@@ -72,10 +75,13 @@ const Pages = React.memo(() => {
           <Route path="/share_calendar*" element={<ShareCalendarView />} />
           <Route path="/user/*" element={<UserProfile />} />
           <Route path="/jobs*" element={<JobPage />} />
+          <Route path="/contracts" element={<CryptoEscrow />} />
+          
         </Routes>
       </Suspense>
     );
   }
+  
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>

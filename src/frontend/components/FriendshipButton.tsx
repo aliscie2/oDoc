@@ -8,6 +8,7 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
 import { Notification } from "$/declarations/backend/backend.did";
+import { useNotificationActions } from "@/hooks/useNotificationActions";
 
 interface FEFriend {
   id: string;
@@ -50,6 +51,8 @@ const FriendshipButton: React.FC<FriendshipButtonProps> = ({
       state.notificationState,
   );
 
+  const { markAsRead } = useNotificationActions();
+
   const markNotificationAsSeen = async (userId: string) => {
     const notification = notifications.find((n) => {
       const contentType = Object.keys(n.content)[0];
@@ -66,8 +69,7 @@ const FriendshipButton: React.FC<FriendshipButtonProps> = ({
     });
 
     if (notification) {
-      await backendActor?.see_notifications([notification.id]);
-      dispatch({ type: "NOTIFICATION_SEEN", id: notification.id });
+      await markAsRead(notification.id);
     }
 
     if (onActionComplete) onActionComplete();

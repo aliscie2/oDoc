@@ -17,10 +17,6 @@ const getckUsdtBalance = async (
       owner: Principal.fromText(userPrincipal),
       subaccount: [],
     });
-    console.log("ckUSDT Balance query successful:", {
-      balanceResult,
-      userPrincipal,
-    });
 
     return balanceResult;
   } catch (error) {
