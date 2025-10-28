@@ -18,7 +18,7 @@ export const loginAs = async (identityNumber: string, page) => {
 };
 
 export const registerUser = async (page) => {
-  await page.goto("http://localhost:5173/");
+  await page.goto("http://localhost:5173");
   const page1Promise = page.waitForEvent("popup");
   await page
     .getByRole("button", { name: "Internet Identity Login with" })
@@ -44,3 +44,8 @@ export const registerUser = async (page) => {
     .fill(Math.random().toString(36).substring(7));
   await page.getByRole("button", { name: "Complete Registration" }).click();
 };
+
+
+export const randDomeName = ()=>{
+  return  Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
