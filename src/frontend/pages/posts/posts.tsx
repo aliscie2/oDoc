@@ -20,7 +20,7 @@ const Posts: React.FC = () => {
   const { authStatus } = useAuth();
   const isLoggedIn = authStatus === "registered";
   const { searchValue, searchTool } = useSelector(
-    (state: any) => state.uiState,
+    (state: unknown) => state.uiState,
   );
 
   // Posts initialization with session storage
@@ -38,7 +38,6 @@ const Posts: React.FC = () => {
           BigInt(0),
           BigInt(10),
         );
-        console.log("Fetched posts:", { fetchedPosts });
 
         if (fetchedPosts.length > 0) {
           dispatch({ type: "ADD_POSTS", posts: fetchedPosts });

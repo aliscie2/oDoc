@@ -375,12 +375,6 @@ const AchievementPage: React.FC = () => {
   const { karmaScore, badges } = useProgress();
   const { emailCompleted, availabilityCompleted } = useGoogleCalendar();
 
-  console.log("📊 Achievement Page Debug:", {
-    karmaScore,
-    badgesCount: badges.length,
-    unlockedCount: badges.filter((b) => b.unlocked).length,
-  });
-
   const createSetupBadges = (): BadgeType[] => [
     {
       id: "email-setup",

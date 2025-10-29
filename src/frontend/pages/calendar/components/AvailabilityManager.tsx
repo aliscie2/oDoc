@@ -46,7 +46,6 @@ const AvailabilityManager: React.FC = () => {
   const dispatch = useDispatch();
   const { calendar } = useSelector((state: any) => state.calendarState);
   const { profile } = useSelector((state: unknown) => state.filesState);
-  console.log({ calendar });
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [dialogOpen, setDialogOpen] = useState(false);

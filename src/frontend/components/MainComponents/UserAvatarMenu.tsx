@@ -72,48 +72,22 @@ const useUserData = (initialUser?: User, user_id?: string) => {
     if (!user_id || fetchedUserIdRef.current === user_id) return;
 
     (async () => {
-      console.log("[UserAvatarMenu] Fetching user:", user_id);
-
       if (profile?.id === user_id) {
-        console.log("[UserAvatarMenu] User is profile");
         setUser(profile);
         fetchedUserIdRef.current = user_id;
         return;
       }
-      console.log({all_friends})
       const foundUser = all_friends?.find((f) => f.id === user_id);
       if (foundUser) {
-        console.log("[UserAvatarMenu] Found user in all_friends cache:", {
-          id: foundUser.id,
-          name: foundUser.name,
-          photoType: typeof foundUser.photo,
-          photoLength: foundUser.photo
-            ? typeof foundUser.photo === "string"
-              ? foundUser.photo.substring(0, 50)
-              : foundUser.photo.length
-            : "null",
-          photo: foundUser.photo,
-        });
         setUser(foundUser);
         fetchedUserIdRef.current = user_id;
         return;
       }
 
-      console.log("[UserAvatarMenu] User not in cache, fetching from backend");
       setLoading(true);
       try {
         const response = await backendActor.get_user(user_id);
         if ("Ok" in response) {
-          console.log("[UserAvatarMenu] Fetched user from backend:", {
-            id: response.Ok.id,
-            name: response.Ok.name,
-            photoType: typeof response.Ok.photo,
-            photoLength: response.Ok.photo
-              ? typeof response.Ok.photo === "string"
-                ? response.Ok.photo.substring(0, 50)
-                : response.Ok.photo.length
-              : "null",
-          });
           setUser(response.Ok);
           fetchedUserIdRef.current = user_id;
         }
@@ -126,27 +100,11 @@ const useUserData = (initialUser?: User, user_id?: string) => {
   }, [user_id, all_friends, profile]);
 
   const getUserPhoto = () => {
-    console.log("[UserAvatarMenu] getUserPhoto called for user:", {
-      userId: user?.id,
-      userName: user?.name,
-      photoType: typeof user?.photo,
-      photoValue: user?.photo
-        ? typeof user.photo === "string"
-          ? user.photo.substring(0, 50)
-          : `Array[${user.photo.length}]`
-        : "null/undefined",
-    });
 
     if (
       user?.photo &&
       (typeof user.photo === "string" || user.photo.length > 0)
     ) {
-      console.log(
-        "[UserAvatarMenu] Returning user photo:",
-        typeof user.photo === "string"
-          ? user.photo.substring(0, 50)
-          : `Array[${user.photo.length}]`,
-      );
       return user.photo;
     }
 
@@ -156,11 +114,9 @@ const useUserData = (initialUser?: User, user_id?: string) => {
       (typeof userPost.creator.photo === "string" ||
         userPost.creator.photo.length > 0)
     ) {
-      console.log("[UserAvatarMenu] Returning photo from post");
       return userPost.creator.photo;
     }
 
-    console.log("[UserAvatarMenu] No photo found, returning null");
     return null;
   };
 

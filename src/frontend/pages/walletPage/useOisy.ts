@@ -13,7 +13,7 @@ export async function depositWithOisy(amount: number, user: Principal) {
     const walletInstance = await IcrcWallet.connect({
       url,
       host,
-      onDisconnect: () => console.log("Wallet disconnected"),
+      onDisconnect: () => {},
     });
 
     const { allPermissionsGranted } =
@@ -39,12 +39,10 @@ export async function depositWithOisy(amount: number, user: Principal) {
       ledgerCanisterId: ckusdcId,
     });
 
-    console.log("Transfer result:", result);
     return result;
   } catch (error) {
     error?.errorType?.InsufficientFunds &&
       alert("Yuur oisy wallet balance is insufficient.");
-    console.log("Deposit error:", error?.errorType?.InsufficientFunds);
     throw error;
   }
 }

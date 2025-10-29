@@ -65,29 +65,14 @@ export const useEventActions = () => {
       const isGoogleConnected =
         isConnected && calendar?.google_ids && calendar.google_ids.length > 0;
 
-      console.log("🎯 [EventActions] Create event routing:", {
-        isConnected,
-        hasGoogleIds: !!calendar?.google_ids,
-        googleIdsLength: calendar?.google_ids?.length,
-        isGoogleConnected,
-        eventPayload,
-      });
-
       if (isGoogleConnected) {
-        console.log("🔄 [EventActions] Creating event in Google Calendar");
-
         // Create in Google Calendar
         const result = await executeGoogleAction({
           type: "ADD_EVENT",
           event: eventPayload,
         });
 
-        console.log("📊 [EventActions] Google Calendar result:", result);
-
         if (result) {
-          console.log(
-            "✅ [EventActions] Event created successfully, refreshing...",
-          );
           // Refresh to get the actual Google Calendar event
           setTimeout(async () => {
             await refreshGoogleCalendarEvents();
@@ -100,9 +85,6 @@ export const useEventActions = () => {
           onError("Failed to create event in Google Calendar");
         }
       } else {
-        console.log(
-          "🔄 [EventActions] Creating event in Backend (Google not connected)",
-        );
         // Create in backend only
         dispatch({ type: "ADD_EVENT", event: eventPayload });
         onSuccess();
@@ -171,8 +153,6 @@ export const useEventActions = () => {
       const isGoogleEvent = selectedEvent.isGoogleEvent;
 
       if (isGoogleConnected && isGoogleEvent) {
-        console.log("🔄 Updating event in Google Calendar");
-
         const result = await executeGoogleAction({
           type: "UPDATE_EVENT",
           event: eventPayload,
@@ -187,7 +167,6 @@ export const useEventActions = () => {
           onError("Failed to update event in Google Calendar");
         }
       } else {
-        console.log("🔄 Updating event in Backend");
         dispatch({ type: "UPDATE_EVENT", event: eventPayload });
         onSuccess();
       }
@@ -210,8 +189,6 @@ export const useEventActions = () => {
         (selectedEvent.id && selectedEvent.id.includes("@"));
 
       if (isGoogleConnected && isGoogleEvent) {
-        console.log("🔄 Deleting event from Google Calendar");
-
         // Extract the actual Google Calendar event ID
         let googleEventId = selectedEvent.originalId || selectedEvent.id;
         if (googleEventId.includes("_")) {
@@ -233,7 +210,6 @@ export const useEventActions = () => {
           onError("Failed to delete event from Google Calendar");
         }
       } else {
-        console.log("🔄 Deleting event from Backend");
         dispatch({ type: "DELETE_EVENT", id: selectedEvent.id });
         onSuccess();
       }

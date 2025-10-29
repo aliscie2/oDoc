@@ -1,6 +1,13 @@
 import { backendActor } from "@/utils/backendUtils";
 import { Check, Share } from "@mui/icons-material";
-import { Alert, IconButton, Snackbar, Tooltip, useMediaQuery, useTheme } from "@mui/material";
+import {
+  Alert,
+  IconButton,
+  Snackbar,
+  Tooltip,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -34,25 +41,10 @@ const ShareCalendarButton: React.FC = () => {
 
   useEffect(() => {
     const isInvalid = !localCalendarId || localCalendarId === "NOT_SET_YET";
-    console.log("[ShareButton] Updating disabled state:", {
-      localCalendarId,
-      isInvalid,
-      isFetching,
-    });
     setDisabled(isInvalid || isFetching);
   }, [localCalendarId, isFetching]);
 
   useEffect(() => {
-    console.log("[ShareButton] State changed:", {
-      calendarChanged,
-      prevCalendarChanged: prevCalendarChangedRef.current,
-      calendarId: calendar.id,
-      localCalendarId,
-      isFetching,
-      hasFetched: hasFetchedRef.current,
-      disabled,
-    });
-
     const fetchCalendar = async () => {
       const wasChanged = prevCalendarChangedRef.current;
       const isNowSaved = !calendarChanged;
@@ -62,28 +54,15 @@ const ShareCalendarButton: React.FC = () => {
         calendar.id === "NOT_SET_YET" &&
         !hasFetchedRef.current;
 
-      console.log("[ShareButton] Fetch decision:", {
-        wasChanged,
-        isNowSaved,
-        shouldFetch,
-        calendarId: calendar.id,
-      });
-
       if (shouldFetch && !isFetching) {
-        console.log("[ShareButton] Starting fetch...");
         setIsFetching(true);
         hasFetchedRef.current = true;
 
         try {
           const cal = await backendActor.get_my_calendar();
-          console.log("[ShareButton] Fetched calendar:", cal);
 
           setLocalCalendarId(cal.id);
           dispatch({ type: "SET_CALENDAR", calendar: cal });
-
-          console.log(
-            "[ShareButton] Calendar updated, button should enable now",
-          );
         } catch (error) {
           console.error("[ShareButton] Failed to fetch calendar:", error);
           hasFetchedRef.current = false;
@@ -107,24 +86,18 @@ const ShareCalendarButton: React.FC = () => {
 
   useEffect(() => {
     if (calendar.id !== "NOT_SET_YET" && calendar.id !== localCalendarId) {
-      console.log(
-        "[ShareButton] Syncing localCalendarId with Redux:",
-        calendar.id,
-      );
       setLocalCalendarId(calendar.id);
     }
   }, [calendar.id, localCalendarId]);
 
   useEffect(() => {
     if (calendarChanged) {
-      console.log("[ShareButton] Calendar changed, resetting fetch flag");
       hasFetchedRef.current = false;
     }
   }, [calendarChanged]);
 
   const handleCopy = async () => {
     if (disabled) {
-      console.log("[ShareButton] Copy blocked - button disabled");
       if (isMobile) {
         setShowDisabledMessage(true);
       } else {
@@ -133,8 +106,6 @@ const ShareCalendarButton: React.FC = () => {
       }
       return;
     }
-
-    console.log("[ShareButton] Copying link:", shareLink);
 
     try {
       await navigator.clipboard.writeText(shareLink);
@@ -145,7 +116,6 @@ const ShareCalendarButton: React.FC = () => {
         setCopied(false);
         setTooltipOpen(false);
       }, 2000);
-      console.log("[ShareButton] Link copied successfully");
     } catch (error) {
       console.error(
         "[ShareButton] Clipboard API failed, using fallback:",
@@ -164,7 +134,6 @@ const ShareCalendarButton: React.FC = () => {
         setCopied(false);
         setTooltipOpen(false);
       }, 2000);
-      console.log("[ShareButton] Link copied via fallback");
     }
   };
 
@@ -176,8 +145,8 @@ const ShareCalendarButton: React.FC = () => {
 
   return (
     <>
-      <Tooltip 
-        title={tooltipTitle} 
+      <Tooltip
+        title={tooltipTitle}
         disableTouchListener
         open={tooltipOpen}
         onOpen={() => setTooltipOpen(true)}
@@ -189,7 +158,11 @@ const ShareCalendarButton: React.FC = () => {
             disabled={!isMobile && disabled}
             size={"small"}
             sx={{
-              color: copied ? "success.main" : disabled && !isMobile ? "text.disabled" : "primary.main",
+              color: copied
+                ? "success.main"
+                : disabled && !isMobile
+                  ? "text.disabled"
+                  : "primary.main",
               transition: "all 0.2s",
               "&:hover": {
                 backgroundColor: "primary.light",

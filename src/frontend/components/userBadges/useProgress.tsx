@@ -175,16 +175,6 @@ const useProgress = (): ProgressData => {
   const data = useMemo(() => {
     // Calculate karma score from profile_history (this is the real actions_rate)
     const karmaScore = profile_history?.actions_rate || 0;
-    
-    console.log('🎯 Achievement Debug:', {
-      karmaScore,
-      profile_history_exists: !!profile_history,
-      profile_history_actions_rate: profile_history?.actions_rate,
-      profile_history_full: profile_history,
-      wallet_actions_rate: wallet?.actions_rate,
-      profile_id: profile?.id,
-      all_friends_count: all_friends?.length
-    });
 
     // Improved user type detection - check both sent and received payments
     let userType: "both" | "freelancer" | "business_owner" | "unknown" =
@@ -300,7 +290,7 @@ const useProgress = (): ProgressData => {
         case "reliable_freelancer":
           const completedGigs =
             wallet?.exchanges?.filter(
-              (ex: any) =>
+              (ex: unknown) =>
                 ex.receiver === profile?.id && ex.status === "completed",
             ).length || 0;
           unlocked = completedGigs >= 5;

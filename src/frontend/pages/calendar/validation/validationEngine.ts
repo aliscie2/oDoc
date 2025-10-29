@@ -50,24 +50,16 @@ export class ValidationEngine {
     const scenario = this.determineScenario(context);
     const rules = getRulesForScenario(scenario);
 
-    console.log("🔍 [ValidationEngine] Scenario:", scenario);
-    console.log("🔍 [ValidationEngine] Rules to apply:", rules.length);
-
     const errors: string[] = [];
     const warnings: string[] = [];
 
     // Execute each rule in sequence
     for (const rule of rules) {
-      console.log(`  ⚡ Executing rule: ${rule.name}`);
-
       try {
         const result = rule.validate(context);
 
         if (!result.isValid) {
-          console.log(`    ❌ Rule failed: ${rule.name}`);
           errors.push(...result.errors);
-        } else {
-          console.log(`    ✅ Rule passed: ${rule.name}`);
         }
 
         if (result.warnings && result.warnings.length > 0) {
@@ -80,12 +72,6 @@ export class ValidationEngine {
     }
 
     const isValid = errors.length === 0;
-
-    console.log("🔍 [ValidationEngine] Result:", {
-      isValid,
-      errorCount: errors.length,
-      warningCount: warnings.length,
-    });
 
     return {
       isValid,

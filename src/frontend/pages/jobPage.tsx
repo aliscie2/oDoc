@@ -110,7 +110,6 @@ JobPageSEO.propTypes = {
 };
 
 const JobPage = () => {
-  console.log("{backendActor}");
   const [searchParams] = useSearchParams();
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
@@ -120,7 +119,6 @@ const JobPage = () => {
   const jobId = searchParams.get("id");
 
   // SEO data is loaded in the main useEffect below
-  console.log("backendActor", { backend: backendActor });
   useEffect(() => {
     const fetchJob = async () => {
       if (!jobId || !backendActor) {
@@ -137,24 +135,11 @@ const JobPage = () => {
 
             const generateThumbnail = async (userData?: User) => {
               try {
-                console.log(
-                  "🔍 Generating thumbnail for user:",
-                  userData?.name,
-                );
-                console.log(
-                  "🔍 User photo (blob URL):",
-                  userData?.photo?.substring(0, 50),
-                );
-
                 const thumbnailUrl = await jobSEO.setupJobSEO(
                   currentJob,
                   userData || null,
                 );
 
-                console.log(
-                  "✅ Thumbnail generated:",
-                  thumbnailUrl.substring(0, 50),
-                );
                 setThumbnailUrl(thumbnailUrl);
               } catch (error) {
                 console.error("❌ Failed to setup SEO:", error);
@@ -166,7 +151,6 @@ const JobPage = () => {
               const userResponse = await backendActor.get_user(
                 currentJob.user_id,
               );
-              console.log("🔍 User response:", userResponse);
 
               if ("Ok" in userResponse) {
                 setUser(userResponse.Ok);

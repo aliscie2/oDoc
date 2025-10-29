@@ -40,12 +40,6 @@ export const fetchOwnerFreeBusy = async (
   timeMax: Date,
   apiKey: string,
 ): Promise<FreeBusyTimeSlot[]> => {
-  console.log("📅 [FreeBusy] Fetching busy times for owner:", {
-    ownerEmail,
-    timeMin: timeMin.toISOString(),
-    timeMax: timeMax.toISOString(),
-  });
-
   try {
     const response = await fetch(
       `https://www.googleapis.com/calendar/v3/freeBusy?key=${apiKey}`,
@@ -97,14 +91,6 @@ export const fetchOwnerFreeBusy = async (
 
     const busyTimes = calendarData?.busy || [];
 
-    console.log("✅ [FreeBusy] Successfully fetched busy times:", {
-      count: busyTimes.length,
-      busyTimes: busyTimes.map((slot) => ({
-        start: slot.start,
-        end: slot.end,
-      })),
-    });
-
     return busyTimes;
   } catch (error) {
     console.error("❌ [FreeBusy] Error fetching busy times:", error);
@@ -124,10 +110,6 @@ export const convertFreeBusyToEvents = (
   busyTimes: FreeBusyTimeSlot[],
   ownerEmail: string,
 ): BlockedEvent[] => {
-  console.log("🔄 [FreeBusy] Converting busy times to blocked events:", {
-    count: busyTimes.length,
-  });
-
   const blockedEvents = busyTimes.map((slot, index) => ({
     id: `freebusy_${ownerEmail}_${index}_${Date.now()}`,
     title: "Busy", // Generic title - no details revealed
@@ -140,10 +122,6 @@ export const convertFreeBusyToEvents = (
     attendees: [],
     recurrence: [],
   }));
-
-  console.log("✅ [FreeBusy] Created blocked events:", {
-    count: blockedEvents.length,
-  });
 
   return blockedEvents;
 };

@@ -24,7 +24,6 @@ export default function App() {
       document.documentElement.classList.remove("dark");
       document.body.classList.remove("dark");
     }
-    console.log("Landing page theme updated:", isDarkMode ? "dark" : "light");
   }, [isDarkMode]);
 
   return (

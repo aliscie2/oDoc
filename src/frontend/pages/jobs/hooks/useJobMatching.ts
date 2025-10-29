@@ -186,7 +186,6 @@ export const useJobMatching = (currentJob: Job | null) => {
     const newChangesSaved = wasChanged && !nowChanged;
 
     if (newChangesSaved) {
-      console.log("🔄 Changes saved - revoking matches for refresh");
       lastProcessedHashRef.current = ""; // Reset hash to trigger re-fetch
       findMatches();
     }

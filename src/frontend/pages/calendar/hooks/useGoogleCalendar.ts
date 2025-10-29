@@ -135,7 +135,6 @@ export const useGoogleCalendar = () => {
                 );
               } catch (aclError) {
                 // Calendar might already be public, continue
-                console.log("ACL already set or error:", aclError);
               }
 
               localStorage.setItem(
@@ -196,7 +195,6 @@ export const useGoogleCalendar = () => {
                       calendar.id,
                       icalPublicUrl,
                     );
-                    console.log("✅ Stored iCal public URL:", icalPublicUrl);
                   } catch (urlError) {
                     console.error("Error storing iCal URL:", urlError);
                   }

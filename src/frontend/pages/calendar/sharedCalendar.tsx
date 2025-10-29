@@ -31,7 +31,6 @@ const localizer = dateFnsLocalizer({
 
 // ShareCalendarView.tsx - For viewing shared calendars
 const ShareCalendarView = () => {
-  console.log("[ShareCalendarView] Rendering ShareCalendarView");
   const dispatch = useDispatch();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -69,9 +68,7 @@ const ShareCalendarView = () => {
       if (!backendActor || !id) return;
 
       try {
-        console.log("[ShareCalendar] Loading calendar:", { id });
         const res = await backendActor.get_calendar(id);
-        console.log("[ShareCalendar] Calendar loaded:", res[0]);
         dispatch({ type: "SET_SHARED_CALENDAR", sharedCalendar: res[0] });
       } catch (error) {
         console.error("[ShareCalendar] Error loading shared calendar:", error);
@@ -112,9 +109,6 @@ const ShareCalendarView = () => {
           }));
 
           dispatch({ type: "SET_OWNER_GOOGLE_EVENTS", events: blockedSlots });
-          console.log(
-            `[ShareCalendar] Loaded ${blockedSlots.length} owner's events as blocked slots`,
-          );
         })
         .catch((error) => {
           console.error(

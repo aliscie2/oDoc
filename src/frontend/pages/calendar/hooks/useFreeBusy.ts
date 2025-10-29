@@ -98,7 +98,6 @@ export const useFreeBusy = (): UseFreeBusyReturn => {
       // Check cache first
       const cachedData = getCachedData(cacheKey);
       if (cachedData) {
-        console.log("📦 [FreeBusy] Using cached data");
         setBusyTimes(cachedData);
         setBlockedEvents(convertFreeBusyToEvents(cachedData, ownerEmail));
         return;

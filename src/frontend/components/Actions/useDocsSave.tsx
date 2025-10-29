@@ -108,7 +108,6 @@ export const useDocsSave = (): UseDocsSaveReturn => {
       const validFileIndexing = (changes.files_indexing || []).filter(
         (indexing: FileIndexing) => fileIds.has(indexing.id),
       );
-      console.log({ processedContracts });
       const res = await backendActor.multi_updates(
         changes.files,
         serializedContent,

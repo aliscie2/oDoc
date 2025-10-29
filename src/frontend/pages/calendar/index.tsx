@@ -26,7 +26,6 @@ const localizer = dateFnsLocalizer({
 // CalendarView.tsx - Updated component
 // CalendarView.tsx - For user's own calendar
 const CalendarView = () => {
-  console.log("Normal");
   const dispatch = useDispatch();
   const theme = useTheme();
   const { calendar } = useSelector((state: any) => state.calendarState);

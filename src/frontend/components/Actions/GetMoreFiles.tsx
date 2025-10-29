@@ -45,7 +45,6 @@ const GetMoreFiles: React.FC = () => {
         !hasInitiallyFetched &&
         (isNavOpen || lookingForFile === true)
       ) {
-        console.log("xxx");
         await hanldeFetching(dispatch, page);
         setPage(page + 1);
         setHasInitiallyFetched(true);

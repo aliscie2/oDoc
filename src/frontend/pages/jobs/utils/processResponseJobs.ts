@@ -40,8 +40,6 @@ export const textToJson = (response: string) => {
     const firstItem = extractedData[0];
     // Check if this looks like an "updates" array (has field and values properties)
     if (firstItem && typeof firstItem === 'object' && 'field' in firstItem && 'values' in firstItem) {
-      console.log("⚠️ Detected updates array extracted instead of full object, re-parsing...");
-      
       // Try to find and parse the full object containing this array
       const fullObjectCandidates = jsonCandidates.filter(candidate => {
         return candidate.includes('"updates"') || candidate.includes('"type"');
@@ -50,7 +48,6 @@ export const textToJson = (response: string) => {
       for (const candidate of fullObjectCandidates) {
         const parsed = parseWithFallbacks(candidate);
         if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && 'updates' in parsed) {
-          console.log("✅ Found full object with updates property");
           extractedData = parsed;
           break;
         }

@@ -13,10 +13,6 @@ const NotificationsPage: React.FC = () => {
   const { notifications, hasMore, unreadCount } = useSelector(
     (state: RootState) => state.notificationState,
   );
-  console.log({
-    x: notifications.length,
-    y: notifications.filter((n) => !n.is_seen).length,
-  });
 
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
