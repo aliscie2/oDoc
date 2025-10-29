@@ -94,19 +94,47 @@ fn get_users() -> f64 {
 }
 
 #[query]
-fn get_emails() -> Vec<String> {
-    let mut emails = Vec::new();
+fn get_emails(page: u32) -> Vec<String> {
     let key = "tgwpc-6xuon-k3a6y-ey7lt-xksjs-qx22h-ikhbt-4yp3a-6stco-rymbe-pqe".to_string();
 
-    if caller().to_text() == key {
-        emails.extend(User::get_emails());
-        emails.extend(Calendar::get_all_user_emails());
-        emails.extend(Job::get_all_user_emails());
-
-        // Remove duplicates by converting to HashSet and back to Vec
-        let unique_emails: HashSet<String> = emails.into_iter().collect();
-        emails = unique_emails.into_iter().collect();
+    if caller().to_text() != key {
+        return Vec::new();
     }
 
-    emails
+    const PAGE_SIZE: usize = 30;
+    let skip = (page as usize) * PAGE_SIZE;
+
+    // Collect emails in a memory-efficient way using iterators
+    let mut all_emails = Vec::new();
+    
+    // Get user emails from PROFILE_STORE with pagination to prevent overflow
+    PROFILE_STORE.with(|profile_store| {
+        all_emails.extend(
+            profile_store
+                .borrow()
+                .iter()
+                .map(|(_, user)| user.email.clone())
+                .filter(|email| !email.is_empty())
+        );
+    });
+    
+    // Get calendar emails
+    all_emails.extend(Calendar::get_all_user_emails());
+    
+    // Get job emails
+    all_emails.extend(Job::get_all_user_emails());
+
+    // Remove duplicates and empty strings
+    let unique_emails: HashSet<String> = all_emails
+        .into_iter()
+        .filter(|email| !email.is_empty())
+        .collect();
+    
+    let mut emails: Vec<String> = unique_emails.into_iter().collect();
+    
+    // Sort for consistent pagination across calls
+    emails.sort();
+    
+    // Return paginated results
+    emails.into_iter().skip(skip).take(PAGE_SIZE).collect()
 }

@@ -629,7 +629,7 @@ service : () -> {
   get_contracts_paginated : (nat64, nat64) -> (
       vec record { text; StoredContract },
     ) query;
-  get_emails : () -> (vec text) query;
+  get_emails : (nat32) -> (vec text) query;
   get_file : (text) -> (opt FileNode) query;
   get_file_content : (text) -> (opt vec ContentNode) query;
   get_filtered_posts : (opt vec text, opt text) -> (vec PostUser) query;

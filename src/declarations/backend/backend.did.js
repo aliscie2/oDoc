@@ -754,7 +754,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(IDL.Tuple(IDL.Text, StoredContract))],
         ['query'],
       ),
-    'get_emails' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
+    'get_emails' : IDL.Func([IDL.Nat32], [IDL.Vec(IDL.Text)], ['query']),
     'get_file' : IDL.Func([IDL.Text], [IDL.Opt(FileNode)], ['query']),
     'get_file_content' : IDL.Func(
         [IDL.Text],

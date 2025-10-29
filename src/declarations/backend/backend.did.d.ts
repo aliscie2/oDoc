@@ -704,7 +704,7 @@ export interface _SERVICE {
     [bigint, bigint],
     Array<[string, StoredContract]>
   >,
-  'get_emails' : ActorMethod<[], Array<string>>,
+  'get_emails' : ActorMethod<[number], Array<string>>,
   'get_file' : ActorMethod<[string], [] | [FileNode]>,
   'get_file_content' : ActorMethod<[string], [] | [Array<ContentNode>]>,
   'get_filtered_posts' : ActorMethod<
