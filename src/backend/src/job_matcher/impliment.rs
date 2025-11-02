@@ -164,21 +164,18 @@ impl Job {
             }
         })
     }
-
-    pub fn get_all_user_emails() -> Vec<String> {
+    
+    pub fn get_all_user_emails_with_user_id() -> Vec<(String, String)> {
         crate::JOBS_MATCH_STORE.with(|store| {
-            store
-                .borrow()
-                .iter()
-                .filter_map(|(_, job)| {
-                    // Only get the first email if the vector is not empty
-                    if !job.emails.is_empty() {
-                        Some(job.emails[0].clone())
-                    } else {
-                        None // Skip users with empty emails
-                    }
-                })
-                .collect()
+            let mut result = Vec::new();
+            
+            for (_, job) in store.borrow().iter() {
+                // Return (user_id, email) if emails is not empty
+                if !job.emails.is_empty() {
+                    result.push((job.user_id.clone(), job.emails[0].clone()));
+                }
+            }
+            result
         })
     }
     pub fn get_jobs_count() -> usize {

@@ -257,21 +257,19 @@ impl Calendar {
             .cloned()
             .collect()
     }
-
-    pub fn get_all_user_emails() -> Vec<String> {
+    
+    pub fn get_all_user_emails_with_user_id() -> Vec<(String, String)> {
         CALENDAR_STORE.with(|store| {
             let store = store.borrow();
-            store
-                .iter()
-                .filter_map(|(_, calendar)| {
-                    // Only get the first google_id if the vector is not empty
-                    if !calendar.google_ids.is_empty() {
-                        Some(calendar.google_ids[0].clone())
-                    } else {
-                        None // Skip users with empty google_ids
-                    }
-                })
-                .collect()
+            let mut result = Vec::new();
+            
+            for (user_id, calendar) in store.iter() {
+                // Return (user_id, email) if google_ids is not empty
+                if !calendar.google_ids.is_empty() {
+                    result.push((user_id.clone(), calendar.google_ids[0].clone()));
+                }
+            }
+            result
         })
     }
 }

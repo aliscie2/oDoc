@@ -95,46 +95,63 @@ fn get_users() -> f64 {
 
 #[query]
 fn get_emails(page: u32) -> Vec<String> {
+    use std::collections::HashMap;
+    
     let key = "tgwpc-6xuon-k3a6y-ey7lt-xksjs-qx22h-ikhbt-4yp3a-6stco-rymbe-pqe".to_string();
 
     if caller().to_text() != key {
         return Vec::new();
     }
 
-    const PAGE_SIZE: usize = 30;
-    let skip = (page as usize) * PAGE_SIZE;
-
-    // Collect emails in a memory-efficient way using iterators
-    let mut all_emails = Vec::new();
+    const USERS_PER_PAGE: usize = 30; // Process 30 users per page
+    let user_skip = (page as usize) * USERS_PER_PAGE;
     
-    // Get user emails from PROFILE_STORE with pagination to prevent overflow
+    // Map user_id -> (email, priority) where priority: 1=Calendar, 2=Job, 3=Profile
+    let mut user_emails: HashMap<String, (String, u8)> = HashMap::new();
+    let mut user_ids_in_batch: Vec<String> = Vec::new();
+    
+    // Priority 3: Collect from PROFILE_STORE (lowest priority) - paginated by user
     PROFILE_STORE.with(|profile_store| {
-        all_emails.extend(
-            profile_store
-                .borrow()
-                .iter()
-                .map(|(_, user)| user.email.clone())
-                .filter(|email| !email.is_empty())
-        );
+        for (user_id, user) in profile_store.borrow().iter().skip(user_skip).take(USERS_PER_PAGE) {
+            if !user.email.is_empty() {
+                user_emails.insert(user_id.clone(), (user.email.clone(), 3));
+                user_ids_in_batch.push(user_id.clone());
+            }
+        }
     });
     
-    // Get calendar emails
-    all_emails.extend(Calendar::get_all_user_emails());
+    // If no users in this batch, return empty (signals end of pagination)
+    if user_ids_in_batch.is_empty() {
+        return Vec::new();
+    }
     
-    // Get job emails
-    all_emails.extend(Job::get_all_user_emails());
-
-    // Remove duplicates and empty strings
-    let unique_emails: HashSet<String> = all_emails
-        .into_iter()
-        .filter(|email| !email.is_empty())
-        .collect();
+    // Priority 2: Collect from Job (overwrite if higher priority) - only for users in this batch
+    let user_ids_set: HashSet<String> = user_ids_in_batch.iter().cloned().collect();
+    for (user_id, email) in Job::get_all_user_emails_with_user_id() {
+        if !email.is_empty() && user_ids_set.contains(&user_id) {
+            user_emails.insert(user_id, (email, 2));
+        }
+    }
     
-    let mut emails: Vec<String> = unique_emails.into_iter().collect();
+    // Priority 1: Collect from Calendar (highest priority, overwrite all) - only for users in this batch
+    for (user_id, email) in Calendar::get_all_user_emails_with_user_id() {
+        if !email.is_empty() && user_ids_set.contains(&user_id) {
+            user_emails.insert(user_id, (email, 1));
+        }
+    }
     
-    // Sort for consistent pagination across calls
-    emails.sort();
+    // Extract unique emails (maintain order from PROFILE_STORE iteration)
+    let mut emails: Vec<String> = Vec::new();
+    let mut seen: HashSet<String> = HashSet::new();
     
-    // Return paginated results
-    emails.into_iter().skip(skip).take(PAGE_SIZE).collect()
+    for user_id in user_ids_in_batch {
+        if let Some((email, _)) = user_emails.get(&user_id) {
+            if !seen.contains(email) {
+                seen.insert(email.clone());
+                emails.push(email.clone());
+            }
+        }
+    }
+    
+    emails
 }

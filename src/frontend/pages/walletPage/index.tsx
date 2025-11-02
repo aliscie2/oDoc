@@ -1,4 +1,4 @@
-import { backendActor, ckUSDCActor, ckUSDTActor } from "@/utils/backendUtils";
+import { backendActor } from "@/utils/backendUtils";
 import { Principal } from "@dfinity/principal";
 import { canisterId } from "$/declarations/backend";
 import {
@@ -142,7 +142,7 @@ const OISY_LOGO = `data:image/svg+xml;base64,${btoa(
 // Custom Hooks
 const useWalletTransactions = (
   backendActor: any,
-  enqueueSnackbar: (message: string, options?: any) => void,
+  enqueueSnackbar: (message: string, options?: unknown) => void,
 ) => {
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
@@ -159,7 +159,7 @@ const useWalletTransactions = (
 
     setIsProcessing(true);
     try {
-      let result: any;
+      let result: unknown;
 
       if (type === "pay") {
         result = await backendActor.internal_transaction(
@@ -715,17 +715,21 @@ const WithdrawDialog: React.FC<{
     setLoadingLiquidity(true);
     try {
       // Get backend canister's balance for both tokens (liquidity available for withdrawal)
-      const backendPrincipal = Principal.fromText(canisterId);
+      const { getCkUSDCActor, getCkUSDTActor } = await import(
+        "@/utils/backendUtils"
+      );
+      const getckUsdcBalance = (await import("@/utils/getBalance")).default;
+      const getckUsdtBalance = (await import("@/utils/getckUsdtBalance"))
+        .default;
+
+      const [ckUSDCActorInstance, ckUSDTActorInstance] = await Promise.all([
+        getCkUSDCActor(),
+        getCkUSDTActor(),
+      ]);
 
       const [ckusdcBalance, ckusdtBalance] = await Promise.all([
-        ckUSDCActor.icrc1_balance_of({
-          owner: backendPrincipal,
-          subaccount: [],
-        }),
-        ckUSDTActor.icrc1_balance_of({
-          owner: backendPrincipal,
-          subaccount: [],
-        }),
+        getckUsdcBalance(ckUSDCActorInstance, canisterId),
+        getckUsdtBalance(ckUSDTActorInstance, canisterId),
       ]);
 
       setCkusdcLiquidity(Number(ckusdcBalance) / 1_000_000);
