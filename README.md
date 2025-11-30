@@ -1,7 +1,7 @@
 # oDoc
 
 <p align="center">
-  <img src="/logo.png" alt="oDoc Logo" width="200">
+  <img src="https://pbs.twimg.com/profile_images/1992121858154516480/FuADUuuT_400x400.jpg" alt="oDoc Logo" width="200">
 </p>
 
 **Your AI Secretary - A complete freelance workflow platform combining AI automation with blockchain security**
@@ -36,7 +36,7 @@ oDoc revolutionizes the entire freelance lifecycle - from job discovery to proje
 - **300+** registered users
 - **~$200** deposited in smart contracts
 - **20+** active job and talent listings
-- **Latest updates:** [odoc.app/about](https://odoc.app/about)
+- **Latest updates:** [odoc.app/about](https://odoc.app)
 
 ---
 
